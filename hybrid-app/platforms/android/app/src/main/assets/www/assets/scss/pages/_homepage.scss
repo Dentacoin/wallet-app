@@ -1,0 +1,44 @@
+app-homepage {
+    #qrcode {
+        width: 180px;
+    }
+    .eth-address-container {
+        padding-top: 10px;
+        padding-bottom: 10px;
+        background-color: $light_blue;
+        width: 60%;
+        bottom: 0;
+        position: absolute;
+        left: 50%;
+        -webkit-transform: translate(-50%, 50%);
+        -ms-transform: translate(-50%, 50%);
+        transform: translate(-50%, 50%);
+        @include rounded(4px);
+        @include box-shadow(0 6px 10px 0px rgba(0, 0, 0, 0.3));
+        .address-value {
+            border: 0;
+            background: transparent;
+            color: white;
+            width: 400px;
+            font-weight: 500;
+            @include breakpoint($xs) {
+                width: 260px;
+                font-size: 12px;
+            }
+        }
+        @include breakpoint($sm-only) {
+            width: 75%;
+        }
+        @include breakpoint($xs) {
+            width: 100%;
+            left: 0;
+            top: calc(100% - 10px);
+            bottom: auto;
+            @include rounded(20px);
+            @include clear_transform();
+        }
+    }
+    .fade-in-element {
+        display: none;
+    }
+}

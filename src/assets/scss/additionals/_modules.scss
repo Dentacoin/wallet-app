@@ -1,0 +1,92 @@
+.white-light-blue-btn {
+    font-size: 20px;
+    color: white;
+    background-color: $light_blue;
+    padding: 10px 20px;
+    font-family: 'Lato-Bold';
+    border: 1.5px solid white;
+    display: inline-block;
+    cursor: pointer;
+    text-decoration: none !important;
+    @include rounded(4px);
+    @include simple_transition(.3s);
+    &:hover {
+        color: $light_blue;
+        background-color: white;
+    }
+    &.light-blue-border {
+        border-color: $light_blue;
+    }
+}
+
+.module {
+    &.custom-google-label-style {
+        position: relative;
+        label {
+            position: absolute;
+            font-size: 16px !important;
+            cursor: pointer;
+            margin: 0;
+            width: calc(100% - 20px) !important;
+            padding-bottom: 10px !important;
+            padding-top: 10px !important;
+            background-color: white;
+            left: 10px;
+            color: #888888;
+            font-weight: normal;
+            top: 50%;
+            font-family: 'Calibri-Regular';
+            -webkit-transform: translateY(-50%);
+            -ms-transform: translateY(-50%);
+            transform: translateY(-50%);
+            @include rounded(4px);
+            @include simple_transition(.3s);
+            &.active-label {
+                width: auto !important;
+                font-size: 14px !important;
+                top: -8px;
+                padding: 0 5px !important;
+                -webkit-transform: none;
+                -ms-transform: none;
+                transform: none;
+                color: $light_blue;
+                font-weight: bold;
+            }
+        }
+        .left-side {
+            width: calc(100% - 100px);
+            position: relative;
+            &.error-field {
+                input, label {
+                    color: red;
+                }
+            }
+        }
+        input {
+            border: 2px solid #dddddd;
+            cursor: pointer;
+            font-size: 16px;
+            font-family: 'Calibri-Regular';
+            width: 100%;
+            padding: 10px 15px;
+            @include rounded(4px 0 0 4px);
+            &.full-rounded {
+                @include rounded(4px);
+            }
+            &.blue-green-border {
+                border: 2px solid $light_blue;
+            }
+        }
+        .input-label {
+            width: 100px;
+            text-align-last:center;
+            text-align: center;
+            border: 0;
+            font-size: 18px;
+            font-family: 'Calibri-Regular';
+            color: black;
+            background-color: #dddddd;
+            @include rounded(0 4px 4px 0);
+        }
+    }
+}

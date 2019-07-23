@@ -1,0 +1,38 @@
+header {
+    .logo {
+        padding-top: 10px;
+        padding-bottom: 10px;
+        img {
+            width: 130px;
+        }
+    }
+    .nav-row {
+        background-color: white;
+        padding-top: 5px;
+        padding-bottom: 5px;
+        nav {
+            text-align: center;
+            ul {
+                li {
+                    a {
+                        font-size: 30px;
+                        display: block;
+                        @include rounded(4px);
+                        @include simple_transition(.3s);
+                        &:hover {
+                            background-color: #00b7e2;
+                            color: white;
+                        }
+                        &.active, &.custom-active {
+                            background-color: #00b7e2;
+                            color: white;
+                        }
+                    }
+                }
+            }
+        }
+        @include breakpoint($xs)    {
+            display: none;
+        }
+    }
+}

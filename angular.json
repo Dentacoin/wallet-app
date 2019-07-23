@@ -20,13 +20,23 @@
             "tsConfig": "tsconfig.app.json",
             "aot": false,
             "assets": [
-              "src/favicon.ico",
               "src/assets"
             ],
             "styles": [
-              "src/styles.css"
+              "./src/assets/libs/bootstrap/css/bootstrap.min.css",
+              "./src/assets/libs/font-awesome/css/font-awesome.min.css",
+              "./src/assets/css/style.css"
             ],
-            "scripts": []
+            "scripts": [
+              "./node_modules/jquery/dist/jquery.min.js",
+              "./src/assets/libs/bootstrap/js/bootstrap.min.js",
+              "./node_modules/bootbox.js/bootbox.min.js",
+              "./node_modules/clipboard/dist/clipboard.min.js",
+              "./src/assets/libs/truffle-contract/truffle-contract-compiled.js",
+              "./src/assets/libs/qrcode/qrcode.js",
+              "./src/assets/js/basic.js",
+              "./src/assets/js/index-bundled.js"
+            ]
           },
           "configurations": {
             "production": {
@@ -80,7 +90,6 @@
             "tsConfig": "tsconfig.spec.json",
             "karmaConfig": "karma.conf.js",
             "assets": [
-              "src/favicon.ico",
               "src/assets"
             ],
             "styles": [
