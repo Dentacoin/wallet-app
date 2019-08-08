@@ -1,24 +1,10 @@
 app-buy-page {
-    .bottom-absolute-btn {
-        bottom: 0;
-        position: absolute;
-        left: 50%;
-        -webkit-transform: translate(-50%, 50%);
-        -ms-transform: translate(-50%, 50%);
-        transform: translate(-50%, 50%);
-        a {
-            min-width: 200px;
-            @include box-shadow(0 6px 10px 0px rgba(0, 0, 0, 0.3));
-        }
-    }
-    #privacy-policy-agree {
-        -ms-transform: scale(1.5);
-        -moz-transform: scale(1.5);
-        -webkit-transform: scale(1.5);
-        -o-transform: scale(1.5);
-        transform: scale(1.5);
-    }
     #privacy-policy-agree, .privacy-policy-agree-label {
         vertical-align: middle;
+    }
+    @include breakpoint($xs) {
+        .main-wrapper {
+            @include rounded(0);
+        }
     }
 }

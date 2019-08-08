@@ -222,5 +222,16 @@ var basic = {
                 return false;
             }
         }
+    },
+    isJsonString: function(str) {
+        try {
+            JSON.parse(str);
+        } catch (e) {
+            return false;
+        }
+        return true;
+    },
+    property_exists: function(object, key) {
+        return object ? hasOwnProperty.call(object, key) : false;
     }
 };

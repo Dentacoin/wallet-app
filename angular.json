@@ -24,6 +24,7 @@
             ],
             "styles": [
               "./src/assets/libs/bootstrap/css/bootstrap.min.css",
+              "./src/assets/libs/combobox/combobox.css",
               "./src/assets/libs/font-awesome/css/font-awesome.min.css",
               "./src/assets/css/style.css"
             ],
@@ -31,6 +32,7 @@
               "./node_modules/jquery/dist/jquery.min.js",
               "./src/assets/libs/bootstrap/js/bootstrap.min.js",
               "./node_modules/bootbox.js/bootbox.min.js",
+              "./src/assets/libs/combobox/combobox.js",
               "./node_modules/clipboard/dist/clipboard.min.js",
               "./src/assets/libs/truffle-contract/truffle-contract-compiled.js",
               "./src/assets/libs/qrcode/qrcode.js",
@@ -62,6 +64,14 @@
                   "maximumError": "5mb"
                 }
               ]
+            },
+            "hybrid": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.hybrid.ts"
+                }
+              ]
             }
           }
         },
@@ -73,6 +83,9 @@
           "configurations": {
             "production": {
               "browserTarget": "wallet-v2:build:production"
+            },
+            "hybrid": {
+              "browserTarget": "wallet-v2:build:hybrid"
             }
           }
         },
@@ -120,6 +133,9 @@
           "configurations": {
             "production": {
               "devServerTarget": "wallet-v2:serve:production"
+            },
+            "hybrid": {
+              "browserTarget": "wallet-v2:build:hybrid"
             }
           }
         }

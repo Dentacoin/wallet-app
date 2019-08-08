@@ -1,6 +1,7 @@
 const Web3 = require('../../../node_modules/web3'); // import web3 v1.0 constructor
 const keythereum = require('../../../node_modules/keythereum');
 const EthCrypto = require('../../../node_modules/eth-crypto');
+var Wallet = require('../../../node_modules/ethereumjs-wallet');
 
 // use globally injected web3 to find the currentProvider and wrap with web3 v1.0
 const getWeb3 = (provider) => {
@@ -33,15 +34,16 @@ function generateKeystoreFile(password) {
     return {
         success: {
             public_key: public_key,
-            keystore: keyObjectExported
+            keystore: keyObjectExported,
+            recovered: keythereum.recover(password, keyObjectExported)
         }
     };
 }
 
 function importKeystoreFile(keystore, password) {
     try {
-        var keyObject = JSON.parse(keystore);
-        var private_key = keythereum.recover(password, keyObject);
+        const keyObject = JSON.parse(keystore);
+        const private_key = keythereum.recover(password, keyObject);
         const public_key = EthCrypto.publicKeyByPrivateKey(private_key.toString('hex'));
         return {
             success: keyObject,
@@ -69,5 +71,46 @@ function decryptKeystore(keystore, password) {
     }
 }
 
-module.exports = {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore};
+function validatePrivateKey(private_key) {
+    try {
+        const public_key = EthCrypto.publicKeyByPrivateKey(private_key);
+        const address = EthCrypto.publicKey.toAddress(public_key);
+
+        return {
+            success: {
+                public_key: public_key,
+                address: address
+            }
+        };
+    } catch (e) {
+        return {
+            error: true,
+            message: 'Wrong secret private key.'
+        }
+    }
+}
+
+function generateKeystoreFromPrivateKey(private_key, password) {
+    try {
+        const public_key = EthCrypto.publicKeyByPrivateKey(private_key);
+        const address = EthCrypto.publicKey.toAddress(public_key);
+        const wallet = Wallet.fromPrivateKey(Buffer.from(private_key, 'hex'));
+        const keystore_file = wallet.toV3String(password);
+
+        return {
+            success: {
+                keystore_file: keystore_file,
+                public_key: public_key,
+                address: address
+            }
+        };
+    } catch (e) {
+        return {
+            error: true,
+            message: 'Wrong secret private key.'
+        }
+    }
+}
+
+module.exports = {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey};
 

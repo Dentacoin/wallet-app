@@ -1,0 +1,83 @@
+app-spend-page-pay-for-dental-services, app-spend-page-gift-cards, app-spend-page-exchanges, app-spend-page-pay-assurance-fees {
+    @include breakpoint($xs) {
+        .main-wrapper {
+            @include rounded(0);
+        }
+        .module.spend-navigation {
+            padding-top: 30px;
+            .prev {
+                padding-left: 0;
+                background-image: url(../images/gray-arrow-left.svg);
+                color: #7D8EA1;
+                font-size: 0 !important;
+                width: 10px;
+                height: 20px;
+                display: inline-block;
+            }
+            .next {
+                padding-right: 0;
+                background-image: url(../images/gray-arrow-right.svg);
+                color: #7D8EA1;
+                font-size: 0 !important;
+                width: 10px;
+                height: 20px;
+                display: inline-block;
+            }
+        }
+        h1 {
+            width: calc(100% - 70px);
+            line-height: 30px;
+            top: -25px;
+            @include horizontal-align(absolute);
+        }
+    }
+}
+
+app-spend-page-pay-for-dental-services {
+    iframe {
+        width: 100%;
+        height: 580px;
+        border: 0;
+        @include breakpoint($xs) {
+            height: 630px;
+        }
+    }
+}
+
+app-spend-page-exchanges {
+    .camping-for-exchanges {
+        font-size: 0;
+        li {
+            width: 20%;
+            display: inline-block;
+            vertical-align: top;
+            font-size: 18px;
+            padding-bottom: 10px;
+            a {
+                color: black;
+                @include simple_transition(.3s);
+                &:hover {
+                    color: $light_blue;
+                }
+            }
+        }
+        @include breakpoint($sm-down) {
+            height: 320px;
+            overflow-y: auto;
+            width: 80%;
+            margin: 0 auto 20px;
+            li {
+                width: 100%;
+                display: block;
+            }
+        }
+    }
+}
+
+app-spend-page-pay-assurance-fees {
+    @include breakpoint($xs) {
+        video {
+            height: 220px;
+        }
+    }
+}

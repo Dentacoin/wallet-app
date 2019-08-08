@@ -22,5 +22,21 @@
     },
     "is_top_level": true,
     "variables": {}
+  },
+  "cordova-plugin-filechooser": {
+    "source": {
+      "type": "registry",
+      "id": "http://github.com/ihadeed/cordova-filechooser.git"
+    },
+    "is_top_level": true,
+    "variables": {}
+  },
+  "phonegap-plugin-barcodescanner": {
+    "source": {
+      "type": "registry",
+      "id": "phonegap-plugin-barcodescanner@8.1.0"
+    },
+    "is_top_level": true,
+    "variables": {}
   }
 }

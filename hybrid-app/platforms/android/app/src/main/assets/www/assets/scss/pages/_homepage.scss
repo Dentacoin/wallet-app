@@ -1,4 +1,11 @@
 app-homepage {
+    .main-wrapper {
+        width: calc(100% - 20px);
+        margin: 0 auto;
+        @include breakpoint($xs) {
+            margin-bottom: 20px;
+        }
+    }
     #qrcode {
         width: 180px;
     }
@@ -15,6 +22,9 @@ app-homepage {
         transform: translate(-50%, 50%);
         @include rounded(4px);
         @include box-shadow(0 6px 10px 0px rgba(0, 0, 0, 0.3));
+        &:hover {
+            color: white;
+        }
         .address-value {
             border: 0;
             background: transparent;
@@ -24,6 +34,12 @@ app-homepage {
             @include breakpoint($xs) {
                 width: 260px;
                 font-size: 12px;
+            }
+        }
+        .qr-code-icon {
+            display: none;
+            @include breakpoint($xs) {
+                display: inline-block;
             }
         }
         @include breakpoint($sm-only) {
@@ -36,6 +52,18 @@ app-homepage {
             bottom: auto;
             @include rounded(20px);
             @include clear_transform();
+        }
+        @include breakpoint($xxs) {
+            .address-value {
+                font-size: 10px !important;
+                width: 240px;
+                text-align: center;
+            }
+            .copy-icon, .qr-code-icon {
+                img {
+                    max-width: 25px !important;
+                }
+            }
         }
     }
     .fade-in-element {

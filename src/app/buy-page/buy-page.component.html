@@ -1,62 +1,64 @@
-<figure itemscope="" itemtype="http://schema.org/ImageObject" class="page-absolute-icon">
-    <img alt="Buy icon" itemprop="contentUrl" src="assets/images/buy-icon.svg"/>
-</figure>
-<div class="padding-top-50 padding-bottom-50">
-    <section class="container-fluid ready-to-purchase-with-external-api padding-top-40 padding-bottom-10 padding-top-xs-20 padding-bottom-xs-0 no-gutter-xs">
-        <div class="row">
-            <div class="col-xs-12 col-sm-5 padding-bottom-xs-20">
-                <div class="custom-google-label-style module fs-0 flex">
-                    <div class="inline-block left-side">
-                        <label class="active-label" for="usd-value">Pay with:</label>
-                        <input type="number" id="usd-value" value="30"/>
+<div class="main-wrapper">
+    <figure itemscope="" itemtype="http://schema.org/ImageObject" class="page-absolute-icon">
+        <img alt="Buy icon" itemprop="contentUrl" src="assets/images/buy-icon.svg"/>
+    </figure>
+    <div class="padding-top-50 padding-top-xs-40 padding-bottom-50">
+        <section class="container-fluid ready-to-purchase-with-external-api padding-top-40 padding-bottom-10 padding-top-xs-0 padding-bottom-xs-0 no-gutter-xs">
+            <div class="row">
+                <div class="col-xs-12 col-sm-5 padding-bottom-xs-20">
+                    <div class="custom-google-label-style module fs-0 flex">
+                        <div class="inline-block left-side">
+                            <label class="active-label" for="usd-value">Pay with:</label>
+                            <input type="number" id="usd-value" value="30"/>
+                        </div>
+                        <span class="inline-block input-label padding-top-10">USD</span>
                     </div>
-                    <span class="inline-block input-label padding-top-10">USD</span>
+                    <div class="fs-16 padding-left-15 padding-left-xs-0 calibri-light text-below-input">Transaction limit: 30 - 6000 USD</div>
                 </div>
-                <div class="fs-16 padding-left-15 padding-left-xs-0 calibri-light text-below-input">Transaction limit: 30 - 6000 USD</div>
-            </div>
-            <div class="col-sm-2 text-center hide-this-xs">
-                <figure itemscope="" itemtype="http://schema.org/ImageObject">
-                    <img alt="Exchange icon" itemprop="contentUrl" src="assets/images/exchange-icon-light-blue.png"/>
-                </figure>
-            </div>
-            <div class="col-xs-12 col-sm-5 padding-bottom-xs-20">
-                <div class="custom-google-label-style module fs-0 flex">
-                    <div class="inline-block left-side">
-                        <label for="crypto-amount" class="active-label">You get:</label>
-                        <input type="number" id="crypto-amount"/>
+                <div class="col-sm-2 text-center hide-this-xs">
+                    <figure itemscope="" itemtype="http://schema.org/ImageObject">
+                        <img alt="Exchange icon" itemprop="contentUrl" src="assets/images/exchange-icon-light-blue.png"/>
+                    </figure>
+                </div>
+                <div class="col-xs-12 col-sm-5 padding-bottom-xs-20">
+                    <div class="custom-google-label-style module fs-0 flex">
+                        <div class="inline-block left-side">
+                            <label for="crypto-amount" class="active-label">You get:</label>
+                            <input type="number" id="crypto-amount"/>
+                        </div>
+                        <select class="inline-block crypto-label input-label" id="active-crypto">
+                            <option value="dcn">DCN</option>
+                            <option value="eth">ETH</option>
+                        </select>
                     </div>
-                    <select class="inline-block crypto-label input-label" id="active-crypto">
-                        <option value="dcn">DCN</option>
-                        <option value="eth">ETH</option>
-                    </select>
-                </div>
-                <div class="fs-16 padding-left-15 padding-left-xs-0 calibri-light text-below-input">The exchange rate may change in the process.</div>
-            </div>
-        </div>
-        <div class="row padding-top-50 padding-top-xs-0 padding-bottom-20">
-            <div class="col-xs-12 col-sm-6 col-sm-offset-3">
-                <div class="custom-google-label-style module" data-input-blue-green-border="true">
-                    <label for="dcn_address">Address to receive DCN:</label>
-                    <input type="url" id="dcn_address" maxlength="42" class="full-rounded"/>
+                    <div class="fs-16 padding-left-15 padding-left-xs-0 calibri-light text-below-input">The exchange rate may change in the process.</div>
                 </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="col-xs-12 col-sm-6 col-sm-offset-3">
-                <div class="custom-google-label-style module" data-input-blue-green-border="true">
-                    <label for="email">Email:</label>
-                    <input type="email" id="email" maxlength="100" class="full-rounded"/>
+            <div class="row padding-top-50 padding-top-xs-0 padding-bottom-20">
+                <div class="col-xs-12 col-sm-6 col-sm-offset-3">
+                    <div class="custom-google-label-style module" data-input-light-blue-border="true">
+                        <label for="dcn_address">Address to receive DCN:</label>
+                        <input type="url" id="dcn_address" maxlength="42" class="full-rounded"/>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="row padding-top-20 text-center">
-            <div class="col-xs-12 col-sm-6 col-sm-offset-3">
-                <input type="checkbox" id="privacy-policy-agree"/>
-                <label class="fs-16 calibri-light text-below-input padding-left-5 cursor-pointer privacy-policy-agree-label" for="privacy-policy-agree">I have read and accept the <a href="//dentacoin.com/privacy-policy" target="_blank" class="color-light-blue lato-bold">Privacy Policy</a></label>
+            <div class="row">
+                <div class="col-xs-12 col-sm-6 col-sm-offset-3">
+                    <div class="custom-google-label-style module" data-input-light-blue-border="true">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" maxlength="100" class="full-rounded"/>
+                    </div>
+                </div>
             </div>
+            <div class="row padding-top-20 text-center">
+                <div class="col-xs-12 col-sm-6 col-sm-offset-3">
+                    <input type="checkbox" id="privacy-policy-agree" class="zoom-checkbox"/>
+                    <label class="fs-16 calibri-light text-below-input padding-left-5 cursor-pointer privacy-policy-agree-label" for="privacy-policy-agree">I have read and accept the <a href="//dentacoin.com/privacy-policy" target="_blank" class="color-light-blue lato-bold">Privacy Policy</a></label>
+                </div>
+            </div>
+        </section>
+        <div class="bottom-absolute-btn text-center">
+            <a href="javascript:void(0)" class="white-light-blue-btn light-blue-border buy-crypto-btn">BUY</a>
         </div>
-    </section>
-    <div class="bottom-absolute-btn text-center">
-        <a href="javascript:void(0)" class="white-light-blue-btn light-blue-border buy-crypto-btn">BUY</a>
     </div>
 </div>

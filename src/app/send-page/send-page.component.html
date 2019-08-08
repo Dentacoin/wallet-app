@@ -1,6 +1,87 @@
-<figure itemscope="" itemtype="http://schema.org/ImageObject" class="page-absolute-icon">
-    <img alt="Send icon" itemprop="contentUrl" src="assets/images/send-icon.svg"/>
-</figure>
-<div class="padding-top-50 padding-bottom-50">
-    <p>send-page works!</p>
+<div class="main-wrapper">
+    <figure itemscope="" itemtype="http://schema.org/ImageObject" class="page-absolute-icon">
+        <img alt="Buy icon" itemprop="contentUrl" src="assets/images/send-icon.svg"/>
+    </figure>
+    <section class="padding-top-100 padding-bottom-70 padding-top-xs-40 padding-bottom-xs-50 section-send">
+        <div class="container-fluid no-gutter-xs">
+            <div class="row">
+                <div class="col-xs-12 col-sm-8 col-sm-offset-2 fs-0">
+                    <select class="combobox clinics-input">
+                        <option></option>
+                    </select>
+                    <div class="calibri-light fs-14 color-solid-gray padding-bottom-xs-20 padding-top-5 show-on-xs">For payments to Dentacoin Partner Dentists, just type their name in the field above (Feature not supported yet).</div>
+                    <a href="javascript:void(0)" class="inline-block max-width-80 scan-qr-code">
+                        <figure itemscope="" itemtype="http://schema.org/ImageObject">
+                            <img src="assets/images/scan-qr-code.svg" class="width-100" alt="Scan QR code icon" itemprop="contentUrl"/>
+                        </figure>
+                    </a>
+                </div>
+            </div>
+            <div class="row hide-xs">
+                <div class="col-xs-12 text-center calibri-light fs-16 color-solid-gray padding-top-40">For payments to Dentacoin Partner Dentists, just type their name in the field above (Feature not supported yet).</div>
+            </div>
+        </div>
+        <div class="bottom-absolute-btn text-center">
+            <a href="javascript:void(0)" class="white-light-blue-btn disabled light-blue-border next-send">NEXT</a>
+        </div>
+    </section>
+    <section class="padding-top-100 padding-bottom-100 padding-top-xs-0 padding-bottom-xs-50 section-amount-to">
+        <div class="container-fluid no-gutter-xs">
+            <div class="row">
+                <div class="col-xs-12 col-sm-8 col-sm-offset-2 fs-0 mobile-background">
+                    <a href="javascript:void(0)" class="inline-block edit-address show-on-xs max-width-50 padding-right-10">
+                        <figure itemscope="" itemtype="http://schema.org/ImageObject">
+                            <img src="assets/images/edit-icon.png" class="width-100 " alt="Edit icon" itemprop="contentUrl"/>
+                        </figure>
+                    </a>
+                    <div class="send-to text-center padding-top-10 padding-bottom-10">
+                        <span class="fs-16 lato-bold inline-block send-to-label">SEND TO:</span>
+                        <span class="inline-block fs-16 fs-xs-13 address-cell padding-right-10 padding-left-10 padding-left-xs-0 padding-right-xs-0"></span>
+                        <a href="javascript:void(0)" class="inline-block edit-address hide-xs">
+                            <figure itemscope="" itemtype="http://schema.org/ImageObject">
+                                <img src="assets/images/edit-icon.png" class="width-100 max-width-30" alt="Edit icon" itemprop="contentUrl"/>
+                            </figure>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="row fs-0 padding-top-50 padding-top-xs-20">
+                <div class="col-xs-12 col-sm-5 inline-block-top">
+                    <div class="custom-google-label-style module fs-0 flex">
+                        <div class="inline-block left-side">
+                            <label for="crypto-amount">Send amount:</label>
+                            <input type="number" id="crypto-amount"/>
+                        </div>
+                        <select class="inline-block crypto-label input-label" id="active-crypto">
+                            <option value="dcn">DCN</option>
+                            <option value="eth">ETH</option>
+                        </select>
+                    </div>
+                    <div class="fs-14 padding-left-15 padding-left-xs-0 calibri-light">Enter the amount of Dentacoin / Ether tokens you want to send.</div>
+                </div>
+                <figure itemscope="" itemtype="http://schema.org/ImageObject" class="col-xs-12 col-sm-2 inline-block-top padding-top-20 text-center hide-xs">
+                    <img src="assets/images/equal-icon.svg" class="width-100 max-width-30" alt="Edit icon" itemprop="contentUrl"/>
+                </figure>
+                <div class="col-xs-12 col-sm-5 inline-block-top padding-top-xs-20">
+                    <div class="custom-google-label-style module fs-0 flex">
+                        <div class="inline-block left-side">
+                            <label for="usd-val">Equal to:</label>
+                            <input type="number" id="usd-val"/>
+                        </div>
+                        <span class="inline-block input-label padding-top-10">USD</span>
+                    </div>
+                    <div class="fs-14 padding-left-15 padding-left-xs-0 calibri-light">The exchange rate may change in the process.</div>
+                </div>
+            </div>
+            <div class="row padding-top-60 padding-top-xs-20 text-center checkbox-row">
+                <div class="col-xs-12 fs-0">
+                    <input type="checkbox" id="verified-receiver-address" class="zoom-checkbox inline-block"/>
+                    <label class="fs-16 calibri-light padding-left-5 cursor-pointer inline-block" for="verified-receiver-address">I have verified the Receiver’s wallet address and the amount of tokens I want to send.</label>
+                </div>
+            </div>
+        </div>
+        <div class="bottom-absolute-btn text-center">
+            <a href="javascript:void(0)" class="white-light-blue-btn light-blue-border open-transaction-recipe">SEND</a>
+        </div>
+    </section>
 </div>

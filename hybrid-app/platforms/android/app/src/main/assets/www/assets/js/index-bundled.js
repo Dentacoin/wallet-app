@@ -26269,33 +26269,33 @@ function loadImplementation(){
 
 },{"./loader":176}],178:[function(require,module,exports){
 arguments[4][2][0].apply(exports,arguments)
-},{"./asn1/api":179,"./asn1/base":181,"./asn1/constants":185,"./asn1/decoders":187,"./asn1/encoders":190,"bn.js":247,"dup":2}],179:[function(require,module,exports){
+},{"./asn1/api":179,"./asn1/base":181,"./asn1/constants":185,"./asn1/decoders":187,"./asn1/encoders":190,"bn.js":248,"dup":2}],179:[function(require,module,exports){
 arguments[4][3][0].apply(exports,arguments)
-},{"../asn1":178,"dup":3,"inherits":406,"vm":173}],180:[function(require,module,exports){
+},{"../asn1":178,"dup":3,"inherits":412,"vm":173}],180:[function(require,module,exports){
 arguments[4][4][0].apply(exports,arguments)
-},{"../base":181,"buffer":52,"dup":4,"inherits":406}],181:[function(require,module,exports){
+},{"../base":181,"buffer":52,"dup":4,"inherits":412}],181:[function(require,module,exports){
 arguments[4][5][0].apply(exports,arguments)
 },{"./buffer":180,"./node":182,"./reporter":183,"dup":5}],182:[function(require,module,exports){
 arguments[4][6][0].apply(exports,arguments)
-},{"../base":181,"dup":6,"minimalistic-assert":429}],183:[function(require,module,exports){
+},{"../base":181,"dup":6,"minimalistic-assert":435}],183:[function(require,module,exports){
 arguments[4][7][0].apply(exports,arguments)
-},{"dup":7,"inherits":406}],184:[function(require,module,exports){
+},{"dup":7,"inherits":412}],184:[function(require,module,exports){
 arguments[4][8][0].apply(exports,arguments)
 },{"../constants":185,"dup":8}],185:[function(require,module,exports){
 arguments[4][9][0].apply(exports,arguments)
 },{"./der":184,"dup":9}],186:[function(require,module,exports){
 arguments[4][10][0].apply(exports,arguments)
-},{"../../asn1":178,"dup":10,"inherits":406}],187:[function(require,module,exports){
+},{"../../asn1":178,"dup":10,"inherits":412}],187:[function(require,module,exports){
 arguments[4][11][0].apply(exports,arguments)
 },{"./der":186,"./pem":188,"dup":11}],188:[function(require,module,exports){
 arguments[4][12][0].apply(exports,arguments)
-},{"./der":186,"buffer":52,"dup":12,"inherits":406}],189:[function(require,module,exports){
+},{"./der":186,"buffer":52,"dup":12,"inherits":412}],189:[function(require,module,exports){
 arguments[4][13][0].apply(exports,arguments)
-},{"../../asn1":178,"buffer":52,"dup":13,"inherits":406}],190:[function(require,module,exports){
+},{"../../asn1":178,"buffer":52,"dup":13,"inherits":412}],190:[function(require,module,exports){
 arguments[4][14][0].apply(exports,arguments)
 },{"./der":189,"./pem":191,"dup":14}],191:[function(require,module,exports){
 arguments[4][15][0].apply(exports,arguments)
-},{"./der":189,"dup":15,"inherits":406}],192:[function(require,module,exports){
+},{"./der":189,"dup":15,"inherits":412}],192:[function(require,module,exports){
 module.exports = { "default": require("core-js/library/fn/array/from"), __esModule: true };
 },{"core-js/library/fn/array/from":194}],193:[function(require,module,exports){
 "use strict";
@@ -27041,6 +27041,128 @@ require('./_iter-define')(String, 'String', function (iterated) {
 });
 
 },{"./_iter-define":219,"./_string-at":234}],246:[function(require,module,exports){
+'use strict'
+// base-x encoding / decoding
+// Copyright (c) 2018 base-x contributors
+// Copyright (c) 2014-2018 The Bitcoin Core developers (base58.cpp)
+// Distributed under the MIT software license, see the accompanying
+// file LICENSE or http://www.opensource.org/licenses/mit-license.php.
+// @ts-ignore
+var _Buffer = require('safe-buffer').Buffer
+function base (ALPHABET) {
+  if (ALPHABET.length >= 255) { throw new TypeError('Alphabet too long') }
+  var BASE_MAP = new Uint8Array(256)
+  BASE_MAP.fill(255)
+  for (var i = 0; i < ALPHABET.length; i++) {
+    var x = ALPHABET.charAt(i)
+    var xc = x.charCodeAt(0)
+    if (BASE_MAP[xc] !== 255) { throw new TypeError(x + ' is ambiguous') }
+    BASE_MAP[xc] = i
+  }
+  var BASE = ALPHABET.length
+  var LEADER = ALPHABET.charAt(0)
+  var FACTOR = Math.log(BASE) / Math.log(256) // log(BASE) / log(256), rounded up
+  var iFACTOR = Math.log(256) / Math.log(BASE) // log(256) / log(BASE), rounded up
+  function encode (source) {
+    if (!_Buffer.isBuffer(source)) { throw new TypeError('Expected Buffer') }
+    if (source.length === 0) { return '' }
+        // Skip & count leading zeroes.
+    var zeroes = 0
+    var length = 0
+    var pbegin = 0
+    var pend = source.length
+    while (pbegin !== pend && source[pbegin] === 0) {
+      pbegin++
+      zeroes++
+    }
+        // Allocate enough space in big-endian base58 representation.
+    var size = ((pend - pbegin) * iFACTOR + 1) >>> 0
+    var b58 = new Uint8Array(size)
+        // Process the bytes.
+    while (pbegin !== pend) {
+      var carry = source[pbegin]
+            // Apply "b58 = b58 * 256 + ch".
+      var i = 0
+      for (var it1 = size - 1; (carry !== 0 || i < length) && (it1 !== -1); it1--, i++) {
+        carry += (256 * b58[it1]) >>> 0
+        b58[it1] = (carry % BASE) >>> 0
+        carry = (carry / BASE) >>> 0
+      }
+      if (carry !== 0) { throw new Error('Non-zero carry') }
+      length = i
+      pbegin++
+    }
+        // Skip leading zeroes in base58 result.
+    var it2 = size - length
+    while (it2 !== size && b58[it2] === 0) {
+      it2++
+    }
+        // Translate the result into a string.
+    var str = LEADER.repeat(zeroes)
+    for (; it2 < size; ++it2) { str += ALPHABET.charAt(b58[it2]) }
+    return str
+  }
+  function decodeUnsafe (source) {
+    if (typeof source !== 'string') { throw new TypeError('Expected String') }
+    if (source.length === 0) { return _Buffer.alloc(0) }
+    var psz = 0
+        // Skip leading spaces.
+    if (source[psz] === ' ') { return }
+        // Skip and count leading '1's.
+    var zeroes = 0
+    var length = 0
+    while (source[psz] === LEADER) {
+      zeroes++
+      psz++
+    }
+        // Allocate enough space in big-endian base256 representation.
+    var size = (((source.length - psz) * FACTOR) + 1) >>> 0 // log(58) / log(256), rounded up.
+    var b256 = new Uint8Array(size)
+        // Process the characters.
+    while (source[psz]) {
+            // Decode character
+      var carry = BASE_MAP[source.charCodeAt(psz)]
+            // Invalid character
+      if (carry === 255) { return }
+      var i = 0
+      for (var it3 = size - 1; (carry !== 0 || i < length) && (it3 !== -1); it3--, i++) {
+        carry += (BASE * b256[it3]) >>> 0
+        b256[it3] = (carry % 256) >>> 0
+        carry = (carry / 256) >>> 0
+      }
+      if (carry !== 0) { throw new Error('Non-zero carry') }
+      length = i
+      psz++
+    }
+        // Skip trailing spaces.
+    if (source[psz] === ' ') { return }
+        // Skip leading zeroes in b256.
+    var it4 = size - length
+    while (it4 !== size && b256[it4] === 0) {
+      it4++
+    }
+    var vch = _Buffer.allocUnsafe(zeroes + (size - it4))
+    vch.fill(0x00, 0, zeroes)
+    var j = zeroes
+    while (it4 !== size) {
+      vch[j++] = b256[it4++]
+    }
+    return vch
+  }
+  function decode (string) {
+    var buffer = decodeUnsafe(string)
+    if (buffer) { return buffer }
+    throw new Error('Non-base' + BASE + ' character')
+  }
+  return {
+    encode: encode,
+    decodeUnsafe: decodeUnsafe,
+    decode: decode
+  }
+}
+module.exports = base
+
+},{"safe-buffer":468}],247:[function(require,module,exports){
 // Reference https://github.com/bitcoin/bips/blob/master/bip-0066.mediawiki
 // Format: 0x30 [total-length] 0x02 [R-length] [R] 0x02 [S-length] [S]
 // NOTE: SIGHASH byte ignored AND restricted, truncate before use
@@ -27155,69 +27277,141 @@ module.exports = {
   encode: encode
 }
 
-},{"safe-buffer":462}],247:[function(require,module,exports){
+},{"safe-buffer":468}],248:[function(require,module,exports){
 arguments[4][21][0].apply(exports,arguments)
-},{"buffer":23,"dup":21}],248:[function(require,module,exports){
+},{"buffer":23,"dup":21}],249:[function(require,module,exports){
 arguments[4][22][0].apply(exports,arguments)
-},{"crypto":23,"dup":22}],249:[function(require,module,exports){
+},{"crypto":23,"dup":22}],250:[function(require,module,exports){
 arguments[4][24][0].apply(exports,arguments)
-},{"dup":24,"safe-buffer":462}],250:[function(require,module,exports){
+},{"dup":24,"safe-buffer":468}],251:[function(require,module,exports){
 arguments[4][25][0].apply(exports,arguments)
-},{"./aes":249,"./ghash":254,"./incr32":255,"buffer-xor":276,"cipher-base":277,"dup":25,"inherits":406,"safe-buffer":462}],251:[function(require,module,exports){
+},{"./aes":250,"./ghash":255,"./incr32":256,"buffer-xor":280,"cipher-base":281,"dup":25,"inherits":412,"safe-buffer":468}],252:[function(require,module,exports){
 arguments[4][26][0].apply(exports,arguments)
-},{"./decrypter":252,"./encrypter":253,"./modes/list.json":263,"dup":26}],252:[function(require,module,exports){
+},{"./decrypter":253,"./encrypter":254,"./modes/list.json":264,"dup":26}],253:[function(require,module,exports){
 arguments[4][27][0].apply(exports,arguments)
-},{"./aes":249,"./authCipher":250,"./modes":262,"./streamCipher":265,"cipher-base":277,"dup":27,"evp_bytestokey":384,"inherits":406,"safe-buffer":462}],253:[function(require,module,exports){
+},{"./aes":250,"./authCipher":251,"./modes":263,"./streamCipher":266,"cipher-base":281,"dup":27,"evp_bytestokey":390,"inherits":412,"safe-buffer":468}],254:[function(require,module,exports){
 arguments[4][28][0].apply(exports,arguments)
-},{"./aes":249,"./authCipher":250,"./modes":262,"./streamCipher":265,"cipher-base":277,"dup":28,"evp_bytestokey":384,"inherits":406,"safe-buffer":462}],254:[function(require,module,exports){
+},{"./aes":250,"./authCipher":251,"./modes":263,"./streamCipher":266,"cipher-base":281,"dup":28,"evp_bytestokey":390,"inherits":412,"safe-buffer":468}],255:[function(require,module,exports){
 arguments[4][29][0].apply(exports,arguments)
-},{"dup":29,"safe-buffer":462}],255:[function(require,module,exports){
+},{"dup":29,"safe-buffer":468}],256:[function(require,module,exports){
 arguments[4][30][0].apply(exports,arguments)
-},{"dup":30}],256:[function(require,module,exports){
+},{"dup":30}],257:[function(require,module,exports){
 arguments[4][31][0].apply(exports,arguments)
-},{"buffer-xor":276,"dup":31}],257:[function(require,module,exports){
+},{"buffer-xor":280,"dup":31}],258:[function(require,module,exports){
 arguments[4][32][0].apply(exports,arguments)
-},{"buffer-xor":276,"dup":32,"safe-buffer":462}],258:[function(require,module,exports){
+},{"buffer-xor":280,"dup":32,"safe-buffer":468}],259:[function(require,module,exports){
 arguments[4][33][0].apply(exports,arguments)
-},{"dup":33,"safe-buffer":462}],259:[function(require,module,exports){
+},{"dup":33,"safe-buffer":468}],260:[function(require,module,exports){
 arguments[4][34][0].apply(exports,arguments)
-},{"dup":34,"safe-buffer":462}],260:[function(require,module,exports){
+},{"dup":34,"safe-buffer":468}],261:[function(require,module,exports){
 arguments[4][35][0].apply(exports,arguments)
-},{"../incr32":255,"buffer-xor":276,"dup":35,"safe-buffer":462}],261:[function(require,module,exports){
+},{"../incr32":256,"buffer-xor":280,"dup":35,"safe-buffer":468}],262:[function(require,module,exports){
 arguments[4][36][0].apply(exports,arguments)
-},{"dup":36}],262:[function(require,module,exports){
+},{"dup":36}],263:[function(require,module,exports){
 arguments[4][37][0].apply(exports,arguments)
-},{"./cbc":256,"./cfb":257,"./cfb1":258,"./cfb8":259,"./ctr":260,"./ecb":261,"./list.json":263,"./ofb":264,"dup":37}],263:[function(require,module,exports){
+},{"./cbc":257,"./cfb":258,"./cfb1":259,"./cfb8":260,"./ctr":261,"./ecb":262,"./list.json":264,"./ofb":265,"dup":37}],264:[function(require,module,exports){
 arguments[4][38][0].apply(exports,arguments)
-},{"dup":38}],264:[function(require,module,exports){
+},{"dup":38}],265:[function(require,module,exports){
 arguments[4][39][0].apply(exports,arguments)
-},{"buffer":52,"buffer-xor":276,"dup":39}],265:[function(require,module,exports){
+},{"buffer":52,"buffer-xor":280,"dup":39}],266:[function(require,module,exports){
 arguments[4][40][0].apply(exports,arguments)
-},{"./aes":249,"cipher-base":277,"dup":40,"inherits":406,"safe-buffer":462}],266:[function(require,module,exports){
+},{"./aes":250,"cipher-base":281,"dup":40,"inherits":412,"safe-buffer":468}],267:[function(require,module,exports){
 arguments[4][41][0].apply(exports,arguments)
-},{"browserify-aes/browser":251,"browserify-aes/modes":262,"browserify-des":267,"browserify-des/modes":268,"dup":41,"evp_bytestokey":384}],267:[function(require,module,exports){
+},{"browserify-aes/browser":252,"browserify-aes/modes":263,"browserify-des":268,"browserify-des/modes":269,"dup":41,"evp_bytestokey":390}],268:[function(require,module,exports){
 arguments[4][42][0].apply(exports,arguments)
-},{"cipher-base":277,"des.js":287,"dup":42,"inherits":406,"safe-buffer":462}],268:[function(require,module,exports){
+},{"cipher-base":281,"des.js":291,"dup":42,"inherits":412,"safe-buffer":468}],269:[function(require,module,exports){
 arguments[4][43][0].apply(exports,arguments)
-},{"dup":43}],269:[function(require,module,exports){
+},{"dup":43}],270:[function(require,module,exports){
 arguments[4][44][0].apply(exports,arguments)
-},{"bn.js":247,"buffer":52,"dup":44,"randombytes":455}],270:[function(require,module,exports){
+},{"bn.js":248,"buffer":52,"dup":44,"randombytes":461}],271:[function(require,module,exports){
 arguments[4][45][0].apply(exports,arguments)
-},{"./browser/algorithms.json":271,"dup":45}],271:[function(require,module,exports){
+},{"./browser/algorithms.json":272,"dup":45}],272:[function(require,module,exports){
 arguments[4][46][0].apply(exports,arguments)
-},{"dup":46}],272:[function(require,module,exports){
+},{"dup":46}],273:[function(require,module,exports){
 arguments[4][47][0].apply(exports,arguments)
-},{"dup":47}],273:[function(require,module,exports){
+},{"dup":47}],274:[function(require,module,exports){
 arguments[4][48][0].apply(exports,arguments)
-},{"./algorithms.json":271,"./sign":274,"./verify":275,"buffer":52,"create-hash":280,"dup":48,"inherits":406,"stream":162}],274:[function(require,module,exports){
+},{"./algorithms.json":272,"./sign":275,"./verify":276,"buffer":52,"create-hash":284,"dup":48,"inherits":412,"stream":162}],275:[function(require,module,exports){
 arguments[4][49][0].apply(exports,arguments)
-},{"./curves.json":272,"bn.js":247,"browserify-rsa":269,"buffer":52,"create-hmac":282,"dup":49,"elliptic":315,"parse-asn1":442}],275:[function(require,module,exports){
+},{"./curves.json":273,"bn.js":248,"browserify-rsa":270,"buffer":52,"create-hmac":286,"dup":49,"elliptic":319,"parse-asn1":448}],276:[function(require,module,exports){
 arguments[4][50][0].apply(exports,arguments)
-},{"./curves.json":272,"bn.js":247,"buffer":52,"dup":50,"elliptic":315,"parse-asn1":442}],276:[function(require,module,exports){
+},{"./curves.json":273,"bn.js":248,"buffer":52,"dup":50,"elliptic":319,"parse-asn1":448}],277:[function(require,module,exports){
+var basex = require('base-x')
+var ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
+
+module.exports = basex(ALPHABET)
+
+},{"base-x":246}],278:[function(require,module,exports){
+'use strict'
+
+var base58 = require('bs58')
+var Buffer = require('safe-buffer').Buffer
+
+module.exports = function (checksumFn) {
+  // Encode a buffer as a base58-check encoded string
+  function encode (payload) {
+    var checksum = checksumFn(payload)
+
+    return base58.encode(Buffer.concat([
+      payload,
+      checksum
+    ], payload.length + 4))
+  }
+
+  function decodeRaw (buffer) {
+    var payload = buffer.slice(0, -4)
+    var checksum = buffer.slice(-4)
+    var newChecksum = checksumFn(payload)
+
+    if (checksum[0] ^ newChecksum[0] |
+        checksum[1] ^ newChecksum[1] |
+        checksum[2] ^ newChecksum[2] |
+        checksum[3] ^ newChecksum[3]) return
+
+    return payload
+  }
+
+  // Decode a base58-check encoded string to a buffer, no result if checksum is wrong
+  function decodeUnsafe (string) {
+    var buffer = base58.decodeUnsafe(string)
+    if (!buffer) return
+
+    return decodeRaw(buffer)
+  }
+
+  function decode (string) {
+    var buffer = base58.decode(string)
+    var payload = decodeRaw(buffer, checksumFn)
+    if (!payload) throw new Error('Invalid checksum')
+    return payload
+  }
+
+  return {
+    encode: encode,
+    decode: decode,
+    decodeUnsafe: decodeUnsafe
+  }
+}
+
+},{"bs58":277,"safe-buffer":468}],279:[function(require,module,exports){
+'use strict'
+
+var createHash = require('create-hash')
+var bs58checkBase = require('./base')
+
+// SHA256(SHA256(buffer))
+function sha256x2 (buffer) {
+  var tmp = createHash('sha256').update(buffer).digest()
+  return createHash('sha256').update(tmp).digest()
+}
+
+module.exports = bs58checkBase(sha256x2)
+
+},{"./base":278,"create-hash":284}],280:[function(require,module,exports){
 arguments[4][51][0].apply(exports,arguments)
-},{"buffer":52,"dup":51}],277:[function(require,module,exports){
+},{"buffer":52,"dup":51}],281:[function(require,module,exports){
 arguments[4][54][0].apply(exports,arguments)
-},{"dup":54,"inherits":406,"safe-buffer":462,"stream":162,"string_decoder":167}],278:[function(require,module,exports){
+},{"dup":54,"inherits":412,"safe-buffer":468,"stream":162,"string_decoder":167}],282:[function(require,module,exports){
 /* jshint node: true */
 (function () {
     "use strict";
@@ -27495,19 +27689,19 @@ arguments[4][54][0].apply(exports,arguments)
     };
 }());
 
-},{}],279:[function(require,module,exports){
+},{}],283:[function(require,module,exports){
 arguments[4][56][0].apply(exports,arguments)
-},{"bn.js":247,"buffer":52,"dup":56,"elliptic":315}],280:[function(require,module,exports){
+},{"bn.js":248,"buffer":52,"dup":56,"elliptic":319}],284:[function(require,module,exports){
 arguments[4][57][0].apply(exports,arguments)
-},{"cipher-base":277,"dup":57,"inherits":406,"md5.js":427,"ripemd160":460,"sha.js":472}],281:[function(require,module,exports){
+},{"cipher-base":281,"dup":57,"inherits":412,"md5.js":433,"ripemd160":466,"sha.js":478}],285:[function(require,module,exports){
 arguments[4][58][0].apply(exports,arguments)
-},{"dup":58,"md5.js":427}],282:[function(require,module,exports){
+},{"dup":58,"md5.js":433}],286:[function(require,module,exports){
 arguments[4][59][0].apply(exports,arguments)
-},{"./legacy":283,"cipher-base":277,"create-hash/md5":281,"dup":59,"inherits":406,"ripemd160":460,"safe-buffer":462,"sha.js":472}],283:[function(require,module,exports){
+},{"./legacy":287,"cipher-base":281,"create-hash/md5":285,"dup":59,"inherits":412,"ripemd160":466,"safe-buffer":468,"sha.js":478}],287:[function(require,module,exports){
 arguments[4][60][0].apply(exports,arguments)
-},{"cipher-base":277,"dup":60,"inherits":406,"safe-buffer":462}],284:[function(require,module,exports){
+},{"cipher-base":281,"dup":60,"inherits":412,"safe-buffer":468}],288:[function(require,module,exports){
 arguments[4][61][0].apply(exports,arguments)
-},{"browserify-cipher":266,"browserify-sign":273,"browserify-sign/algos":270,"create-ecdh":279,"create-hash":280,"create-hmac":282,"diffie-hellman":293,"dup":61,"pbkdf2":444,"public-encrypt":449,"randombytes":455,"randomfill":456}],285:[function(require,module,exports){
+},{"browserify-cipher":267,"browserify-sign":274,"browserify-sign/algos":271,"create-ecdh":283,"create-hash":284,"create-hmac":286,"diffie-hellman":297,"dup":61,"pbkdf2":450,"public-encrypt":455,"randombytes":461,"randomfill":462}],289:[function(require,module,exports){
 'use strict';
 var token = '%[a-f0-9]{2}';
 var singleMatcher = new RegExp(token, 'gi');
@@ -27603,7 +27797,7 @@ module.exports = function (encodedURI) {
 	}
 };
 
-},{}],286:[function(require,module,exports){
+},{}],290:[function(require,module,exports){
 'use strict';
 
 var keys = require('object-keys');
@@ -27663,27 +27857,27 @@ defineProperties.supportsDescriptors = !!supportsDescriptors;
 
 module.exports = defineProperties;
 
-},{"object-keys":435}],287:[function(require,module,exports){
+},{"object-keys":441}],291:[function(require,module,exports){
 arguments[4][62][0].apply(exports,arguments)
-},{"./des/cbc":288,"./des/cipher":289,"./des/des":290,"./des/ede":291,"./des/utils":292,"dup":62}],288:[function(require,module,exports){
+},{"./des/cbc":292,"./des/cipher":293,"./des/des":294,"./des/ede":295,"./des/utils":296,"dup":62}],292:[function(require,module,exports){
 arguments[4][63][0].apply(exports,arguments)
-},{"dup":63,"inherits":406,"minimalistic-assert":429}],289:[function(require,module,exports){
+},{"dup":63,"inherits":412,"minimalistic-assert":435}],293:[function(require,module,exports){
 arguments[4][64][0].apply(exports,arguments)
-},{"dup":64,"minimalistic-assert":429}],290:[function(require,module,exports){
+},{"dup":64,"minimalistic-assert":435}],294:[function(require,module,exports){
 arguments[4][65][0].apply(exports,arguments)
-},{"../des":287,"dup":65,"inherits":406,"minimalistic-assert":429}],291:[function(require,module,exports){
+},{"../des":291,"dup":65,"inherits":412,"minimalistic-assert":435}],295:[function(require,module,exports){
 arguments[4][66][0].apply(exports,arguments)
-},{"../des":287,"dup":66,"inherits":406,"minimalistic-assert":429}],292:[function(require,module,exports){
+},{"../des":291,"dup":66,"inherits":412,"minimalistic-assert":435}],296:[function(require,module,exports){
 arguments[4][67][0].apply(exports,arguments)
-},{"dup":67}],293:[function(require,module,exports){
+},{"dup":67}],297:[function(require,module,exports){
 arguments[4][68][0].apply(exports,arguments)
-},{"./lib/dh":294,"./lib/generatePrime":295,"./lib/primes.json":296,"buffer":52,"dup":68}],294:[function(require,module,exports){
+},{"./lib/dh":298,"./lib/generatePrime":299,"./lib/primes.json":300,"buffer":52,"dup":68}],298:[function(require,module,exports){
 arguments[4][69][0].apply(exports,arguments)
-},{"./generatePrime":295,"bn.js":247,"buffer":52,"dup":69,"miller-rabin":428,"randombytes":455}],295:[function(require,module,exports){
+},{"./generatePrime":299,"bn.js":248,"buffer":52,"dup":69,"miller-rabin":434,"randombytes":461}],299:[function(require,module,exports){
 arguments[4][70][0].apply(exports,arguments)
-},{"bn.js":247,"dup":70,"miller-rabin":428,"randombytes":455}],296:[function(require,module,exports){
+},{"bn.js":248,"dup":70,"miller-rabin":434,"randombytes":461}],300:[function(require,module,exports){
 arguments[4][71][0].apply(exports,arguments)
-},{"dup":71}],297:[function(require,module,exports){
+},{"dup":71}],301:[function(require,module,exports){
 (function (global,Buffer){
 "use strict";
 
@@ -27949,7 +28143,7 @@ exports.decrypt = function(privateKey, opts) {
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
-},{"buffer":52,"crypto":61,"elliptic":298}],298:[function(require,module,exports){
+},{"buffer":52,"crypto":61,"elliptic":302}],302:[function(require,module,exports){
 'use strict';
 
 var elliptic = exports;
@@ -27965,7 +28159,7 @@ elliptic.curves = require('./elliptic/curves');
 elliptic.ec = require('./elliptic/ec');
 elliptic.eddsa = require('./elliptic/eddsa');
 
-},{"../package.json":314,"./elliptic/curve":301,"./elliptic/curves":304,"./elliptic/ec":305,"./elliptic/eddsa":308,"./elliptic/hmac-drbg":311,"./elliptic/utils":313,"brorand":248}],299:[function(require,module,exports){
+},{"../package.json":318,"./elliptic/curve":305,"./elliptic/curves":308,"./elliptic/ec":309,"./elliptic/eddsa":312,"./elliptic/hmac-drbg":315,"./elliptic/utils":317,"brorand":249}],303:[function(require,module,exports){
 'use strict';
 
 var bn = require('bn.js');
@@ -28318,7 +28512,7 @@ BasePoint.prototype.dblp = function dblp(k) {
   return r;
 };
 
-},{"../../elliptic":298,"bn.js":247}],300:[function(require,module,exports){
+},{"../../elliptic":302,"bn.js":248}],304:[function(require,module,exports){
 'use strict';
 
 var curve = require('../curve');
@@ -28726,9 +28920,9 @@ Point.prototype.eq = function eq(other) {
 Point.prototype.toP = Point.prototype.normalize;
 Point.prototype.mixedAdd = Point.prototype.add;
 
-},{"../../elliptic":298,"../curve":301,"bn.js":247,"inherits":406}],301:[function(require,module,exports){
+},{"../../elliptic":302,"../curve":305,"bn.js":248,"inherits":412}],305:[function(require,module,exports){
 arguments[4][75][0].apply(exports,arguments)
-},{"./base":299,"./edwards":300,"./mont":302,"./short":303,"dup":75}],302:[function(require,module,exports){
+},{"./base":303,"./edwards":304,"./mont":306,"./short":307,"dup":75}],306:[function(require,module,exports){
 'use strict';
 
 var curve = require('../curve');
@@ -28906,7 +29100,7 @@ Point.prototype.getX = function getX() {
   return this.x.fromRed();
 };
 
-},{"../../elliptic":298,"../curve":301,"bn.js":247,"inherits":406}],303:[function(require,module,exports){
+},{"../../elliptic":302,"../curve":305,"bn.js":248,"inherits":412}],307:[function(require,module,exports){
 'use strict';
 
 var curve = require('../curve');
@@ -29815,7 +30009,7 @@ JPoint.prototype.isInfinity = function isInfinity() {
   return this.z.cmpn(0) === 0;
 };
 
-},{"../../elliptic":298,"../curve":301,"bn.js":247,"inherits":406}],304:[function(require,module,exports){
+},{"../../elliptic":302,"../curve":305,"bn.js":248,"inherits":412}],308:[function(require,module,exports){
 'use strict';
 
 var curves = exports;
@@ -30022,7 +30216,7 @@ defineCurve('secp256k1', {
   ]
 });
 
-},{"../elliptic":298,"./precomputed/secp256k1":312,"hash.js":391}],305:[function(require,module,exports){
+},{"../elliptic":302,"./precomputed/secp256k1":316,"hash.js":397}],309:[function(require,module,exports){
 'use strict';
 
 var bn = require('bn.js');
@@ -30240,7 +30434,7 @@ EC.prototype.getKeyRecoveryParam = function(e, signature, Q, enc) {
   throw new Error('Unable to find valid recovery factor');
 };
 
-},{"../../elliptic":298,"./key":306,"./signature":307,"bn.js":247}],306:[function(require,module,exports){
+},{"../../elliptic":302,"./key":310,"./signature":311,"bn.js":248}],310:[function(require,module,exports){
 'use strict';
 
 var bn = require('bn.js');
@@ -30349,7 +30543,7 @@ KeyPair.prototype.inspect = function inspect() {
          ' pub: ' + (this.pub && this.pub.inspect()) + ' >';
 };
 
-},{"bn.js":247}],307:[function(require,module,exports){
+},{"bn.js":248}],311:[function(require,module,exports){
 'use strict';
 
 var bn = require('bn.js');
@@ -30486,9 +30680,9 @@ Signature.prototype.toDER = function toDER(enc) {
   return utils.encode(res, enc);
 };
 
-},{"../../elliptic":298,"bn.js":247}],308:[function(require,module,exports){
+},{"../../elliptic":302,"bn.js":248}],312:[function(require,module,exports){
 arguments[4][82][0].apply(exports,arguments)
-},{"../../elliptic":298,"./key":309,"./signature":310,"dup":82,"hash.js":391}],309:[function(require,module,exports){
+},{"../../elliptic":302,"./key":313,"./signature":314,"dup":82,"hash.js":397}],313:[function(require,module,exports){
 'use strict';
 
 var elliptic = require('../../elliptic');
@@ -30586,7 +30780,7 @@ KeyPair.prototype.getPublic = function getPublic(enc) {
 
 module.exports = KeyPair;
 
-},{"../../elliptic":298}],310:[function(require,module,exports){
+},{"../../elliptic":302}],314:[function(require,module,exports){
 'use strict';
 
 var bn = require('bn.js');
@@ -30654,7 +30848,7 @@ Signature.prototype.toHex = function toHex() {
 
 module.exports = Signature;
 
-},{"../../elliptic":298,"bn.js":247}],311:[function(require,module,exports){
+},{"../../elliptic":302,"bn.js":248}],315:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -30770,9 +30964,9 @@ HmacDRBG.prototype.generate = function generate(len, enc, add, addEnc) {
   return utils.encode(res, enc);
 };
 
-},{"../elliptic":298,"hash.js":391}],312:[function(require,module,exports){
+},{"../elliptic":302,"hash.js":397}],316:[function(require,module,exports){
 arguments[4][85][0].apply(exports,arguments)
-},{"dup":85}],313:[function(require,module,exports){
+},{"dup":85}],317:[function(require,module,exports){
 'use strict';
 
 var utils = exports;
@@ -30947,7 +31141,7 @@ function intFromLE(bytes) {
 utils.intFromLE = intFromLE;
 
 
-},{"bn.js":247}],314:[function(require,module,exports){
+},{"bn.js":248}],318:[function(require,module,exports){
 module.exports={
   "_args": [
     [
@@ -31026,9 +31220,9 @@ module.exports={
   "version": "6.0.2"
 }
 
-},{}],315:[function(require,module,exports){
+},{}],319:[function(require,module,exports){
 arguments[4][72][0].apply(exports,arguments)
-},{"../package.json":330,"./elliptic/curve":318,"./elliptic/curves":321,"./elliptic/ec":322,"./elliptic/eddsa":325,"./elliptic/utils":329,"brorand":248,"dup":72}],316:[function(require,module,exports){
+},{"../package.json":334,"./elliptic/curve":322,"./elliptic/curves":325,"./elliptic/ec":326,"./elliptic/eddsa":329,"./elliptic/utils":333,"brorand":249,"dup":72}],320:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -31404,7 +31598,7 @@ BasePoint.prototype.dblp = function dblp(k) {
   return r;
 };
 
-},{"../utils":329,"bn.js":247}],317:[function(require,module,exports){
+},{"../utils":333,"bn.js":248}],321:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -31838,9 +32032,9 @@ Point.prototype.eqXToP = function eqXToP(x) {
 Point.prototype.toP = Point.prototype.normalize;
 Point.prototype.mixedAdd = Point.prototype.add;
 
-},{"../utils":329,"./base":316,"bn.js":247,"inherits":406}],318:[function(require,module,exports){
+},{"../utils":333,"./base":320,"bn.js":248,"inherits":412}],322:[function(require,module,exports){
 arguments[4][75][0].apply(exports,arguments)
-},{"./base":316,"./edwards":317,"./mont":319,"./short":320,"dup":75}],319:[function(require,module,exports){
+},{"./base":320,"./edwards":321,"./mont":323,"./short":324,"dup":75}],323:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -32020,7 +32214,7 @@ Point.prototype.getX = function getX() {
   return this.x.fromRed();
 };
 
-},{"../utils":329,"./base":316,"bn.js":247,"inherits":406}],320:[function(require,module,exports){
+},{"../utils":333,"./base":320,"bn.js":248,"inherits":412}],324:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -32958,7 +33152,7 @@ JPoint.prototype.isInfinity = function isInfinity() {
   return this.z.cmpn(0) === 0;
 };
 
-},{"../utils":329,"./base":316,"bn.js":247,"inherits":406}],321:[function(require,module,exports){
+},{"../utils":333,"./base":320,"bn.js":248,"inherits":412}],325:[function(require,module,exports){
 'use strict';
 
 var curves = exports;
@@ -33166,7 +33360,7 @@ defineCurve('secp256k1', {
   ]
 });
 
-},{"./curve":318,"./precomputed/secp256k1":328,"./utils":329,"hash.js":391}],322:[function(require,module,exports){
+},{"./curve":322,"./precomputed/secp256k1":332,"./utils":333,"hash.js":397}],326:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -33409,7 +33603,7 @@ EC.prototype.getKeyRecoveryParam = function(e, signature, Q, enc) {
   throw new Error('Unable to find valid recovery factor');
 };
 
-},{"../curves":321,"../utils":329,"./key":323,"./signature":324,"bn.js":247,"brorand":248,"hmac-drbg":403}],323:[function(require,module,exports){
+},{"../curves":325,"../utils":333,"./key":327,"./signature":328,"bn.js":248,"brorand":249,"hmac-drbg":409}],327:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -33529,7 +33723,7 @@ KeyPair.prototype.inspect = function inspect() {
          ' pub: ' + (this.pub && this.pub.inspect()) + ' >';
 };
 
-},{"../utils":329,"bn.js":247}],324:[function(require,module,exports){
+},{"../utils":333,"bn.js":248}],328:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -33665,7 +33859,7 @@ Signature.prototype.toDER = function toDER(enc) {
   return utils.encode(res, enc);
 };
 
-},{"../utils":329,"bn.js":247}],325:[function(require,module,exports){
+},{"../utils":333,"bn.js":248}],329:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -33785,7 +33979,7 @@ EDDSA.prototype.isPoint = function isPoint(val) {
   return val instanceof this.pointClass;
 };
 
-},{"../curves":321,"../utils":329,"./key":326,"./signature":327,"hash.js":391}],326:[function(require,module,exports){
+},{"../curves":325,"../utils":333,"./key":330,"./signature":331,"hash.js":397}],330:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -33882,7 +34076,7 @@ KeyPair.prototype.getPublic = function getPublic(enc) {
 
 module.exports = KeyPair;
 
-},{"../utils":329}],327:[function(require,module,exports){
+},{"../utils":333}],331:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -33949,11 +34143,11 @@ Signature.prototype.toHex = function toHex() {
 
 module.exports = Signature;
 
-},{"../utils":329,"bn.js":247}],328:[function(require,module,exports){
+},{"../utils":333,"bn.js":248}],332:[function(require,module,exports){
 arguments[4][85][0].apply(exports,arguments)
-},{"dup":85}],329:[function(require,module,exports){
+},{"dup":85}],333:[function(require,module,exports){
 arguments[4][86][0].apply(exports,arguments)
-},{"bn.js":247,"dup":86,"minimalistic-assert":429,"minimalistic-crypto-utils":430}],330:[function(require,module,exports){
+},{"bn.js":248,"dup":86,"minimalistic-assert":435,"minimalistic-crypto-utils":436}],334:[function(require,module,exports){
 module.exports={
   "_args": [
     [
@@ -34051,7 +34245,7 @@ module.exports={
   "version": "6.5.0"
 }
 
-},{}],331:[function(require,module,exports){
+},{}],335:[function(require,module,exports){
 'use strict';
 
 /* globals
@@ -34230,7 +34424,7 @@ module.exports = function GetIntrinsic(name, allowMissing) {
 	return INTRINSICS[key];
 };
 
-},{}],332:[function(require,module,exports){
+},{}],336:[function(require,module,exports){
 'use strict';
 
 var GetIntrinsic = require('./GetIntrinsic');
@@ -34467,7 +34661,7 @@ var ES5 = {
 
 module.exports = ES5;
 
-},{"./GetIntrinsic":331,"./helpers/assertRecord":333,"./helpers/isFinite":334,"./helpers/isNaN":335,"./helpers/mod":336,"./helpers/sign":337,"es-to-primitive/es5":338,"has":389,"is-callable":407}],333:[function(require,module,exports){
+},{"./GetIntrinsic":335,"./helpers/assertRecord":337,"./helpers/isFinite":338,"./helpers/isNaN":339,"./helpers/mod":340,"./helpers/sign":341,"es-to-primitive/es5":342,"has":395,"is-callable":413}],337:[function(require,module,exports){
 'use strict';
 
 var GetIntrinsic = require('../GetIntrinsic');
@@ -34518,28 +34712,28 @@ module.exports = function assertRecord(ES, recordType, argumentName, value) {
   console.log(predicate(ES, value), value);
 };
 
-},{"../GetIntrinsic":331,"has":389}],334:[function(require,module,exports){
+},{"../GetIntrinsic":335,"has":395}],338:[function(require,module,exports){
 var $isNaN = Number.isNaN || function (a) { return a !== a; };
 
 module.exports = Number.isFinite || function (x) { return typeof x === 'number' && !$isNaN(x) && x !== Infinity && x !== -Infinity; };
 
-},{}],335:[function(require,module,exports){
+},{}],339:[function(require,module,exports){
 module.exports = Number.isNaN || function isNaN(a) {
 	return a !== a;
 };
 
-},{}],336:[function(require,module,exports){
+},{}],340:[function(require,module,exports){
 module.exports = function mod(number, modulo) {
 	var remain = number % modulo;
 	return Math.floor(remain >= 0 ? remain : remain + modulo);
 };
 
-},{}],337:[function(require,module,exports){
+},{}],341:[function(require,module,exports){
 module.exports = function sign(number) {
 	return number >= 0 ? 1 : -1;
 };
 
-},{}],338:[function(require,module,exports){
+},{}],342:[function(require,module,exports){
 'use strict';
 
 var toStr = Object.prototype.toString;
@@ -34586,12 +34780,12 @@ module.exports = function ToPrimitive(input) {
 	return ES5internalSlots['[[DefaultValue]]'](input);
 };
 
-},{"./helpers/isPrimitive":339,"is-callable":407}],339:[function(require,module,exports){
+},{"./helpers/isPrimitive":343,"is-callable":413}],343:[function(require,module,exports){
 module.exports = function isPrimitive(value) {
 	return value === null || (typeof value !== 'function' && typeof value !== 'object');
 };
 
-},{}],340:[function(require,module,exports){
+},{}],344:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -34606,7 +34800,7 @@ function calculateContractAddress(creatorAddress, nonce) {
     var address = addressBuffer.toString('hex');
     return (0, _ethereumjsUtil.toChecksumAddress)(address);
 }
-},{"ethereumjs-util":367}],341:[function(require,module,exports){
+},{"ethereumjs-util":371}],345:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -34651,7 +34845,7 @@ function parse(str) {
     return ret;
 }
 }).call(this,require("buffer").Buffer)
-},{"./public-key":349,"buffer":52}],342:[function(require,module,exports){
+},{"./public-key":353,"buffer":52}],346:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -34710,7 +34904,7 @@ function createIdentity(entropy) {
     return identity;
 }
 }).call(this,require("buffer").Buffer)
-},{"./public-key-by-private-key":348,"buffer":52,"eth-lib/lib/account":358,"eth-lib/lib/bytes":360,"eth-lib/lib/hash":361}],343:[function(require,module,exports){
+},{"./public-key-by-private-key":352,"buffer":52,"eth-lib/lib/account":362,"eth-lib/lib/bytes":364,"eth-lib/lib/hash":365}],347:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -34744,7 +34938,7 @@ function decryptWithPrivateKey(privateKey, encrypted) {
     });
 }
 }).call(this,require("buffer").Buffer)
-},{"./cipher":341,"./util":355,"buffer":52,"eccrypto":297}],344:[function(require,module,exports){
+},{"./cipher":345,"./util":359,"buffer":52,"eccrypto":301}],348:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -34776,7 +34970,7 @@ function encryptWithPublicKey(publicKey, message) {
     });
 }
 }).call(this,require("buffer").Buffer)
-},{"./public-key":349,"buffer":52,"eccrypto":297}],345:[function(require,module,exports){
+},{"./public-key":353,"buffer":52,"eccrypto":301}],349:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -34803,7 +34997,7 @@ function keccak256(params) {
 }
 
 var SIGN_PREFIX = exports.SIGN_PREFIX = '\x19Ethereum Signed Message:\n32';
-},{"ethers/utils/solidity.js":378}],346:[function(require,module,exports){
+},{"ethers/utils/solidity.js":384}],350:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -34858,7 +35052,7 @@ function decompress(compressedString) {
     return (0, _util.addTrailing0x)(hex);
 }
 }).call(this,require("buffer").Buffer)
-},{"./util":355,"buffer":52}],347:[function(require,module,exports){
+},{"./util":359,"buffer":52}],351:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -34968,7 +35162,7 @@ exports['default'] = {
     vrs: vrs,
     util: util
 };
-},{"./calculate-contract-address":340,"./cipher":341,"./create-identity":342,"./decrypt-with-private-key":343,"./encrypt-with-public-key":344,"./hash":345,"./hex":346,"./public-key":349,"./public-key-by-private-key":348,"./recover":351,"./recover-public-key":350,"./sign":353,"./sign-transaction":352,"./tx-data-by-compiled":354,"./util":355,"./vrs":356}],348:[function(require,module,exports){
+},{"./calculate-contract-address":344,"./cipher":345,"./create-identity":346,"./decrypt-with-private-key":347,"./encrypt-with-public-key":348,"./hash":349,"./hex":350,"./public-key":353,"./public-key-by-private-key":352,"./recover":355,"./recover-public-key":354,"./sign":357,"./sign-transaction":356,"./tx-data-by-compiled":358,"./util":359,"./vrs":360}],352:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -34991,7 +35185,7 @@ function publicKeyOfPrivateKey(privateKey) {
     var publicKeyBuffer = (0, _ethereumjsUtil.privateToPublic)(privateKey);
     return publicKeyBuffer.toString('hex');
 }
-},{"./util":355,"ethereumjs-util":367}],349:[function(require,module,exports){
+},{"./util":359,"ethereumjs-util":371}],353:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -35043,7 +35237,7 @@ function toAddress(publicKey) {
     return checkSumAdress;
 }
 }).call(this,require("buffer").Buffer)
-},{"buffer":52,"ethereumjs-util":367,"secp256k1":465}],350:[function(require,module,exports){
+},{"buffer":52,"ethereumjs-util":371,"secp256k1":471}],354:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -35079,7 +35273,7 @@ function recoverPublicKey(signature, hash) {
     return pubKey;
 }
 }).call(this,require("buffer").Buffer)
-},{"./util":355,"buffer":52,"secp256k1":465}],351:[function(require,module,exports){
+},{"./util":359,"buffer":52,"secp256k1":471}],355:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -35106,7 +35300,7 @@ function recover(sigString, hash) {
     var address = (0, _publicKey.toAddress)(pubkey);
     return address;
 }
-},{"./public-key":349,"./recover-public-key":350}],352:[function(require,module,exports){
+},{"./public-key":353,"./recover-public-key":354}],356:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -35141,7 +35335,7 @@ function signTransaction(rawTx, privateKey) {
     return serializedTx;
 }
 }).call(this,require("buffer").Buffer)
-},{"./public-key":349,"./public-key-by-private-key":348,"buffer":52,"ethereumjs-tx":365}],353:[function(require,module,exports){
+},{"./public-key":353,"./public-key-by-private-key":352,"buffer":52,"ethereumjs-tx":369}],357:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -35173,7 +35367,7 @@ function sign(privateKey, hash) {
     return newSignature;
 }
 }).call(this,require("buffer").Buffer)
-},{"./util":355,"buffer":52,"secp256k1":465}],354:[function(require,module,exports){
+},{"./util":359,"buffer":52,"secp256k1":471}],358:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -35200,7 +35394,7 @@ function txDataByCompiled(abi, bytecode, args) {
 
     return deployTransaction.data;
 }
-},{"babel-runtime/helpers/toConsumableArray":193,"ethers/contracts/contract.js":368}],355:[function(require,module,exports){
+},{"babel-runtime/helpers/toConsumableArray":193,"ethers/contracts/contract.js":374}],359:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -35215,7 +35409,7 @@ function removeTrailing0x(str) {
 function addTrailing0x(str) {
     if (!str.startsWith('0x')) return '0x' + str;else return str;
 }
-},{}],356:[function(require,module,exports){
+},{}],360:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -35249,7 +35443,7 @@ function toString(sig) {
     var partsArray = [sig.v, sig.r, sig.s];
     return (0, _account.encodeSignature)(partsArray);
 }
-},{"eth-lib/lib/account":358}],357:[function(require,module,exports){
+},{"eth-lib/lib/account":362}],361:[function(require,module,exports){
 (function (Buffer){
 var sha3 = require('js-sha3').keccak_256
 var uts46 = require('idna-uts46-hx')
@@ -35283,7 +35477,7 @@ exports.hash = namehash
 exports.normalize = normalize
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":52,"idna-uts46-hx":405,"js-sha3":410}],358:[function(require,module,exports){
+},{"buffer":52,"idna-uts46-hx":411,"js-sha3":416}],362:[function(require,module,exports){
 (function (Buffer){
 const Bytes = require("./bytes");
 const Nat = require("./nat");
@@ -35350,7 +35544,7 @@ module.exports = {
   decodeSignature
 };
 }).call(this,require("buffer").Buffer)
-},{"./bytes":360,"./hash":361,"./nat":362,"./rlp":363,"buffer":52,"elliptic":315}],359:[function(require,module,exports){
+},{"./bytes":364,"./hash":365,"./nat":366,"./rlp":367,"buffer":52,"elliptic":319}],363:[function(require,module,exports){
 const generate = (num, fn) => {
   let a = [];
   for (var i = 0; i < num; ++i) a.push(fn(i));
@@ -35380,7 +35574,7 @@ module.exports = {
   flatten,
   chunksOf
 };
-},{}],360:[function(require,module,exports){
+},{}],364:[function(require,module,exports){
 const A = require("./array.js");
 
 const at = (bytes, index) => parseInt(bytes.slice(index * 2 + 2, index * 2 + 4), 16);
@@ -35539,7 +35733,7 @@ module.exports = {
   fromUint8Array,
   toUint8Array
 };
-},{"./array.js":359}],361:[function(require,module,exports){
+},{"./array.js":363}],365:[function(require,module,exports){
 // This was ported from https://github.com/emn178/js-sha3, with some minor
 // modifications and pruning. It is licensed under MIT:
 //
@@ -35871,7 +36065,7 @@ module.exports = {
   keccak256s: keccak(256),
   keccak512s: keccak(512)
 };
-},{}],362:[function(require,module,exports){
+},{}],366:[function(require,module,exports){
 const BN = require("bn.js");
 const Bytes = require("./bytes");
 
@@ -35916,7 +36110,7 @@ module.exports = {
   div,
   sub
 };
-},{"./bytes":360,"bn.js":247}],363:[function(require,module,exports){
+},{"./bytes":364,"bn.js":248}],367:[function(require,module,exports){
 // The RLP format
 // Serialization and deserialization for the BytesTree type, under the following grammar:
 // | First byte | Meaning                                                                    |
@@ -35983,7 +36177,7 @@ const decode = hex => {
 };
 
 module.exports = { encode, decode };
-},{}],364:[function(require,module,exports){
+},{}],368:[function(require,module,exports){
 module.exports={
   "genesisGasLimit": {
     "v": 5000,
@@ -36220,7 +36414,7 @@ module.exports={
   }
 }
 
-},{}],365:[function(require,module,exports){
+},{}],369:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -36548,7 +36742,7 @@ var Transaction = function () {
 
 module.exports = Transaction;
 }).call(this,require("buffer").Buffer)
-},{"buffer":52,"ethereum-common/params.json":364,"ethereumjs-util":366}],366:[function(require,module,exports){
+},{"buffer":52,"ethereum-common/params.json":368,"ethereumjs-util":370}],370:[function(require,module,exports){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -37264,7 +37458,7 @@ exports.defineProperties = function (self, fields, data) {
     }
   }
 };
-},{"assert":16,"bn.js":247,"create-hash":280,"ethjs-util":383,"keccak":411,"rlp":461,"safe-buffer":462,"secp256k1":465}],367:[function(require,module,exports){
+},{"assert":16,"bn.js":248,"create-hash":284,"ethjs-util":389,"keccak":417,"rlp":467,"safe-buffer":468,"secp256k1":471}],371:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var BN = require("bn.js");
@@ -37863,7 +38057,321 @@ function isValidSigRecovery(recovery) {
     return recovery === 0 || recovery === 1;
 }
 
-},{"assert":16,"bn.js":247,"create-hash":280,"ethjs-util":383,"keccak":411,"rlp":461,"safe-buffer":462,"secp256k1":465}],368:[function(require,module,exports){
+},{"assert":16,"bn.js":248,"create-hash":284,"ethjs-util":389,"keccak":417,"rlp":467,"safe-buffer":468,"secp256k1":471}],372:[function(require,module,exports){
+'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var Buffer = require('safe-buffer').Buffer;
+var ethUtil = require('ethereumjs-util');
+var crypto = require('crypto');
+var randomBytes = require('randombytes');
+var scryptsy = require('scrypt.js');
+var uuidv4 = require('uuid/v4');
+var bs58check = require('bs58check');
+
+function assert(val, msg) {
+  if (!val) {
+    throw new Error(msg || 'Assertion failed');
+  }
+}
+
+function decipherBuffer(decipher, data) {
+  return Buffer.concat([decipher.update(data), decipher.final()]);
+}
+
+var Wallet = function Wallet(priv, pub) {
+  if (priv && pub) {
+    throw new Error('Cannot supply both a private and a public key to the constructor');
+  }
+
+  if (priv && !ethUtil.isValidPrivate(priv)) {
+    throw new Error('Private key does not satisfy the curve requirements (ie. it is invalid)');
+  }
+
+  if (pub && !ethUtil.isValidPublic(pub)) {
+    throw new Error('Invalid public key');
+  }
+
+  this._privKey = priv;
+  this._pubKey = pub;
+};
+
+Object.defineProperty(Wallet.prototype, 'privKey', {
+  get: function get() {
+    assert(this._privKey, 'This is a public key only wallet');
+    return this._privKey;
+  }
+});
+
+Object.defineProperty(Wallet.prototype, 'pubKey', {
+  get: function get() {
+    if (!this._pubKey) {
+      this._pubKey = ethUtil.privateToPublic(this.privKey);
+    }
+    return this._pubKey;
+  }
+});
+
+Wallet.generate = function (icapDirect) {
+  if (icapDirect) {
+    var max = new ethUtil.BN('088f924eeceeda7fe92e1f5b0fffffffffffffff', 16);
+    while (true) {
+      var privKey = randomBytes(32);
+      if (new ethUtil.BN(ethUtil.privateToAddress(privKey)).lte(max)) {
+        return new Wallet(privKey);
+      }
+    }
+  } else {
+    return new Wallet(randomBytes(32));
+  }
+};
+
+Wallet.generateVanityAddress = function (pattern) {
+  if ((typeof pattern === 'undefined' ? 'undefined' : _typeof(pattern)) !== 'object') {
+    pattern = new RegExp(pattern);
+  }
+
+  while (true) {
+    var privKey = randomBytes(32);
+    var address = ethUtil.privateToAddress(privKey);
+
+    if (pattern.test(address.toString('hex'))) {
+      return new Wallet(privKey);
+    }
+  }
+};
+
+Wallet.prototype.getPrivateKey = function () {
+  return this.privKey;
+};
+
+Wallet.prototype.getPrivateKeyString = function () {
+  return ethUtil.bufferToHex(this.getPrivateKey());
+};
+
+Wallet.prototype.getPublicKey = function () {
+  return this.pubKey;
+};
+
+Wallet.prototype.getPublicKeyString = function () {
+  return ethUtil.bufferToHex(this.getPublicKey());
+};
+
+Wallet.prototype.getAddress = function () {
+  return ethUtil.publicToAddress(this.pubKey);
+};
+
+Wallet.prototype.getAddressString = function () {
+  return ethUtil.bufferToHex(this.getAddress());
+};
+
+Wallet.prototype.getChecksumAddressString = function () {
+  return ethUtil.toChecksumAddress(this.getAddressString());
+};
+
+// https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
+Wallet.prototype.toV3 = function (password, opts) {
+  assert(this._privKey, 'This is a public key only wallet');
+
+  opts = opts || {};
+  var salt = opts.salt || randomBytes(32);
+  var iv = opts.iv || randomBytes(16);
+
+  var derivedKey;
+  var kdf = opts.kdf || 'scrypt';
+  var kdfparams = {
+    dklen: opts.dklen || 32,
+    salt: salt.toString('hex')
+  };
+
+  if (kdf === 'pbkdf2') {
+    kdfparams.c = opts.c || 262144;
+    kdfparams.prf = 'hmac-sha256';
+    derivedKey = crypto.pbkdf2Sync(Buffer.from(password), salt, kdfparams.c, kdfparams.dklen, 'sha256');
+  } else if (kdf === 'scrypt') {
+    // FIXME: support progress reporting callback
+    kdfparams.n = opts.n || 262144;
+    kdfparams.r = opts.r || 8;
+    kdfparams.p = opts.p || 1;
+    derivedKey = scryptsy(Buffer.from(password), salt, kdfparams.n, kdfparams.r, kdfparams.p, kdfparams.dklen);
+  } else {
+    throw new Error('Unsupported kdf');
+  }
+
+  var cipher = crypto.createCipheriv(opts.cipher || 'aes-128-ctr', derivedKey.slice(0, 16), iv);
+  if (!cipher) {
+    throw new Error('Unsupported cipher');
+  }
+
+  var ciphertext = Buffer.concat([cipher.update(this.privKey), cipher.final()]);
+
+  var mac = ethUtil.keccak256(Buffer.concat([derivedKey.slice(16, 32), Buffer.from(ciphertext, 'hex')]));
+
+  return {
+    version: 3,
+    id: uuidv4({ random: opts.uuid || randomBytes(16) }),
+    address: this.getAddress().toString('hex'),
+    crypto: {
+      ciphertext: ciphertext.toString('hex'),
+      cipherparams: {
+        iv: iv.toString('hex')
+      },
+      cipher: opts.cipher || 'aes-128-ctr',
+      kdf: kdf,
+      kdfparams: kdfparams,
+      mac: mac.toString('hex')
+    }
+  };
+};
+
+Wallet.prototype.getV3Filename = function (timestamp) {
+  /*
+   * We want a timestamp like 2016-03-15T17-11-33.007598288Z. Date formatting
+   * is a pain in Javascript, everbody knows that. We could use moment.js,
+   * but decide to do it manually in order to save space.
+   *
+   * toJSON() returns a pretty close version, so let's use it. It is not UTC though,
+   * but does it really matter?
+   *
+   * Alternative manual way with padding and Date fields: http://stackoverflow.com/a/7244288/4964819
+   *
+   */
+  var ts = timestamp ? new Date(timestamp) : new Date();
+
+  return ['UTC--', ts.toJSON().replace(/:/g, '-'), '--', this.getAddress().toString('hex')].join('');
+};
+
+Wallet.prototype.toV3String = function (password, opts) {
+  return JSON.stringify(this.toV3(password, opts));
+};
+
+Wallet.fromPublicKey = function (pub, nonStrict) {
+  if (nonStrict) {
+    pub = ethUtil.importPublic(pub);
+  }
+  return new Wallet(null, pub);
+};
+
+Wallet.fromExtendedPublicKey = function (pub) {
+  assert(pub.slice(0, 4) === 'xpub', 'Not an extended public key');
+  pub = bs58check.decode(pub).slice(45);
+  // Convert to an Ethereum public key
+  return Wallet.fromPublicKey(pub, true);
+};
+
+Wallet.fromPrivateKey = function (priv) {
+  return new Wallet(priv);
+};
+
+Wallet.fromExtendedPrivateKey = function (priv) {
+  assert(priv.slice(0, 4) === 'xprv', 'Not an extended private key');
+  var tmp = bs58check.decode(priv);
+  assert(tmp[45] === 0, 'Invalid extended private key');
+  return Wallet.fromPrivateKey(tmp.slice(46));
+};
+
+// https://github.com/ethereum/go-ethereum/wiki/Passphrase-protected-key-store-spec
+Wallet.fromV1 = function (input, password) {
+  assert(typeof password === 'string');
+  var json = (typeof input === 'undefined' ? 'undefined' : _typeof(input)) === 'object' ? input : JSON.parse(input);
+
+  if (json.Version !== '1') {
+    throw new Error('Not a V1 wallet');
+  }
+
+  if (json.Crypto.KeyHeader.Kdf !== 'scrypt') {
+    throw new Error('Unsupported key derivation scheme');
+  }
+
+  var kdfparams = json.Crypto.KeyHeader.KdfParams;
+  var derivedKey = scryptsy(Buffer.from(password), Buffer.from(json.Crypto.Salt, 'hex'), kdfparams.N, kdfparams.R, kdfparams.P, kdfparams.DkLen);
+
+  var ciphertext = Buffer.from(json.Crypto.CipherText, 'hex');
+
+  var mac = ethUtil.keccak256(Buffer.concat([derivedKey.slice(16, 32), ciphertext]));
+
+  if (mac.toString('hex') !== json.Crypto.MAC) {
+    throw new Error('Key derivation failed - possibly wrong passphrase');
+  }
+
+  var decipher = crypto.createDecipheriv('aes-128-cbc', ethUtil.keccak256(derivedKey.slice(0, 16)).slice(0, 16), Buffer.from(json.Crypto.IV, 'hex'));
+  var seed = decipherBuffer(decipher, ciphertext);
+
+  return new Wallet(seed);
+};
+
+Wallet.fromV3 = function (input, password, nonStrict) {
+  assert(typeof password === 'string');
+  var json = (typeof input === 'undefined' ? 'undefined' : _typeof(input)) === 'object' ? input : JSON.parse(nonStrict ? input.toLowerCase() : input);
+
+  if (json.version !== 3) {
+    throw new Error('Not a V3 wallet');
+  }
+
+  var derivedKey;
+  var kdfparams;
+  if (json.crypto.kdf === 'scrypt') {
+    kdfparams = json.crypto.kdfparams;
+
+    // FIXME: support progress reporting callback
+    derivedKey = scryptsy(Buffer.from(password), Buffer.from(kdfparams.salt, 'hex'), kdfparams.n, kdfparams.r, kdfparams.p, kdfparams.dklen);
+  } else if (json.crypto.kdf === 'pbkdf2') {
+    kdfparams = json.crypto.kdfparams;
+
+    if (kdfparams.prf !== 'hmac-sha256') {
+      throw new Error('Unsupported parameters to PBKDF2');
+    }
+
+    derivedKey = crypto.pbkdf2Sync(Buffer.from(password), Buffer.from(kdfparams.salt, 'hex'), kdfparams.c, kdfparams.dklen, 'sha256');
+  } else {
+    throw new Error('Unsupported key derivation scheme');
+  }
+
+  var ciphertext = Buffer.from(json.crypto.ciphertext, 'hex');
+
+  var mac = ethUtil.keccak256(Buffer.concat([derivedKey.slice(16, 32), ciphertext]));
+  if (mac.toString('hex') !== json.crypto.mac) {
+    throw new Error('Key derivation failed - possibly wrong passphrase');
+  }
+
+  var decipher = crypto.createDecipheriv(json.crypto.cipher, derivedKey.slice(0, 16), Buffer.from(json.crypto.cipherparams.iv, 'hex'));
+  var seed = decipherBuffer(decipher, ciphertext);
+
+  return new Wallet(seed);
+};
+
+/*
+ * Based on https://github.com/ethereum/pyethsaletool/blob/master/pyethsaletool.py
+ * JSON fields: encseed, ethaddr, btcaddr, email
+ */
+Wallet.fromEthSale = function (input, password) {
+  assert(typeof password === 'string');
+  var json = (typeof input === 'undefined' ? 'undefined' : _typeof(input)) === 'object' ? input : JSON.parse(input);
+
+  var encseed = Buffer.from(json.encseed, 'hex');
+
+  // key derivation
+  var derivedKey = crypto.pbkdf2Sync(password, password, 2000, 32, 'sha256').slice(0, 16);
+
+  // seed decoding (IV is first 16 bytes)
+  // NOTE: crypto (derived from openssl) when used with aes-*-cbc will handle PKCS#7 padding internally
+  //       see also http://stackoverflow.com/a/31614770/4964819
+  var decipher = crypto.createDecipheriv('aes-128-cbc', derivedKey, encseed.slice(0, 16));
+  var seed = decipherBuffer(decipher, encseed.slice(16));
+
+  var wallet = new Wallet(ethUtil.keccak256(seed));
+  if (wallet.getAddress().toString('hex') !== json.ethaddr) {
+    throw new Error('Decoded key mismatch - possibly wrong passphrase');
+  }
+  return wallet;
+};
+
+module.exports = Wallet;
+},{"bs58check":279,"crypto":61,"ethereumjs-util":371,"randombytes":461,"safe-buffer":468,"scrypt.js":373,"uuid/v4":504}],373:[function(require,module,exports){
+module.exports = require('scryptsy')
+
+},{"scryptsy":470}],374:[function(require,module,exports){
 'use strict';
 
 var Interface = require('./interface.js');
@@ -38196,7 +38704,7 @@ utils.defineProperty(Contract, 'getDeployTransaction', function(bytecode, contra
 
 module.exports = Contract;
 
-},{"../utils/address.js":371,"../utils/bignumber.js":372,"../utils/convert.js":373,"../utils/errors":374,"../utils/properties.js":376,"./interface.js":369}],369:[function(require,module,exports){
+},{"../utils/address.js":377,"../utils/bignumber.js":378,"../utils/convert.js":379,"../utils/errors":380,"../utils/properties.js":382,"./interface.js":375}],375:[function(require,module,exports){
 'use strict';
 
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
@@ -38609,7 +39117,7 @@ utils.defineProperty(Interface.prototype, 'parseTransaction', function(tx) {
 
 module.exports = Interface;
 
-},{"../utils/abi-coder":370,"../utils/convert":373,"../utils/errors":374,"../utils/keccak256":375,"../utils/properties":376,"../utils/utf8":380}],370:[function(require,module,exports){
+},{"../utils/abi-coder":376,"../utils/convert":379,"../utils/errors":380,"../utils/keccak256":381,"../utils/properties":382,"../utils/utf8":386}],376:[function(require,module,exports){
 'use strict';
 
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
@@ -39629,7 +40137,7 @@ utils.defineProperty(Coder, 'parseSignature', parseSignature);
 
 module.exports = Coder
 
-},{"../utils/address":371,"../utils/bignumber.js":372,"../utils/convert.js":373,"../utils/properties.js":376,"../utils/utf8.js":380,"./errors":374}],371:[function(require,module,exports){
+},{"../utils/address":377,"../utils/bignumber.js":378,"../utils/convert.js":379,"../utils/properties.js":382,"../utils/utf8.js":386,"./errors":380}],377:[function(require,module,exports){
 
 var BN = require('bn.js');
 
@@ -39755,7 +40263,7 @@ module.exports = {
     getAddress: getAddress,
 }
 
-},{"./convert":373,"./keccak256":375,"./throw-error":379,"bn.js":247}],372:[function(require,module,exports){
+},{"./convert":379,"./keccak256":381,"./throw-error":385,"bn.js":248}],378:[function(require,module,exports){
 /**
  *  BigNumber
  *
@@ -39906,7 +40414,7 @@ module.exports = {
     BigNumber: BigNumber
 };
 
-},{"./convert":373,"./properties":376,"./throw-error":379,"bn.js":247}],373:[function(require,module,exports){
+},{"./convert":379,"./properties":382,"./throw-error":385,"bn.js":248}],379:[function(require,module,exports){
 /**
  *  Conversion Utilities
  *
@@ -40132,7 +40640,7 @@ module.exports = {
     hexZeroPad: hexZeroPad,
 };
 
-},{"./errors":374,"./properties.js":376}],374:[function(require,module,exports){
+},{"./errors":380,"./properties.js":382}],380:[function(require,module,exports){
 'use strict';
 
 var defineProperty = require('./properties').defineProperty;
@@ -40225,7 +40733,7 @@ defineProperty(codes, 'checkNew', function(self, kind) {
 
 module.exports = codes;
 
-},{"./properties":376}],375:[function(require,module,exports){
+},{"./properties":382}],381:[function(require,module,exports){
 'use strict';
 
 var sha3 = require('js-sha3');
@@ -40239,7 +40747,7 @@ function keccak256(data) {
 
 module.exports = keccak256;
 
-},{"./convert.js":373,"js-sha3":410}],376:[function(require,module,exports){
+},{"./convert.js":379,"js-sha3":416}],382:[function(require,module,exports){
 'use strict';
 
 function defineProperty(object, name, value) {
@@ -40263,7 +40771,7 @@ module.exports = {
     defineProperty: defineProperty,
 };
 
-},{}],377:[function(require,module,exports){
+},{}],383:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -40288,7 +40796,7 @@ module.exports = {
     createSha512: hash.sha512,
 }
 
-},{"./convert.js":373,"hash.js":391}],378:[function(require,module,exports){
+},{"./convert.js":379,"hash.js":397}],384:[function(require,module,exports){
 'use strict';
 
 var bigNumberify = require('./bignumber').bigNumberify;
@@ -40387,7 +40895,7 @@ module.exports = {
     sha256: sha256,
 }
 
-},{"./address":371,"./bignumber":372,"./convert":373,"./keccak256":375,"./sha2":377,"./utf8":380}],379:[function(require,module,exports){
+},{"./address":377,"./bignumber":378,"./convert":379,"./keccak256":381,"./sha2":383,"./utf8":386}],385:[function(require,module,exports){
 'use strict';
 
 function throwError(message, params) {
@@ -40400,7 +40908,7 @@ function throwError(message, params) {
 
 module.exports = throwError;
 
-},{}],380:[function(require,module,exports){
+},{}],386:[function(require,module,exports){
 
 var convert = require('./convert.js');
 
@@ -40515,7 +41023,7 @@ module.exports = {
     toUtf8String: bytesToUtf8,
 };
 
-},{"./convert.js":373}],381:[function(require,module,exports){
+},{"./convert.js":379}],387:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -40684,7 +41192,7 @@ module.exports = {
   fromWei: fromWei,
   toWei: toWei
 };
-},{"bn.js":382,"number-to-bn":432}],382:[function(require,module,exports){
+},{"bn.js":388,"number-to-bn":438}],388:[function(require,module,exports){
 (function (module, exports) {
   'use strict';
 
@@ -44113,7 +44621,7 @@ module.exports = {
   };
 })(typeof module === 'undefined' || module, this);
 
-},{}],383:[function(require,module,exports){
+},{}],389:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -44336,9 +44844,9 @@ module.exports = {
   isHexString: isHexString
 };
 }).call(this,require("buffer").Buffer)
-},{"buffer":52,"is-hex-prefixed":409,"strip-hex-prefix":485}],384:[function(require,module,exports){
+},{"buffer":52,"is-hex-prefixed":415,"strip-hex-prefix":491}],390:[function(require,module,exports){
 arguments[4][89][0].apply(exports,arguments)
-},{"dup":89,"md5.js":427,"safe-buffer":462}],385:[function(require,module,exports){
+},{"dup":89,"md5.js":433,"safe-buffer":468}],391:[function(require,module,exports){
 'use strict';
 
 var isCallable = require('is-callable');
@@ -44402,7 +44910,7 @@ var forEach = function forEach(list, iterator, thisArg) {
 
 module.exports = forEach;
 
-},{"is-callable":407}],386:[function(require,module,exports){
+},{"is-callable":413}],392:[function(require,module,exports){
 'use strict';
 
 /* eslint no-invalid-this: 1 */
@@ -44456,14 +44964,14 @@ module.exports = function bind(that) {
     return bound;
 };
 
-},{}],387:[function(require,module,exports){
+},{}],393:[function(require,module,exports){
 'use strict';
 
 var implementation = require('./implementation');
 
 module.exports = Function.prototype.bind || implementation;
 
-},{"./implementation":386}],388:[function(require,module,exports){
+},{"./implementation":392}],394:[function(require,module,exports){
 (function (global){
 var win;
 
@@ -44480,38 +44988,38 @@ if (typeof window !== "undefined") {
 module.exports = win;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],389:[function(require,module,exports){
+},{}],395:[function(require,module,exports){
 'use strict';
 
 var bind = require('function-bind');
 
 module.exports = bind.call(Function.call, Object.prototype.hasOwnProperty);
 
-},{"function-bind":387}],390:[function(require,module,exports){
+},{"function-bind":393}],396:[function(require,module,exports){
 arguments[4][90][0].apply(exports,arguments)
-},{"dup":90,"inherits":406,"safe-buffer":462,"stream":162}],391:[function(require,module,exports){
+},{"dup":90,"inherits":412,"safe-buffer":468,"stream":162}],397:[function(require,module,exports){
 arguments[4][91][0].apply(exports,arguments)
-},{"./hash/common":392,"./hash/hmac":393,"./hash/ripemd":394,"./hash/sha":395,"./hash/utils":402,"dup":91}],392:[function(require,module,exports){
+},{"./hash/common":398,"./hash/hmac":399,"./hash/ripemd":400,"./hash/sha":401,"./hash/utils":408,"dup":91}],398:[function(require,module,exports){
 arguments[4][92][0].apply(exports,arguments)
-},{"./utils":402,"dup":92,"minimalistic-assert":429}],393:[function(require,module,exports){
+},{"./utils":408,"dup":92,"minimalistic-assert":435}],399:[function(require,module,exports){
 arguments[4][93][0].apply(exports,arguments)
-},{"./utils":402,"dup":93,"minimalistic-assert":429}],394:[function(require,module,exports){
+},{"./utils":408,"dup":93,"minimalistic-assert":435}],400:[function(require,module,exports){
 arguments[4][94][0].apply(exports,arguments)
-},{"./common":392,"./utils":402,"dup":94}],395:[function(require,module,exports){
+},{"./common":398,"./utils":408,"dup":94}],401:[function(require,module,exports){
 arguments[4][95][0].apply(exports,arguments)
-},{"./sha/1":396,"./sha/224":397,"./sha/256":398,"./sha/384":399,"./sha/512":400,"dup":95}],396:[function(require,module,exports){
+},{"./sha/1":402,"./sha/224":403,"./sha/256":404,"./sha/384":405,"./sha/512":406,"dup":95}],402:[function(require,module,exports){
 arguments[4][96][0].apply(exports,arguments)
-},{"../common":392,"../utils":402,"./common":401,"dup":96}],397:[function(require,module,exports){
+},{"../common":398,"../utils":408,"./common":407,"dup":96}],403:[function(require,module,exports){
 arguments[4][97][0].apply(exports,arguments)
-},{"../utils":402,"./256":398,"dup":97}],398:[function(require,module,exports){
+},{"../utils":408,"./256":404,"dup":97}],404:[function(require,module,exports){
 arguments[4][98][0].apply(exports,arguments)
-},{"../common":392,"../utils":402,"./common":401,"dup":98,"minimalistic-assert":429}],399:[function(require,module,exports){
+},{"../common":398,"../utils":408,"./common":407,"dup":98,"minimalistic-assert":435}],405:[function(require,module,exports){
 arguments[4][99][0].apply(exports,arguments)
-},{"../utils":402,"./512":400,"dup":99}],400:[function(require,module,exports){
+},{"../utils":408,"./512":406,"dup":99}],406:[function(require,module,exports){
 arguments[4][100][0].apply(exports,arguments)
-},{"../common":392,"../utils":402,"dup":100,"minimalistic-assert":429}],401:[function(require,module,exports){
+},{"../common":398,"../utils":408,"dup":100,"minimalistic-assert":435}],407:[function(require,module,exports){
 arguments[4][101][0].apply(exports,arguments)
-},{"../utils":402,"dup":101}],402:[function(require,module,exports){
+},{"../utils":408,"dup":101}],408:[function(require,module,exports){
 'use strict';
 
 var assert = require('minimalistic-assert');
@@ -44791,9 +45299,9 @@ function shr64_lo(ah, al, num) {
 }
 exports.shr64_lo = shr64_lo;
 
-},{"inherits":406,"minimalistic-assert":429}],403:[function(require,module,exports){
+},{"inherits":412,"minimalistic-assert":435}],409:[function(require,module,exports){
 arguments[4][103][0].apply(exports,arguments)
-},{"dup":103,"hash.js":391,"minimalistic-assert":429,"minimalistic-crypto-utils":430}],404:[function(require,module,exports){
+},{"dup":103,"hash.js":397,"minimalistic-assert":435,"minimalistic-crypto-utils":436}],410:[function(require,module,exports){
 /* This file is generated from the Unicode IDNA table, using
    the build-unicode-tables.py script. Please edit that
    script instead of this file. */
@@ -45552,7 +46060,7 @@ return {
 };
 }));
 
-},{}],405:[function(require,module,exports){
+},{}],411:[function(require,module,exports){
 (function(root, factory) {
   /* istanbul ignore next */
   if (typeof define === 'function' && define.amd) {
@@ -45686,7 +46194,7 @@ return {
   };
 }));
 
-},{"./idna-map":404,"punycode":133}],406:[function(require,module,exports){
+},{"./idna-map":410,"punycode":133}],412:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -45715,7 +46223,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],407:[function(require,module,exports){
+},{}],413:[function(require,module,exports){
 'use strict';
 
 var fnToStr = Function.prototype.toString;
@@ -45754,7 +46262,7 @@ module.exports = function isCallable(value) {
 	return strClass === fnClass || strClass === genClass;
 };
 
-},{}],408:[function(require,module,exports){
+},{}],414:[function(require,module,exports){
 module.exports = isFunction
 
 var toString = Object.prototype.toString
@@ -45771,7 +46279,7 @@ function isFunction (fn) {
       fn === window.prompt))
 };
 
-},{}],409:[function(require,module,exports){
+},{}],415:[function(require,module,exports){
 /**
  * Returns a `Boolean` on whether or not the a `String` starts with '0x'
  * @param {String} str the string input value
@@ -45786,7 +46294,7 @@ module.exports = function isHexPrefixed(str) {
   return str.slice(0, 2) === '0x';
 }
 
-},{}],410:[function(require,module,exports){
+},{}],416:[function(require,module,exports){
 (function (process,global){
 /**
  * [js-sha3]{@link https://github.com/emn178/js-sha3}
@@ -46265,11 +46773,11 @@ module.exports = function isHexPrefixed(str) {
 })();
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":126}],411:[function(require,module,exports){
+},{"_process":126}],417:[function(require,module,exports){
 'use strict'
 module.exports = require('./lib/api')(require('./lib/keccak'))
 
-},{"./lib/api":412,"./lib/keccak":416}],412:[function(require,module,exports){
+},{"./lib/api":418,"./lib/keccak":422}],418:[function(require,module,exports){
 'use strict'
 var createKeccak = require('./keccak')
 var createShake = require('./shake')
@@ -46299,7 +46807,7 @@ module.exports = function (KeccakState) {
   }
 }
 
-},{"./keccak":413,"./shake":414}],413:[function(require,module,exports){
+},{"./keccak":419,"./shake":420}],419:[function(require,module,exports){
 'use strict'
 var Buffer = require('safe-buffer').Buffer
 var Transform = require('stream').Transform
@@ -46385,7 +46893,7 @@ module.exports = function (KeccakState) {
   return Keccak
 }
 
-},{"inherits":406,"safe-buffer":462,"stream":162}],414:[function(require,module,exports){
+},{"inherits":412,"safe-buffer":468,"stream":162}],420:[function(require,module,exports){
 'use strict'
 var Buffer = require('safe-buffer').Buffer
 var Transform = require('stream').Transform
@@ -46462,7 +46970,7 @@ module.exports = function (KeccakState) {
   return Shake
 }
 
-},{"inherits":406,"safe-buffer":462,"stream":162}],415:[function(require,module,exports){
+},{"inherits":412,"safe-buffer":468,"stream":162}],421:[function(require,module,exports){
 'use strict'
 var P1600_ROUND_CONSTANTS = [1, 0, 32898, 0, 32906, 2147483648, 2147516416, 2147483648, 32907, 0, 2147483649, 0, 2147516545, 2147483648, 32777, 2147483648, 138, 0, 136, 0, 2147516425, 0, 2147483658, 0, 2147516555, 0, 139, 2147483648, 32905, 2147483648, 32771, 2147483648, 32770, 2147483648, 128, 2147483648, 32778, 0, 2147483658, 2147483648, 2147516545, 2147483648, 32896, 2147483648, 2147483649, 0, 2147516424, 2147483648]
 
@@ -46651,7 +47159,7 @@ exports.p1600 = function (s) {
   }
 }
 
-},{}],416:[function(require,module,exports){
+},{}],422:[function(require,module,exports){
 'use strict'
 var Buffer = require('safe-buffer').Buffer
 var keccakState = require('./keccak-state-unroll')
@@ -46723,7 +47231,7 @@ Keccak.prototype.copy = function (dest) {
 
 module.exports = Keccak
 
-},{"./keccak-state-unroll":415,"safe-buffer":462}],417:[function(require,module,exports){
+},{"./keccak-state-unroll":421,"safe-buffer":468}],423:[function(require,module,exports){
 (function (process,Buffer){
 /**
  * Create, import, and export ethereum keys.
@@ -47280,7 +47788,7 @@ module.exports = {
 };
 
 }).call(this,require('_process'),require("buffer").Buffer)
-},{"./lib/scrypt":418,"_process":126,"buffer":52,"crypto":61,"crypto-browserify":284,"fs":1,"keccak/js":411,"path":119,"scrypt":23,"secp256k1/elliptic":419,"sjcl":479,"uuid":426}],418:[function(require,module,exports){
+},{"./lib/scrypt":424,"_process":126,"buffer":52,"crypto":61,"crypto-browserify":288,"fs":1,"keccak/js":417,"path":119,"scrypt":23,"secp256k1/elliptic":425,"sjcl":485,"uuid":432}],424:[function(require,module,exports){
 (function (process,__dirname){
 // https://github.com/tonyg/js-scrypt
 module.exports = function (requested_total_memory) {
@@ -59001,11 +59509,11 @@ module.exports = function (requested_total_memory) {
 };
 
 }).call(this,require('_process'),"/node_modules/keythereum/lib")
-},{"_process":126,"fs":1,"path":119}],419:[function(require,module,exports){
+},{"_process":126,"fs":1,"path":119}],425:[function(require,module,exports){
 'use strict'
 module.exports = require('./lib')(require('./lib/elliptic'))
 
-},{"./lib":423,"./lib/elliptic":422}],420:[function(require,module,exports){
+},{"./lib":429,"./lib/elliptic":428}],426:[function(require,module,exports){
 (function (Buffer){
 'use strict'
 var toString = Object.prototype.toString
@@ -59053,7 +59561,7 @@ exports.isNumberInInterval = function (number, x, y, message) {
 }
 
 }).call(this,{"isBuffer":require("C:/Program Files/nodejs/node_modules/browserify/node_modules/is-buffer/index.js")})
-},{"C:/Program Files/nodejs/node_modules/browserify/node_modules/is-buffer/index.js":107}],421:[function(require,module,exports){
+},{"C:/Program Files/nodejs/node_modules/browserify/node_modules/is-buffer/index.js":107}],427:[function(require,module,exports){
 'use strict'
 var Buffer = require('safe-buffer').Buffer
 var bip66 = require('bip66')
@@ -59248,7 +59756,7 @@ exports.signatureImportLax = function (sig) {
   return { r: r, s: s }
 }
 
-},{"bip66":246,"safe-buffer":462}],422:[function(require,module,exports){
+},{"bip66":247,"safe-buffer":468}],428:[function(require,module,exports){
 'use strict'
 var Buffer = require('safe-buffer').Buffer
 var createHash = require('create-hash')
@@ -59510,7 +60018,7 @@ exports.ecdhUnsafe = function (publicKey, privateKey, compressed) {
   return Buffer.from(pair.pub.mul(scalar).encode(true, compressed))
 }
 
-},{"../messages.json":424,"bn.js":247,"create-hash":280,"elliptic":315,"safe-buffer":462}],423:[function(require,module,exports){
+},{"../messages.json":430,"bn.js":248,"create-hash":284,"elliptic":319,"safe-buffer":468}],429:[function(require,module,exports){
 'use strict'
 var assert = require('./assert')
 var der = require('./der')
@@ -59757,7 +60265,7 @@ module.exports = function (secp256k1) {
   }
 }
 
-},{"./assert":420,"./der":421,"./messages.json":424}],424:[function(require,module,exports){
+},{"./assert":426,"./der":427,"./messages.json":430}],430:[function(require,module,exports){
 module.exports={
   "COMPRESSED_TYPE_INVALID": "compressed should be a boolean",
   "EC_PRIVATE_KEY_TYPE_INVALID": "private key should be a Buffer",
@@ -59796,7 +60304,7 @@ module.exports={
   "TWEAK_LENGTH_INVALID": "tweak length is invalid"
 }
 
-},{}],425:[function(require,module,exports){
+},{}],431:[function(require,module,exports){
 (function (global){
 
 var rng;
@@ -59832,7 +60340,7 @@ module.exports = rng;
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],426:[function(require,module,exports){
+},{}],432:[function(require,module,exports){
 // Unique ID creation requires a high quality random # generator.  We feature
 // detect to determine the best RNG source, normalizing to a function that
 // returns 128-bits of randomness, since that's what's usually required
@@ -59991,17 +60499,17 @@ uuid.v4 = v4;
 
 module.exports = uuid;
 
-},{"./lib/rng":425}],427:[function(require,module,exports){
+},{"./lib/rng":431}],433:[function(require,module,exports){
 arguments[4][109][0].apply(exports,arguments)
-},{"dup":109,"hash-base":390,"inherits":406,"safe-buffer":462}],428:[function(require,module,exports){
+},{"dup":109,"hash-base":396,"inherits":412,"safe-buffer":468}],434:[function(require,module,exports){
 arguments[4][110][0].apply(exports,arguments)
-},{"bn.js":247,"brorand":248,"dup":110}],429:[function(require,module,exports){
+},{"bn.js":248,"brorand":249,"dup":110}],435:[function(require,module,exports){
 arguments[4][111][0].apply(exports,arguments)
-},{"dup":111}],430:[function(require,module,exports){
+},{"dup":111}],436:[function(require,module,exports){
 arguments[4][112][0].apply(exports,arguments)
-},{"dup":112}],431:[function(require,module,exports){
-arguments[4][382][0].apply(exports,arguments)
-},{"dup":382}],432:[function(require,module,exports){
+},{"dup":112}],437:[function(require,module,exports){
+arguments[4][388][0].apply(exports,arguments)
+},{"dup":388}],438:[function(require,module,exports){
 var BN = require('bn.js');
 var stripHexPrefix = require('strip-hex-prefix');
 
@@ -60041,7 +60549,7 @@ module.exports = function numberToBN(arg) {
   throw new Error('[number-to-bn] while converting number ' + JSON.stringify(arg) + ' to BN.js instance, error: invalid number value. Value must be an integer, hex string, BN or BigNumber instance. Note, decimals are not supported.');
 }
 
-},{"bn.js":431,"strip-hex-prefix":485}],433:[function(require,module,exports){
+},{"bn.js":437,"strip-hex-prefix":491}],439:[function(require,module,exports){
 /*
 object-assign
 (c) Sindre Sorhus
@@ -60133,7 +60641,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 	return to;
 };
 
-},{}],434:[function(require,module,exports){
+},{}],440:[function(require,module,exports){
 'use strict';
 
 var keysShim;
@@ -60257,7 +60765,7 @@ if (!Object.keys) {
 }
 module.exports = keysShim;
 
-},{"./isArguments":436}],435:[function(require,module,exports){
+},{"./isArguments":442}],441:[function(require,module,exports){
 'use strict';
 
 var slice = Array.prototype.slice;
@@ -60291,7 +60799,7 @@ keysShim.shim = function shimObjectKeys() {
 
 module.exports = keysShim;
 
-},{"./implementation":434,"./isArguments":436}],436:[function(require,module,exports){
+},{"./implementation":440,"./isArguments":442}],442:[function(require,module,exports){
 'use strict';
 
 var toStr = Object.prototype.toString;
@@ -60310,7 +60818,7 @@ module.exports = function isArguments(value) {
 	return isArgs;
 };
 
-},{}],437:[function(require,module,exports){
+},{}],443:[function(require,module,exports){
 // This file is the concatenation of many js files.
 // See http://github.com/jimhigson/oboe.js for the raw source
 
@@ -63014,11 +63522,11 @@ oboe.drop = function() {
       }
    }()), Object, Array, Error, JSON);
 
-},{}],438:[function(require,module,exports){
+},{}],444:[function(require,module,exports){
 arguments[4][114][0].apply(exports,arguments)
-},{"dup":114}],439:[function(require,module,exports){
+},{"dup":114}],445:[function(require,module,exports){
 arguments[4][115][0].apply(exports,arguments)
-},{"./certificate":440,"asn1.js":178,"dup":115}],440:[function(require,module,exports){
+},{"./certificate":446,"asn1.js":178,"dup":115}],446:[function(require,module,exports){
 // from https://github.com/Rantanen/node-dtls/blob/25a7dc861bda38cfeac93a723500eea4f0ac2e86/Certificate.js
 // thanks to @Rantanen
 
@@ -63109,7 +63617,7 @@ var X509Certificate = asn.define('X509Certificate', function () {
 
 module.exports = X509Certificate
 
-},{"asn1.js":178}],441:[function(require,module,exports){
+},{"asn1.js":178}],447:[function(require,module,exports){
 // adapted from https://github.com/apatil/pemstrip
 var findProc = /Proc-Type: 4,ENCRYPTED[\n\r]+DEK-Info: AES-((?:128)|(?:192)|(?:256))-CBC,([0-9A-H]+)[\n\r]+([0-9A-z\n\r\+\/\=]+)[\n\r]+/m
 var startRegex = /^-----BEGIN ((?:.*? KEY)|CERTIFICATE)-----/m
@@ -63142,7 +63650,7 @@ module.exports = function (okey, password) {
   }
 }
 
-},{"browserify-aes":251,"evp_bytestokey":384,"safe-buffer":462}],442:[function(require,module,exports){
+},{"browserify-aes":252,"evp_bytestokey":390,"safe-buffer":468}],448:[function(require,module,exports){
 var asn1 = require('./asn1')
 var aesid = require('./aesid.json')
 var fixProc = require('./fixProc')
@@ -63251,7 +63759,7 @@ function decrypt (data, password) {
   return Buffer.concat(out)
 }
 
-},{"./aesid.json":438,"./asn1":439,"./fixProc":441,"browserify-aes":251,"pbkdf2":444,"safe-buffer":462}],443:[function(require,module,exports){
+},{"./aesid.json":444,"./asn1":445,"./fixProc":447,"browserify-aes":252,"pbkdf2":450,"safe-buffer":468}],449:[function(require,module,exports){
 var trim = require('string.prototype.trim')
   , forEach = require('for-each')
   , isArray = function(arg) {
@@ -63284,13 +63792,13 @@ module.exports = function (headers) {
   return result
 }
 
-},{"for-each":385,"string.prototype.trim":482}],444:[function(require,module,exports){
+},{"for-each":391,"string.prototype.trim":488}],450:[function(require,module,exports){
 arguments[4][120][0].apply(exports,arguments)
-},{"./lib/async":445,"./lib/sync":448,"dup":120}],445:[function(require,module,exports){
+},{"./lib/async":451,"./lib/sync":454,"dup":120}],451:[function(require,module,exports){
 arguments[4][121][0].apply(exports,arguments)
-},{"./default-encoding":446,"./precondition":447,"./sync":448,"_process":126,"dup":121,"safe-buffer":462}],446:[function(require,module,exports){
+},{"./default-encoding":452,"./precondition":453,"./sync":454,"_process":126,"dup":121,"safe-buffer":468}],452:[function(require,module,exports){
 arguments[4][122][0].apply(exports,arguments)
-},{"_process":126,"dup":122}],447:[function(require,module,exports){
+},{"_process":126,"dup":122}],453:[function(require,module,exports){
 (function (Buffer){
 var MAX_ALLOC = Math.pow(2, 30) - 1 // default in iojs
 
@@ -63322,21 +63830,21 @@ module.exports = function (password, salt, iterations, keylen) {
 }
 
 }).call(this,{"isBuffer":require("C:/Program Files/nodejs/node_modules/browserify/node_modules/is-buffer/index.js")})
-},{"C:/Program Files/nodejs/node_modules/browserify/node_modules/is-buffer/index.js":107}],448:[function(require,module,exports){
+},{"C:/Program Files/nodejs/node_modules/browserify/node_modules/is-buffer/index.js":107}],454:[function(require,module,exports){
 arguments[4][124][0].apply(exports,arguments)
-},{"./default-encoding":446,"./precondition":447,"create-hash/md5":281,"dup":124,"ripemd160":460,"safe-buffer":462,"sha.js":472}],449:[function(require,module,exports){
+},{"./default-encoding":452,"./precondition":453,"create-hash/md5":285,"dup":124,"ripemd160":466,"safe-buffer":468,"sha.js":478}],455:[function(require,module,exports){
 arguments[4][127][0].apply(exports,arguments)
-},{"./privateDecrypt":451,"./publicEncrypt":452,"dup":127}],450:[function(require,module,exports){
+},{"./privateDecrypt":457,"./publicEncrypt":458,"dup":127}],456:[function(require,module,exports){
 arguments[4][128][0].apply(exports,arguments)
-},{"create-hash":280,"dup":128,"safe-buffer":462}],451:[function(require,module,exports){
+},{"create-hash":284,"dup":128,"safe-buffer":468}],457:[function(require,module,exports){
 arguments[4][129][0].apply(exports,arguments)
-},{"./mgf":450,"./withPublic":453,"./xor":454,"bn.js":247,"browserify-rsa":269,"create-hash":280,"dup":129,"parse-asn1":442,"safe-buffer":462}],452:[function(require,module,exports){
+},{"./mgf":456,"./withPublic":459,"./xor":460,"bn.js":248,"browserify-rsa":270,"create-hash":284,"dup":129,"parse-asn1":448,"safe-buffer":468}],458:[function(require,module,exports){
 arguments[4][130][0].apply(exports,arguments)
-},{"./mgf":450,"./withPublic":453,"./xor":454,"bn.js":247,"browserify-rsa":269,"create-hash":280,"dup":130,"parse-asn1":442,"randombytes":455,"safe-buffer":462}],453:[function(require,module,exports){
+},{"./mgf":456,"./withPublic":459,"./xor":460,"bn.js":248,"browserify-rsa":270,"create-hash":284,"dup":130,"parse-asn1":448,"randombytes":461,"safe-buffer":468}],459:[function(require,module,exports){
 arguments[4][131][0].apply(exports,arguments)
-},{"bn.js":247,"dup":131,"safe-buffer":462}],454:[function(require,module,exports){
+},{"bn.js":248,"dup":131,"safe-buffer":468}],460:[function(require,module,exports){
 arguments[4][132][0].apply(exports,arguments)
-},{"dup":132}],455:[function(require,module,exports){
+},{"dup":132}],461:[function(require,module,exports){
 (function (process,global){
 'use strict'
 
@@ -63390,13 +63898,13 @@ function randomBytes (size, cb) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":126,"safe-buffer":462}],456:[function(require,module,exports){
+},{"_process":126,"safe-buffer":468}],462:[function(require,module,exports){
 arguments[4][138][0].apply(exports,arguments)
-},{"_process":126,"dup":138,"randombytes":455,"safe-buffer":462}],457:[function(require,module,exports){
+},{"_process":126,"dup":138,"randombytes":461,"safe-buffer":468}],463:[function(require,module,exports){
 module.exports = window.crypto;
-},{}],458:[function(require,module,exports){
+},{}],464:[function(require,module,exports){
 module.exports = require('crypto');
-},{"crypto":457}],459:[function(require,module,exports){
+},{"crypto":463}],465:[function(require,module,exports){
 var randomHex = function(size, callback) {
     var crypto = require('./crypto.js');
     var isCallback = (typeof callback === 'function');
@@ -63462,9 +63970,9 @@ var randomHex = function(size, callback) {
 
 module.exports = randomHex;
 
-},{"./crypto.js":458}],460:[function(require,module,exports){
+},{"./crypto.js":464}],466:[function(require,module,exports){
 arguments[4][152][0].apply(exports,arguments)
-},{"buffer":52,"dup":152,"hash-base":390,"inherits":406}],461:[function(require,module,exports){
+},{"buffer":52,"dup":152,"hash-base":396,"inherits":412}],467:[function(require,module,exports){
 (function (Buffer){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -63707,12 +64215,11 @@ function toBuffer(v) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"bn.js":247,"buffer":52}],462:[function(require,module,exports){
+},{"bn.js":248,"buffer":52}],468:[function(require,module,exports){
 arguments[4][153][0].apply(exports,arguments)
-},{"buffer":52,"dup":153}],463:[function(require,module,exports){
-module.exports = require('scryptsy')
-
-},{"scryptsy":464}],464:[function(require,module,exports){
+},{"buffer":52,"dup":153}],469:[function(require,module,exports){
+arguments[4][373][0].apply(exports,arguments)
+},{"dup":373,"scryptsy":470}],470:[function(require,module,exports){
 (function (Buffer){
 var pbkdf2Sync = require('pbkdf2').pbkdf2Sync
 
@@ -63895,13 +64402,13 @@ function arraycopy (src, srcPos, dest, destPos, length) {
 module.exports = scrypt
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":52,"pbkdf2":444}],465:[function(require,module,exports){
-arguments[4][419][0].apply(exports,arguments)
-},{"./lib":469,"./lib/elliptic":468,"dup":419}],466:[function(require,module,exports){
-arguments[4][420][0].apply(exports,arguments)
-},{"C:/Program Files/nodejs/node_modules/browserify/node_modules/is-buffer/index.js":107,"dup":420}],467:[function(require,module,exports){
-arguments[4][421][0].apply(exports,arguments)
-},{"bip66":246,"dup":421,"safe-buffer":462}],468:[function(require,module,exports){
+},{"buffer":52,"pbkdf2":450}],471:[function(require,module,exports){
+arguments[4][425][0].apply(exports,arguments)
+},{"./lib":475,"./lib/elliptic":474,"dup":425}],472:[function(require,module,exports){
+arguments[4][426][0].apply(exports,arguments)
+},{"C:/Program Files/nodejs/node_modules/browserify/node_modules/is-buffer/index.js":107,"dup":426}],473:[function(require,module,exports){
+arguments[4][427][0].apply(exports,arguments)
+},{"bip66":247,"dup":427,"safe-buffer":468}],474:[function(require,module,exports){
 'use strict'
 var Buffer = require('safe-buffer').Buffer
 var createHash = require('create-hash')
@@ -64166,27 +64673,27 @@ exports.ecdhUnsafe = function (publicKey, privateKey, compressed) {
   return Buffer.from(pair.pub.mul(scalar).encode(true, compressed))
 }
 
-},{"../messages.json":470,"bn.js":247,"create-hash":280,"elliptic":315,"safe-buffer":462}],469:[function(require,module,exports){
-arguments[4][423][0].apply(exports,arguments)
-},{"./assert":466,"./der":467,"./messages.json":470,"dup":423}],470:[function(require,module,exports){
-arguments[4][424][0].apply(exports,arguments)
-},{"dup":424}],471:[function(require,module,exports){
+},{"../messages.json":476,"bn.js":248,"create-hash":284,"elliptic":319,"safe-buffer":468}],475:[function(require,module,exports){
+arguments[4][429][0].apply(exports,arguments)
+},{"./assert":472,"./der":473,"./messages.json":476,"dup":429}],476:[function(require,module,exports){
+arguments[4][430][0].apply(exports,arguments)
+},{"dup":430}],477:[function(require,module,exports){
 arguments[4][154][0].apply(exports,arguments)
-},{"dup":154,"safe-buffer":462}],472:[function(require,module,exports){
+},{"dup":154,"safe-buffer":468}],478:[function(require,module,exports){
 arguments[4][155][0].apply(exports,arguments)
-},{"./sha":473,"./sha1":474,"./sha224":475,"./sha256":476,"./sha384":477,"./sha512":478,"dup":155}],473:[function(require,module,exports){
+},{"./sha":479,"./sha1":480,"./sha224":481,"./sha256":482,"./sha384":483,"./sha512":484,"dup":155}],479:[function(require,module,exports){
 arguments[4][156][0].apply(exports,arguments)
-},{"./hash":471,"dup":156,"inherits":406,"safe-buffer":462}],474:[function(require,module,exports){
+},{"./hash":477,"dup":156,"inherits":412,"safe-buffer":468}],480:[function(require,module,exports){
 arguments[4][157][0].apply(exports,arguments)
-},{"./hash":471,"dup":157,"inherits":406,"safe-buffer":462}],475:[function(require,module,exports){
+},{"./hash":477,"dup":157,"inherits":412,"safe-buffer":468}],481:[function(require,module,exports){
 arguments[4][158][0].apply(exports,arguments)
-},{"./hash":471,"./sha256":476,"dup":158,"inherits":406,"safe-buffer":462}],476:[function(require,module,exports){
+},{"./hash":477,"./sha256":482,"dup":158,"inherits":412,"safe-buffer":468}],482:[function(require,module,exports){
 arguments[4][159][0].apply(exports,arguments)
-},{"./hash":471,"dup":159,"inherits":406,"safe-buffer":462}],477:[function(require,module,exports){
+},{"./hash":477,"dup":159,"inherits":412,"safe-buffer":468}],483:[function(require,module,exports){
 arguments[4][160][0].apply(exports,arguments)
-},{"./hash":471,"./sha512":478,"dup":160,"inherits":406,"safe-buffer":462}],478:[function(require,module,exports){
+},{"./hash":477,"./sha512":484,"dup":160,"inherits":412,"safe-buffer":468}],484:[function(require,module,exports){
 arguments[4][161][0].apply(exports,arguments)
-},{"./hash":471,"dup":161,"inherits":406,"safe-buffer":462}],479:[function(require,module,exports){
+},{"./hash":477,"dup":161,"inherits":412,"safe-buffer":468}],485:[function(require,module,exports){
 "use strict";var sjcl={cipher:{},hash:{},keyexchange:{},mode:{},misc:{},codec:{},exception:{corrupt:function(a){this.toString=function(){return"CORRUPT: "+this.message};this.message=a},invalid:function(a){this.toString=function(){return"INVALID: "+this.message};this.message=a},bug:function(a){this.toString=function(){return"BUG: "+this.message};this.message=a},notReady:function(a){this.toString=function(){return"NOT READY: "+this.message};this.message=a}}};
 sjcl.cipher.aes=function(a){this.s[0][0][0]||this.O();var b,c,d,e,f=this.s[0][4],g=this.s[1];b=a.length;var h=1;if(4!==b&&6!==b&&8!==b)throw new sjcl.exception.invalid("invalid aes key size");this.b=[d=a.slice(0),e=[]];for(a=b;a<4*b+28;a++){c=d[a-1];if(0===a%b||8===b&&4===a%b)c=f[c>>>24]<<24^f[c>>16&255]<<16^f[c>>8&255]<<8^f[c&255],0===a%b&&(c=c<<8^c>>>24^h<<24,h=h<<1^283*(h>>7));d[a]=d[a-b]^c}for(b=0;a;b++,a--)c=d[b&3?a:a-4],e[b]=4>=a||4>b?c:g[0][f[c>>>24]]^g[1][f[c>>16&255]]^g[2][f[c>>8&255]]^g[3][f[c&
 255]]};
@@ -64248,7 +64755,7 @@ null!=d[3]?b[d[2]]=parseInt(d[3],10):null!=d[4]?b[d[2]]=d[2].match(/^(ct|adata|s
 b){var c={},d;for(d=0;d<b.length;d++)void 0!==a[b[d]]&&(c[b[d]]=a[b[d]]);return c}};sjcl.encrypt=sjcl.json.encrypt;sjcl.decrypt=sjcl.json.decrypt;sjcl.misc.pa={};sjcl.misc.cachedPbkdf2=function(a,b){var c=sjcl.misc.pa,d;b=b||{};d=b.iter||1E3;c=c[a]=c[a]||{};d=c[d]=c[d]||{firstSalt:b.salt&&b.salt.length?b.salt.slice(0):sjcl.random.randomWords(2,0)};c=void 0===b.salt?d.firstSalt:b.salt;d[c]=d[c]||sjcl.misc.pbkdf2(a,c,b.iter);return{key:d[c].slice(0),salt:c.slice(0)}};
 "undefined"!==typeof module&&module.exports&&(module.exports=sjcl);"function"===typeof define&&define([],function(){return sjcl});
 
-},{"crypto":61}],480:[function(require,module,exports){
+},{"crypto":61}],486:[function(require,module,exports){
 'use strict';
 module.exports = function (str) {
 	return encodeURIComponent(str).replace(/[!'()*]/g, function (c) {
@@ -64256,7 +64763,7 @@ module.exports = function (str) {
 	});
 };
 
-},{}],481:[function(require,module,exports){
+},{}],487:[function(require,module,exports){
 'use strict';
 
 var bind = require('function-bind');
@@ -64271,7 +64778,7 @@ module.exports = function trim() {
 	return replace(replace(S, leftWhitespace, ''), rightWhitespace, '');
 };
 
-},{"es-abstract/es5":332,"function-bind":387}],482:[function(require,module,exports){
+},{"es-abstract/es5":336,"function-bind":393}],488:[function(require,module,exports){
 'use strict';
 
 var bind = require('function-bind');
@@ -64291,7 +64798,7 @@ define(boundTrim, {
 
 module.exports = boundTrim;
 
-},{"./implementation":481,"./polyfill":483,"./shim":484,"define-properties":286,"function-bind":387}],483:[function(require,module,exports){
+},{"./implementation":487,"./polyfill":489,"./shim":490,"define-properties":290,"function-bind":393}],489:[function(require,module,exports){
 'use strict';
 
 var implementation = require('./implementation');
@@ -64305,7 +64812,7 @@ module.exports = function getPolyfill() {
 	return implementation;
 };
 
-},{"./implementation":481}],484:[function(require,module,exports){
+},{"./implementation":487}],490:[function(require,module,exports){
 'use strict';
 
 var define = require('define-properties');
@@ -64317,7 +64824,7 @@ module.exports = function shimStringTrim() {
 	return polyfill;
 };
 
-},{"./polyfill":483,"define-properties":286}],485:[function(require,module,exports){
+},{"./polyfill":489,"define-properties":290}],491:[function(require,module,exports){
 var isHexPrefixed = require('is-hex-prefixed');
 
 /**
@@ -64333,7 +64840,7 @@ module.exports = function stripHexPrefix(str) {
   return isHexPrefixed(str) ? str.slice(2) : str;
 }
 
-},{"is-hex-prefixed":409}],486:[function(require,module,exports){
+},{"is-hex-prefixed":415}],492:[function(require,module,exports){
 var unavailable = function unavailable() {
   throw "This swarm.js function isn't available on the browser.";
 };
@@ -64366,7 +64873,7 @@ module.exports = swarm({
   hash: hash,
   pick: pick
 });
-},{"./pick.js":487,"./swarm":489,"./swarm-hash.js":488,"eth-lib/lib/bytes":491,"xhr-request-promise":560}],487:[function(require,module,exports){
+},{"./pick.js":493,"./swarm":495,"./swarm-hash.js":494,"eth-lib/lib/bytes":497,"xhr-request-promise":569}],493:[function(require,module,exports){
 var picker = function picker(type) {
   return function () {
     return new Promise(function (resolve, reject) {
@@ -64424,7 +64931,7 @@ module.exports = {
   file: picker("file"),
   directory: picker("directory")
 };
-},{}],488:[function(require,module,exports){
+},{}],494:[function(require,module,exports){
 // Thanks https://github.com/axic/swarmhash
 
 var keccak = require("eth-lib/lib/hash").keccak256;
@@ -64465,7 +64972,7 @@ var swarmHash = function swarmHash(data) {
 };
 
 module.exports = swarmHash;
-},{"eth-lib/lib/bytes":491,"eth-lib/lib/hash":492}],489:[function(require,module,exports){
+},{"eth-lib/lib/bytes":497,"eth-lib/lib/hash":498}],495:[function(require,module,exports){
 // TODO: this is a temporary fix to hide those libraries from the browser. A
 // slightly better long-term solution would be to split this file into two,
 // separating the functions that are used on Node.js from the functions that
@@ -65092,7 +65599,7 @@ module.exports = function (_ref) {
   };
 };
 
-},{}],490:[function(require,module,exports){
+},{}],496:[function(require,module,exports){
 var generate = function generate(num, fn) {
   var a = [];
   for (var i = 0; i < num; ++i) {
@@ -65133,7 +65640,7 @@ module.exports = {
   flatten: flatten,
   chunksOf: chunksOf
 };
-},{}],491:[function(require,module,exports){
+},{}],497:[function(require,module,exports){
 var A = require("./array.js");
 
 var at = function at(bytes, index) {
@@ -65322,7 +65829,7 @@ module.exports = {
   fromUint8Array: fromUint8Array,
   toUint8Array: toUint8Array
 };
-},{"./array.js":490}],492:[function(require,module,exports){
+},{"./array.js":496}],498:[function(require,module,exports){
 // This was ported from https://github.com/emn178/js-sha3, with some minor
 // modifications and pruning. It is licensed under MIT:
 //
@@ -65662,7 +66169,7 @@ module.exports = {
   keccak256s: keccak(256),
   keccak512s: keccak(512)
 };
-},{}],493:[function(require,module,exports){
+},{}],499:[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
 //     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -67212,7 +67719,7 @@ module.exports = {
   }
 }.call(this));
 
-},{}],494:[function(require,module,exports){
+},{}],500:[function(require,module,exports){
 module.exports = urlSetQuery
 function urlSetQuery (url, query) {
   if (query) {
@@ -67237,7 +67744,7 @@ function urlSetQuery (url, query) {
   return url
 }
 
-},{}],495:[function(require,module,exports){
+},{}],501:[function(require,module,exports){
 (function (global){
 /*! https://mths.be/utf8js v2.0.0 by @mathias */
 ;(function(root) {
@@ -67485,7 +67992,100 @@ function urlSetQuery (url, query) {
 }(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],496:[function(require,module,exports){
+},{}],502:[function(require,module,exports){
+/**
+ * Convert array of 16 byte values to UUID string format of the form:
+ * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+ */
+var byteToHex = [];
+for (var i = 0; i < 256; ++i) {
+  byteToHex[i] = (i + 0x100).toString(16).substr(1);
+}
+
+function bytesToUuid(buf, offset) {
+  var i = offset || 0;
+  var bth = byteToHex;
+  // join used to fix memory issue caused by concatenation: https://bugs.chromium.org/p/v8/issues/detail?id=3175#c4
+  return ([bth[buf[i++]], bth[buf[i++]], 
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]],
+	bth[buf[i++]], bth[buf[i++]],
+	bth[buf[i++]], bth[buf[i++]]]).join('');
+}
+
+module.exports = bytesToUuid;
+
+},{}],503:[function(require,module,exports){
+// Unique ID creation requires a high quality random # generator.  In the
+// browser this is a little complicated due to unknown quality of Math.random()
+// and inconsistent support for the `crypto` API.  We do the best we can via
+// feature-detection
+
+// getRandomValues needs to be invoked in a context where "this" is a Crypto
+// implementation. Also, find the complete implementation of crypto on IE11.
+var getRandomValues = (typeof(crypto) != 'undefined' && crypto.getRandomValues && crypto.getRandomValues.bind(crypto)) ||
+                      (typeof(msCrypto) != 'undefined' && typeof window.msCrypto.getRandomValues == 'function' && msCrypto.getRandomValues.bind(msCrypto));
+
+if (getRandomValues) {
+  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
+  var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
+
+  module.exports = function whatwgRNG() {
+    getRandomValues(rnds8);
+    return rnds8;
+  };
+} else {
+  // Math.random()-based (RNG)
+  //
+  // If all else fails, use Math.random().  It's fast, but is of unspecified
+  // quality.
+  var rnds = new Array(16);
+
+  module.exports = function mathRNG() {
+    for (var i = 0, r; i < 16; i++) {
+      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
+      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
+    }
+
+    return rnds;
+  };
+}
+
+},{}],504:[function(require,module,exports){
+var rng = require('./lib/rng');
+var bytesToUuid = require('./lib/bytesToUuid');
+
+function v4(options, buf, offset) {
+  var i = buf && offset || 0;
+
+  if (typeof(options) == 'string') {
+    buf = options === 'binary' ? new Array(16) : null;
+    options = null;
+  }
+  options = options || {};
+
+  var rnds = options.random || (options.rng || rng)();
+
+  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+  rnds[6] = (rnds[6] & 0x0f) | 0x40;
+  rnds[8] = (rnds[8] & 0x3f) | 0x80;
+
+  // Copy bytes to buffer, if provided
+  if (buf) {
+    for (var ii = 0; ii < 16; ++ii) {
+      buf[i + ii] = rnds[ii];
+    }
+  }
+
+  return buf || bytesToUuid(rnds);
+}
+
+module.exports = v4;
+
+},{"./lib/bytesToUuid":502,"./lib/rng":503}],505:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -67575,7 +68175,7 @@ Bzz.prototype.setProvider = function(provider) {
 module.exports = Bzz;
 
 
-},{"swarm-js":486,"underscore":493}],497:[function(require,module,exports){
+},{"swarm-js":492,"underscore":499}],506:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -67624,7 +68224,7 @@ module.exports = {
     }
 };
 
-},{}],498:[function(require,module,exports){
+},{}],507:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -68069,7 +68669,7 @@ module.exports = {
 };
 
 
-},{"underscore":493,"web3-eth-iban":541,"web3-utils":552}],499:[function(require,module,exports){
+},{"underscore":499,"web3-eth-iban":550,"web3-utils":561}],508:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -68103,7 +68703,7 @@ module.exports = {
 };
 
 
-},{"./errors":497,"./formatters":498}],500:[function(require,module,exports){
+},{"./errors":506,"./formatters":507}],509:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -68712,7 +69312,7 @@ Method.prototype.request = function () {
 
 module.exports = Method;
 
-},{"underscore":493,"web3-core-helpers":499,"web3-core-promievent":502,"web3-core-subscriptions":508,"web3-utils":552}],501:[function(require,module,exports){
+},{"underscore":499,"web3-core-helpers":508,"web3-core-promievent":511,"web3-core-subscriptions":517,"web3-utils":561}],510:[function(require,module,exports){
 'use strict';
 
 //
@@ -68976,7 +69576,7 @@ if ('undefined' !== typeof module) {
   module.exports = EventEmitter;
 }
 
-},{}],502:[function(require,module,exports){
+},{}],511:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -69053,7 +69653,7 @@ PromiEvent.resolve = function(value) {
 
 module.exports = PromiEvent;
 
-},{"any-promise":175,"eventemitter3":501}],503:[function(require,module,exports){
+},{"any-promise":175,"eventemitter3":510}],512:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -69130,7 +69730,7 @@ Batch.prototype.execute = function () {
 module.exports = Batch;
 
 
-},{"./jsonrpc":506,"web3-core-helpers":499}],504:[function(require,module,exports){
+},{"./jsonrpc":515,"web3-core-helpers":508}],513:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -69218,7 +69818,7 @@ if(typeof global.ethereumProvider !== 'undefined') {
 
 module.exports = givenProvider;
 
-},{}],505:[function(require,module,exports){
+},{}],514:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -69466,7 +70066,7 @@ module.exports = {
     BatchManager: BatchManager
 };
 
-},{"./batch.js":503,"./givenProvider.js":504,"./jsonrpc.js":506,"underscore":493,"web3-core-helpers":499,"web3-providers-http":546,"web3-providers-ipc":547,"web3-providers-ws":548}],506:[function(require,module,exports){
+},{"./batch.js":512,"./givenProvider.js":513,"./jsonrpc.js":515,"underscore":499,"web3-core-helpers":508,"web3-providers-http":555,"web3-providers-ipc":556,"web3-providers-ws":557}],515:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -69557,9 +70157,9 @@ Jsonrpc.toBatchPayload = function (messages) {
 module.exports = Jsonrpc;
 
 
-},{}],507:[function(require,module,exports){
-arguments[4][501][0].apply(exports,arguments)
-},{"dup":501}],508:[function(require,module,exports){
+},{}],516:[function(require,module,exports){
+arguments[4][510][0].apply(exports,arguments)
+},{"dup":510}],517:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -69636,7 +70236,7 @@ module.exports = {
     subscription: Subscription
 };
 
-},{"./subscription.js":509}],509:[function(require,module,exports){
+},{"./subscription.js":518}],518:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -69945,7 +70545,7 @@ Subscription.prototype.subscribe = function() {
 
 module.exports = Subscription;
 
-},{"eventemitter3":507,"underscore":493,"web3-core-helpers":499}],510:[function(require,module,exports){
+},{"eventemitter3":516,"underscore":499,"web3-core-helpers":508}],519:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -70016,7 +70616,7 @@ var extend = function (pckg) {
 module.exports = extend;
 
 
-},{"web3-core-helpers":499,"web3-core-method":500,"web3-utils":552}],511:[function(require,module,exports){
+},{"web3-core-helpers":508,"web3-core-method":509,"web3-utils":561}],520:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -70104,7 +70704,7 @@ module.exports = {
 };
 
 
-},{"./extend.js":510,"web3-core-requestmanager":505}],512:[function(require,module,exports){
+},{"./extend.js":519,"web3-core-requestmanager":514}],521:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -71023,7 +71623,7 @@ var AbiCoder = /** @class */ (function () {
 exports.AbiCoder = AbiCoder;
 exports.defaultAbiCoder = new AbiCoder();
 
-},{"./address":513,"./bignumber":514,"./bytes":515,"./errors":516,"./properties":518,"./utf8":521}],513:[function(require,module,exports){
+},{"./address":522,"./bignumber":523,"./bytes":524,"./errors":525,"./properties":527,"./utf8":530}],522:[function(require,module,exports){
 'use strict';
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -71149,7 +71749,7 @@ function getContractAddress(transaction) {
 }
 exports.getContractAddress = getContractAddress;
 
-},{"./bytes":515,"./errors":516,"./keccak256":517,"./rlp":519,"bn.js":247}],514:[function(require,module,exports){
+},{"./bytes":524,"./errors":525,"./keccak256":526,"./rlp":528,"bn.js":248}],523:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -71343,7 +71943,7 @@ exports.ConstantOne = bigNumberify(1);
 exports.ConstantTwo = bigNumberify(2);
 exports.ConstantWeiPerEther = bigNumberify('1000000000000000000');
 
-},{"./bytes":515,"./errors":516,"./properties":518,"./types":520,"bn.js":247}],515:[function(require,module,exports){
+},{"./bytes":524,"./errors":525,"./properties":527,"./types":529,"bn.js":248}],524:[function(require,module,exports){
 "use strict";
 /**
  *  Conversion Utilities
@@ -71607,7 +72207,7 @@ function joinSignature(signature) {
 }
 exports.joinSignature = joinSignature;
 
-},{"./errors":516}],516:[function(require,module,exports){
+},{"./errors":525}],525:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 // Unknown Error
@@ -71711,7 +72311,7 @@ function setCensorship(censorship, permanent) {
 }
 exports.setCensorship = setCensorship;
 
-},{}],517:[function(require,module,exports){
+},{}],526:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var sha3 = require("js-sha3");
@@ -71721,7 +72321,7 @@ function keccak256(data) {
 }
 exports.keccak256 = keccak256;
 
-},{"./bytes":515,"js-sha3":410}],518:[function(require,module,exports){
+},{"./bytes":524,"js-sha3":416}],527:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 function defineReadOnly(object, name, value) {
@@ -71773,7 +72373,7 @@ function jsonCopy(object) {
 }
 exports.jsonCopy = jsonCopy;
 
-},{}],519:[function(require,module,exports){
+},{}],528:[function(require,module,exports){
 "use strict";
 //See: https://github.com/ethereum/wiki/wiki/RLP
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -71891,7 +72491,7 @@ function decode(data) {
 }
 exports.decode = decode;
 
-},{"./bytes":515}],520:[function(require,module,exports){
+},{"./bytes":524}],529:[function(require,module,exports){
 "use strict";
 ///////////////////////////////
 // Bytes
@@ -71948,7 +72548,7 @@ var HDNode = /** @class */ (function () {
 }());
 exports.HDNode = HDNode;
 
-},{}],521:[function(require,module,exports){
+},{}],530:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("./bytes");
@@ -72073,7 +72673,7 @@ function toUtf8String(bytes) {
 }
 exports.toUtf8String = toUtf8String;
 
-},{"./bytes":515}],522:[function(require,module,exports){
+},{"./bytes":524}],531:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -72386,7 +72986,7 @@ var coder = new ABICoder();
 
 module.exports = coder;
 
-},{"ethers/utils/abi-coder":512,"underscore":493,"web3-utils":552}],523:[function(require,module,exports){
+},{"ethers/utils/abi-coder":521,"underscore":499,"web3-utils":561}],532:[function(require,module,exports){
 (function (Buffer){
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
@@ -72470,13 +73070,13 @@ module.exports = {
   decodeSignature: decodeSignature
 };
 }).call(this,require("buffer").Buffer)
-},{"./bytes":525,"./hash":526,"./nat":527,"./rlp":528,"buffer":52,"elliptic":315}],524:[function(require,module,exports){
-arguments[4][490][0].apply(exports,arguments)
-},{"dup":490}],525:[function(require,module,exports){
-arguments[4][491][0].apply(exports,arguments)
-},{"./array.js":524,"dup":491}],526:[function(require,module,exports){
-arguments[4][492][0].apply(exports,arguments)
-},{"dup":492}],527:[function(require,module,exports){
+},{"./bytes":534,"./hash":535,"./nat":536,"./rlp":537,"buffer":52,"elliptic":319}],533:[function(require,module,exports){
+arguments[4][496][0].apply(exports,arguments)
+},{"dup":496}],534:[function(require,module,exports){
+arguments[4][497][0].apply(exports,arguments)
+},{"./array.js":533,"dup":497}],535:[function(require,module,exports){
+arguments[4][498][0].apply(exports,arguments)
+},{"dup":498}],536:[function(require,module,exports){
 var BN = require("bn.js");
 var Bytes = require("./bytes");
 
@@ -72541,7 +73141,7 @@ module.exports = {
   div: div,
   sub: sub
 };
-},{"./bytes":525,"bn.js":247}],528:[function(require,module,exports){
+},{"./bytes":534,"bn.js":248}],537:[function(require,module,exports){
 // The RLP format
 // Serialization and deserialization for the BytesTree type, under the following grammar:
 // | First byte | Meaning                                                                    |
@@ -72615,7 +73215,7 @@ var decode = function decode(hex) {
 };
 
 module.exports = { encode: encode, decode: decode };
-},{}],529:[function(require,module,exports){
+},{}],538:[function(require,module,exports){
 (function (global){
 
 var rng;
@@ -72650,7 +73250,7 @@ module.exports = rng;
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],530:[function(require,module,exports){
+},{}],539:[function(require,module,exports){
 //     uuid.js
 //
 //     Copyright (c) 2010-2012 Robert Kieffer
@@ -72835,7 +73435,7 @@ uuid.unparse = unparse;
 
 module.exports = uuid;
 
-},{"./rng":529}],531:[function(require,module,exports){
+},{"./rng":538}],540:[function(require,module,exports){
 (function (global,Buffer){
 /*
  This file is part of web3.js.
@@ -73373,7 +73973,7 @@ if (typeof localStorage === 'undefined') {
 module.exports = Accounts;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
-},{"any-promise":175,"buffer":52,"crypto":61,"crypto-browserify":284,"eth-lib/lib/account":523,"eth-lib/lib/bytes":525,"eth-lib/lib/hash":526,"eth-lib/lib/nat":527,"eth-lib/lib/rlp":528,"scrypt.js":463,"underscore":493,"uuid":530,"web3-core":511,"web3-core-helpers":499,"web3-core-method":500,"web3-utils":552}],532:[function(require,module,exports){
+},{"any-promise":175,"buffer":52,"crypto":61,"crypto-browserify":288,"eth-lib/lib/account":532,"eth-lib/lib/bytes":534,"eth-lib/lib/hash":535,"eth-lib/lib/nat":536,"eth-lib/lib/rlp":537,"scrypt.js":469,"underscore":499,"uuid":539,"web3-core":520,"web3-core-helpers":508,"web3-core-method":509,"web3-utils":561}],541:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -74280,7 +74880,7 @@ Contract.prototype._executeMethod = function _executeMethod(){
 
 module.exports = Contract;
 
-},{"underscore":493,"web3-core":511,"web3-core-helpers":499,"web3-core-method":500,"web3-core-promievent":502,"web3-core-subscriptions":508,"web3-eth-abi":522,"web3-utils":552}],533:[function(require,module,exports){
+},{"underscore":499,"web3-core":520,"web3-core-helpers":508,"web3-core-method":509,"web3-core-promievent":511,"web3-core-subscriptions":517,"web3-eth-abi":531,"web3-utils":561}],542:[function(require,module,exports){
 /*
     This file is part of web3.js.
     web3.js is free software: you can redistribute it and/or modify
@@ -74471,7 +75071,7 @@ ENS.prototype.checkNetwork = function () {
 
 module.exports = ENS;
 
-},{"./config":534,"./contracts/Registry":535,"./lib/ResolverMethodHandler":537}],534:[function(require,module,exports){
+},{"./config":543,"./contracts/Registry":544,"./lib/ResolverMethodHandler":546}],543:[function(require,module,exports){
 "use strict";
 
 var config = {
@@ -74484,7 +75084,7 @@ var config = {
 
 module.exports = config;
 
-},{}],535:[function(require,module,exports){
+},{}],544:[function(require,module,exports){
 /*
     This file is part of web3.js.
     web3.js is free software: you can redistribute it and/or modify
@@ -74586,7 +75186,7 @@ Registry.prototype.resolver = function (name) {
 
 module.exports = Registry;
 
-},{"../ressources/ABI/Registry":538,"../ressources/ABI/Resolver":539,"eth-ens-namehash":357,"underscore":493,"web3-core-promievent":502,"web3-eth-contract":532}],536:[function(require,module,exports){
+},{"../ressources/ABI/Registry":547,"../ressources/ABI/Resolver":548,"eth-ens-namehash":361,"underscore":499,"web3-core-promievent":511,"web3-eth-contract":541}],545:[function(require,module,exports){
 /*
     This file is part of web3.js.
     web3.js is free software: you can redistribute it and/or modify
@@ -74613,7 +75213,7 @@ var ENS = require('./ENS');
 
 module.exports = ENS;
 
-},{"./ENS":533}],537:[function(require,module,exports){
+},{"./ENS":542}],546:[function(require,module,exports){
 /*
     This file is part of web3.js.
     web3.js is free software: you can redistribute it and/or modify
@@ -74804,7 +75404,7 @@ ResolverMethodHandler.prototype.prepareArguments = function (name, methodArgumen
 
 module.exports = ResolverMethodHandler;
 
-},{"eth-ens-namehash":357,"underscore":493,"web3-core-promievent":502}],538:[function(require,module,exports){
+},{"eth-ens-namehash":361,"underscore":499,"web3-core-promievent":511}],547:[function(require,module,exports){
 "use strict";
 
 var REGISTRY = [
@@ -75011,7 +75611,7 @@ var REGISTRY = [
 
 module.exports = REGISTRY;
 
-},{}],539:[function(require,module,exports){
+},{}],548:[function(require,module,exports){
 "use strict";
 
 var RESOLVER = [
@@ -75369,9 +75969,9 @@ var RESOLVER = [
 
 module.exports = RESOLVER;
 
-},{}],540:[function(require,module,exports){
-arguments[4][382][0].apply(exports,arguments)
-},{"dup":382}],541:[function(require,module,exports){
+},{}],549:[function(require,module,exports){
+arguments[4][388][0].apply(exports,arguments)
+},{"dup":388}],550:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -75640,7 +76240,7 @@ Iban.prototype.toString = function () {
 
 module.exports = Iban;
 
-},{"bn.js":540,"web3-utils":552}],542:[function(require,module,exports){
+},{"bn.js":549,"web3-utils":561}],551:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -75792,7 +76392,7 @@ module.exports = Personal;
 
 
 
-},{"web3-core":511,"web3-core-helpers":499,"web3-core-method":500,"web3-net":545,"web3-utils":552}],543:[function(require,module,exports){
+},{"web3-core":520,"web3-core-helpers":508,"web3-core-method":509,"web3-net":554,"web3-utils":561}],552:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -75872,7 +76472,7 @@ var getNetworkType = function (callback) {
 
 module.exports = getNetworkType;
 
-},{"underscore":493}],544:[function(require,module,exports){
+},{"underscore":499}],553:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -76340,7 +76940,7 @@ core.addProviders(Eth);
 module.exports = Eth;
 
 
-},{"./getNetworkType.js":543,"underscore":493,"web3-core":511,"web3-core-helpers":499,"web3-core-method":500,"web3-core-subscriptions":508,"web3-eth-abi":522,"web3-eth-accounts":531,"web3-eth-contract":532,"web3-eth-ens":536,"web3-eth-iban":541,"web3-eth-personal":542,"web3-net":545,"web3-utils":552}],545:[function(require,module,exports){
+},{"./getNetworkType.js":552,"underscore":499,"web3-core":520,"web3-core-helpers":508,"web3-core-method":509,"web3-core-subscriptions":517,"web3-eth-abi":531,"web3-eth-accounts":540,"web3-eth-contract":541,"web3-eth-ens":545,"web3-eth-iban":550,"web3-eth-personal":551,"web3-net":554,"web3-utils":561}],554:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -76409,7 +77009,7 @@ module.exports = Net;
 
 
 
-},{"web3-core":511,"web3-core-method":500,"web3-utils":552}],546:[function(require,module,exports){
+},{"web3-core":520,"web3-core-method":509,"web3-utils":561}],555:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -76524,7 +77124,7 @@ HttpProvider.prototype.disconnect = function () {
 
 module.exports = HttpProvider;
 
-},{"http":163,"https":104,"web3-core-helpers":499,"xhr2-cookies":567}],547:[function(require,module,exports){
+},{"http":163,"https":104,"web3-core-helpers":508,"xhr2-cookies":576}],556:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -76841,7 +77441,7 @@ IpcProvider.prototype.reset = function () {
 module.exports = IpcProvider;
 
 
-},{"oboe":437,"underscore":493,"web3-core-helpers":499}],548:[function(require,module,exports){
+},{"oboe":443,"underscore":499,"web3-core-helpers":508}],557:[function(require,module,exports){
 (function (Buffer){
 /*
  This file is part of web3.js.
@@ -77246,7 +77846,7 @@ WebsocketProvider.prototype.disconnect = function () {
 module.exports = WebsocketProvider;
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":52,"underscore":493,"url":170,"web3-core-helpers":499,"websocket":557}],549:[function(require,module,exports){
+},{"buffer":52,"underscore":499,"url":170,"web3-core-helpers":508,"websocket":566}],558:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -77437,11 +78037,11 @@ module.exports = Shh;
 
 
 
-},{"web3-core":511,"web3-core-method":500,"web3-core-subscriptions":508,"web3-net":545}],550:[function(require,module,exports){
-arguments[4][382][0].apply(exports,arguments)
-},{"dup":382}],551:[function(require,module,exports){
-arguments[4][492][0].apply(exports,arguments)
-},{"dup":492}],552:[function(require,module,exports){
+},{"web3-core":520,"web3-core-method":509,"web3-core-subscriptions":517,"web3-net":554}],559:[function(require,module,exports){
+arguments[4][388][0].apply(exports,arguments)
+},{"dup":388}],560:[function(require,module,exports){
+arguments[4][498][0].apply(exports,arguments)
+},{"dup":498}],561:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -77807,7 +78407,7 @@ module.exports = {
 };
 
 
-},{"./soliditySha3.js":553,"./utils.js":554,"ethjs-unit":381,"randomhex":459,"underscore":493}],553:[function(require,module,exports){
+},{"./soliditySha3.js":562,"./utils.js":563,"ethjs-unit":387,"randomhex":465,"underscore":499}],562:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -78054,7 +78654,7 @@ var soliditySha3 = function () {
 
 module.exports = soliditySha3;
 
-},{"./utils.js":554,"bn.js":550,"underscore":493}],554:[function(require,module,exports){
+},{"./utils.js":563,"bn.js":559,"underscore":499}],563:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -78523,7 +79123,7 @@ module.exports = {
     sha3: sha3
 };
 
-},{"bn.js":550,"eth-lib/lib/hash":551,"number-to-bn":432,"underscore":493,"utf8":495}],555:[function(require,module,exports){
+},{"bn.js":559,"eth-lib/lib/hash":560,"number-to-bn":438,"underscore":499,"utf8":501}],564:[function(require,module,exports){
 module.exports={
   "_args": [
     [
@@ -78611,7 +79211,7 @@ module.exports={
   "version": "1.0.0-beta.36"
 }
 
-},{}],556:[function(require,module,exports){
+},{}],565:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -78692,7 +79292,7 @@ core.addProviders(Web3);
 module.exports = Web3;
 
 
-},{"../package.json":555,"web3-bzz":496,"web3-core":511,"web3-eth":544,"web3-eth-personal":542,"web3-net":545,"web3-shh":549,"web3-utils":552}],557:[function(require,module,exports){
+},{"../package.json":564,"web3-bzz":505,"web3-core":520,"web3-eth":553,"web3-eth-personal":551,"web3-net":554,"web3-shh":558,"web3-utils":561}],566:[function(require,module,exports){
 var _global = (function() { return this || {}; })();
 var NativeWebSocket = _global.WebSocket || _global.MozWebSocket;
 var websocket_version = require('./version');
@@ -78736,10 +79336,10 @@ module.exports = {
     'version'      : websocket_version
 };
 
-},{"./version":558}],558:[function(require,module,exports){
+},{"./version":567}],567:[function(require,module,exports){
 module.exports = require('../package.json').version;
 
-},{"../package.json":559}],559:[function(require,module,exports){
+},{"../package.json":568}],568:[function(require,module,exports){
 module.exports={
   "_args": [
     [
@@ -78836,7 +79436,7 @@ module.exports={
   "version": "1.0.26"
 }
 
-},{}],560:[function(require,module,exports){
+},{}],569:[function(require,module,exports){
 var request = require('xhr-request')
 
 module.exports = function (url, options) {
@@ -78848,7 +79448,7 @@ module.exports = function (url, options) {
   });
 };
 
-},{"xhr-request":561}],561:[function(require,module,exports){
+},{"xhr-request":570}],570:[function(require,module,exports){
 var queryString = require('query-string')
 var setQuery = require('url-set-query')
 var assign = require('object-assign')
@@ -78909,7 +79509,7 @@ function xhrRequest (url, opt, cb) {
   return request(opt, cb)
 }
 
-},{"./lib/ensure-header.js":562,"./lib/request.js":564,"object-assign":433,"query-string":565,"url-set-query":494}],562:[function(require,module,exports){
+},{"./lib/ensure-header.js":571,"./lib/request.js":573,"object-assign":439,"query-string":574,"url-set-query":500}],571:[function(require,module,exports){
 module.exports = ensureHeader
 function ensureHeader (headers, key, value) {
   var lower = key.toLowerCase()
@@ -78918,7 +79518,7 @@ function ensureHeader (headers, key, value) {
   }
 }
 
-},{}],563:[function(require,module,exports){
+},{}],572:[function(require,module,exports){
 module.exports = getResponse
 function getResponse (opt, resp) {
   if (!resp) return null
@@ -78932,7 +79532,7 @@ function getResponse (opt, resp) {
   }
 }
 
-},{}],564:[function(require,module,exports){
+},{}],573:[function(require,module,exports){
 var xhr = require('xhr')
 var normalize = require('./normalize-response')
 var noop = function () {}
@@ -78976,7 +79576,7 @@ function xhrRequest (opt, cb) {
   return req
 }
 
-},{"./normalize-response":563,"xhr":572}],565:[function(require,module,exports){
+},{"./normalize-response":572,"xhr":581}],574:[function(require,module,exports){
 'use strict';
 var strictUriEncode = require('strict-uri-encode');
 var objectAssign = require('object-assign');
@@ -79202,7 +79802,7 @@ exports.parseUrl = function (str, opts) {
 	};
 };
 
-},{"decode-uri-component":285,"object-assign":433,"strict-uri-encode":480}],566:[function(require,module,exports){
+},{"decode-uri-component":289,"object-assign":439,"strict-uri-encode":486}],575:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -79248,7 +79848,7 @@ var SyntaxError = /** @class */ (function (_super) {
 }(Error));
 exports.SyntaxError = SyntaxError;
 
-},{}],567:[function(require,module,exports){
+},{}],576:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -79258,7 +79858,7 @@ __export(require("./xml-http-request"));
 var xml_http_request_event_target_1 = require("./xml-http-request-event-target");
 exports.XMLHttpRequestEventTarget = xml_http_request_event_target_1.XMLHttpRequestEventTarget;
 
-},{"./xml-http-request":571,"./xml-http-request-event-target":569}],568:[function(require,module,exports){
+},{"./xml-http-request":580,"./xml-http-request-event-target":578}],577:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ProgressEvent = /** @class */ (function () {
@@ -79274,7 +79874,7 @@ var ProgressEvent = /** @class */ (function () {
 }());
 exports.ProgressEvent = ProgressEvent;
 
-},{}],569:[function(require,module,exports){
+},{}],578:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var XMLHttpRequestEventTarget = /** @class */ (function () {
@@ -79316,7 +79916,7 @@ var XMLHttpRequestEventTarget = /** @class */ (function () {
 }());
 exports.XMLHttpRequestEventTarget = XMLHttpRequestEventTarget;
 
-},{}],570:[function(require,module,exports){
+},{}],579:[function(require,module,exports){
 (function (Buffer){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
@@ -79397,7 +79997,7 @@ var XMLHttpRequestUpload = /** @class */ (function (_super) {
 exports.XMLHttpRequestUpload = XMLHttpRequestUpload;
 
 }).call(this,require("buffer").Buffer)
-},{"./xml-http-request-event-target":569,"buffer":52}],571:[function(require,module,exports){
+},{"./xml-http-request-event-target":578,"buffer":52}],580:[function(require,module,exports){
 (function (process,Buffer){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
@@ -79847,7 +80447,7 @@ XMLHttpRequest.prototype.nodejsHttpsAgent = https.globalAgent;
 XMLHttpRequest.prototype.nodejsBaseUrl = null;
 
 }).call(this,require('_process'),require("buffer").Buffer)
-},{"./errors":566,"./progress-event":568,"./xml-http-request-event-target":569,"./xml-http-request-upload":570,"_process":126,"buffer":52,"cookiejar":278,"http":163,"https":104,"os":113,"url":170}],572:[function(require,module,exports){
+},{"./errors":575,"./progress-event":577,"./xml-http-request-event-target":578,"./xml-http-request-upload":579,"_process":126,"buffer":52,"cookiejar":282,"http":163,"https":104,"os":113,"url":170}],581:[function(require,module,exports){
 "use strict";
 var window = require("global/window")
 var isFunction = require("is-function")
@@ -80096,12 +80696,14 @@ function getXml(xhr) {
 
 function noop() {}
 
-},{"global/window":388,"is-function":408,"parse-headers":443,"xtend":573}],573:[function(require,module,exports){
+},{"global/window":394,"is-function":414,"parse-headers":449,"xtend":582}],582:[function(require,module,exports){
 arguments[4][174][0].apply(exports,arguments)
-},{"dup":174}],574:[function(require,module,exports){
+},{"dup":174}],583:[function(require,module,exports){
+(function (Buffer){
 const Web3 = require('../../../node_modules/web3'); // import web3 v1.0 constructor
 const keythereum = require('../../../node_modules/keythereum');
 const EthCrypto = require('../../../node_modules/eth-crypto');
+var Wallet = require('../../../node_modules/ethereumjs-wallet');
 
 // use globally injected web3 to find the currentProvider and wrap with web3 v1.0
 const getWeb3 = (provider) => {
@@ -80134,15 +80736,16 @@ function generateKeystoreFile(password) {
     return {
         success: {
             public_key: public_key,
-            keystore: keyObjectExported
+            keystore: keyObjectExported,
+            recovered: keythereum.recover(password, keyObjectExported)
         }
     };
 }
 
 function importKeystoreFile(keystore, password) {
     try {
-        var keyObject = JSON.parse(keystore);
-        var private_key = keythereum.recover(password, keyObject);
+        const keyObject = JSON.parse(keystore);
+        const private_key = keythereum.recover(password, keyObject);
         const public_key = EthCrypto.publicKeyByPrivateKey(private_key.toString('hex'));
         return {
             success: keyObject,
@@ -80170,11 +80773,54 @@ function decryptKeystore(keystore, password) {
     }
 }
 
-module.exports = {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore};
+function validatePrivateKey(private_key) {
+    try {
+        const public_key = EthCrypto.publicKeyByPrivateKey(private_key);
+        const address = EthCrypto.publicKey.toAddress(public_key);
+
+        return {
+            success: {
+                public_key: public_key,
+                address: address
+            }
+        };
+    } catch (e) {
+        return {
+            error: true,
+            message: 'Wrong secret private key.'
+        }
+    }
+}
+
+function generateKeystoreFromPrivateKey(private_key, password) {
+    try {
+        const public_key = EthCrypto.publicKeyByPrivateKey(private_key);
+        const address = EthCrypto.publicKey.toAddress(public_key);
+        const wallet = Wallet.fromPrivateKey(Buffer.from(private_key, 'hex'));
+        const keystore_file = wallet.toV3String(password);
+
+        return {
+            success: {
+                keystore_file: keystore_file,
+                public_key: public_key,
+                address: address
+            }
+        };
+    } catch (e) {
+        return {
+            error: true,
+            message: 'Wrong secret private key.'
+        }
+    }
+}
+
+module.exports = {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey};
 
 
-},{"../../../node_modules/eth-crypto":347,"../../../node_modules/keythereum":417,"../../../node_modules/web3":556}],575:[function(require,module,exports){
-var {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore} = require('./helper');
+}).call(this,require("buffer").Buffer)
+},{"../../../node_modules/eth-crypto":351,"../../../node_modules/ethereumjs-wallet":372,"../../../node_modules/keythereum":423,"../../../node_modules/web3":565,"buffer":52}],584:[function(require,module,exports){
+(function (Buffer){
+var {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey} = require('./helper');
 
 $(document).ready(function() {
     loadMobileBottomFixedNav();
@@ -80200,6 +80846,11 @@ window.addEventListener('load', function() {
 
 });
 
+document.addEventListener('deviceready', function() {
+    console.log('================= deviceready ===================');
+    
+}, false);
+
 function isFloat(n){
     return Number(n) === n && n % 1 !== 0;
 }
@@ -80208,6 +80859,7 @@ function isInt(n){
     return Number(n) === n && n % 1 === 0;
 }
 
+var is_hybrid;
 var meta_mask_installed = false;
 var meta_mask_logged = false;
 var temporally_timestamp = 0;
@@ -80216,7 +80868,7 @@ var getInstance;
 var DCNContract;
 var dApp = {
     loaded: false,
-    contract_address: "0x08d32b0da63e2C3bcF8019c9c5d849d7a9d791e6",
+    contract_address: '0x08d32b0da63e2C3bcF8019c9c5d849d7a9d791e6',
     web3Provider: null,
     web3_0_2: null,
     web3_1_0: null,
@@ -80225,9 +80877,8 @@ var dApp = {
         return await dApp.initWeb3();
     },
     initWeb3: async function () {
-        if(typeof(web3) !== 'undefined' && web3.currentProvider.isMetaMask === true) {
-
-        } else if(typeof(web3) !== 'undefined') {
+        console.log( 'initWeb3');
+        if(typeof(web3) !== 'undefined') {
             console.log('METAMASK INSTALLED');
             //METAMASK INSTALLED
             global_state.account = web3.eth.defaultAccount;
@@ -80238,23 +80889,26 @@ var dApp = {
         } else {
             console.log('NO METAMASK INSTALLED');
             //NO METAMASK INSTALLED
-            if (localStorage.getItem('current-account') != null && typeof(web3) === 'undefined') {
-                global_state.account = JSON.parse(localStorage.getItem('current-account')).address;
-            } else {
-                global_state.account = '0x80e071ad6719cc39dff3ba1612f23b586a2375d1';
+            if (window.localStorage.getItem('current_account') != null && typeof(web3) === 'undefined') {
+                global_state.account = window.localStorage.getItem('current_account');
             }
 
             dApp.web3_1_0 = getWeb3(new Web3.providers.HttpProvider('https://mainnet.infura.io/c6ab28412b494716bc5315550c0d4071'));
         }
 
+        if(typeof(global_state.account) != 'undefined' && typeof(web3) == 'undefined') {
+            $('.logo-and-settings-row').append('<div class="col-xs-6 inline-block"><figure itemscope="" itemtype="http://schema.org/Organization" class="text-right"><a href="javascript:void(0)" itemprop="url" class="open-settings"><img src="assets/images/settings-icon.svg" class="max-width-30" itemprop="logo" alt="Settings icon"/></a></figure></div>');
+        }
+
+
         if(typeof(global_state.account) != 'undefined') {
             return await dApp.initContract();
-        } else {
-            //NO IMPORTED ACCOUNT
         }
     },
     initContract: async function () {
+        console.log('initContract');
         await $.getJSON('assets/jsons/DentacoinToken.json', async function (DCNArtifact) {
+            console.log('DentacoinToken');
             // get the contract artifact file and use it to instantiate a truffle contract abstraction
             getInstance = getContractInstance(dApp.web3_1_0);
             DCNContract = getInstance(DCNArtifact, dApp.contract_address);
@@ -80387,7 +81041,7 @@ var dApp = {
                 $('.camping-transaction-history table tr').addClass('show-this');
             }
         } else {
-            $('.camping-transaction-history').html('<h2 class="lato-bold fs-25 text-center white-crossed-label color-white"><span>No current Transaction history</span></h2>');
+            $('.camping-transaction-history').html('<h2 class="lato-bold fs-25 fs-xs-18 text-center white-crossed-label color-white"><span>No current Transaction history</span></h2>');
         }
     },
     getTransferFromEvents: function () {
@@ -80421,8 +81075,18 @@ var dApp = {
         });
     },
     methods: {
-        getDCNBalance: function(homepage)  {
-            return DCNContract.methods.balanceOf(global_state.account).call({from: global_state.account});
+        getDCNBalance: function(address)  {
+            return DCNContract.methods.balanceOf(address).call({from: address});
+        },
+        transfer: function(send_addr, value)  {
+            return DCNContract.methods.transfer(send_addr, value).send({
+                from: global_state.account,
+                gas: 60000
+            }).on('transactionHash', function(hash){
+                displayMessageOnDCNTransactionSend('Dentacoin tokens', hash);
+            }).catch(function(err) {
+                basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
+            });
         }
     },
     helper: {
@@ -80441,50 +81105,92 @@ var dApp = {
             return new Promise(function(resolve, reject) {
                 resolve(dApp.web3_1_0.eth.getBalance(address));
             });
+        },
+        estimateGas: function(address, function_abi)  {
+            return new Promise(function(resolve, reject) {
+                dApp.web3_1_0.eth.estimateGas({
+                    to: address,
+                    data: function_abi
+                }, function(error, result) {
+                    if(!error){
+                        resolve(result);
+                    }
+                });
+            });
         }
     }
 };
 
+var bidali_lib_loaded = false;
 var pages_data = {
     homepage: async function() {
-        //show user ethereum address
-        $('.eth-address-container .address-value').val(global_state.account);
+        if(typeof(global_state.account) != 'undefined') {
+            //show user ethereum address
+            $('.eth-address-container .address-value').val(global_state.account);
 
-        //update dentacoin amount
-        var dcn_balance = parseInt(await dApp.methods.getDCNBalance());
-        $('.dcn-amount').html(dcn_balance);
+            //update dentacoin amount
+            var dcn_balance = parseInt(await dApp.methods.getDCNBalance(global_state.account));
+            $('.dcn-amount').html(dcn_balance);
 
-        //update usd amount (dentacoins in usd)
-        var dentacoin_data = await getDentacoinDataByCoingecko();
-        $('.usd-amount').html((dcn_balance * dentacoin_data.market_data.current_price.usd).toFixed(2));
+            //update usd amount (dentacoins in usd)
+            var dentacoin_data = await getDentacoinDataByCoingecko();
+            $('.usd-amount').html((dcn_balance * dentacoin_data.market_data.current_price.usd).toFixed(2));
 
-        //update ether amount
-        $('.eth-amount').html(parseFloat(dApp.web3_1_0.utils.fromWei(await dApp.helper.getAddressETHBalance(global_state.account))).toFixed(6));
+            //update ether amount
+            $('.eth-amount').html(parseFloat(dApp.web3_1_0.utils.fromWei(await dApp.helper.getAddressETHBalance(global_state.account))).toFixed(6));
 
-        $('.fade-in-element').fadeIn(500);
+            $('body').addClass('overflow-hidden');
+            var window_width = $(window).width();
+            $('body').removeClass('overflow-hidden');
+            if(window_width > 768) {
+                //show qr code generated by the user ethereum address
+                if($('#qrcode').length) {
+                    $('#qrcode').html('');
+                    var qrcode = new QRCode(document.getElementById('qrcode'), {
+                        width : 180,
+                        height : 180
+                    });
 
-        //show qr code generated by the user ethereum address
-        if($('#qrcode').length) {
-            var qrcode = new QRCode(document.getElementById('qrcode'), {
-                width : 180,
-                height : 180
-            });
+                    qrcode.makeCode(global_state.account);
+                }
 
-            qrcode.makeCode(global_state.account);
+                //init copy button event
+                var clipboard = new ClipboardJS('.copy-address');
+                clipboard.on('success', function(e) {
+                    $('.copy-address').tooltip('show');
+                    setTimeout(function()   {
+                        $('.copy-address').tooltip('hide');
+                    }, 1000);
+                });
+
+                $('.copy-address').tooltip({
+                    trigger: 'click'
+                });
+            } else {
+                $('.eth-address-container').click(function() {
+                    basic.showDialog('<h2 class="fs-18">Your Dentacoin Address</h2><figure itemscope="" itemtype="http://schema.org/ImageObject" id="mobile-qrcode" class="padding-top-20 padding-bottom-20"></figure><a href="javascript:void(0)" class="mobile-copy-address text-center fs-0" data-toggle="tooltip" title="Copied." data-placement="bottom" data-clipboard-target="#mobile-copy-address"><figure class="inline-block mobile-copy-icon" itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/black-copy-icon.svg" class="max-width-20 width-100 margin-right-5" alt="Copy address to clipboard icon" itemprop="contentUrl"/></figure><input type="text" readonly class="address-value inline-block fs-18 fs-xs-10" id="mobile-copy-address"/></a>', 'mobile-dentacoin-address-and-qr', null);
+
+                    $('.mobile-dentacoin-address-and-qr .address-value').val(global_state.account);
+
+                    var qrcode = new QRCode(document.getElementById('mobile-qrcode'), {
+                        width : 180,
+                        height : 180
+                    });
+
+                    qrcode.makeCode(global_state.account);
+
+                    var clipboard = new ClipboardJS('.mobile-copy-address');
+                    clipboard.on('success', function(e) {
+                        $('.mobile-copy-address').tooltip('show');
+                        setTimeout(function()   {
+                            $('.mobile-copy-address').tooltip('hide');
+                        }, 1000);
+                    });
+                });
+            }
         }
 
-        //init copy button event
-        var clipboard = new ClipboardJS('.copy-btn');
-        clipboard.on('success', function(e) {
-            $('.copy-address').tooltip('show');
-            setTimeout(function()   {
-                $('.copy-address').tooltip('hide');
-            }, 1000);
-        });
-
-        $('.copy-address').tooltip({
-            trigger: 'click'
-        });
+        $('.fade-in-element').fadeIn(500);
 
         $('.more-info').popover({
             trigger: 'click',
@@ -80561,14 +81267,10 @@ var pages_data = {
             var currency = $('section.ready-to-purchase-with-external-api #active-crypto').val();
             var currency_amount_for_one_usd;
             if(currency == 'dcn') {
-                console.log(1);
                 currency_amount_for_one_usd = dcn_for_one_usd;
             } else if(currency == 'eth') {
-                console.log(2);
                 currency_amount_for_one_usd = eth_for_one_usd;
             }
-
-            console.log(currency_amount_for_one_usd, 'currency_amount_for_one_usd');
 
             if(parseFloat($('section.ready-to-purchase-with-external-api #usd-value').val().trim()) < 30)  {
                 basic.showAlert('The minimum transaction limit is 30 USD.', '', true);
@@ -80588,12 +81290,584 @@ var pages_data = {
                 window.open('https://indacoin.com/gw/payment_form?partner=dentacoin&cur_from=USD&cur_to='+currency.toUpperCase()+'&amount='+$('section.ready-to-purchase-with-external-api #usd-value').val().trim()+'&address='+$('section.ready-to-purchase-with-external-api input#dcn_address').val().trim()+'&user_id='+$('section.ready-to-purchase-with-external-api input#email').val().trim(), '_blank');
             }
         });
+    },
+    send_page: async function() {
+        showLoader();
+
+        //reading all clinics/ dentists from the CoreDB
+        var clinics = await getClinics();
+        if(clinics.success) {
+            var combobox_html = '';
+            for(var i = 0, len = clinics.data.length; i < len; i+=1) {
+                if(clinics.data[i].dcn_address != null) {
+                    combobox_html += '<option value="'+clinics.data[i].dcn_address+'">'+clinics.data[i].name+'</option>';
+                }
+            }
+
+            $('.clinics-input').append(combobox_html);
+
+            initComboboxes();
+
+            $('.combobox-container .input-group').addClass('custom-google-label-style module');
+            $('.combobox-container input.combobox.clinics-input').attr('id', 'clinics-input');
+            $('.combobox-container .input-group').prepend('<label for="clinics-input">Enter receiving address/ clinic name or scan QR</label>');
+
+            jQuery('select.clinics-input').on('change', function() {
+                if(innerAddressCheck($(this).val())) {
+                    $('input.clinics-input').val($(this).val()).trigger('change');
+                }
+            });
+
+            $(document).ready(function() {
+                $('input.combobox.clinics-input').on('change keyup change focusout', function() {
+                    var input_value = $(this).val().trim();
+                    if(input_value != '') {
+                        if(innerAddressCheck(input_value)) {
+                            $('.next-send').removeClass('disabled');
+                        } else {
+                            $('.next-send').addClass('disabled');
+                        }
+                    }
+                });
+            });
+
+            var load_qr_code_lib = true;
+            $('.scan-qr-code').click(async function() {
+                if(is_hybrid) {
+                    cordova.plugins.barcodeScanner.scan(
+                        function (result) {
+                            $('input.clinics-input').val(result.text).trigger('change');
+                        },
+                        function (error) {
+                            alert('Scanning failed. Please go to Settings/ Permissions and allow Camera access to Dentacoin Wallet and try again.');
+                        }
+                    );
+                } else {
+                    //BROWSER SCAN
+                    if(load_qr_code_lib) {
+                        showLoader();
+                        load_qr_code_lib = false;
+                        await $.getScript('https://rawgit.com/schmich/instascan-builds/master/instascan.min.js');
+                        hideLoader();
+                    }
+
+                    basic.showDialog('<div class="video-container"><video id="qr-preview"></video></div>', 'popup-scan-qr-code', null, true);
+
+                    var cameras_global;
+                    var scanner = new Instascan.Scanner({ video: document.getElementById('qr-preview') });
+                    scanner.addListener('scan', function (content) {
+                        $('input.clinics-input').val(content).trigger('change');
+                        scanner.stop(cameras_global[0]);
+                        basic.closeDialog();
+                    });
+
+                    Instascan.Camera.getCameras().then(function (cameras) {
+                        if (cameras.length > 0) {
+                            cameras_global = cameras;
+                            scanner.start(cameras[0]);
+                        } else {
+                            alert('No cameras found.');
+                        }
+                    }).catch(function (e) {
+                        console.error(e);
+                    });
+
+                    $('.popup-scan-qr-code .bootbox-close-button').click(function() {
+                        if (cameras_global.length > 0) {
+                            scanner.stop(cameras_global[0]);
+                        }
+                    });
+                }
+            });
+        }
+
+        hideLoader();
+
+        $('.section-send .next-send').click(function() {
+            if(!$(this).hasClass('disabled')) {
+                $('.section-send').hide();
+                $('.section-amount-to .address-cell').html($('.section-send input.combobox.clinics-input').val().trim()).attr('data-receiver', $('.section-send input.combobox.clinics-input').val().trim());
+                $('.section-amount-to').fadeIn(500);
+            }
+        });
+
+        $('.section-amount-to .edit-address').click(function() {
+            $('.section-amount-to').hide();
+            $('.section-send').fadeIn(500);
+        });
+
+        var dentacoin_data = await getDentacoinDataByCoingecko();
+        var ethereum_data = await getEthereumDataByCoingecko();
+        //on input in dcn/ eth input change usd input
+        $('.section-amount-to input#crypto-amount').on('input', function()  {
+            var to_fixed_num = 2;
+            if($('.section-amount-to #active-crypto').val() == 'dcn') {
+                if(($(this).val().trim() * dentacoin_data.market_data.current_price.usd) < 0.01) {
+                    to_fixed_num = 4;
+                }
+                $('.section-amount-to input#usd-val').val(($(this).val().trim() * dentacoin_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
+            } else if($('.section-amount-to #active-crypto').val() == 'eth') {
+                if(($(this).val().trim() * ethereum_data.market_data.current_price.usd) < 0.01) {
+                    to_fixed_num = 4;
+                }
+                $('.section-amount-to input#usd-val').val(($(this).val().trim() * ethereum_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
+            }
+        });
+
+        //on input in usd input change dcn/ eth input
+        $('.section-amount-to input#usd-val').on('input', function()  {
+            if($('.section-amount-to #active-crypto').val() == 'dcn') {
+                $('.section-amount-to input#crypto-amount').val(Math.floor($(this).val().trim() / dentacoin_data.market_data.current_price.usd)).trigger('change');
+            } else if($('.section-amount-to #active-crypto').val() == 'eth') {
+                $('.section-amount-to input#crypto-amount').val($(this).val().trim() / ethereum_data.market_data.current_price.usd).trigger('change');
+            }
+        });
+
+        //on select with cryptocurrencies options change
+        $('.section-amount-to #active-crypto').on('change', function() {
+            var to_fixed_num = 2;
+            if($(this).val() == 'dcn') {
+                if(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd) < 0.01) {
+                    to_fixed_num = 4;
+                }
+                $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
+            } else if($(this).val() == 'eth') {
+                if(($('.section-amount-to input#crypto-amount').val().trim() * ethereum_data.market_data.current_price.usd) < 0.01) {
+                    to_fixed_num = 4;
+                }
+                $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * ethereum_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
+            }
+        });
+
+        var ethgasstation_data = await getEthgasstationData();
+        $('.section-amount-to .open-transaction-recipe').click(async function() {
+            console.log(parseInt(await dApp.methods.getDCNBalance(global_state.account)), 'DCN BALANCE');
+            console.log(parseFloat(dApp.web3_1_0.utils.fromWei(await dApp.helper.getAddressETHBalance(global_state.account))), 'ETH BALANCE');
+
+            var crypto_val = $('.section-amount-to input#crypto-amount').val().trim();
+            var usd_val = $('.section-amount-to input#usd-val').val().trim();
+            var sending_to_address = $('.section-amount-to .address-cell').attr('data-receiver');
+
+            if (isNaN(crypto_val) || isNaN(usd_val) || crypto_val == '' || crypto_val == 0 || usd_val == '' || usd_val == 0) {
+                //checking if not a number or empty values
+                basic.showAlert('Please make sure all values are numbers.', '', true);
+                return false;
+            } else if (crypto_val < 0 || usd_val < 0) {
+                //checking if negative numbers
+                basic.showAlert('Please make sure all values are greater than 0.', '', true);
+                return false;
+            } else if (crypto_val < 10 && $('.section-amount-to #active-crypto').val() == 'dcn') {
+                //checking if dcn value is lesser than 10 (contract condition)
+                basic.showAlert('Please make sure DCN value is greater than 10. You cannot send less than 10 DCN.', '', true);
+                return false;
+            } else if (0.0005 > parseFloat(dApp.web3_1_0.utils.fromWei(await dApp.helper.getAddressETHBalance(global_state.account)))) {
+                //checking if current balance is lower than the desired value to send
+                basic.showAlert('For sending DCN you need at least 0.0005 ETH. Please refill.', '', true);
+                return false;
+            } else if($('.section-amount-to #active-crypto').val() == 'dcn' && crypto_val > parseInt(await dApp.methods.getDCNBalance(global_state.account))) {
+                basic.showAlert('The value you want to send is higher than your balance.', '', true);
+                return false;
+            } else if($('.section-amount-to #active-crypto').val() == 'eth' && crypto_val > parseFloat(dApp.web3_1_0.utils.fromWei(await dApp.helper.getAddressETHBalance(global_state.account)))) {
+                basic.showAlert('The value you want to send is higher than your balance.', '', true);
+                return false;
+            } else if (!innerAddressCheck(sending_to_address)) {
+                //checking again if valid address
+                basic.showAlert('Please enter a valid wallet address. It should start with "0x" and be followed by 40 characters (numbers and letters).', '', true);
+                return false;
+            } else if(!$('.section-amount-to #verified-receiver-address').is(':checked')) {
+                //checking again if valid address
+                basic.showAlert('Please check the checkbox.', '', true);
+                return false;
+            }
+
+            if(meta_mask_installed)    {
+                if($('.section-amount-to #active-crypto').val() == 'dcn') {
+                    dApp.methods.transfer(sending_to_address, crypto_val);
+                } else if($('.section-amount-to #active-crypto').val() == 'eth') {
+                    dApp.web3_1_0.eth.sendTransaction({
+                        from: global_state.account, to: sending_to_address, value: dApp.web3_1_0.utils.toWei(crypto_val, 'ether')
+                    }).on('transactionHash', function(hash){
+                        displayMessageOnDCNTransactionSend('Ethers', hash);
+                    }).catch(function(err) {
+                        basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
+                    });
+                }
+            } else {
+                showLoader();
+
+                var function_abi;
+                var token_symbol;
+                if($('.section-amount-to #active-crypto').val() == 'dcn') {
+                    token_symbol = 'DCN';
+                    function_abi = DCNContract.methods.transfer(sending_to_address, crypto_val).encodeABI();
+                } else if($('.section-amount-to #active-crypto').val() == 'eth') {
+                    token_symbol = 'ETH';
+                }
+
+                //calculating the fee from the gas price and the estimated gas price
+                const on_popup_load_gwei = ethgasstation_data.safeLow;
+                //adding 10% of the outcome just in case transactions don't take so long
+                const on_popup_load_gas_price = on_popup_load_gwei * 100000000 + ((on_popup_load_gwei * 100000000) * 10/100);
+
+                //using ethgasstation gas price and not await dApp.helper.getGasPrice(), because its more accurate
+                var eth_fee = dApp.web3_1_0.utils.fromWei((on_popup_load_gas_price * await dApp.helper.estimateGas(sending_to_address, function_abi)).toString(), 'ether');
+
+                var transaction_popup_html = '<div class="title">Send confirmation</div><div class="pictogram-and-dcn-usd-price"><svg version="1.1" class="width-100 max-width-100 margin-bottom-10" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><style type="text/css">.st0{fill:#FFFFFF;}.st1{fill:#CA675A;}.st2{fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="100" width="105.7" x="-7.2" y="-6.4"></sliceSourceBounds></sfw></metadata><circle class="st0" cx="50" cy="50" r="50"/><g><g><g><path class="st1" d="M50.1,93.7c-18.7,0-36-12.4-41.3-31.3C2.4,39.6,15.8,16,38.5,9.6C48.9,6.7,60,7.8,69.6,12.8c1.2,0.6,1.6,2,1,3.2s-2,1.6-3.2,1c-8.6-4.4-18.4-5.4-27.7-2.8c-20.1,5.6-32,26.7-26.3,46.9s26.7,32.1,46.9,26.4s32.1-26.7,26.4-46.9c-1.1-3.9-2.8-7.6-5-10.9c-0.7-1.1-0.4-2.6,0.7-3.3c1.1-0.7,2.6-0.4,3.3,0.7c2.5,3.8,4.4,7.9,5.6,12.3c6.4,22.8-7,46.5-29.7,52.8C57.8,93.2,53.9,93.7,50.1,93.7z"/></g><g><path class="st1" d="M33.1,78.6c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.4l40.4-50.5c0.8-1,2.3-1.2,3.4-0.4c1,0.8,1.2,2.3,0.4,3.4L35,77.7C34.5,78.3,33.8,78.6,33.1,78.6z"/></g><g><g><path class="st2" d="M105.7,56.9"/></g></g></g><g><path class="st1" d="M73.7,54.2c-0.1,0-0.2,0-0.2,0c-1.3-0.2-2.3-1.4-2.2-2.7L74,23.9L47.6,39.8c-1.1,0.7-2.6,0.3-3.3-0.8c-0.7-1.1-0.3-2.6,0.8-3.3l34.5-20.8L76.1,52C76,53.2,74.9,54.2,73.7,54.2z"/></g></g></svg><div class="dcn-amount">-'+crypto_val+' '+token_symbol+'</div><div class="usd-amount">=$'+usd_val+'</div></div><div class="confirm-row to"> <div class="label inline-block">To:</div><div class="value inline-block">'+sending_to_address+'</div></div><div class="confirm-row from"> <div class="label inline-block">From:</div><div class="value inline-block">'+global_state.account+'</div></div><div class="confirm-row free"> <div class="label inline-block">Ether fee:</div><div class="value inline-block">'+parseFloat(eth_fee).toFixed(8)+'</div></div>';
+
+                if((is_hybrid && window.localStorage.getItem('keystore_path') != null) || (!is_hybrid && window.localStorage.getItem('keystore_file') != null)) {
+                    //cached keystore path on mobile device or cached keystore file on browser
+                    transaction_popup_html+='<div class="container-fluid"><div class="row padding-top-25 cached-keystore-file"><div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">Secret password:</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">Confirm</a></div></div></div>';
+                    basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
+
+                    $('.cached-keystore-file .confirm-transaction.keystore-file').click(function() {
+                        if($('.cached-keystore-file #your-secret-key-password').val().trim() == '') {
+                            basic.showAlert('Please enter valid secret file password.', '', true);
+                        } else {
+                            showLoader();
+
+                            setTimeout(function() {
+                                if(!is_hybrid && window.localStorage.getItem('keystore_file') != null) {
+                                    // BROWSER
+                                    var decrypting_keystore = decryptKeystore(window.localStorage.getItem('keystore_file'), $('.cached-keystore-file  #your-secret-key-password').val().trim());
+                                    if(decrypting_keystore.success) {
+                                        submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, decrypting_keystore.success);
+                                    } else if(decrypting_keystore.error) {
+                                        basic.showAlert(decrypting_keystore.message, '', true);
+                                        hideLoader();
+                                    }
+                                } else if(is_hybrid && window.localStorage.getItem('keystore_path') != null) {
+                                    // MOBILE APP
+                                    window.resolveLocalFileSystemURL(window.localStorage.getItem('keystore_path'), function (entry) {
+                                        window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (rootEntry) {
+                                            console.log(rootEntry, 'rootEntry');
+                                            rootEntry.getFile(entry.fullPath, {create: false}, function (fileEntry) {
+                                                console.log(fileEntry, 'fileEntry');
+                                                fileEntry.file(function(file) {
+                                                    var reader = new FileReader();
+
+                                                    reader.onloadend = function () {
+                                                        var keystore_string = this.result;
+                                                        console.log(keystore_string, 'keystore_string');
+
+                                                        showLoader();
+
+                                                        setTimeout(function () {
+                                                            var decrypting_keystore = decryptKeystore(keystore_string, $('.cached-keystore-file #your-secret-key-password').val().trim());
+                                                            console.log(decrypting_keystore, 'decrypting_keystore');
+                                                            if (decrypting_keystore.success) {
+                                                                submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, decrypting_keystore.success);
+                                                            } else if (decrypting_keystore.error) {
+                                                                basic.showAlert(decrypting_keystore.message, '', true);
+                                                                hideLoader();
+                                                            }
+                                                        }, 500);
+                                                    };
+
+                                                    reader.readAsText(file);
+                                                }, function(err) {
+                                                    alert('Something went wrong with reading your cached file (Core error 1). Please contact admin@dentacoin.com.');
+                                                });
+                                            });
+                                        });
+                                    });
+                                }
+                            }, 500);
+                        }
+                    });
+                } else {
+                    //nothing is cached
+                    transaction_popup_html+='<div class="container-fluid proof-of-address padding-top-20 padding-bottom-20"> <div class="row fs-0"> <div class="col-xs-12 col-sm-5 inline-block padding-left-30 padding-left-xs-15"> <a href="javascript:void(0)" class="light-blue-white-btn text-center enter-private-key display-block-important fs-18 line-height-18"><span>Enter your Private Key<div class="fs-16">(not recommended)</div></span></a> </div><div class="col-xs-12 col-sm-2 text-center calibri-bold fs-20 inline-block">or</div><div class="col-xs-12 col-sm-5 inline-block padding-right-30 padding-right-xs-15"> <div class="upload-file-container" data-id="upload-keystore-file" data-label="Upload your Keystore file"> <input type="file" id="upload-keystore-file" class="custom-upload-keystore-file hide-input"/> <div class="btn-wrapper"></div></div></div></div><div class="row on-change-result"></div></div>';
+                    basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
+
+                    //init private key btn logic
+                    $(document).on('click', '.enter-private-key', function() {
+                        $('.proof-of-address #upload-keystore-file').val('');
+                        $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-20"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-private-key">Your Private Key:</label><input type="text" id="your-private-key" maxlength="64" class="full-rounded"/></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction private-key">Confirm</a></div>');
+
+                        $('.confirm-transaction.private-key').click(function() {
+                            if($('.proof-of-address #your-private-key').val().trim() == '') {
+                                basic.showAlert('Please enter valid private key.', '', true);
+                            } else {
+                                showLoader();
+
+                                setTimeout(function() {
+                                    var validating_private_key = validatePrivateKey($('.proof-of-address #your-private-key').val().trim());
+                                    console.log(validating_private_key, 'validating_private_key');
+                                    if(validating_private_key.success) {
+                                        if(checksumAddress(validating_private_key.success.address) == checksumAddress(global_state.account)) {
+                                            submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, new Buffer($('.proof-of-address #your-private-key').val().trim(), 'hex'));
+                                        } else {
+                                            basic.showAlert('Please enter private key related to your Wallet Address', '', true);
+                                            hideLoader();
+                                        }
+                                    } else if(validating_private_key.error) {
+                                        basic.showAlert(validating_private_key.message, '', true);
+                                        hideLoader();
+                                    }
+                                }, 500);
+                            }
+                        });
+                    });
+
+                    //init keystore btn logic
+                    styleKeystoreUploadBtnForTx(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price);
+                }
+                hideLoader();
+            }
+        });
+    },
+    faq_page_gift_cards: function() {
+        if($('.list .question').length > 0) {
+            $('.list .question').click(function()   {
+                $(this).closest('li').find('.question-content').toggle(300);
+            });
+        }
+    },
+    spend_page_gift_cards: async function() {
+        if(!bidali_lib_loaded) {
+            showLoader();
+            await $.getScript('assets/libs/bidali/bidali-commerce.js');
+            bidali_lib_loaded = true;
+            hideLoader();
+        }
+
+        $('.buy-gift-cards').click(function() {
+            bidaliSdk.Commerce.render({
+                apiKey: 'pk_n6mvpompwzm83egzrz2vnh',
+                paymentCurrencies: ['DCN']
+            });
+        });
+    },
+    spend_page_exchanges: async function() {
+        showLoader();
+
+        var exchanges = await getExchanges();
+        setTimeout(function() {
+
+            var exchanges_html = '';
+            for(var i = 0, len = exchanges.length; i < len; i+=1) {
+                exchanges_html+='<li><a href="'+exchanges[i].link+'" target="_blank">• '+exchanges[i].title+'</a></li>';
+            }
+
+            $('.camping-for-exchanges').html(exchanges_html);
+
+            hideLoader();
+        }, 1000);
     }
 };
 
-window.getHomepageData = async function(){
+function styleKeystoreUploadBtnForTx(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price) {
+    $('.custom-upload-keystore-file').each(function() {
+        var this_btn_vanilla = this;
+        var this_btn = $(this_btn_vanilla);
+
+        var this_btn_parent = this_btn.closest('.upload-file-container');
+        this_btn_parent.find('.btn-wrapper').append("<label for='"+this_btn_parent.attr('data-id')+"'  role='button' class='light-blue-white-btn display-block-important custom-upload-keystore-file-label'><span class='display-block-important fs-18 text-center'>"+this_btn_parent.attr('data-label')+"</span></label>");
+
+        if(is_hybrid) {
+            // MOBILE APP
+            $('.custom-upload-keystore-file-label').removeAttr('for');
+
+            $('.custom-upload-keystore-file-label').click(function() {
+                fileChooser.open(function(file_uri) {
+                    console.log(file_uri, 'file_uri');
+                    window.resolveLocalFileSystemURL(decodeURIComponent(file_uri), function (entry) {
+                        console.log(entry, 'entry');
+                        console.log(entry.fullPath, 'entry.fullPath');
+                        console.log(decodeURIComponent(entry.fullPath), 'decodeURIComponent(entry.fullPath)');
+                        window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function (rootEntry) {
+                            console.log(rootEntry, 'rootEntry');
+                            rootEntry.getFile(decodeURIComponent(entry.fullPath), { create: false }, function (fileEntry) {
+                                console.log(fileEntry, 'fileEntry');
+                                fileEntry.file(function (file) {
+                                    var reader = new FileReader();
+
+                                    reader.onloadend = function () {
+                                        var keystore_string = this.result;
+                                        setTimeout(function () {
+                                            if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address')) {
+                                                $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="fs-14 light-gray-color text-center padding-bottom-10 padding-top-15 file-name">' + fileEntry.name + '</div><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">Secret password:</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"/></div></div><div class="col-xs-12"><div class="text-center padding-top-10"><input type="checkbox" id="agree-to-cache-tx-sign" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-tx-sign"><span class="padding-left-5 padding-right-5 inline-block">Remember keystore file</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block tx-sign-more-info-keystore-remember fs-0" data-content="Remembering your keystore file allows for easier and faster transactions. It is stored only in local device storage and nobody else has access to it."><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div></div><div class="btn-container col-xs-12 padding-top-25"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">Confirm</a></div>');
+
+                                                $('.tx-sign-more-info-keystore-remember').popover({
+                                                    trigger: 'click'
+                                                });
+
+                                                $('.confirm-transaction.keystore-file').click(function () {
+                                                    if ($('.proof-of-address #your-secret-key-password').val().trim() == '') {
+                                                        basic.showAlert('Please enter valid secret file password.', '', true);
+                                                    } else {
+                                                        showLoader();
+
+                                                        setTimeout(function () {
+                                                            var decrypting_keystore = decryptKeystore(keystore_string, $('.proof-of-address #your-secret-key-password').val().trim());
+                                                            if (decrypting_keystore.success) {
+                                                                if ($('.proof-of-address #agree-to-cache-tx-sign').is(':checked')) {
+                                                                    //caching (creating) the keystore file in the external data storage folder for this app
+                                                                    var keystore_file_name = buildKeystoreFileName(global_state.account);
+                                                                    window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (dirEntry) {
+                                                                        dirEntry.getFile(keystore_file_name, {
+                                                                            create: true,
+                                                                            exclusive: true
+                                                                        }, function (fileEntry) {
+                                                                            fileEntry.createWriter(function (fileWriter) {
+                                                                                fileWriter.onwriteend = function (e) {
+                                                                                    window.localStorage.setItem('keystore_path', cordova.file.externalDataDirectory + keystore_file_name);
+                                                                                };
+
+                                                                                fileWriter.onerror = function (e) {
+                                                                                    alert('Something went wrong with caching your file (Core error 3). Please contact admin@dentacoin.com.');
+                                                                                };
+
+                                                                                // Create a new Blob and write they keystore content inside of it
+                                                                                var blob = new Blob([keystore_string], {type: 'text/plain'});
+                                                                                fileWriter.write(blob);
+                                                                            }, function (err) {
+                                                                                alert('Something went wrong with caching your file (Core error 4). Please contact admin@dentacoin.com.');
+                                                                            });
+                                                                        }, function (err) {
+                                                                            alert('Something went wrong with caching your file (Core error 5). Please contact admin@dentacoin.com.');
+                                                                        });
+                                                                    });
+                                                                }
+
+                                                                submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, decrypting_keystore.success);
+                                                            } else if (decrypting_keystore.error) {
+                                                                basic.showAlert(decrypting_keystore.message, '', true);
+                                                                hideLoader();
+                                                            }
+                                                        }, 500);
+                                                    }
+                                                });
+                                            } else {
+                                                basic.showAlert('Please upload valid keystore file.', '', true);
+                                            }
+                                        }, 500);
+                                    };
+
+                                    reader.readAsText(file);
+                                }, function (err) {
+                                    alert('Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.');
+                                });
+                            });
+                        });
+                    });
+                }, function(err) {
+                    alert('File upload failed, please try again with file inside your internal storage.');
+                });
+            });
+        } else {
+            // BROWSER
+            this_btn_vanilla.addEventListener('change', function(e) {
+                var fileName = '';
+                if(this.files && this.files.length > 1) {
+                    fileName = ( this.getAttribute('data-multiple-caption') || '' ).replace('{count}', this.files.length);
+                } else {
+                    fileName = e.target.value.split('\\').pop();
+                }
+
+                if(this_btn.attr('id') == 'upload-keystore-file') {
+                    var uploaded_file = this.files[0];
+                    var reader = new FileReader();
+                    reader.addEventListener('load', function (e) {
+                        if (basic.isJsonString(e.target.result) && basic.property_exists(JSON.parse(e.target.result), 'address') && ('0x' + JSON.parse(e.target.result).address) == global_state.account) {
+                            var keystore_string = e.target.result;
+                            $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="fs-14 light-gray-color text-center padding-bottom-10 padding-top-15 file-name">'+fileName+'</div><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">Secret password:</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"/></div></div><div class="col-xs-12"><div class="text-center padding-top-10"><input type="checkbox" id="agree-to-cache-tx-sign" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-tx-sign"><span class="padding-left-5 padding-right-5 inline-block">Remember keystore file</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block tx-sign-more-info-keystore-remember fs-0" data-content="Remembering your keystore file allows for easier and faster transactions. It is stored only in local device storage and nobody else has access to it."><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div></div><div class="btn-container col-xs-12 padding-top-25"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">Confirm</a></div>');
+
+                            $('.tx-sign-more-info-keystore-remember').popover({
+                                trigger: 'click'
+                            });
+
+                            $('.confirm-transaction.keystore-file').click(function() {
+                                if($('.proof-of-address #your-secret-key-password').val().trim() == '') {
+                                    basic.showAlert('Please enter valid secret file password.', '', true);
+                                } else {
+                                    showLoader();
+
+                                    setTimeout(function() {
+                                        var decrypting_keystore = decryptKeystore(keystore_string, $('.proof-of-address #your-secret-key-password').val().trim());
+                                        if(decrypting_keystore.success) {
+                                            if($('.proof-of-address #agree-to-cache-tx-sign').is(':checked')) {
+                                                window.localStorage.setItem('keystore_file', keystore_string);
+                                            }
+
+                                            submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, decrypting_keystore.success);
+                                        } else if(decrypting_keystore.error) {
+                                            basic.showAlert(decrypting_keystore.message, '', true);
+                                            hideLoader();
+                                        }
+                                    }, 500);
+                                }
+                            });
+                        } else {
+                            $('#upload-keystore-file').val('');
+                            basic.showAlert('Please upload valid keystore file which is related to your Wallet Address.', '', true);
+                        }
+                    });
+                    reader.readAsBinaryString(uploaded_file);
+                }
+            });
+            // Firefox bug fix
+            this_btn_vanilla.addEventListener('focus', function(){ this_btn.classList.add('has-focus'); });
+            this_btn_vanilla.addEventListener('blur', function(){ this_btn.classList.remove('has-focus'); });
+        }
+    });
+}
+
+function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver, on_popup_load_gas_price, key) {
+    dApp.web3_1_0.eth.getTransactionCount(global_state.account, function (err, nonce) {
+        const EthereumTx = require('ethereumjs-tx');
+        var transaction_obj = {
+            gasLimit: dApp.web3_1_0.utils.toHex(65000),
+            gasPrice: dApp.web3_1_0.utils.toHex(on_popup_load_gas_price),
+            from: global_state.account,
+            nonce: dApp.web3_1_0.utils.toHex(nonce),
+            chainId: 1
+        };
+
+        if(function_abi != 'undefined') {
+            transaction_obj.data = function_abi;
+        }
+
+        var token_label;
+        if(symbol == 'DCN') {
+            transaction_obj.to = dApp.contract_address;
+            token_label = 'Dentacoin tokens';
+        } else if(symbol == 'ETH') {
+            transaction_obj.to = receiver;
+            transaction_obj.value = dApp.web3_1_0.utils.toHex(dApp.web3_1_0.utils.toWei(token_val.toString(), 'ether'));
+            token_label = 'Ethers';
+        }
+
+        const tx = new EthereumTx(transaction_obj);
+        //signing the transaction
+        tx.sign(key);
+        //sending the transaction
+        dApp.web3_1_0.eth.sendSignedTransaction('0x' + tx.serialize().toString('hex'), function (err, transactionHash) {
+            hideLoader();
+            basic.closeDialog();
+
+            displayMessageOnDCNTransactionSend(token_label, transactionHash);
+        });
+    });
+}
+
+function displayMessageOnDCNTransactionSend(token_label, tx_hash)  {
+    $('.section-amount-to #crypto-amount').val('').trigger('change');
+    $('.section-amount-to #usd-val').val('').trigger('change');
+    $('.section-amount-to #verified-receiver-address').prop('checked', false);
+
+    basic.showAlert('<div class="padding-top-15 padding-bottom-10 fs-16">Your '+token_label+' are on their way to the Receiver\'s wallet. Check transaction status <a href="https://etherscan.io/tx/'+tx_hash+'" target="_blank" class="lato-bold color-light-blue">Etherscan</a>.</div>', '', true);
+}
+
+async function additionalMethodsAfterAngularViewInit() {
+    await dApp.init();
+}
+
+window.getHomepageData = async function() {
+    initAccountChecker();
+
     if(!dApp.loaded) {
-        await dApp.init();
+        await additionalMethodsAfterAngularViewInit();
     }
     if($.isReady) {
         //called on route change
@@ -80608,7 +81882,7 @@ window.getHomepageData = async function(){
 
 window.getBuyPageData = async function(){
     if(!dApp.loaded) {
-        await dApp.init();
+        additionalMethodsAfterAngularViewInit();
     }
     if($.isReady) {
         //called on route change
@@ -80618,6 +81892,74 @@ window.getBuyPageData = async function(){
         $(document).ready(async function() {
             pages_data.buy_page();
         });
+    }
+};
+
+window.getSendPageData = async function(){
+    initAccountChecker();
+
+    if(!dApp.loaded) {
+        additionalMethodsAfterAngularViewInit();
+    }
+    if($.isReady) {
+        //called on route change
+        pages_data.send_page();
+    } else {
+        //called on page init
+        $(document).ready(async function() {
+            pages_data.send_page();
+        });
+    }
+};
+
+window.getFaqPageData = async function(){
+    if(!dApp.loaded) {
+        additionalMethodsAfterAngularViewInit();
+    }
+    if($.isReady) {
+        //called on route change
+        pages_data.faq_page_gift_cards();
+    } else {
+        //called on page init
+        $(document).ready(async function() {
+            pages_data.faq_page_gift_cards();
+        });
+    }
+};
+
+window.getSpendPageGiftCards = async function(){
+    if(!dApp.loaded) {
+        additionalMethodsAfterAngularViewInit();
+    }
+    if($.isReady) {
+        //called on route change
+        pages_data.spend_page_gift_cards();
+    } else {
+        //called on page init
+        $(document).ready(async function() {
+            pages_data.spend_page_gift_cards();
+        });
+    }
+};
+
+window.getSpendPageExchanges = async function(){
+    if(!dApp.loaded) {
+        additionalMethodsAfterAngularViewInit();
+    }
+    if($.isReady) {
+        //called on route change
+        pages_data.spend_page_exchanges();
+    } else {
+        //called on page init
+        $(document).ready(async function() {
+            pages_data.spend_page_exchanges();
+        });
+    }
+};
+
+window.initdApp = async function(){
+    if(!dApp.loaded) {
+        additionalMethodsAfterAngularViewInit();
     }
 };
 
@@ -80646,6 +81988,14 @@ function sortByKey(array, key) {
     });
 }
 
+async function getEthgasstationData() {
+    return await $.ajax({
+        type: 'GET',
+        url: 'https://ethgasstation.info/json/ethgasAPI.json',
+        dataType: 'json'
+    });
+}
+
 async function getDentacoinDataByCoingecko() {
     return await $.ajax({
         type: 'GET',
@@ -80654,10 +82004,39 @@ async function getDentacoinDataByCoingecko() {
     });
 }
 
+async function getEthereumDataByCoingecko() {
+    return await $.ajax({
+        type: 'GET',
+        url: 'https://api.coingecko.com/api/v3/coins/ethereum',
+        dataType: 'json'
+    });
+}
+
 async function getCryptoDataByIndacoin(cryptocurrency_symbol) {
     return await $.ajax({
         type: 'GET',
         url: 'https://indacoin.com/api/GetCoinConvertAmount/USD/'+cryptocurrency_symbol+'/100/dentacoin',
+        dataType: 'json'
+    });
+}
+
+async function getClinics() {
+    return await $.ajax({
+        type: 'POST',
+        url: 'https://api.dentacoin.com/api/users/',
+        dataType: 'json',
+        data: {
+            status: 'approved',
+            type: 'all-dentists',
+            items_per_page: 10000
+        }
+    });
+}
+
+async function getExchanges() {
+    return await $.ajax({
+        type: 'GET',
+        url: 'https://dentacoin.com/info/exchanges',
         dataType: 'json'
     });
 }
@@ -80692,8 +82071,8 @@ function bindGoogleAlikeButtonsEvents() {
     //google alike style for label/placeholders
     $('body').on('click', '.custom-google-label-style label', function() {
         $(this).addClass('active-label');
-        if($('.custom-google-label-style').attr('data-input-blue-green-border') == 'true') {
-            $(this).parent().find('input').addClass('blue-green-border');
+        if($('.custom-google-label-style').attr('data-input-light-blue-border') == 'true') {
+            $(this).parent().find('input').addClass('light-blue-border');
         }
     });
 
@@ -80701,101 +82080,963 @@ function bindGoogleAlikeButtonsEvents() {
         var value = $(this).val().trim();
         if (value.length) {
             $(this).closest('.custom-google-label-style').find('label').addClass('active-label');
-            if($(this).closest('.custom-google-label-style').attr('data-input-blue-green-border') == 'true') {
-                $(this).addClass('blue-green-border');
+            if($(this).closest('.custom-google-label-style').attr('data-input-light-blue-border') == 'true') {
+                $(this).addClass('light-blue-border');
             }
         } else {
             $(this).closest('.custom-google-label-style').find('label').removeClass('active-label');
-            if($(this).closest('.custom-google-label-style').attr('data-input-blue-green-border') == 'true') {
-                $(this).removeClass('blue-green-border');
+            if($(this).closest('.custom-google-label-style').attr('data-input-light-blue-border') == 'true') {
+                $(this).removeClass('light-blue-border');
             }
         }
     });
 }
 bindGoogleAlikeButtonsEvents();
 
-function uploadFile() {
-    if(basic.getMobileOperatingSystem() == 'Android') {
-        console.log('IS ANDROID');
-        document.addEventListener("deviceready", function() {
-            console.log('deviceready');
-            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
-                console.log('file system open: ' + fs.name);
-                fs.root.getFile('cordova-log.txt', { create: true, exclusive: false }, function (fileEntry) {
-                    writeFile(fileEntry, null);
-                    //readFile(fileEntry);
-                }, function(err) {
-                    console.log(err, 'error fs.root.getFile');
-                });
-            }, function(err) {
-                console.log(err, 'error window.requestFileSystem(LocalFileSystem.PERSISTENT');
+var current_meta_mask_account;
+if(typeof(web3) !== 'undefined' && web3.currentProvider.isMetaMask === true) {
+    current_meta_mask_account = web3.eth.defaultAccount;
+}
+
+async function initAccountChecker()  {
+    is_hybrid = $('#main-container').attr('hybrid') == 'true';
+    console.log('initAccountChecker');
+    //checking if metamask
+    if(typeof(web3) !== 'undefined' && web3.currentProvider.isMetaMask === true) {
+        console.log(1);
+        meta_mask_installed = true;
+
+        console.log(current_meta_mask_account, 'current_meta_mask_account');
+
+        window.ethereum.on('accountsChanged', async function () {
+            var accounts = await web3.eth.getAccounts();
+            console.log(accounts, 'accounts accountsChanged');
+            if(accounts.length) {
+                console.log(current_meta_mask_account, 'current_meta_mask_account');
+                if(innerAddressCheck(current_meta_mask_account) && checksumAddress(current_meta_mask_account) != checksumAddress(accounts[0]) || current_meta_mask_account == null) {
+                    console.log('accountsChanged reload 1');
+                    window.location.reload();
+                }
+            } else if(current_meta_mask_account != undefined && current_meta_mask_account != null) {
+                console.log('accountsChanged reload 2');
+                window.location.reload();
+            }
+        });
+
+        web3.currentProvider.publicConfigStore.on('update', async function() {
+            var accounts = await web3.eth.getAccounts();
+            console.log(accounts, 'accounts update');
+            if(accounts.length) {
+                console.log(current_meta_mask_account, 'current_meta_mask_account');
+                if(innerAddressCheck(current_meta_mask_account) && checksumAddress(current_meta_mask_account) != checksumAddress(accounts[0]) || current_meta_mask_account == null) {
+                    console.log('update reload 1');
+                    window.location.reload();
+                }
+            } else if(current_meta_mask_account != undefined && current_meta_mask_account != null) {
+                console.log('update reload 2');
+                window.location.reload();
+            }
+        });
+
+/*
+        console.log(current_meta_mask_account, 'current_meta_mask_account');
+
+        //on address change
+        window.ethereum.on('accountsChanged', async function () {
+            var accounts = await web3.eth.getAccounts();
+            if(accounts.length) {
+                console.log(current_meta_mask_account, 'current_meta_mask_account');
+                console.log(accounts[0], 'accounts[0]');
+                if(innerAddressCheck(current_meta_mask_account) && checksumAddress(current_meta_mask_account) != checksumAddress(accounts[0])) {
+                    console.log('accountsChanged reload 1');
+                    window.location.reload();
+                }
+            } else if(current_meta_mask_account != undefined) {
+                console.log('accountsChanged reload 2');
+                window.location.reload();
+            }
+        });
+
+        //account login
+        web3.currentProvider.publicConfigStore.on('update', async function() {
+            var accounts = await web3.eth.getAccounts();
+            if(accounts.length) {
+                console.log(current_meta_mask_account, 'current_meta_mask_account');
+                console.log(accounts[0], 'accounts[0]');
+                if(innerAddressCheck(current_meta_mask_account) && checksumAddress(current_meta_mask_account) != checksumAddress(accounts[0])) {
+                    console.log('update reload 1');
+                    window.location.reload();
+                }
+            } else if(current_meta_mask_account != undefined) {
+                console.log('update reload 2');
+                window.location.reload();
+            }
+        });*/
+
+        if(current_meta_mask_account != undefined && current_meta_mask_account != null)  {
+            console.log(1.1);
+            meta_mask_logged = true;
+        }else {
+            console.log(1.2);
+            //if metamask is installed, but user not logged show login popup
+            basic.showDialog('<div class="popup-body"><div class="title">Sign in to MetaMask</div><div class="subtitle">Open up your browser\'s MetaMask extention.</div><div class="separator"></div><figure class="gif"><img src="assets/images/metamask-animation.gif" alt="Login MetaMask animation"/> </figure></div>', 'login-metamask-desktop');
+        }
+    } else if(window.localStorage.getItem('current_account') == null && typeof(web3) === 'undefined') {
+        console.log(2);
+        //show custom authentication popup
+        var popup_html = '<h2 class="title">Create a new wallet or import an existing one</h2><div class="left-right-side-holder fs-0"><div class="popup-left inline-block-top" data-step="first"><div class="navigation-link"><a href="javascript:void(0)" data-slug="first" class="active">CREATE</a></div><div class="navigation-link mobile"><a href="javascript:void(0)" data-slug="second">IMPORT</a></div><div class="popup-body first"><label class="custom-label">Choose a password for your secret key file</label><div class="custom-google-label-style margin-bottom-15 max-width-300 margin-left-right-auto module" data-input-light-blue-border="true"><label for="keystore-file-pass">Enter password:</label><input type="password" maxlength="30" id="keystore-file-pass" class="full-rounded keystore-file-pass"/></div><div class="custom-google-label-style max-width-300 margin-left-right-auto module" data-input-light-blue-border="true"><label for="second-pass">Repeat password:</label><input type="password" maxlength="30" id="second-pass" class="full-rounded second-pass"/></div><div class="btn-container text-center padding-top-30"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border create-keystore">CREATE</a></div></div></div><div class="popup-right inline-block-top"><div class="navigation-link"><a href="javascript:void(0)" data-slug="second">IMPORT</a></div><div class="popup-body second custom-hide"><div class="padding-top-20 padding-bottom-30 fs-0 row-with-image-and-text"><svg class="inline-block width-100 max-width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 70.8 86" style="enable-background:new 0 0 70.8 86;" xml:space="preserve"><style type="text/css">.st0{fill:#FFFFFF;}.st1{stroke:#000000;stroke-width:2;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="86" width="70.7" x="16" y="29"></sliceSourceBounds></sfw></metadata><path d="M44.7,0H3.1C1.4,0,0,1.3,0,3v80c0,1.6,1.4,3,3.1,3h57.9c1.7,0,3.1-1.3,3.1-3V18.8c0-0.9-0.4-1.8-1-2.5L47.2,1C46.5,0.4,45.6,0,44.7,0z"/><circle class="st0" cx="52.8" cy="23" r="16.8"/><rect x="28" y="49" class="st0" width="8" height="37"/><path class="st0" d="M18.2,58.8l13.4-14.6c0.3-0.3,0.7-0.3,1,0l13.4,14.7c0.4,0.4,0.1,1.2-0.5,1.2H18.6C18.1,60,17.8,59.2,18.2,58.8z"/><g><path class="st1" d="M52.3,6.5C61.5,6.5,69,14,69,23.1s-7.5,16.7-16.7,16.7s-16.7-7.5-16.7-16.7S43.1,6.5,52.3,6.5 M52.3,5.7c-9.7,0-17.5,7.8-17.5,17.5s7.8,17.5,17.5,17.5s17.5-7.8,17.5-17.5S61.9,5.7,52.3,5.7L52.3,5.7z"/></g><g><g><path d="M45,16c-1.9,1.9-1.9,4.9,0,6.8c1.9,1.9,4.9,1.9,6.8,0c1.9-1.9,1.9-4.9,0-6.8C49.8,14.1,46.8,14.1,45,16z M50.9,21.9c-1.4,1.4-3.7,1.4-5.1,0c-1.4-1.4-1.4-3.7,0-5.1c1.4-1.4,3.7-1.4,5.1,0C52.3,18.2,52.3,20.5,50.9,21.9z"/><polygon points="60.7,30.7 59.7,31.8 50.9,22.9 51.9,21.9 "/></g><rect x="59" y="28.4" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -2.9698 50.8809)" width="1.9" height="1.2"/><rect x="58.2" y="27.7" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -2.6509 50.155)" width="1.9" height="1.2"/></g></svg><div class="inline-block padding-left-15 fs-16 text">To access your wallet, please upload your Keystore/ Secret Key File:</div></div><div class="text-center import-keystore-file-row">';
+        if(is_hybrid) {
+            popup_html+='<label class="button custom-upload-button">';
+        } else {
+            popup_html+='<input type="file" id="upload-keystore" class="hide-input upload-keystore"/><label for="upload-keystore" class="button custom-upload-button">';
+        }
+        popup_html+='<a><span>Upload your Keystore File (recommended)</span><svg class="load" version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0 0 40 40" enable-background="new 0 0 40 40"><path opacity="0.3" fill="#fff" d="M20.201,5.169c-8.254,0-14.946,6.692-14.946,14.946c0,8.255,6.692,14.946,14.946,14.946s14.946-6.691,14.946-14.946C35.146,11.861,28.455,5.169,20.201,5.169z M20.201,31.749c-6.425,0-11.634-5.208-11.634-11.634c0-6.425,5.209-11.634,11.634-11.634c6.425,0,11.633,5.209,11.633,11.634C31.834,26.541,26.626,31.749,20.201,31.749z"/><path fill="#fff" d="M26.013,10.047l1.654-2.866c-2.198-1.272-4.743-2.012-7.466-2.012h0v3.312h0C22.32,8.481,24.301,9.057,26.013,10.047z"><animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 20 20" to="360 20 20" dur="0.5s" repeatCount="indefinite"/></path></svg><svg class="check" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></a><div><span></span></div></label></div><div class="camping-for-action"></div><div class="padding-top-10 text-center fs-14 lato-bold or-label">OR</div><div class="padding-top-10 text-center import-private-key-row"><a href="javascript:void(0);" class="import-private-key light-blue-white-btn fs-16 fs-xs-14">Import Private Key (not recommended)</a></div></div></div>';
+        basic.showDialog(popup_html, 'custom-auth-popup', null, true);
+
+        var faq_link_position = setInterval(function() {
+            $('.auth-popup-faq-link').css({'top' : $('.custom-auth-popup.bootbox .modal-content').offset().top + $('.custom-auth-popup.bootbox .modal-content').height() + 'px', 'left' : $('.custom-auth-popup.bootbox .modal-content').offset().left + $('.custom-auth-popup.bootbox .modal-content').width() / 2, 'display' : 'block'});
+        }, 300);
+        $('.auth-popup-faq-link').click(function() {
+            $(this).hide();
+            clearInterval(faq_link_position);
+            basic.closeDialog();
+        });
+
+        $(document).on('click', '.refresh-import-init-page', function() {
+            $('.camping-for-action').html('').show();
+            $('.import-keystore-file-row #upload-keystore').val('');
+            $('.import-keystore-file-row').show();
+            $('.or-label').show();
+            $('.import-private-key-row').html('<a href="javascript:void(0);" class="import-private-key light-blue-white-btn fs-16 fs-xs-14">Import Private Key (not recommended)</a>').show();
+        });
+
+        $(document).on('click', '.import-private-key', function() {
+            $('.camping-for-action').hide();
+            $('.import-keystore-file-row').hide();
+            $('.or-label').hide();
+            $('.import-private-key-row').html('<div class="custom-google-label-style module text-left" data-input-light-blue-border="true"><label for="import-private-key">Private key:</label><input type="text" id="import-private-key" maxlength="100" class="full-rounded"/></div><div class="continue-btn-priv-key padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border">CONTINUE</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block">Go back</span></a></div>');
+            $('#import-private-key').focus();
+            $('label[for="import-private-key"]').addClass('active-label');
+
+            $('.continue-btn-priv-key > a').unbind().click(function() {
+                showLoader();
+                setTimeout(function() {
+                    var validate_private_key = validatePrivateKey($('#import-private-key').val().trim());
+                    if(validate_private_key.success) {
+                        var internet = navigator.onLine;
+                        if(internet) {
+                            console.log('===== make request for save public keys for assurance =====');
+                        }
+
+                        window.localStorage.setItem('current_account', validate_private_key.success.address);
+                        if(is_hybrid) {
+                            if(basic.getMobileOperatingSystem() == 'Android') {
+                                navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
+                            } else if(basic.getMobileOperatingSystem() == 'iOS') {
+                                alert('App refresh is not tested yet with iOS');
+                            }
+                        } else {
+                            window.location.reload();
+                        }
+                    } else if (validate_private_key.error) {
+                        hideLoader();
+                        basic.showAlert(validate_private_key.message, '', true);
+                    }
+                }, 500);
             });
-        }, false);
+        });
+
+        styleKeystoreUploadBtn();
+
+        $('.custom-auth-popup .navigation-link > a').click(function()  {
+            $('.custom-auth-popup .navigation-link a').removeClass('active');
+            $(this).addClass('active');
+            $('.custom-auth-popup .popup-body').addClass('custom-hide');
+            $('.custom-auth-popup .popup-body.'+$(this).attr('data-slug')).removeClass('custom-hide');
+        });
+
+        $('.custom-auth-popup .popup-left .btn-container a').click(function()   {
+            if($('.custom-auth-popup .keystore-file-pass').val().trim() == '')  {
+                basic.showAlert('Please enter password for your keystore file.', '', true);
+            }else if($('.custom-auth-popup .keystore-file-pass').val().trim().length < 8 || $('.custom-auth-popup .keystore-file-pass').val().trim().length > 30)  {
+                basic.showAlert('The password must be with minimum length of 8 characters and maximum 30.', '', true);
+            }else if($('.custom-auth-popup .keystore-file-pass').val().trim() != $('.custom-auth-popup .second-pass').val().trim())  {
+                basic.showAlert('Please make sure you entered same password in both fields.', '', true);
+            }else {
+                showLoader();
+
+                setTimeout(function() {
+                    var generated_keystore = generateKeystoreFile($('.custom-auth-popup .keystore-file-pass').val().trim());
+                    var keystore_file_name = buildKeystoreFileName('0x' + generated_keystore.success.keystore.address);
+
+                    //save the public key to assurance
+                    var internet = navigator.onLine;
+                    if(internet) {
+                        console.log('===== make request for save public keys for assurance =====');
+                    }
+
+                    var private_key = generated_keystore.success.recovered.toString('hex');
+
+                    var keystore_downloaded = false;
+                    $('.custom-auth-popup .popup-left').attr('data-step', 'second');
+                    $('.custom-auth-popup .popup-left[data-step="second"] .popup-body').html('<div class="padding-top-20 padding-bottom-30 fs-0 row-with-image-and-text"><svg class="inline-block width-100 max-width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 144.4 146.2" style="enable-background:new 0 0 144.4 146.2;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="146.2" width="144.4" x="-39.2" y="-23.6"></sliceSourceBounds></sfw></metadata><g><g><path d="M71.1,38.1c9.6,0,16.9-11.9,16.9-21.2S80.5,0,71.1,0C61.8,0,54,7.5,54,16.9S61.6,38.1,71.1,38.1z"/></g><g><path d="M43.6,63.6h7.8c0.7-3.2,0.7-3.4,0.7-3.9c0-0.7,1.1-0.7,1.1,0v3.9h36v-3.9c0-0.2,0.7-1.6,1.8,3.4c0,0.2,0,0.2,0.2,0.5h4.3v-5.2c0-3.9,3-6.8,6.8-6.8h4.3c-1.1-8.2-3.4-21.2-17.6-21.7c-3.9,7.1-10.3,12.8-18,12.8c-7.8,0-14.4-5.7-18-12.8C38.5,30.3,36.5,44,35.6,54.3C38.8,56.8,41.7,60,43.6,63.6z"/></g><g><path d="M40.1,92.4c0.7,0,1.1-0.2,1.6-0.5c2.3-0.9,4.1-2.5,5-4.8h-3.2C42.6,89.2,41.5,90.8,40.1,92.4z"/></g><g><path d="M53.1,138c0,4.3,3.4,8,7.8,8s8-3.6,8-8v-36c0-1.1,1.1-2.3,2.3-2.3c1.1,0,2.3,1.1,2.3,2.3v36.3c0,4.3,3.4,8,8,8c4.3,0,7.8-3.6,7.8-8V87.3h-36V138z"/></g><g><path d="M105.3,92.4c3.2,0,6.4-1.8,7.5-5H98C99,90.5,102.1,92.4,105.3,92.4z"/></g><g><path d="M142.3,68.2h-6.2V51.8c0-1.4-1.1-2.3-2.3-2.3h-10c-1.4,0-2.3,0.9-2.3,2.3v16.4h-7.1v-9.8c0-1.4-1.1-2.3-2.3-2.3h-10c-1.1,0-2.3,0.9-2.3,2.3v9.8H40.6C37.6,60,29.6,54.5,21,54.5c-11.6,0-21,9.3-21,21s9.3,21,21,21c8.9,0,16.6-5.5,19.6-13.7h101.5c1.1,0,2.3-1.1,2.3-2.3v-10C144.6,69.1,143.4,68.2,142.3,68.2z M21,83.9c-4.8,0-8.4-3.9-8.4-8.4c0-4.6,3.9-8.4,8.4-8.4c4.8,0,8.4,3.9,8.4,8.4C29.4,80,25.8,83.9,21,83.9z"/></g></g></svg><div class="inline-block padding-left-15 fs-16 text">Your Keystore/ Secret Key file contains <span class="calibri-bold">highly sensitive information. Please keep it safe</span> as it allows you to access and manage your Dentacoin tokens. </div></div><div class="download-btn btn-container" data-private-key=""><a href="javascript:void(0)" class="width-100 white-light-blue-btn no-hover"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="arrow-alt-down" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="width-100 max-width-30 inline-block margin-right-15 color-white"><path fill="currentColor" d="M176 32h96c13.3 0 24 10.7 24 24v200h103.8c21.4 0 32.1 25.8 17 41L241 473c-9.4 9.4-24.6 9.4-34 0L31.3 297c-15.1-15.1-4.4-41 17-41H152V56c0-13.3 10.7-24 24-24z" class=""></path></svg>Download Secret Key File (recommended)</a></div><div class="padding-top-15 padding-bottom-20 show-private-key-container"><a href="javascript:void(0);" class="width-100 show-private-key light-blue-white-btn">Show Private Key (not recommended)</a></div><div class="text-center padding-top-10"><input type="checkbox" id="agree-to-cache-create" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-create"><span class="padding-left-5 padding-right-5 inline-block">Remember keystore file</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block more-info-keystore-remember fs-0" data-content="Remembering your keystore file allows for easier and faster transactions. It is stored only in local device storage and nobody else has access to it."><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="continue-btn padding-top-20 padding-bottom-40 btn-container"><a href="javascript:void(0)" class="disabled white-light-blue-btn light-blue-border">I understand. CONTINUE</a></div>');
+
+                    $('.more-info-keystore-remember').popover({
+                        trigger: 'click'
+                    });
+
+                    $('.show-private-key-container .show-private-key').click(function() {
+                        $(this).parent().hide();
+                        $(this).remove();
+                        $('.show-private-key-container').append('<div class="private-key-holder"><div class="scroll-content">'+private_key+'</div></div><div class="padding-top-10 padding-bottom-15 fs-14 color-warning-red">This is NOT a recommended way of accessing your wallet. The information is highly sensitive and should therefore be used in offline settings by experienced crypto users.</div><div class="padding-top-10 padding-bottom-10 padding-left-30 padding-right-30 padding-left-xs-10 padding-right-xs-10 text-left fs-14 color-white row-with-warning-red-background"><div>*Do not lose it! It cannot be recovered if you lose it.</div><div>*Do not share it! Your funds will be stolen if you use this file on a malicious/phishing site.</div><div>*Make a backup! Secure it like the millions of dollars it may one day be worth.</div></div>').fadeIn(1000);
+                    });
+
+
+                    $('.custom-auth-popup .popup-left[data-step="second"] .popup-body .download-btn > a').click(function() {
+                        if(is_hybrid) {
+                            //MOBILE APP
+                            if(basic.getMobileOperatingSystem() == 'Android') {
+                                window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function (dirEntry) {
+                                    dirEntry.getFile(keystore_file_name, { create: true, exclusive: true }, function (fileEntry) {
+                                        fileEntry.createWriter(function (fileWriter) {
+                                            fileWriter.onwriteend = function (e) {
+                                                $('.custom-auth-popup .popup-left[data-step="second"] .popup-body .continue-btn > a').removeClass('disabled');
+                                                keystore_downloaded = true;
+                                                basic.showAlert('File ' + keystore_file_name + ' has been downloaded to the top-level directory of your device file system.', '', true);
+                                            };
+
+                                            fileWriter.onerror = function (e) {
+                                                alert('Something went wrong with caching your file (Core error 3). Please contact admin@dentacoin.com.');
+                                            };
+
+                                            // Create a new Blob and write they keystore content inside of it
+                                            var blob = new Blob([JSON.stringify(generated_keystore.success.keystore)], {type: 'text/plain'});
+                                            fileWriter.write(blob);
+                                        }, function(err) {
+                                            alert('Something went wrong with caching your file (Core error 4). Please contact admin@dentacoin.com.');
+                                        });
+                                    }, function(err) {
+                                        alert('Seems like file with this name already exist in your root directory, move it or delete it and try again.');
+                                    });
+                                });
+                            } else if(basic.getMobileOperatingSystem() == 'iOS') {
+                                alert('Downloading still not tested in iOS');
+                            }
+                        } else {
+                            //BROWSER
+                            downloadFile(buildKeystoreFileName('0x' + generated_keystore.success.keystore.address), JSON.stringify(generated_keystore.success.keystore));
+                            $('.custom-auth-popup .popup-left[data-step="second"] .popup-body .continue-btn > a').removeClass('disabled');
+                            keystore_downloaded = true;
+                        }
+                    });
+
+
+                    hideLoader();
+
+                    //save address and/or keystore file path and page reload
+                    $('.custom-auth-popup .popup-left[data-step="second"] .popup-body .continue-btn > a').click(function() {
+                        if(keystore_downloaded) {
+                            if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
+                                if(is_hybrid) {
+                                    //in mobile app saving in localstorage only path to keystore file
+                                    window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (dirEntry) {
+                                        dirEntry.getFile(keystore_file_name, { create: true, exclusive: true }, function (fileEntry) {
+                                            fileEntry.createWriter(function (fileWriter) {
+                                                fileWriter.onwriteend = function (e) {
+                                                    window.localStorage.setItem('keystore_path', cordova.file.externalDataDirectory + keystore_file_name);
+                                                    window.localStorage.setItem('current_account', '0x' + generated_keystore.success.keystore.address);
+                                                    console.log('window.location.reload 1');
+
+                                                    if(basic.getMobileOperatingSystem() == 'Android') {
+                                                        navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
+                                                    } else if(basic.getMobileOperatingSystem() == 'iOS') {
+                                                        alert('App refresh is not tested yet with iOS');
+                                                    }
+                                                };
+
+                                                fileWriter.onerror = function (e) {
+                                                    alert('Something went wrong with caching your file (Core error 3). Please contact admin@dentacoin.com.');
+                                                };
+
+                                                // Create a new Blob and write they keystore content inside of it
+                                                var blob = new Blob([JSON.stringify(generated_keystore.success.keystore)], {type: 'text/plain'});
+                                                fileWriter.write(blob);
+                                            }, function(err) {
+                                                alert('Something went wrong with caching your file (Core error 4). Please contact admin@dentacoin.com.');
+                                            });
+                                        }, function(err) {
+                                            alert('Seems like file with this name already exist in your application directory, move it or delete it. If not please contact admin@dentacoin.com.');
+                                        });
+                                    });
+                                } else {
+                                    //in browser saving keystore file in localstorage
+                                    window.localStorage.setItem('keystore_file', JSON.stringify(generated_keystore.success.keystore));
+                                    window.localStorage.setItem('current_account', '0x' + generated_keystore.success.keystore.address);
+                                    window.location.reload();
+                                }
+                            } else {
+                                window.localStorage.setItem('current_account', '0x' + generated_keystore.success.keystore.address);
+                                if(is_hybrid) {
+                                    if(basic.getMobileOperatingSystem() == 'Android') {
+                                        navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
+                                    } else if(basic.getMobileOperatingSystem() == 'iOS') {
+                                        alert('App refresh is not tested yet with iOS');
+                                    }
+                                } else {
+                                    window.location.reload();
+                                }
+                            }
+                        } else {
+                            basic.showAlert('Please download the Keystore file and keep it safe!', '', true);
+                        }
+                    });
+                }, 500);
+            }
+        });
     }
 }
-//uploadFile();
 
-function readFileWithoutCreating() {
-    if(basic.getMobileOperatingSystem() == 'Android') {
-        console.log('IS ANDROID');
-        document.addEventListener("deviceready", function() {
-            console.log('deviceready');
-            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
-                console.log('file system open: ' + fs.name);
-                fs.root.getFile('cordova-log.txt', { create: false, exclusive: false }, function (fileEntry) {
-                    readFile(fileEntry);
+//styling input type file
+function styleKeystoreUploadBtn()    {
+    if(is_hybrid) {
+        //MOBILE APP
+        if(basic.getMobileOperatingSystem() == 'Android') {
+            //ANDROID
+            $('.custom-upload-button').click(function() {
+                var this_btn = $(this);
+                fileChooser.open(function(file_uri) {
+                    console.log(file_uri, 'file_uri');
+                    window.resolveLocalFileSystemURL(decodeURIComponent(file_uri), function (entry) {
+                        window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function (rootEntry) {
+                            rootEntry.getFile(decodeURIComponent(entry.fullPath), {create: false}, function (fileEntry) {
+                                fileEntry.file(function (file) {
+                                    var reader = new FileReader();
+
+                                    initCustomInputFileAnimation(this_btn);
+
+                                    reader.onloadend = function () {
+                                        var keystore_string = this.result;
+                                        setTimeout(function () {
+                                            if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address')) {
+                                                var address = JSON.parse(keystore_string).address;
+
+                                                $('.or-label').hide();
+                                                $('.import-private-key-row').hide();
+
+                                                setTimeout(function () {
+                                                    //show continue button next step button
+                                                    $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('<div class="enter-pass-label"><label>Please enter password for the secret key file.</label></div><div class="custom-google-label-style margin-bottom-15 max-width-300 margin-left-right-auto module" data-input-light-blue-border="true"><label for="import-keystore-password">Enter password:</label><input type="password" id="import-keystore-password" class="full-rounded import-keystore-password"/></div><div class="text-center padding-top-10"><input type="checkbox" id="agree-to-cache-import" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-import"><span class="padding-left-5 padding-right-5 inline-block">Remember keystore file</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block import-more-info-keystore-remember fs-0" data-content="Remembering your keystore file allows for easier and faster transactions. It is stored only in local device storage and nobody else has access to it."><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="continue-btn padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border">CONTINUE</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block">Go back</span></a></div>');
+
+                                                    $('.import-more-info-keystore-remember').popover({
+                                                        trigger: 'click'
+                                                    });
+
+                                                    $('.custom-auth-popup .popup-right .popup-body .continue-btn > a').click(function () {
+                                                        var keystore_password = $('.custom-auth-popup .popup-right .popup-body .import-keystore-password').val().trim();
+                                                        if (keystore_password == '') {
+                                                            basic.showAlert('Please enter password for your keystore file.', '', true);
+                                                        } else {
+                                                            showLoader();
+
+                                                            setTimeout(function () {
+                                                                var imported_keystore = importKeystoreFile(keystore_string, keystore_password);
+                                                                if (imported_keystore.success) {
+                                                                    var internet = navigator.onLine;
+                                                                    if (internet) {
+                                                                        console.log('===== make request for save public keys for assurance =====');
+                                                                    }
+
+                                                                    if ($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
+                                                                        var keystore_file_name = buildKeystoreFileName('0x' + address);
+                                                                        window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (dirEntry) {
+                                                                            dirEntry.getFile(keystore_file_name, {
+                                                                                create: true,
+                                                                                exclusive: true
+                                                                            }, function (fileEntry) {
+                                                                                fileEntry.createWriter(function (fileWriter) {
+                                                                                    fileWriter.onwriteend = function (e) {
+                                                                                        window.localStorage.setItem('keystore_path', cordova.file.externalDataDirectory + keystore_file_name);
+                                                                                        window.localStorage.setItem('current_account', '0x' + address);
+                                                                                        navigator.app.loadUrl("file:///android_asset/www/index.html", {
+                                                                                            loadingDialog: "Wait,Loading App",
+                                                                                            loadUrlTimeoutValue: 60000
+                                                                                        });
+                                                                                    };
+
+                                                                                    fileWriter.onerror = function (e) {
+                                                                                        alert('Something went wrong with caching your file (Core error 3). Please contact admin@dentacoin.com.');
+                                                                                    };
+
+                                                                                    // Create a new Blob and write they keystore content inside of it
+                                                                                    var blob = new Blob([keystore_string], {type: 'text/plain'});
+                                                                                    fileWriter.write(blob);
+                                                                                }, function (err) {
+                                                                                    alert('Something went wrong with caching your file (Core error 4). Please contact admin@dentacoin.com.');
+                                                                                });
+                                                                            }, function (err) {
+                                                                                alert('Something went wrong with caching your file (Core error 5). Please contact admin@dentacoin.com.');
+                                                                            });
+                                                                        });
+                                                                    } else {
+                                                                        window.localStorage.setItem('current_account', '0x' + address);
+                                                                        navigator.app.loadUrl("file:///android_asset/www/index.html", {
+                                                                            loadingDialog: "Wait,Loading App",
+                                                                            loadUrlTimeoutValue: 60000
+                                                                        });
+                                                                    }
+                                                                } else if (imported_keystore.error) {
+                                                                    hideLoader();
+                                                                    basic.showAlert(imported_keystore.message, '', true);
+                                                                }
+                                                            }, 500);
+                                                        }
+                                                    });
+                                                }, 500);
+                                            } else {
+                                                $('.custom-auth-popup .popup-right .popup-body #upload-keystore').val('');
+                                                basic.showAlert('Please upload valid keystore file.', '', true);
+                                                $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('');
+                                            }
+                                        }, 500);
+                                    };
+
+                                    reader.readAsText(file);
+                                }, function (err) {
+                                    alert('Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.');
+                                });
+                            });
+                        });
+                    });
                 }, function(err) {
-                    console.log(err, 'error fs.root.getFile');
+                    alert('File upload failed, please try again with file inside your internal storage.');
                 });
-            }, function(err) {
-                console.log(err, 'error window.requestFileSystem(LocalFileSystem.PERSISTENT');
             });
-        }, false);
+        }else if(basic.getMobileOperatingSystem() == 'iOS') {
+            //iOS
+            alert('iOS not supported yet');
+        }
+    } else {
+        //BROWSER
+        Array.prototype.forEach.call( document.querySelectorAll('.upload-keystore'), function( input ) {
+            var label = input.nextElementSibling;
+            input.addEventListener('change', function(e) {
+                console.log('change');
+                var myFile = this.files[0];
+                var reader = new FileReader();
+
+                reader.addEventListener('load', function (e) {
+                    console.log('addEventListener');
+                    if(basic.isJsonString(e.target.result) && basic.property_exists(JSON.parse(e.target.result), 'address'))    {
+                        var keystore_string = e.target.result;
+                        var address = JSON.parse(keystore_string).address;
+                        //init upload button animation
+                        initCustomInputFileAnimation(label);
+
+                        $('.or-label').hide();
+                        $('.import-private-key-row').hide();
+
+                        setTimeout(function()   {
+                            //show continue button next step button
+                            $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('<div class="enter-pass-label"><label>Please enter password for the secret key file.</label></div><div class="custom-google-label-style margin-bottom-15 max-width-300 margin-left-right-auto module" data-input-light-blue-border="true"><label for="import-keystore-password">Enter password:</label><input type="password" id="import-keystore-password" class="full-rounded import-keystore-password"/></div><div class="text-center padding-top-10"><input type="checkbox" id="agree-to-cache-import" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-import"><span class="padding-left-5 padding-right-5 inline-block">Remember keystore file</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block import-more-info-keystore-remember fs-0" data-content="Remembering your keystore file allows for easier and faster transactions. It is stored only in local device storage and nobody else has access to it."><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="continue-btn padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border">CONTINUE</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block">Go back</span></a></div>');
+
+                            $('.import-more-info-keystore-remember').popover({
+                                trigger: 'click'
+                            });
+
+                            //calling IMPORT METHOD
+                            $('.custom-auth-popup .popup-right .popup-body .continue-btn > a').click(function()   {
+                                var keystore_password = $('.custom-auth-popup .popup-right .popup-body .import-keystore-password').val().trim();
+                                if(keystore_password == '')  {
+                                    basic.showAlert('Please enter password for your keystore file.', '', true);
+                                } else {
+                                    showLoader();
+
+                                    setTimeout(function() {
+                                        var imported_keystore = importKeystoreFile(keystore_string, keystore_password);
+                                        if(imported_keystore.success) {
+                                            var internet = navigator.onLine;
+                                            if(internet) {
+                                                console.log('===== make request for save public keys for assurance =====');
+                                            }
+
+                                            if($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
+                                                window.localStorage.setItem('current_account', '0x' + address);
+                                                window.localStorage.setItem('keystore_file', JSON.stringify(imported_keystore.success));
+                                                window.location.reload();
+                                            } else {
+                                                window.localStorage.setItem('current_account', '0x' + address);
+                                                window.location.reload();
+                                            }
+                                        } else if(imported_keystore.error) {
+                                            hideLoader();
+                                            basic.showAlert(imported_keystore.message, '', true);
+                                        }
+                                    }, 500);
+                                }
+                            });
+                        }, 500);
+                    }else {
+                        $('.custom-auth-popup .popup-right .popup-body #upload-keystore').val('');
+                        basic.showAlert('Please upload valid keystore file.', '', true);
+                        $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('');
+                    }
+                });
+
+                reader.readAsBinaryString(myFile);
+            });
+        });
     }
 }
-readFileWithoutCreating();
 
-function writeFile(fileEntry, dataObj) {
-    console.log('writeFile');
-    // Create a FileWriter object for our FileEntry (log.txt).
-    fileEntry.createWriter(function (fileWriter) {
+function initCustomInputFileAnimation(this_btn) {
+    console.log('initCustomInputFileAnimation');
+    var btn = $(this_btn);
+    var loadSVG = btn.children("a").children(".load");
+    var loadBar = btn.children("div").children("span");
+    var checkSVG = btn.children("a").children(".check");
 
-        fileWriter.onwriteend = function() {
-            console.log("Successful file write...");
-            readFile(fileEntry);
-        };
+    var btn_width = 320;
+    $('body').addClass('overflow-hidden');
+    var window_width = $(window).width();
+    $('body').removeClass('overflow-hidden');
+    if(window_width < 768) {
+        btn_width = 260;
+    }
 
-        fileWriter.onerror = function (e) {
-            console.log("Failed file write: " + e.toString());
-        };
+    btn.children("a").children("span").fadeOut(200, function() {
+        btn.children("a").animate({
+            width: 56
+        }, 100, function() {
+            loadSVG.fadeIn(300);
+            btn.animate({
+                width: btn_width
+            }, 200, function() {
+                btn.children("div").fadeIn(200, function() {
+                    loadBar.animate({
+                        width: "100%"
+                    }, 500, function() {
+                        loadSVG.fadeOut(200, function() {
+                            checkSVG.fadeIn(200, function() {
+                                setTimeout(function() {
+                                    btn.children("div").fadeOut(200, function() {
+                                        loadBar.width(0);
+                                        checkSVG.fadeOut(200, function() {
+                                            btn.children("a").animate({
+                                                width: btn_width
+                                            });
+                                            btn.animate({
+                                                width: btn_width
+                                            }, 300, function() {
+                                                btn.children("a").children("span").fadeIn(200);
+                                            });
+                                        });
+                                    });
+                                }, 500);
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
+}
 
-        // If data object is not passed in,
-        // create a new Blob instead.
-        if (!dataObj) {
-            dataObj = new Blob(['Ain\'t no sunshine when she\'s gone\n' +
-            'It\'s not warm when she\'s away\n' +
-            'Ain\'t no sunshine when she\'s gone\n' +
-            'And she\'s always gone too long\n' +
-            'Anytime she goes away'], { type: 'text/plain' });
+function showLoader() {
+    $('.camping-loader').html('<div class="response-layer"><div class="wrapper"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/wallet-loading.svg" class="max-width-160" alt="Loader"></figure></div></div>');
+    $('.response-layer').show();
+}
+
+function hideLoader() {
+    $('.camping-loader').html('');
+}
+
+function buildKeystoreFileName(address) {
+    return 'Dentacoin secret key - ' + address;
+}
+
+function downloadFile(filename, text) {
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
+}
+
+//transfer all selects to bootstrap combobox
+function initComboboxes() {
+    if($('select.combobox').length) {
+        $('select.combobox').each(function () {
+            $(this).combobox();
+        });
+    }
+}
+
+$(document).on('click', '.open-settings', function() {
+    basic.closeDialog();
+    var settings_html = '<div class="text-center fs-0 color-white lato-bold popup-header"><a href="javascript:void(0)" class="custom-close-bootbox max-width-20 inline-block margin-right-10"><svg class="width-100" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 62 52.3" style="enable-background:new 0 0 62 52.3;" xml:space="preserve"><style type="text/css">.st1{fill:#FFFFFF;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="52.3" width="62" x="19" y="48.9"/></sfw></metadata><path class="st1" d="M62,26.2c0-2.2-1.8-4-4-4H14.2L30.4,7c1.7-1.4,1.8-4,0.4-5.6c-1.4-1.7-4-1.8-5.6-0.4C25.1,1,25,1.1,25,1.2 L1.3,23.2c-1.6,1.5-1.7,4-0.2,5.7C1.1,29,1.2,29,1.3,29.1L25,51.2c1.6,1.5,4.1,1.4,5.7-0.2c1.5-1.6,1.4-4.1-0.2-5.7L14.2,30.2H58 C60.2,30.2,62,28.4,62,26.2z"/></svg></a><span class="inline-block text-center fs-28 fs-xs-16">DENTACOIN WALLET OPTIONS</span></div><div class="popup-body">';
+
+    if((is_hybrid && window.localStorage.getItem('keystore_path') == null) || (!is_hybrid && window.localStorage.getItem('keystore_file') == null)) {
+        settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important remember-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M14,0H2C0.9,0,0,0.9,0,2v12c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V2C16,0.9,15.1,0,14,0z M15,14c0,0.6-0.4,1-1,1 H2c-0.6,0-1-0.4-1-1v-3h14V14z M15,10H1V6h14V10z M1,5V2c0-0.6,0.4-1,1-1h12c0.6,0,1,0.4,1,1v3H1z M14,3.5C14,3.8,13.8,4,13.5,4h-1 C12.2,4,12,3.8,12,3.5v-1C12,2.2,12.2,2,12.5,2h1C13.8,2,14,2.2,14,2.5V3.5z M14,8.5C14,8.8,13.8,9,13.5,9h-1C12.2,9,12,8.8,12,8.5 v-1C12,7.2,12.2,7,12.5,7h1C13.8,7,14,7.2,14,7.5V8.5z M14,13.5c0,0.3-0.2,0.5-0.5,0.5h-1c-0.3,0-0.5-0.2-0.5-0.5v-1 c0-0.3,0.2-0.5,0.5-0.5h1c0.3,0,0.5,0.2,0.5,0.5V13.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold">Remember Keystore File</span></a><div class="fs-14 option-description">By doing so, you will not be asked to upload it every time you want to access your wallet.</div><div class="camping-for-action"></div></div>';
+    } else if((is_hybrid && window.localStorage.getItem('keystore_path') != null) || (!is_hybrid && window.localStorage.getItem('keystore_file') != null)) {
+        settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important forget-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M14,0H2C0.9,0,0,0.9,0,2v12c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V2C16,0.9,15.1,0,14,0z M15,14c0,0.6-0.4,1-1,1 H2c-0.6,0-1-0.4-1-1v-3h14V14z M15,10H1V6h14V10z M1,5V2c0-0.6,0.4-1,1-1h12c0.6,0,1,0.4,1,1v3H1z M14,3.5C14,3.8,13.8,4,13.5,4h-1 C12.2,4,12,3.8,12,3.5v-1C12,2.2,12.2,2,12.5,2h1C13.8,2,14,2.2,14,2.5V3.5z M14,8.5C14,8.8,13.8,9,13.5,9h-1C12.2,9,12,8.8,12,8.5 v-1C12,7.2,12.2,7,12.5,7h1C13.8,7,14,7.2,14,7.5V8.5z M14,13.5c0,0.3-0.2,0.5-0.5,0.5h-1c-0.3,0-0.5-0.2-0.5-0.5v-1 c0-0.3,0.2-0.5,0.5-0.5h1c0.3,0,0.5,0.2,0.5,0.5V13.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold">Forget Keystore File</span></a><div class="fs-14 option-description">By doing so, you’ll be asked to upload it every time you want to access your wallet.</div></div><div class="option-row"><a href="javascript:void(0)" class="display-block-important download-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M14.4,10.4v3.2c0,0.1,0,0.2-0.1,0.3c0,0.1-0.1,0.2-0.2,0.3c-0.1,0.1-0.2,0.1-0.3,0.2c-0.1,0-0.2,0.1-0.3,0.1 H2.4c-0.1,0-0.2,0-0.3-0.1c-0.1,0-0.2-0.1-0.3-0.2S1.7,14,1.7,13.9c0-0.1-0.1-0.2-0.1-0.3v-3.2c0-0.4-0.4-0.8-0.8-0.8S0,10,0,10.4 v3.2c0,0.3,0.1,0.6,0.2,0.9c0.1,0.3,0.3,0.6,0.5,0.8c0.2,0.2,0.5,0.4,0.8,0.5C1.8,15.9,2.1,16,2.4,16h11.2c0.3,0,0.6-0.1,0.9-0.2 c0.3-0.1,0.6-0.3,0.8-0.5c0.2-0.2,0.4-0.5,0.5-0.8c0.1-0.3,0.2-0.6,0.2-0.9v-3.2c0-0.4-0.4-0.8-0.8-0.8S14.4,10,14.4,10.4z M8.8,8.5 V0.8C8.8,0.4,8.4,0,8,0C7.6,0,7.2,0.4,7.2,0.8v7.7L4.6,5.8c-0.3-0.3-0.8-0.3-1.1,0C3.1,6.1,3.1,6.7,3.4,7l4,4c0,0,0,0,0,0 c0.1,0.1,0.2,0.1,0.3,0.2c0.1,0,0.2,0.1,0.3,0.1c0,0,0,0,0,0c0.1,0,0.2,0,0.3-0.1c0.1,0,0.2-0.1,0.3-0.2l4-4c0.3-0.3,0.3-0.8,0-1.1 s-0.8-0.3-1.1,0L8.8,8.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold">Download Keystore File</span></a><div class="fs-14 option-description">Forgot where you’ve stored your wallet access file? Make sure you save it again.</div></div>';
+    }
+
+    settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important generate-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 21.3" style="enable-background:new 0 0 16 21.3;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="21.3" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M5.3,0C5.1,0,5,0.1,4.9,0.2L0.2,4.9C0.1,5,0,5.2,0,5.3v13.9c0,1.1,0.9,2.1,2.1,2.1h11.8c1.1,0,2.1-0.9,2.1-2.1 V2.1C16,0.9,15.1,0,13.9,0H5.3C5.3,0,5.3,0,5.3,0z M6.2,1.2h7.7c0.5,0,0.9,0.4,0.9,0.9v17.2c0,0.5-0.4,0.9-0.9,0.9H2.1 c-0.5,0-0.9-0.4-0.9-0.9v-13h4.4C6,6.2,6.2,6,6.2,5.6V1.2z M5,1.7V5H1.7L5,1.7z M4.4,9.8c-1.1,0-2.1,0.9-2.1,2.1s0.9,2.1,2.1,2.1 c0.9,0,1.7-0.6,2-1.5h3.6v0.9c0,0.3,0.3,0.6,0.6,0.6c0.3,0,0.6-0.3,0.6-0.6c0,0,0,0,0,0v-0.9h1.2v0.9c0,0.3,0.3,0.6,0.6,0.6 c0.3,0,0.6-0.3,0.6-0.6c0,0,0,0,0,0v-1.5c0-0.3-0.3-0.6-0.6-0.6H6.4C6.2,10.4,5.4,9.8,4.4,9.8L4.4,9.8z M4.4,11 c0.5,0,0.9,0.4,0.9,0.9c0,0.5-0.4,0.9-0.9,0.9c-0.5,0-0.9-0.4-0.9-0.9C3.6,11.3,3.9,11,4.4,11z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold">Generate Keystore File</span></a><div class="fs-14 option-description">Create an easy-to-use wallet access file from your private key and secure it with a password.</div><div class="camping-for-action"></div></div></div><div class="popup-footer text-center"><div><a href="javascript:void(0)" class="log-out light-blue-white-btn min-width-220"><svg xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 18.4" style="enable-background:new 0 0 16 18.4;" xml:space="preserve" class="margin-right-5 inline-block max-width-20"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="18.4" width="16" x="1" y="8.4"/></sfw></metadata><g><path class="st0" d="M2.5,0h10.6c1.4,0,2.5,1.1,2.5,2.5v3.2h-1.5V2.5c0-0.5-0.4-1-1-1H2.5c-0.5,0-1,0.4-1,1v13.4c0,0.5,0.4,1,1,1 h10.6c0.5,0,1-0.4,1-1v-3.2h1.5v3.2c0,1.4-1.1,2.5-2.5,2.5H2.5c-1.4,0-2.5-1.1-2.5-2.5V2.5C0,1.1,1.1,0,2.5,0z M11,7.5H6.2v3.4H11 v1.9l5-3.5l-5-3.5V7.5L11,7.5z"/></g></svg><span class="inline-block">Log out</span></a></div><div class="padding-top-10 fs-14">Don\'t forget to download and save your log in files for the next time that you want to log in.</div></div>';
+    basic.showDialog(settings_html, 'settings-popup', null, true);
+
+    $('.settings-popup .custom-close-bootbox').click(function() {
+        basic.closeDialog();
+    });
+
+    $('.settings-popup .log-out').click(function() {
+        console.log('log out');
+        if(is_hybrid) {
+            if(basic.getMobileOperatingSystem() == 'Android') {
+                console.log(window.localStorage.getItem('keystore_path'), 'window.localStorage.getItem(\'keystore_path\')');
+                if(window.localStorage.getItem('keystore_path') != null) {
+                    window.resolveLocalFileSystemURL(window.localStorage.getItem('keystore_path'), function (entry) {
+                        console.log(entry, 'entry');
+                        window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (dirEntry) {
+                            console.log(dirEntry, 'dirEntry');
+                            dirEntry.getFile(entry.fullPath, {create: false}, function (fileEntry) {
+                                console.log(entry.fullPath, 'entry.fullPath')
+                                fileEntry.remove(function (file) {
+                                    window.localStorage.clear();
+                                    navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
+                                }, function (error) {
+                                    alert('Keystore file cache deletion failed. Error code: ' + error.code);
+                                }, function () {
+                                    alert('Keystore file does not exist in Dentacoin Wallet caching folder.');
+                                });
+                            });
+                        });
+                    });
+                } else {
+                    window.localStorage.clear();
+                    navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
+                }
+            } else if(basic.getMobileOperatingSystem() == 'iOS') {
+                alert('App refresh is not tested yet with iOS');
+            }
+        } else {
+            window.localStorage.clear();
+            window.location.reload();
+        }
+    });
+
+    $('.settings-popup .remember-keystore').click(function() {
+        $('.settings-popup .camping-for-action').html('');
+
+        var remember_keystore_html;
+        if(is_hybrid) {
+            remember_keystore_html = '<div class="text-center import-keystore-file-row margin-top-20"><label class="button remember-keystore-upload custom-upload-button"><a><span class="fs-xs-16 fs-20 lato-bold">Upload your Keystore File</span><svg class="load" version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0 0 40 40" enable-background="new 0 0 40 40"><path opacity="0.3" fill="#fff" d="M20.201,5.169c-8.254,0-14.946,6.692-14.946,14.946c0,8.255,6.692,14.946,14.946,14.946s14.946-6.691,14.946-14.946C35.146,11.861,28.455,5.169,20.201,5.169z M20.201,31.749c-6.425,0-11.634-5.208-11.634-11.634c0-6.425,5.209-11.634,11.634-11.634c6.425,0,11.633,5.209,11.633,11.634C31.834,26.541,26.626,31.749,20.201,31.749z"/><path fill="#fff" d="M26.013,10.047l1.654-2.866c-2.198-1.272-4.743-2.012-7.466-2.012h0v3.312h0C22.32,8.481,24.301,9.057,26.013,10.047z"><animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 20 20" to="360 20 20" dur="0.5s" repeatCount="indefinite"/></path></svg><svg class="check" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></a><div><span></span></div></label></div>';
+        } else {
+            remember_keystore_html = '<div class="text-center import-keystore-file-row margin-top-20"><input type="file" id="remember-keystore-upload" class="hide-input remember-keystore-upload"/><label for="remember-keystore-upload" class="button custom-upload-button"><a><span class="fs-xs-16 fs-20 lato-bold">Upload your Keystore File</span><svg class="load" version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0 0 40 40" enable-background="new 0 0 40 40"><path opacity="0.3" fill="#fff" d="M20.201,5.169c-8.254,0-14.946,6.692-14.946,14.946c0,8.255,6.692,14.946,14.946,14.946s14.946-6.691,14.946-14.946C35.146,11.861,28.455,5.169,20.201,5.169z M20.201,31.749c-6.425,0-11.634-5.208-11.634-11.634c0-6.425,5.209-11.634,11.634-11.634c6.425,0,11.633,5.209,11.633,11.634C31.834,26.541,26.626,31.749,20.201,31.749z"/><path fill="#fff" d="M26.013,10.047l1.654-2.866c-2.198-1.272-4.743-2.012-7.466-2.012h0v3.312h0C22.32,8.481,24.301,9.057,26.013,10.047z"><animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 20 20" to="360 20 20" dur="0.5s" repeatCount="indefinite"/></path></svg><svg class="check" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></a><div><span></span></div></label></div>';
         }
 
-        fileWriter.write(dataObj);
+        var this_camping_row = $(this).closest('.option-row').find('.camping-for-action');
+        this_camping_row.html(remember_keystore_html);
+
+        if(is_hybrid) {
+            //MOBILE APP
+            if(basic.getMobileOperatingSystem() == 'Android') {
+                //ANDROID
+                $('.remember-keystore-upload').click(function() {
+                    var this_btn = $(this);
+                    fileChooser.open(function(file_uri) {
+                        console.log(file_uri, 'file_uri');
+                        window.resolveLocalFileSystemURL(decodeURIComponent(file_uri), function (entry) {
+                            window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function (rootEntry) {
+                                rootEntry.getFile(decodeURIComponent(entry.fullPath), {create: false}, function (fileEntry) {
+                                    fileEntry.file(function (file) {
+                                        var reader = new FileReader();
+
+                                        initCustomInputFileAnimation(this_btn);
+
+                                        reader.onloadend = function () {
+                                            var keystore_string = this.result;
+
+                                            if(basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && '0x' + JSON.parse(keystore_string).address == global_state.account) {
+                                                validateKeystoreFileAndPassword(this_camping_row, keystore_string);
+                                            } else {
+                                                basic.showAlert('Please upload valid keystore file which is related to your Dentacoin Wallet address.', '', true);
+                                            }
+                                        };
+
+                                        reader.readAsText(file);
+                                    }, function (err) {
+                                        alert('Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.');
+                                    });
+                                });
+                            });
+                        });
+                    }, function(err) {
+                        alert('File upload failed, please try again with file inside your internal storage.');
+                    });
+                });
+            }else if(basic.getMobileOperatingSystem() == 'iOS') {
+                //iOS
+                alert('iOS not supported yet');
+            }
+        } else {
+            //BROWSER
+            Array.prototype.forEach.call(document.querySelectorAll('.remember-keystore-upload'), function(input) {
+                var label = input.nextElementSibling;
+                input.addEventListener('change', function(e) {
+                    console.log('change');
+                    var myFile = this.files[0];
+                    var reader = new FileReader();
+
+                    reader.addEventListener('load', function (e) {
+                        if(basic.isJsonString(e.target.result) && basic.property_exists(JSON.parse(e.target.result), 'address') && '0x' + JSON.parse(e.target.result).address == global_state.account)    {
+                            var keystore_string = e.target.result;
+                            //init upload button animation
+                            initCustomInputFileAnimation(label);
+
+                            validateKeystoreFileAndPassword(this_camping_row, keystore_string);
+                        } else {
+                            basic.showAlert('Please upload valid keystore file which is related to your Dentacoin Wallet address.', '', true);
+                        }
+                    });
+
+                    reader.readAsBinaryString(myFile);
+                });
+            });
+        }
+    });
+
+    function validateKeystoreFileAndPassword(this_camping_row, keystore_string) {
+        console.log('validateKeystoreFileAndPassword');
+        $('.settings-popup .continue-with-keystore-validation').remove();
+        this_camping_row.append('<div class="continue-with-keystore-validation"><div class="custom-google-label-style margin-top-25 margin-bottom-15 max-width-300 margin-left-right-auto module" data-input-light-blue-border="true"><label for="cache-keystore-password">Keystore Password:</label><input type="password" id="cache-keystore-password" class="full-rounded"/></div><div class="padding-bottom-10 text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border continue-caching">CONTINUE</a></div></div>');
+
+        $('.settings-popup .continue-caching').click(function() {
+            if($('.settings-popup #cache-keystore-password').val().trim() == '') {
+                basic.showAlert('Please enter password for your keystore file.', '', true);
+            } else {
+                showLoader();
+                setTimeout(function() {
+                    var import_keystore_response = importKeystoreFile(keystore_string, $('.settings-popup #cache-keystore-password').val().trim());
+                    console.log(import_keystore_response, 'import_keystore_response');
+                    if(import_keystore_response.success) {
+                        if(is_hybrid) {
+                            var keystore_file_name = buildKeystoreFileName('0x' + JSON.parse(keystore_string).address);
+                            window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (dirEntry) {
+                                dirEntry.getFile(keystore_file_name, {
+                                    create: true,
+                                    exclusive: true
+                                }, function (fileEntry) {
+                                    fileEntry.createWriter(function (fileWriter) {
+                                        fileWriter.onwriteend = function (e) {
+                                            window.localStorage.setItem('keystore_path', cordova.file.externalDataDirectory + keystore_file_name);
+
+                                            basic.closeDialog();
+                                            basic.showAlert('Your keystore file has been cached successfully.', '', true);
+                                        };
+
+                                        fileWriter.onerror = function (e) {
+                                            alert('Something went wrong with caching your file (Core error 3). Please contact admin@dentacoin.com.');
+                                        };
+
+                                        // Create a new Blob and write they keystore content inside of it
+                                        var blob = new Blob([keystore_string], {type: 'text/plain'});
+                                        fileWriter.write(blob);
+                                    }, function (err) {
+                                        alert('Something went wrong with caching your file (Core error 4). Please contact admin@dentacoin.com.');
+                                    });
+                                }, function (err) {
+                                    alert('Something went wrong with caching your file (Core error 5). Please contact admin@dentacoin.com.');
+                                });
+                            });
+                        } else {
+                            window.localStorage.setItem('keystore_file', keystore_string);
+
+                            basic.closeDialog();
+                            basic.showAlert('Your keystore file has been cached successfully.', '', true);
+                        }
+                    } else if(import_keystore_response.error) {
+                        basic.showAlert(import_keystore_response.message, '', true);
+                    }
+
+                    hideLoader();
+                }, 500);
+            }
+        });
+    }
+
+    $('.settings-popup .download-keystore').click(function() {
+        if(is_hybrid) {
+            //MOBILE APP
+            if(basic.getMobileOperatingSystem() == 'Android') {
+                //getting the file content by it path saved in localstorage
+                window.resolveLocalFileSystemURL(window.localStorage.getItem('keystore_path'), function (entry) {
+                    window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (rootEntry) {
+                        rootEntry.getFile(entry.fullPath, {create: false}, function (fileEntry) {
+                            fileEntry.file(function(file) {
+                                var reader = new FileReader();
+
+                                reader.onloadend = function () {
+                                    var keystore_string = this.result;
+                                    var address = '0x' + JSON.parse(keystore_string).address;
+                                    var keystore_file_name = buildKeystoreFileName(address);
+                                    showLoader();
+
+                                    setTimeout(function () {
+                                        //downloading the file in mobile device file system
+                                        androidFileDownload(keystore_file_name, keystore_string);
+                                    }, 500);
+                                };
+
+                                reader.readAsText(file);
+                            }, function(err) {
+                                alert('Something went wrong with reading your cached file (Core error 1). Please contact admin@dentacoin.com.');
+                            });
+                        });
+                    });
+                });
+            } else if(basic.getMobileOperatingSystem() == 'iOS') {
+                alert('Downloading still not tested in iOS');
+            }
+        } else {
+            //BROWSER
+            downloadFile(buildKeystoreFileName(global_state.account), window.localStorage.getItem('keystore_file'));
+            basic.closeDialog();
+            basic.showAlert('File ' + buildKeystoreFileName(global_state.account) + ' has been downloaded to the top-level directory of your device file system.', '', true);
+        }
+    });
+
+    $('.settings-popup .generate-keystore').click(function() {
+        $('.settings-popup .camping-for-action').html('');
+        $(this).closest('.option-row').find('.camping-for-action').html('<div class="padding-top-20"><div class="custom-google-label-style margin-bottom-15 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-private-key">Private key:</label><input type="text" id="generate-keystore-private-key" class="full-rounded"/></div></div><div><div class="custom-google-label-style margin-bottom-15 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-password">Password:</label><input type="password" id="generate-keystore-password" class="full-rounded"/></div></div><div><div class="custom-google-label-style margin-bottom-15 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-repeat-password">Repeat Password:</label><input type="password" id="generate-keystore-repeat-password" class="full-rounded"/></div></div><div class="text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 generate-keystore-keystore-action">GENERATE KEYSTORE FILE</a></div>');
+
+        $('.generate-keystore-keystore-action').click(function() {
+            var generate_error = false;
+            if($('#generate-keystore-private-key').val().trim() == '') {
+                generate_error = true;
+                basic.showAlert('Please enter valid private key.', '', true);
+            } else if($('#generate-keystore-password').val().trim() == '' || $('#generate-keystore-repeat-password').val().trim() == '') {
+                generate_error = true;
+                basic.showAlert('Please enter both passwords.', '', true);
+            } else if($('#generate-keystore-password').val().trim().length < 8 || $('#generate-keystore-password').val().trim().length > 30)  {
+                generate_error = true;
+                basic.showAlert('The password must be with minimum length of 8 characters and maximum 30.', '', true);
+            } else if($('#generate-keystore-password').val().trim() != $('#generate-keystore-repeat-password').val().trim())  {
+                generate_error = true;
+                basic.showAlert('Please make sure you entered same password in both fields.', '', true);
+            }
+
+            if(!generate_error) {
+                showLoader();
+                setTimeout(async function() {
+                    var generate_response = await generateKeystoreFromPrivateKey($('#generate-keystore-private-key').val().trim(), $('#generate-keystore-password').val().trim());
+
+                    if(generate_response.success) {
+                        if(is_hybrid) {
+                            //MOBILE APP
+                            //downloading the file in mobile device file system
+                            androidFileDownload(buildKeystoreFileName(generate_response.success.address), generate_response.success.keystore_file);
+                        } else {
+                            //BROWSER
+                            hideLoader();
+
+                            downloadFile(buildKeystoreFileName(generate_response.success.address), generate_response.success.keystore_file);
+                            basic.closeDialog();
+                            basic.showAlert('File ' + buildKeystoreFileName(generate_response.success.address) + ' has been downloaded to the top-level directory of your device file system.', '', true);
+                        }
+                    } else if(generate_response.error) {
+                        hideLoader();
+                        basic.showAlert(generate_response.message, '', true);
+                    }
+                }, 1000);
+            }
+        });
+    });
+
+    $('.settings-popup .forget-keystore').click(function() {
+        console.log('forget-keystore');
+        if(window.localStorage.getItem('keystore_path') != null) {
+            console.log(window.localStorage.getItem('keystore_path'));
+            window.resolveLocalFileSystemURL(window.localStorage.getItem('keystore_path'), function(entry) {
+                window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (dirEntry) {
+                    dirEntry.getFile(entry.fullPath, {create: false}, function (fileEntry) {
+                        fileEntry.remove(function (file) {
+                            window.localStorage.removeItem('keystore_path');
+                            basic.closeDialog();
+                            basic.showAlert('Your keystore file cache was deleted successfully.', '', true);
+                        }, function (error) {
+                            alert('Keystore file cache deletion failed. Error code: ' + error.code);
+                        }, function () {
+                            alert('Keystore file does not exist in Dentacoin Wallet caching folder.');
+                        });
+                    });
+                });
+            });
+        }
+
+        if(window.localStorage.getItem('keystore_file') != null) {
+            console.log('cached keystore_file');
+            window.localStorage.removeItem('keystore_file');
+
+            basic.closeDialog();
+            basic.showAlert('Your keystore file cache was deleted successfully.', '', true);
+        }
+    });
+});
+
+function androidFileDownload(file_name, file_content) {
+    console.log('androidFileDownload');
+    console.log(file_name, 'file_name');
+    console.log(file_content, 'file_content');
+
+    window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function (dirEntry) {
+        console.log(dirEntry, 'dirEntry');
+        dirEntry.getFile(file_name, {create: true, exclusive: true}, function (fileEntry) {
+            console.log(fileEntry, 'fileEntry');
+            fileEntry.createWriter(function (fileWriter) {
+                fileWriter.onwriteend = function (e) {
+                    basic.closeDialog();
+                    basic.showAlert('File ' + file_name + ' has been downloaded to the top-level directory of your device file system.', '', true);
+                    hideLoader();
+                };
+
+                fileWriter.onerror = function (e) {
+                    hideLoader();
+                    alert('Something went wrong with caching your file (Core error 3). Please contact admin@dentacoin.com.');
+                };
+
+                // Create a new Blob and write they keystore content inside of it
+                var blob = new Blob([file_content], {type: 'text/plain'});
+                fileWriter.write(blob);
+            }, function(err) {
+                hideLoader();
+                alert('Something went wrong with downloading your file (Core error 4). Please contact admin@dentacoin.com.');
+            });
+        }, function(err) {
+            hideLoader();
+            alert('Seems like file with this name already exist in your root directory, move it or delete it and try again.');
+        });
     });
 }
 
-function readFile(fileEntry) {
-    console.log('readFile');
-    fileEntry.file(function (file) {
-        var reader = new FileReader();
-
-        reader.onloadend = function() {
-            console.log("Successful file read: " + this.result);
-            console.log(fileEntry.fullPath + ": " + this.result, 'fileEntry.fullPath + ": " + this.result');
-        };
-
-        reader.readAsText(file);
-    }, function(err) {
-        console.log(err, 'err 3');
-    });
+var internet_variable = navigator.onLine;
+function checkIfInternetConnection() {
+    setInterval(function() {
+        if(internet_variable != navigator.onLine) {
+            if(navigator.onLine) {
+                $('header .camping-currently-offline').html('');
+                internet_variable = navigator.onLine;
+            } else {
+                $('header .camping-currently-offline').html('<div class="currently-offline">You are currently offline</div>');
+                internet_variable = navigator.onLine;
+            }
+        }
+    }, 1000);
 }
-},{"./helper":574}]},{},[575]);
+checkIfInternetConnection();
+}).call(this,require("buffer").Buffer)
+},{"./helper":583,"buffer":52,"ethereumjs-tx":369}]},{},[584]);

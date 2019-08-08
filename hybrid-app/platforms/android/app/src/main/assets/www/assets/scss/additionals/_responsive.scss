@@ -1,7 +1,7 @@
-$xxs: ( max:  576px );
-$xs: ( max:  767px );
-$sm: ( min:  768px);
-$md: ( min:  992px);
+$xxs: ( max: 450px );
+$xs: ( max: 767px );
+$sm: ( min: 768px);
+$md: ( min: 992px);
 $lg: ( min: 1200px );
 $lgl: ( min: 1400px );
 $sm-only: ( min: map-get($sm, min), max: map-get($md, min) - 1 );

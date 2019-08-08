@@ -8,13 +8,20 @@
   },
   "installed_plugins": {
     "cordova-plugin-whitelist": {
-      "PACKAGE_NAME": "io.cordova.hellocordova"
+      "PACKAGE_NAME": "wallet.dentacoin.com"
     },
     "cordova-plugin-device": {
-      "PACKAGE_NAME": "io.cordova.hellocordova"
+      "PACKAGE_NAME": "wallet.dentacoin.com"
     },
     "cordova-plugin-file": {
-      "PACKAGE_NAME": "io.cordova.hellocordova"
+      "PACKAGE_NAME": "wallet.dentacoin.com"
+    },
+    "cordova-plugin-filechooser": {
+      "PACKAGE_NAME": "wallet.dentacoin.com"
+    },
+    "phonegap-plugin-barcodescanner": {
+      "ANDROID_SUPPORT_V4_VERSION": "27.+",
+      "PACKAGE_NAME": "wallet.dentacoin.com"
     }
   },
   "dependent_plugins": {}

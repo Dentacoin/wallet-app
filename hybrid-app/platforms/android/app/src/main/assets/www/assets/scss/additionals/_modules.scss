@@ -17,6 +17,54 @@
     &.light-blue-border {
         border-color: $light_blue;
     }
+    &.disabled {
+        color: white;
+        background-color: #c5c5c5;
+        border-color: #c5c5c5;
+        &:hover {
+            color: white;
+            background-color: #c5c5c5;
+        }
+    }
+    &.no-hover {
+        &:hover {
+            color: white;
+            background-color: $light_blue;
+        }
+    }
+}
+
+.light-blue-white-btn {
+    font-size: 20px;
+    background-color: white;
+    color: $light_blue;
+    padding: 10px 20px;
+    font-family: 'Lato-Bold';
+    border: 1.5px solid $light_blue;
+    display: inline-block;
+    cursor: pointer;
+    text-decoration: none !important;
+    @include rounded(4px);
+    @include simple_transition(.3s);
+    &:hover {
+        background-color: $light_blue;
+        color: white;
+    }
+    &.disabled {
+        color: white;
+        background-color: #c5c5c5;
+        border-color: #c5c5c5;
+        &:hover {
+            color: white;
+            background-color: #c5c5c5;
+        }
+    }
+    &.no-hover {
+        &:hover {
+            background-color: white;
+            color: $light_blue;
+        }
+    }
 }
 
 .module {
@@ -73,7 +121,7 @@
             &.full-rounded {
                 @include rounded(4px);
             }
-            &.blue-green-border {
+            &.light-blue-border {
                 border: 2px solid $light_blue;
             }
         }
@@ -87,6 +135,33 @@
             color: black;
             background-color: #dddddd;
             @include rounded(0 4px 4px 0);
+        }
+    }
+    &.spend-navigation {
+        padding-top: 30px;
+        .prev {
+            padding-left: 20px;
+            background-image: url(../images/light-blue-arrow-left.svg);
+            background-repeat: no-repeat;
+            background-size: 10px auto;
+            background-position: left 0 center;
+            @include simple_transition(.3s);
+            &:hover {
+                color: #7D8EA1;
+                background-image: url(../images/gray-arrow-left.svg);
+            }
+        }
+        .next {
+            padding-right: 20px;
+            background-image: url(../images/light-blue-arrow-right.svg);
+            background-repeat: no-repeat;
+            background-size: 10px auto;
+            background-position: right 0 center;
+            @include simple_transition(.3s);
+            &:hover {
+                color: #7D8EA1;
+                background-image: url(../images/gray-arrow-right.svg);
+            }
         }
     }
 }

@@ -4,11 +4,13 @@ import { NgModule } from '@angular/core';
 import { AppRoutingModule, routingComponents } from './app-routing.module';
 
 import { AppComponent } from './app.component';
+import { FaqComponent } from './faq/faq.component';
 
 @NgModule({
     declarations: [
         AppComponent,
-        routingComponents
+        routingComponents,
+        FaqComponent
     ],
     imports: [
         BrowserModule,
@@ -17,4 +19,5 @@ import { AppComponent } from './app.component';
     providers: [],
     bootstrap: [AppComponent]
 })
+
 export class AppModule { }

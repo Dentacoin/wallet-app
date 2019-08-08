@@ -1,7 +1,7 @@
 <header>
     <div class="container">
-        <div class="row">
-            <div class="col-xs-12">
+        <div class="row fs-0 logo-and-settings-row">
+            <div class="col-xs-6 inline-block">
                 <figure itemscope="" itemtype="http://schema.org/Organization" class="logo">
                     <a routerLink="/" itemprop="url">
                         <img src="assets/images/logo.svg" itemprop="logo" alt="Dentacoin logo"/>
@@ -23,19 +23,18 @@
                     <a class="nav-link nav-button" routerLink="send" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" itemprop="url"><span itemprop="name">SEND</span></a>
                 </li>
                 <li class="col-xs-3 inline-block">
-                    <a class="nav-link nav-button" routerLink="spend" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" itemprop="url"><span itemprop="name">SPEND</span></a>
+                    <a class="nav-link nav-button" routerLink="spend-pay-for-dental-services" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" itemprop="url"><span itemprop="name">SPEND</span></a>
                 </li>
             </ul>
         </nav>
     </div>
+    <div class="camping-currently-offline"></div>
 </header>
-<main>
-    <div class="container padding-top-100 padding-top-xs-40 padding-bottom-100 padding-bottom-xs-120">
+<main id="main-container" [attr.hybrid]="hybrid ? 'true' : null">
+    <div class="container padding-top-100 padding-top-xs-10 padding-bottom-70">
         <div class="row">
-            <div class="col-xs-12 padding-right-5 padding-left-5">
-                <div class="main-wrapper">
-                    <router-outlet></router-outlet>
-                </div>
+            <div class="col-xs-12 no-gutter">
+                <router-outlet></router-outlet>
             </div>
         </div>
     </div>
@@ -49,7 +48,7 @@
         <div class="row padding-bottom-xs-50">
             <ul class="col-12 no-gutter-xs" itemtype="http://schema.org/SiteNavigationElement">
                 <li class="inline-block-top">
-                    <a href="" target="_blank" itemprop="url">
+                    <a routerLink="faq" itemprop="url">
                         <figure><img src="assets/images/faq.svg"/></figure>
                         <span itemprop="name">FAQ</span>
                     </a>
@@ -116,7 +115,7 @@
                 </a>
             </li>
             <li class="inline-block-bottom">
-                <a routerLink="spend"routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" itemprop="url">
+                <a routerLink="spend-pay-for-dental-services" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" itemprop="url">
                     <figure itemscope="" itemtype="http://schema.org/Organization">
                         <img alt="Spend icon" itemprop="contentUrl" src="assets/images/spend-icon.svg"/>
                     </figure>
@@ -126,3 +125,4 @@
         </ul>
     </nav>
 </div>
+<div class="auth-popup-faq-link"><a routerLink="faq">?</a></div>
