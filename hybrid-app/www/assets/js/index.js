@@ -1316,41 +1316,6 @@ async function initAccountChecker()  {
             }
         });
 
-/*
-        console.log(current_meta_mask_account, 'current_meta_mask_account');
-
-        //on address change
-        window.ethereum.on('accountsChanged', async function () {
-            var accounts = await web3.eth.getAccounts();
-            if(accounts.length) {
-                console.log(current_meta_mask_account, 'current_meta_mask_account');
-                console.log(accounts[0], 'accounts[0]');
-                if(innerAddressCheck(current_meta_mask_account) && checksumAddress(current_meta_mask_account) != checksumAddress(accounts[0])) {
-                    console.log('accountsChanged reload 1');
-                    window.location.reload();
-                }
-            } else if(current_meta_mask_account != undefined) {
-                console.log('accountsChanged reload 2');
-                window.location.reload();
-            }
-        });
-
-        //account login
-        web3.currentProvider.publicConfigStore.on('update', async function() {
-            var accounts = await web3.eth.getAccounts();
-            if(accounts.length) {
-                console.log(current_meta_mask_account, 'current_meta_mask_account');
-                console.log(accounts[0], 'accounts[0]');
-                if(innerAddressCheck(current_meta_mask_account) && checksumAddress(current_meta_mask_account) != checksumAddress(accounts[0])) {
-                    console.log('update reload 1');
-                    window.location.reload();
-                }
-            } else if(current_meta_mask_account != undefined) {
-                console.log('update reload 2');
-                window.location.reload();
-            }
-        });*/
-
         if(current_meta_mask_account != undefined && current_meta_mask_account != null)  {
             console.log(1.1);
             meta_mask_logged = true;

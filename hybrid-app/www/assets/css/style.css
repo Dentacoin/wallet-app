@@ -4289,6 +4289,8 @@ img {
     overflow: hidden; }
     .bootbox.settings-popup .modal-dialog .modal-content .modal-body {
       padding: 0; }
+      .bootbox.settings-popup .modal-dialog .modal-content .modal-body .log-out:hover svg path {
+        fill: white; }
       .bootbox.settings-popup .modal-dialog .modal-content .modal-body .popup-header {
         background-color: #00b7e2;
         padding: 10px; }

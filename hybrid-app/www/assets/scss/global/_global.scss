@@ -997,6 +997,13 @@ img {
                 overflow: hidden;
                 .modal-body {
                     padding: 0;
+                    .log-out {
+                        &:hover {
+                            svg path {
+                                fill: white;
+                            }
+                        }
+                    }
                     .popup-header {
                         background-color: $light_blue;
                         padding: 10px;
