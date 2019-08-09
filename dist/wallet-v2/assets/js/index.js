@@ -522,6 +522,7 @@ var pages_data = {
                     );
                 } else {
                     //BROWSER SCAN
+                    console.log(load_qr_code_lib, 'load_qr_code_lib');
                     if(load_qr_code_lib) {
                         showLoader();
                         load_qr_code_lib = false;
@@ -533,6 +534,7 @@ var pages_data = {
 
                     var cameras_global;
                     var scanner = new Instascan.Scanner({ video: document.getElementById('qr-preview') });
+                    console.log(scanner, 'scanner');
                     scanner.addListener('scan', function (content) {
                         $('input.clinics-input').val(content).trigger('change');
                         scanner.stop(cameras_global[0]);
@@ -540,6 +542,7 @@ var pages_data = {
                     });
 
                     Instascan.Camera.getCameras().then(function (cameras) {
+                        console.log(cameras, 'cameras');
                         if (cameras.length > 0) {
                             cameras_global = cameras;
                             scanner.start(cameras[0]);

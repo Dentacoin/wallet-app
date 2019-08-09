@@ -38,4 +38,5 @@
     <icon density="xhdpi" height="72" src="/app-resources/images/wallet-app-icon-72x72px.png" width="72" />
     <icon density="xxhdpi" height="144" src="/app-resources/images/wallet-app-icon-144x144px.png" width="144" />
     <preference name="loglevel" value="DEBUG" />
+    <preference name="orientation" value="portrait" />
 </widget>
