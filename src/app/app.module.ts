@@ -1,6 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import {LocationStrategy, HashLocationStrategy} from '@angular/common';
 
 import { AppRoutingModule, routingComponents } from './app-routing.module';
 
@@ -17,7 +16,7 @@ import { FaqComponent } from './faq/faq.component';
         BrowserModule,
         AppRoutingModule
     ],
-    providers: [{provide: LocationStrategy, useClass: HashLocationStrategy}],
+    providers: [],
     bootstrap: [AppComponent]
 })
 
