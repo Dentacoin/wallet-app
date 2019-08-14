@@ -26,7 +26,15 @@ window.addEventListener('load', function() {
 
 document.addEventListener('deviceready', function() {
     console.log('================= deviceready ===================');
-    
+    document.addEventListener('offline', function(e){
+        console.log('===== we are offline =====');
+        $('header .camping-currently-offline').html('<div class="currently-offline">You are currently offline</div>');
+    }, false);
+
+    document.addEventListener('online', function(e){
+        console.log('===== we are online =====');
+        $('header .camping-currently-offline').html('');
+    }, false);
 }, false);
 
 function isFloat(n){
@@ -44,6 +52,8 @@ var temporally_timestamp = 0;
 var global_state = {};
 var getInstance;
 var DCNContract;
+var core_db_clinics;
+var core_db_clinics_time_to_request;
 var dApp = {
     loaded: false,
     contract_address: '0x08d32b0da63e2C3bcF8019c9c5d849d7a9d791e6',
@@ -219,7 +229,7 @@ var dApp = {
                 $('.camping-transaction-history table tr').addClass('show-this');
             }
         } else {
-            $('.camping-transaction-history').html('<h2 class="lato-bold fs-25 fs-xs-18 text-center white-crossed-label color-white"><span>No current Transaction history</span></h2>');
+            $('.camping-transaction-history').html('<h2 class="lato-bold fs-16 text-center color-white"><span>No current Transaction history</span></h2>');
         }
     },
     getTransferFromEvents: function () {
@@ -303,19 +313,42 @@ var bidali_lib_loaded = false;
 var pages_data = {
     homepage: async function() {
         if(typeof(global_state.account) != 'undefined') {
-            //show user ethereum address
-            $('.eth-address-container .address-value').val(global_state.account);
+            async function refreshAccountDataButtonLogic(init_loader) {
+                if(init_loader != undefined) {
+                    showLoader();
 
-            //update dentacoin amount
-            var dcn_balance = parseInt(await dApp.methods.getDCNBalance(global_state.account));
-            $('.dcn-amount').html(dcn_balance);
+                    setTimeout(function() {
+                        updateUserAccountData(true);
+                    }, 500);
+                } else {
+                    updateUserAccountData();
+                }
+            }
+            refreshAccountDataButtonLogic();
 
-            //update usd amount (dentacoins in usd)
-            var dentacoin_data = await getDentacoinDataByCoingecko();
-            $('.usd-amount').html((dcn_balance * dentacoin_data.market_data.current_price.usd).toFixed(2));
+            async function updateUserAccountData(hide_loader) {
+                //show user ethereum address
+                $('.eth-address-container .address-value').val(global_state.account);
 
-            //update ether amount
-            $('.eth-amount').html(parseFloat(dApp.web3_1_0.utils.fromWei(await dApp.helper.getAddressETHBalance(global_state.account))).toFixed(6));
+                //update dentacoin amount
+                var dcn_balance = parseInt(await dApp.methods.getDCNBalance(global_state.account));
+                $('.dcn-amount').html(dcn_balance);
+
+                //update usd amount (dentacoins in usd)
+                var dentacoin_data = await getDentacoinDataByCoingecko();
+                $('.usd-amount').html((dcn_balance * dentacoin_data.market_data.current_price.usd).toFixed(2));
+
+                //update ether amount
+                $('.eth-amount').html(parseFloat(dApp.web3_1_0.utils.fromWei(await dApp.helper.getAddressETHBalance(global_state.account))).toFixed(6));
+
+                if(hide_loader != undefined) {
+                    hideLoader();
+                }
+            }
+
+            $(document).on('click', '.refresh-account-data', function() {
+                refreshAccountDataButtonLogic(true);
+            });
 
             $('body').addClass('overflow-hidden');
             var window_width = $(window).width();
@@ -325,8 +358,8 @@ var pages_data = {
                 if($('#qrcode').length) {
                     $('#qrcode').html('');
                     var qrcode = new QRCode(document.getElementById('qrcode'), {
-                        width : 180,
-                        height : 180
+                        width : 160,
+                        height : 160
                     });
 
                     qrcode.makeCode(global_state.account);
@@ -376,6 +409,11 @@ var pages_data = {
         });
     },
     buy_page: async function() {
+        if(typeof(global_state.account) != 'undefined') {
+            $('section.ready-to-purchase-with-external-api input#dcn_address').parent().find('label').addClass('active-label');
+            $('section.ready-to-purchase-with-external-api input#dcn_address').val(global_state.account);
+        }
+
         //dividing with 100, because with indacoin api you cannot get prices for 1 crypto
         var dcn_for_one_usd = parseFloat(await getCryptoDataByIndacoin('DCN')) / 100;
         var eth_for_one_usd = parseFloat(await getCryptoDataByIndacoin('ETH')) / 100;
@@ -470,15 +508,19 @@ var pages_data = {
         });
     },
     send_page: async function() {
-        showLoader();
+        //reading all clinics/ dentists from the CoreDB EVERY 1h
+        if(core_db_clinics == undefined || core_db_clinics_time_to_request < Date.now()) {
+            showLoader();
+            core_db_clinics_time_to_request = Date.now() + 3600 * 1000;
+            core_db_clinics = await getClinics();
+            hideLoader();
+        }
 
-        //reading all clinics/ dentists from the CoreDB
-        var clinics = await getClinics();
-        if(clinics.success) {
+        if(core_db_clinics.success) {
             var combobox_html = '';
-            for(var i = 0, len = clinics.data.length; i < len; i+=1) {
-                if(clinics.data[i].dcn_address != null) {
-                    combobox_html += '<option value="'+clinics.data[i].dcn_address+'">'+clinics.data[i].name+'</option>';
+            for(var i = 0, len = core_db_clinics.data.length; i < len; i+=1) {
+                if(core_db_clinics.data[i].dcn_address != null) {
+                    combobox_html += '<option value="'+core_db_clinics.data[i].dcn_address+'">'+core_db_clinics.data[i].name+'</option>';
                 }
             }
 
@@ -522,6 +564,7 @@ var pages_data = {
                     );
                 } else {
                     //BROWSER SCAN
+                    console.log(load_qr_code_lib, 'load_qr_code_lib');
                     if(load_qr_code_lib) {
                         showLoader();
                         load_qr_code_lib = false;
@@ -533,6 +576,7 @@ var pages_data = {
 
                     var cameras_global;
                     var scanner = new Instascan.Scanner({ video: document.getElementById('qr-preview') });
+                    console.log(scanner, 'scanner');
                     scanner.addListener('scan', function (content) {
                         $('input.clinics-input').val(content).trigger('change');
                         scanner.stop(cameras_global[0]);
@@ -540,6 +584,7 @@ var pages_data = {
                     });
 
                     Instascan.Camera.getCameras().then(function (cameras) {
+                        console.log(cameras, 'cameras');
                         if (cameras.length > 0) {
                             cameras_global = cameras;
                             scanner.start(cameras[0]);
@@ -559,10 +604,10 @@ var pages_data = {
             });
         }
 
-        hideLoader();
-
         $('.section-send .next-send').click(function() {
             if(!$(this).hasClass('disabled')) {
+                fireGoogleAnalyticsEvent('Pay', 'Next', 'DCN Address');
+
                 $('.section-send').hide();
                 $('.section-amount-to .address-cell').html($('.section-send input.combobox.clinics-input').val().trim()).attr('data-receiver', $('.section-send input.combobox.clinics-input').val().trim());
                 $('.section-amount-to').fadeIn(500);
@@ -619,9 +664,6 @@ var pages_data = {
 
         var ethgasstation_data = await getEthgasstationData();
         $('.section-amount-to .open-transaction-recipe').click(async function() {
-            console.log(parseInt(await dApp.methods.getDCNBalance(global_state.account)), 'DCN BALANCE');
-            console.log(parseFloat(dApp.web3_1_0.utils.fromWei(await dApp.helper.getAddressETHBalance(global_state.account))), 'ETH BALANCE');
-
             var crypto_val = $('.section-amount-to input#crypto-amount').val().trim();
             var usd_val = $('.section-amount-to input#usd-val').val().trim();
             var sending_to_address = $('.section-amount-to .address-cell').attr('data-receiver');
@@ -692,7 +734,7 @@ var pages_data = {
 
                 var transaction_popup_html = '<div class="title">Send confirmation</div><div class="pictogram-and-dcn-usd-price"><svg version="1.1" class="width-100 max-width-100 margin-bottom-10" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><style type="text/css">.st0{fill:#FFFFFF;}.st1{fill:#CA675A;}.st2{fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="100" width="105.7" x="-7.2" y="-6.4"></sliceSourceBounds></sfw></metadata><circle class="st0" cx="50" cy="50" r="50"/><g><g><g><path class="st1" d="M50.1,93.7c-18.7,0-36-12.4-41.3-31.3C2.4,39.6,15.8,16,38.5,9.6C48.9,6.7,60,7.8,69.6,12.8c1.2,0.6,1.6,2,1,3.2s-2,1.6-3.2,1c-8.6-4.4-18.4-5.4-27.7-2.8c-20.1,5.6-32,26.7-26.3,46.9s26.7,32.1,46.9,26.4s32.1-26.7,26.4-46.9c-1.1-3.9-2.8-7.6-5-10.9c-0.7-1.1-0.4-2.6,0.7-3.3c1.1-0.7,2.6-0.4,3.3,0.7c2.5,3.8,4.4,7.9,5.6,12.3c6.4,22.8-7,46.5-29.7,52.8C57.8,93.2,53.9,93.7,50.1,93.7z"/></g><g><path class="st1" d="M33.1,78.6c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.4l40.4-50.5c0.8-1,2.3-1.2,3.4-0.4c1,0.8,1.2,2.3,0.4,3.4L35,77.7C34.5,78.3,33.8,78.6,33.1,78.6z"/></g><g><g><path class="st2" d="M105.7,56.9"/></g></g></g><g><path class="st1" d="M73.7,54.2c-0.1,0-0.2,0-0.2,0c-1.3-0.2-2.3-1.4-2.2-2.7L74,23.9L47.6,39.8c-1.1,0.7-2.6,0.3-3.3-0.8c-0.7-1.1-0.3-2.6,0.8-3.3l34.5-20.8L76.1,52C76,53.2,74.9,54.2,73.7,54.2z"/></g></g></svg><div class="dcn-amount">-'+crypto_val+' '+token_symbol+'</div><div class="usd-amount">=$'+usd_val+'</div></div><div class="confirm-row to"> <div class="label inline-block">To:</div><div class="value inline-block">'+sending_to_address+'</div></div><div class="confirm-row from"> <div class="label inline-block">From:</div><div class="value inline-block">'+global_state.account+'</div></div><div class="confirm-row free"> <div class="label inline-block">Ether fee:</div><div class="value inline-block">'+parseFloat(eth_fee).toFixed(8)+'</div></div>';
 
-                if((is_hybrid && window.localStorage.getItem('keystore_path') != null) || (!is_hybrid && window.localStorage.getItem('keystore_file') != null)) {
+                if(window.localStorage.getItem('keystore_file') != null) {
                     //cached keystore path on mobile device or cached keystore file on browser
                     transaction_popup_html+='<div class="container-fluid"><div class="row padding-top-25 cached-keystore-file"><div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">Secret password:</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">Confirm</a></div></div></div>';
                     basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
@@ -704,51 +746,17 @@ var pages_data = {
                             showLoader();
 
                             setTimeout(function() {
-                                if(!is_hybrid && window.localStorage.getItem('keystore_file') != null) {
-                                    // BROWSER
-                                    var decrypting_keystore = decryptKeystore(window.localStorage.getItem('keystore_file'), $('.cached-keystore-file  #your-secret-key-password').val().trim());
+                                showLoader();
+
+                                setTimeout(function () {
+                                    var decrypting_keystore = decryptKeystore(window.localStorage.getItem('keystore_file'), $('.cached-keystore-file #your-secret-key-password').val().trim());
                                     if(decrypting_keystore.success) {
                                         submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, decrypting_keystore.success);
                                     } else if(decrypting_keystore.error) {
                                         basic.showAlert(decrypting_keystore.message, '', true);
                                         hideLoader();
                                     }
-                                } else if(is_hybrid && window.localStorage.getItem('keystore_path') != null) {
-                                    // MOBILE APP
-                                    window.resolveLocalFileSystemURL(window.localStorage.getItem('keystore_path'), function (entry) {
-                                        window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (rootEntry) {
-                                            console.log(rootEntry, 'rootEntry');
-                                            rootEntry.getFile(entry.fullPath, {create: false}, function (fileEntry) {
-                                                console.log(fileEntry, 'fileEntry');
-                                                fileEntry.file(function(file) {
-                                                    var reader = new FileReader();
-
-                                                    reader.onloadend = function () {
-                                                        var keystore_string = this.result;
-                                                        console.log(keystore_string, 'keystore_string');
-
-                                                        showLoader();
-
-                                                        setTimeout(function () {
-                                                            var decrypting_keystore = decryptKeystore(keystore_string, $('.cached-keystore-file #your-secret-key-password').val().trim());
-                                                            console.log(decrypting_keystore, 'decrypting_keystore');
-                                                            if (decrypting_keystore.success) {
-                                                                submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, decrypting_keystore.success);
-                                                            } else if (decrypting_keystore.error) {
-                                                                basic.showAlert(decrypting_keystore.message, '', true);
-                                                                hideLoader();
-                                                            }
-                                                        }, 500);
-                                                    };
-
-                                                    reader.readAsText(file);
-                                                }, function(err) {
-                                                    alert('Something went wrong with reading your cached file (Core error 1). Please contact admin@dentacoin.com.');
-                                                });
-                                            });
-                                        });
-                                    });
-                                }
+                                }, 500);
                             }, 500);
                         }
                     });
@@ -880,32 +888,7 @@ function styleKeystoreUploadBtnForTx(function_abi, token_symbol, crypto_val, sen
                                                             var decrypting_keystore = decryptKeystore(keystore_string, $('.proof-of-address #your-secret-key-password').val().trim());
                                                             if (decrypting_keystore.success) {
                                                                 if ($('.proof-of-address #agree-to-cache-tx-sign').is(':checked')) {
-                                                                    //caching (creating) the keystore file in the external data storage folder for this app
-                                                                    var keystore_file_name = buildKeystoreFileName(global_state.account);
-                                                                    window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (dirEntry) {
-                                                                        dirEntry.getFile(keystore_file_name, {
-                                                                            create: true,
-                                                                            exclusive: true
-                                                                        }, function (fileEntry) {
-                                                                            fileEntry.createWriter(function (fileWriter) {
-                                                                                fileWriter.onwriteend = function (e) {
-                                                                                    window.localStorage.setItem('keystore_path', cordova.file.externalDataDirectory + keystore_file_name);
-                                                                                };
-
-                                                                                fileWriter.onerror = function (e) {
-                                                                                    alert('Something went wrong with caching your file (Core error 3). Please contact admin@dentacoin.com.');
-                                                                                };
-
-                                                                                // Create a new Blob and write they keystore content inside of it
-                                                                                var blob = new Blob([keystore_string], {type: 'text/plain'});
-                                                                                fileWriter.write(blob);
-                                                                            }, function (err) {
-                                                                                alert('Something went wrong with caching your file (Core error 4). Please contact admin@dentacoin.com.');
-                                                                            });
-                                                                        }, function (err) {
-                                                                            alert('Something went wrong with caching your file (Core error 5). Please contact admin@dentacoin.com.');
-                                                                        });
-                                                                    });
+                                                                    window.localStorage.setItem('keystore_file', keystore_string);
                                                                 }
 
                                                                 submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, decrypting_keystore.success);
@@ -1020,9 +1003,16 @@ function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver
         //signing the transaction
         tx.sign(key);
         //sending the transaction
-        dApp.web3_1_0.eth.sendSignedTransaction('0x' + tx.serialize().toString('hex'), function (err, transactionHash) {
+        dApp.web3_1_0.eth.sendSignedTransaction('0x' + tx.serialize().toString('hex'), async function (err, transactionHash) {
             hideLoader();
             basic.closeDialog();
+
+            if(symbol == 'DCN') {
+                fireGoogleAnalyticsEvent('Pay', 'Next', 'DCN', token_val);
+            } else if(symbol == 'ETH') {
+                var ethereum_data = await getEthereumDataByCoingecko();
+                fireGoogleAnalyticsEvent('Pay', 'Next', 'ETH in USD', Math.floor(parseFloat(token_val) * ethereum_data.market_data.current_price.usd));
+            }
 
             displayMessageOnDCNTransactionSend(token_label, transactionHash);
         });
@@ -1040,6 +1030,15 @@ function displayMessageOnDCNTransactionSend(token_label, tx_hash)  {
 async function additionalMethodsAfterAngularViewInit() {
     await dApp.init();
 }
+
+//custom fix for parent menu active class
+setInterval(function() {
+    if($('app-spend-page-exchanges').length || $('app-spend-page-pay-assurance-fees').length || $('app-spend-page-gift-cards').length || $('app-spend-page-pay-for-dental-services').length) {
+        $('.nav-link.spend').addClass('active');
+    } else {
+        $('.nav-link.spend').removeClass('active');
+    }
+}, 500);
 
 window.getHomepageData = async function() {
     initAccountChecker();
@@ -1278,7 +1277,8 @@ if(typeof(web3) !== 'undefined' && web3.currentProvider.isMetaMask === true) {
 
 async function initAccountChecker()  {
     is_hybrid = $('#main-container').attr('hybrid') == 'true';
-    console.log('initAccountChecker');
+    checkIfLoadingFromMobileBrowser();
+
     //checking if metamask
     if(typeof(web3) !== 'undefined' && web3.currentProvider.isMetaMask === true) {
         console.log(1);
@@ -1372,6 +1372,8 @@ async function initAccountChecker()  {
                         }
 
                         window.localStorage.setItem('current_account', validate_private_key.success.address);
+                        fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
+
                         if(is_hybrid) {
                             if(basic.getMobileOperatingSystem() == 'Android') {
                                 navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
@@ -1445,6 +1447,7 @@ async function initAccountChecker()  {
                                             fileWriter.onwriteend = function (e) {
                                                 $('.custom-auth-popup .popup-left[data-step="second"] .popup-body .continue-btn > a').removeClass('disabled');
                                                 keystore_downloaded = true;
+                                                fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
                                                 basic.showAlert('File ' + keystore_file_name + ' has been downloaded to the top-level directory of your device file system.', '', true);
                                             };
 
@@ -1481,40 +1484,24 @@ async function initAccountChecker()  {
                         if(keystore_downloaded) {
                             if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
                                 if(is_hybrid) {
-                                    //in mobile app saving in localstorage only path to keystore file
-                                    window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (dirEntry) {
-                                        dirEntry.getFile(keystore_file_name, { create: true, exclusive: true }, function (fileEntry) {
-                                            fileEntry.createWriter(function (fileWriter) {
-                                                fileWriter.onwriteend = function (e) {
-                                                    window.localStorage.setItem('keystore_path', cordova.file.externalDataDirectory + keystore_file_name);
-                                                    window.localStorage.setItem('current_account', '0x' + generated_keystore.success.keystore.address);
-                                                    console.log('window.location.reload 1');
+                                    //in browser saving keystore file in localstorage
+                                    window.localStorage.setItem('keystore_file', JSON.stringify(generated_keystore.success.keystore));
+                                    window.localStorage.setItem('current_account', '0x' + generated_keystore.success.keystore.address);
 
-                                                    if(basic.getMobileOperatingSystem() == 'Android') {
-                                                        navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
-                                                    } else if(basic.getMobileOperatingSystem() == 'iOS') {
-                                                        alert('App refresh is not tested yet with iOS');
-                                                    }
-                                                };
+                                    fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
 
-                                                fileWriter.onerror = function (e) {
-                                                    alert('Something went wrong with caching your file (Core error 3). Please contact admin@dentacoin.com.');
-                                                };
-
-                                                // Create a new Blob and write they keystore content inside of it
-                                                var blob = new Blob([JSON.stringify(generated_keystore.success.keystore)], {type: 'text/plain'});
-                                                fileWriter.write(blob);
-                                            }, function(err) {
-                                                alert('Something went wrong with caching your file (Core error 4). Please contact admin@dentacoin.com.');
-                                            });
-                                        }, function(err) {
-                                            alert('Seems like file with this name already exist in your application directory, move it or delete it. If not please contact admin@dentacoin.com.');
-                                        });
-                                    });
+                                    if(basic.getMobileOperatingSystem() == 'Android') {
+                                        navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
+                                    } else if(basic.getMobileOperatingSystem() == 'iOS') {
+                                        alert('App refresh is not tested yet with iOS');
+                                    }
                                 } else {
                                     //in browser saving keystore file in localstorage
                                     window.localStorage.setItem('keystore_file', JSON.stringify(generated_keystore.success.keystore));
                                     window.localStorage.setItem('current_account', '0x' + generated_keystore.success.keystore.address);
+
+                                    fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
+
                                     window.location.reload();
                                 }
                             } else {
@@ -1566,75 +1553,53 @@ function styleKeystoreUploadBtn()    {
                                                 $('.or-label').hide();
                                                 $('.import-private-key-row').hide();
 
-                                                setTimeout(function () {
-                                                    //show continue button next step button
-                                                    $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('<div class="enter-pass-label"><label>Please enter password for the secret key file.</label></div><div class="custom-google-label-style margin-bottom-15 max-width-300 margin-left-right-auto module" data-input-light-blue-border="true"><label for="import-keystore-password">Enter password:</label><input type="password" id="import-keystore-password" class="full-rounded import-keystore-password"/></div><div class="text-center padding-top-10"><input type="checkbox" id="agree-to-cache-import" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-import"><span class="padding-left-5 padding-right-5 inline-block">Remember keystore file</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block import-more-info-keystore-remember fs-0" data-content="Remembering your keystore file allows for easier and faster transactions. It is stored only in local device storage and nobody else has access to it."><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="continue-btn padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border">CONTINUE</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block">Go back</span></a></div>');
+                                                //show continue button next step button
+                                                $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('<div class="enter-pass-label"><label>Please enter password for the secret key file.</label></div><div class="custom-google-label-style margin-bottom-15 max-width-300 margin-left-right-auto module" data-input-light-blue-border="true"><label for="import-keystore-password">Enter password:</label><input type="password" id="import-keystore-password" class="full-rounded import-keystore-password"/></div><div class="text-center padding-top-10"><input type="checkbox" id="agree-to-cache-import" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-import"><span class="padding-left-5 padding-right-5 inline-block">Remember keystore file</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block import-more-info-keystore-remember fs-0" data-content="Remembering your keystore file allows for easier and faster transactions. It is stored only in local device storage and nobody else has access to it."><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="continue-btn padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border">CONTINUE</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block">Go back</span></a></div>');
 
-                                                    $('.import-more-info-keystore-remember').popover({
-                                                        trigger: 'click'
-                                                    });
+                                                $('.import-more-info-keystore-remember').popover({
+                                                    trigger: 'click'
+                                                });
 
-                                                    $('.custom-auth-popup .popup-right .popup-body .continue-btn > a').click(function () {
-                                                        var keystore_password = $('.custom-auth-popup .popup-right .popup-body .import-keystore-password').val().trim();
-                                                        if (keystore_password == '') {
-                                                            basic.showAlert('Please enter password for your keystore file.', '', true);
-                                                        } else {
-                                                            showLoader();
+                                                $('.custom-auth-popup .popup-right .popup-body .continue-btn > a').click(function () {
+                                                    var keystore_password = $('.custom-auth-popup .popup-right .popup-body .import-keystore-password').val().trim();
+                                                    if (keystore_password == '') {
+                                                        basic.showAlert('Please enter password for your keystore file.', '', true);
+                                                    } else {
+                                                        showLoader();
 
-                                                            setTimeout(function () {
-                                                                var imported_keystore = importKeystoreFile(keystore_string, keystore_password);
-                                                                if (imported_keystore.success) {
-                                                                    var internet = navigator.onLine;
-                                                                    if (internet) {
-                                                                        console.log('===== make request for save public keys for assurance =====');
-                                                                    }
-
-                                                                    if ($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
-                                                                        var keystore_file_name = buildKeystoreFileName('0x' + address);
-                                                                        window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (dirEntry) {
-                                                                            dirEntry.getFile(keystore_file_name, {
-                                                                                create: true,
-                                                                                exclusive: true
-                                                                            }, function (fileEntry) {
-                                                                                fileEntry.createWriter(function (fileWriter) {
-                                                                                    fileWriter.onwriteend = function (e) {
-                                                                                        window.localStorage.setItem('keystore_path', cordova.file.externalDataDirectory + keystore_file_name);
-                                                                                        window.localStorage.setItem('current_account', '0x' + address);
-                                                                                        navigator.app.loadUrl("file:///android_asset/www/index.html", {
-                                                                                            loadingDialog: "Wait,Loading App",
-                                                                                            loadUrlTimeoutValue: 60000
-                                                                                        });
-                                                                                    };
-
-                                                                                    fileWriter.onerror = function (e) {
-                                                                                        alert('Something went wrong with caching your file (Core error 3). Please contact admin@dentacoin.com.');
-                                                                                    };
-
-                                                                                    // Create a new Blob and write they keystore content inside of it
-                                                                                    var blob = new Blob([keystore_string], {type: 'text/plain'});
-                                                                                    fileWriter.write(blob);
-                                                                                }, function (err) {
-                                                                                    alert('Something went wrong with caching your file (Core error 4). Please contact admin@dentacoin.com.');
-                                                                                });
-                                                                            }, function (err) {
-                                                                                alert('Something went wrong with caching your file (Core error 5). Please contact admin@dentacoin.com.');
-                                                                            });
-                                                                        });
-                                                                    } else {
-                                                                        window.localStorage.setItem('current_account', '0x' + address);
-                                                                        navigator.app.loadUrl("file:///android_asset/www/index.html", {
-                                                                            loadingDialog: "Wait,Loading App",
-                                                                            loadUrlTimeoutValue: 60000
-                                                                        });
-                                                                    }
-                                                                } else if (imported_keystore.error) {
-                                                                    hideLoader();
-                                                                    basic.showAlert(imported_keystore.message, '', true);
+                                                        setTimeout(function () {
+                                                            var imported_keystore = importKeystoreFile(keystore_string, keystore_password);
+                                                            if (imported_keystore.success) {
+                                                                var internet = navigator.onLine;
+                                                                if (internet) {
+                                                                    console.log('===== make request for save public keys for assurance =====');
                                                                 }
-                                                            }, 500);
-                                                        }
-                                                    });
-                                                }, 500);
+
+                                                                fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
+
+                                                                if ($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
+                                                                    window.localStorage.setItem('keystore_file', JSON.stringify(keystore_string));
+                                                                    window.localStorage.setItem('current_account', '0x' + address);
+
+                                                                    if(basic.getMobileOperatingSystem() == 'Android') {
+                                                                        navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
+                                                                    } else if(basic.getMobileOperatingSystem() == 'iOS') {
+                                                                        alert('App refresh is not tested yet with iOS');
+                                                                    }
+                                                                } else {
+                                                                    window.localStorage.setItem('current_account', '0x' + address);
+                                                                    navigator.app.loadUrl("file:///android_asset/www/index.html", {
+                                                                        loadingDialog: "Wait,Loading App",
+                                                                        loadUrlTimeoutValue: 60000
+                                                                    });
+                                                                }
+                                                            } else if (imported_keystore.error) {
+                                                                hideLoader();
+                                                                basic.showAlert(imported_keystore.message, '', true);
+                                                            }
+                                                        }, 500);
+                                                    }
+                                                });
                                             } else {
                                                 $('.custom-auth-popup .popup-right .popup-body #upload-keystore').val('');
                                                 basic.showAlert('Please upload valid keystore file.', '', true);
@@ -1701,6 +1666,8 @@ function styleKeystoreUploadBtn()    {
                                             if(internet) {
                                                 console.log('===== make request for save public keys for assurance =====');
                                             }
+
+                                            fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
 
                                             if($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
                                                 window.localStorage.setItem('current_account', '0x' + address);
@@ -1823,9 +1790,9 @@ $(document).on('click', '.open-settings', function() {
     basic.closeDialog();
     var settings_html = '<div class="text-center fs-0 color-white lato-bold popup-header"><a href="javascript:void(0)" class="custom-close-bootbox max-width-20 inline-block margin-right-10"><svg class="width-100" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 62 52.3" style="enable-background:new 0 0 62 52.3;" xml:space="preserve"><style type="text/css">.st1{fill:#FFFFFF;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="52.3" width="62" x="19" y="48.9"/></sfw></metadata><path class="st1" d="M62,26.2c0-2.2-1.8-4-4-4H14.2L30.4,7c1.7-1.4,1.8-4,0.4-5.6c-1.4-1.7-4-1.8-5.6-0.4C25.1,1,25,1.1,25,1.2 L1.3,23.2c-1.6,1.5-1.7,4-0.2,5.7C1.1,29,1.2,29,1.3,29.1L25,51.2c1.6,1.5,4.1,1.4,5.7-0.2c1.5-1.6,1.4-4.1-0.2-5.7L14.2,30.2H58 C60.2,30.2,62,28.4,62,26.2z"/></svg></a><span class="inline-block text-center fs-28 fs-xs-16">DENTACOIN WALLET OPTIONS</span></div><div class="popup-body">';
 
-    if((is_hybrid && window.localStorage.getItem('keystore_path') == null) || (!is_hybrid && window.localStorage.getItem('keystore_file') == null)) {
+    if((is_hybrid && window.localStorage.getItem('keystore_file') == null) || (!is_hybrid && window.localStorage.getItem('keystore_file') == null)) {
         settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important remember-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M14,0H2C0.9,0,0,0.9,0,2v12c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V2C16,0.9,15.1,0,14,0z M15,14c0,0.6-0.4,1-1,1 H2c-0.6,0-1-0.4-1-1v-3h14V14z M15,10H1V6h14V10z M1,5V2c0-0.6,0.4-1,1-1h12c0.6,0,1,0.4,1,1v3H1z M14,3.5C14,3.8,13.8,4,13.5,4h-1 C12.2,4,12,3.8,12,3.5v-1C12,2.2,12.2,2,12.5,2h1C13.8,2,14,2.2,14,2.5V3.5z M14,8.5C14,8.8,13.8,9,13.5,9h-1C12.2,9,12,8.8,12,8.5 v-1C12,7.2,12.2,7,12.5,7h1C13.8,7,14,7.2,14,7.5V8.5z M14,13.5c0,0.3-0.2,0.5-0.5,0.5h-1c-0.3,0-0.5-0.2-0.5-0.5v-1 c0-0.3,0.2-0.5,0.5-0.5h1c0.3,0,0.5,0.2,0.5,0.5V13.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold">Remember Keystore File</span></a><div class="fs-14 option-description">By doing so, you will not be asked to upload it every time you want to access your wallet.</div><div class="camping-for-action"></div></div>';
-    } else if((is_hybrid && window.localStorage.getItem('keystore_path') != null) || (!is_hybrid && window.localStorage.getItem('keystore_file') != null)) {
+    } else if((is_hybrid && window.localStorage.getItem('keystore_file') != null) || (!is_hybrid && window.localStorage.getItem('keystore_file') != null)) {
         settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important forget-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M14,0H2C0.9,0,0,0.9,0,2v12c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V2C16,0.9,15.1,0,14,0z M15,14c0,0.6-0.4,1-1,1 H2c-0.6,0-1-0.4-1-1v-3h14V14z M15,10H1V6h14V10z M1,5V2c0-0.6,0.4-1,1-1h12c0.6,0,1,0.4,1,1v3H1z M14,3.5C14,3.8,13.8,4,13.5,4h-1 C12.2,4,12,3.8,12,3.5v-1C12,2.2,12.2,2,12.5,2h1C13.8,2,14,2.2,14,2.5V3.5z M14,8.5C14,8.8,13.8,9,13.5,9h-1C12.2,9,12,8.8,12,8.5 v-1C12,7.2,12.2,7,12.5,7h1C13.8,7,14,7.2,14,7.5V8.5z M14,13.5c0,0.3-0.2,0.5-0.5,0.5h-1c-0.3,0-0.5-0.2-0.5-0.5v-1 c0-0.3,0.2-0.5,0.5-0.5h1c0.3,0,0.5,0.2,0.5,0.5V13.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold">Forget Keystore File</span></a><div class="fs-14 option-description">By doing so, you’ll be asked to upload it every time you want to access your wallet.</div></div><div class="option-row"><a href="javascript:void(0)" class="display-block-important download-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M14.4,10.4v3.2c0,0.1,0,0.2-0.1,0.3c0,0.1-0.1,0.2-0.2,0.3c-0.1,0.1-0.2,0.1-0.3,0.2c-0.1,0-0.2,0.1-0.3,0.1 H2.4c-0.1,0-0.2,0-0.3-0.1c-0.1,0-0.2-0.1-0.3-0.2S1.7,14,1.7,13.9c0-0.1-0.1-0.2-0.1-0.3v-3.2c0-0.4-0.4-0.8-0.8-0.8S0,10,0,10.4 v3.2c0,0.3,0.1,0.6,0.2,0.9c0.1,0.3,0.3,0.6,0.5,0.8c0.2,0.2,0.5,0.4,0.8,0.5C1.8,15.9,2.1,16,2.4,16h11.2c0.3,0,0.6-0.1,0.9-0.2 c0.3-0.1,0.6-0.3,0.8-0.5c0.2-0.2,0.4-0.5,0.5-0.8c0.1-0.3,0.2-0.6,0.2-0.9v-3.2c0-0.4-0.4-0.8-0.8-0.8S14.4,10,14.4,10.4z M8.8,8.5 V0.8C8.8,0.4,8.4,0,8,0C7.6,0,7.2,0.4,7.2,0.8v7.7L4.6,5.8c-0.3-0.3-0.8-0.3-1.1,0C3.1,6.1,3.1,6.7,3.4,7l4,4c0,0,0,0,0,0 c0.1,0.1,0.2,0.1,0.3,0.2c0.1,0,0.2,0.1,0.3,0.1c0,0,0,0,0,0c0.1,0,0.2,0,0.3-0.1c0.1,0,0.2-0.1,0.3-0.2l4-4c0.3-0.3,0.3-0.8,0-1.1 s-0.8-0.3-1.1,0L8.8,8.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold">Download Keystore File</span></a><div class="fs-14 option-description">Forgot where you’ve stored your wallet access file? Make sure you save it again.</div></div>';
     }
 
@@ -1837,32 +1804,10 @@ $(document).on('click', '.open-settings', function() {
     });
 
     $('.settings-popup .log-out').click(function() {
-        console.log('log out');
         if(is_hybrid) {
             if(basic.getMobileOperatingSystem() == 'Android') {
-                console.log(window.localStorage.getItem('keystore_path'), 'window.localStorage.getItem(\'keystore_path\')');
-                if(window.localStorage.getItem('keystore_path') != null) {
-                    window.resolveLocalFileSystemURL(window.localStorage.getItem('keystore_path'), function (entry) {
-                        console.log(entry, 'entry');
-                        window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (dirEntry) {
-                            console.log(dirEntry, 'dirEntry');
-                            dirEntry.getFile(entry.fullPath, {create: false}, function (fileEntry) {
-                                console.log(entry.fullPath, 'entry.fullPath')
-                                fileEntry.remove(function (file) {
-                                    window.localStorage.clear();
-                                    navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
-                                }, function (error) {
-                                    alert('Keystore file cache deletion failed. Error code: ' + error.code);
-                                }, function () {
-                                    alert('Keystore file does not exist in Dentacoin Wallet caching folder.');
-                                });
-                            });
-                        });
-                    });
-                } else {
-                    window.localStorage.clear();
-                    navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
-                }
+                window.localStorage.clear();
+                navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
             } else if(basic.getMobileOperatingSystem() == 'iOS') {
                 alert('App refresh is not tested yet with iOS');
             }
@@ -1891,6 +1836,8 @@ $(document).on('click', '.open-settings', function() {
                 //ANDROID
                 $('.remember-keystore-upload').click(function() {
                     var this_btn = $(this);
+
+                    // =================================== TEST THIS ON GALAXY s7 ===========================================
                     fileChooser.open(function(file_uri) {
                         console.log(file_uri, 'file_uri');
                         window.resolveLocalFileSystemURL(decodeURIComponent(file_uri), function (entry) {
@@ -1967,41 +1914,10 @@ $(document).on('click', '.open-settings', function() {
                     var import_keystore_response = importKeystoreFile(keystore_string, $('.settings-popup #cache-keystore-password').val().trim());
                     console.log(import_keystore_response, 'import_keystore_response');
                     if(import_keystore_response.success) {
-                        if(is_hybrid) {
-                            var keystore_file_name = buildKeystoreFileName('0x' + JSON.parse(keystore_string).address);
-                            window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (dirEntry) {
-                                dirEntry.getFile(keystore_file_name, {
-                                    create: true,
-                                    exclusive: true
-                                }, function (fileEntry) {
-                                    fileEntry.createWriter(function (fileWriter) {
-                                        fileWriter.onwriteend = function (e) {
-                                            window.localStorage.setItem('keystore_path', cordova.file.externalDataDirectory + keystore_file_name);
+                        window.localStorage.setItem('keystore_file', keystore_string);
 
-                                            basic.closeDialog();
-                                            basic.showAlert('Your keystore file has been cached successfully.', '', true);
-                                        };
-
-                                        fileWriter.onerror = function (e) {
-                                            alert('Something went wrong with caching your file (Core error 3). Please contact admin@dentacoin.com.');
-                                        };
-
-                                        // Create a new Blob and write they keystore content inside of it
-                                        var blob = new Blob([keystore_string], {type: 'text/plain'});
-                                        fileWriter.write(blob);
-                                    }, function (err) {
-                                        alert('Something went wrong with caching your file (Core error 4). Please contact admin@dentacoin.com.');
-                                    });
-                                }, function (err) {
-                                    alert('Something went wrong with caching your file (Core error 5). Please contact admin@dentacoin.com.');
-                                });
-                            });
-                        } else {
-                            window.localStorage.setItem('keystore_file', keystore_string);
-
-                            basic.closeDialog();
-                            basic.showAlert('Your keystore file has been cached successfully.', '', true);
-                        }
+                        basic.closeDialog();
+                        basic.showAlert('Your keystore file has been cached successfully.', '', true);
                     } else if(import_keystore_response.error) {
                         basic.showAlert(import_keystore_response.message, '', true);
                     }
@@ -2017,31 +1933,12 @@ $(document).on('click', '.open-settings', function() {
             //MOBILE APP
             if(basic.getMobileOperatingSystem() == 'Android') {
                 //getting the file content by it path saved in localstorage
-                window.resolveLocalFileSystemURL(window.localStorage.getItem('keystore_path'), function (entry) {
-                    window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (rootEntry) {
-                        rootEntry.getFile(entry.fullPath, {create: false}, function (fileEntry) {
-                            fileEntry.file(function(file) {
-                                var reader = new FileReader();
+                showLoader();
 
-                                reader.onloadend = function () {
-                                    var keystore_string = this.result;
-                                    var address = '0x' + JSON.parse(keystore_string).address;
-                                    var keystore_file_name = buildKeystoreFileName(address);
-                                    showLoader();
-
-                                    setTimeout(function () {
-                                        //downloading the file in mobile device file system
-                                        androidFileDownload(keystore_file_name, keystore_string);
-                                    }, 500);
-                                };
-
-                                reader.readAsText(file);
-                            }, function(err) {
-                                alert('Something went wrong with reading your cached file (Core error 1). Please contact admin@dentacoin.com.');
-                            });
-                        });
-                    });
-                });
+                setTimeout(function () {
+                    //downloading the file in mobile device file system
+                    androidFileDownload(buildKeystoreFileName(global_state.account), window.localStorage.getItem('keystore_file'));
+                }, 500);
             } else if(basic.getMobileOperatingSystem() == 'iOS') {
                 alert('Downloading still not tested in iOS');
             }
@@ -2101,28 +1998,7 @@ $(document).on('click', '.open-settings', function() {
     });
 
     $('.settings-popup .forget-keystore').click(function() {
-        console.log('forget-keystore');
-        if(window.localStorage.getItem('keystore_path') != null) {
-            console.log(window.localStorage.getItem('keystore_path'));
-            window.resolveLocalFileSystemURL(window.localStorage.getItem('keystore_path'), function(entry) {
-                window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, function (dirEntry) {
-                    dirEntry.getFile(entry.fullPath, {create: false}, function (fileEntry) {
-                        fileEntry.remove(function (file) {
-                            window.localStorage.removeItem('keystore_path');
-                            basic.closeDialog();
-                            basic.showAlert('Your keystore file cache was deleted successfully.', '', true);
-                        }, function (error) {
-                            alert('Keystore file cache deletion failed. Error code: ' + error.code);
-                        }, function () {
-                            alert('Keystore file does not exist in Dentacoin Wallet caching folder.');
-                        });
-                    });
-                });
-            });
-        }
-
         if(window.localStorage.getItem('keystore_file') != null) {
-            console.log('cached keystore_file');
             window.localStorage.removeItem('keystore_file');
 
             basic.closeDialog();
@@ -2167,17 +2043,46 @@ function androidFileDownload(file_name, file_content) {
 }
 
 var internet_variable = navigator.onLine;
+//internet connection check ONLY for browsers
 function checkIfInternetConnection() {
-    setInterval(function() {
-        if(internet_variable != navigator.onLine) {
-            if(navigator.onLine) {
-                $('header .camping-currently-offline').html('');
-                internet_variable = navigator.onLine;
-            } else {
-                $('header .camping-currently-offline').html('<div class="currently-offline">You are currently offline</div>');
-                internet_variable = navigator.onLine;
+    if(!is_hybrid) {
+        setInterval(function() {
+            if(internet_variable != navigator.onLine) {
+                if(navigator.onLine) {
+                    $('header .camping-currently-offline').html('');
+                    internet_variable = navigator.onLine;
+                } else {
+                    $('header .camping-currently-offline').html('<div class="currently-offline">You are currently offline</div>');
+                    internet_variable = navigator.onLine;
+                }
             }
-        }
-    }, 1000);
+        }, 1000);
+    }
 }
 checkIfInternetConnection();
+
+//promote mobile app when user load wallet.dentacoin.com via mobile browser
+function checkIfLoadingFromMobileBrowser() {
+    if(!is_hybrid && basic.isMobile() && basic.cookies.get('show-download-mobile-app') != '1') {
+        basic.cookies.set('show-download-mobile-app', 1);
+        if(basic.getMobileOperatingSystem() == 'Android') {
+            basic.showDialog('<div><h2 class="fs-24 lato-bold text-center padding-top-15 padding-bottom-25">Dentacoin Wallet App is here!<br>Download for free:</h2><figure itemscope="" itemtype="http://schema.org/Organization" class="text-center phone-container"><img src="assets/images/download-android-app.png" class="max-width-300 width-100" itemprop="logo" alt="Phone"/><a class="inline-block max-width-150 absolute-content" href="javascript:void(0)" onclick="return alert(\'Coming soon!\')" itemprop="url"><img src="assets/images/google-play-badge.svg" class="width-100" itemprop="logo" alt="Google play icon"/></a></figure></div>', 'download-mobile-app', null, null);
+        } else if(basic.getMobileOperatingSystem() == 'iOS') {
+            basic.showDialog('<div><h2 class="fs-24 lato-bold text-center padding-top-15 padding-bottom-25">Dentacoin Wallet App is here!<br>Download for free:</h2><figure itemscope="" itemtype="http://schema.org/Organization" class="text-center phone-container"><img src="assets/images/download-ios-app.png" class="max-width-300 width-100" itemprop="logo" alt="Phone"/><a class="inline-block max-width-150 absolute-content" href="javascript:void(0)" onclick="return alert(\'Coming soon!\')" itemprop="url"><img src="assets/images/app-store.svg" class="width-100" itemprop="logo" alt="App store icon"/></a></figure></div>', 'download-mobile-app', null, null);
+        }
+    }
+}
+
+function fireGoogleAnalyticsEvent(category, action, label, value) {
+    var event_obj = {
+        'event_action' : action,
+        'event_category': category,
+        'event_label': label
+    };
+
+    if(value != undefined) {
+        event_obj.value = value;
+    }
+
+    gtag('event', label, event_obj);
+}

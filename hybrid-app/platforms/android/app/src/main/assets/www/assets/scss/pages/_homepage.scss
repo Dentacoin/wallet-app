@@ -8,6 +8,10 @@ app-homepage {
     }
     #qrcode {
         width: 180px;
+        background-image: url(../images/qr-border.jpg);
+        background-repeat: no-repeat;
+        background-size: cover;
+        padding: 10px;
     }
     .eth-address-container {
         padding-top: 10px;
@@ -20,7 +24,7 @@ app-homepage {
         -webkit-transform: translate(-50%, 50%);
         -ms-transform: translate(-50%, 50%);
         transform: translate(-50%, 50%);
-        @include rounded(4px);
+        @include rounded(10px);
         @include box-shadow(0 6px 10px 0px rgba(0, 0, 0, 0.3));
         &:hover {
             color: white;
@@ -52,6 +56,12 @@ app-homepage {
             bottom: auto;
             @include rounded(20px);
             @include clear_transform();
+            .fix-vertical-alignment-on-mobile {
+                margin-top: -10px;
+                .inline-block {
+                    vertical-align: bottom;
+                }
+            }
         }
         @include breakpoint($xxs) {
             .address-value {

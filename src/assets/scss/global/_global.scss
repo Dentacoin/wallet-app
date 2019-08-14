@@ -426,7 +426,7 @@ img {
 .modal-backdrop {
     background-color: white;
     &.in {
-        opacity: 0.8;
+        opacity: 0.9;
     }
 }
 
@@ -582,6 +582,12 @@ img {
 }
 
 .bootbox {
+    .modal-content {
+        border: 0;
+        @include breakpoint($xs) {
+            @include box-shadow(0 19px 130px rgba(0,0,0,0.3));
+        }
+    }
     .bootbox-close-button {
         position: absolute;
         right: 5px;
@@ -591,6 +597,15 @@ img {
         margin-top: 0 !important;
         border: 0;
         background: transparent;
+    }
+    &.download-mobile-app {
+        .phone-container {
+            position: relative;
+            .absolute-content {
+                bottom: 10px;
+                @include horizontal-align(absolute);
+            }
+        }
     }
     &.login-metamask-desktop {
         .bootbox-close-button {
@@ -1125,7 +1140,7 @@ input[type=file].hide-input {
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 1100;
+    z-index: 11000;
     display: none;
     .wrapper {
         text-align: center;

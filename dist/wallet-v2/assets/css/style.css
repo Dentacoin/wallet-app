@@ -3832,7 +3832,7 @@ img {
 .modal-backdrop {
   background-color: white; }
   .modal-backdrop.in {
-    opacity: 0.8; }
+    opacity: 0.9; }
 
 .white-crossed-label {
   overflow: hidden; }
@@ -3966,6 +3966,14 @@ img {
 .cursor-pointer {
   cursor: pointer; }
 
+.bootbox .modal-content {
+  border: 0; }
+  @media screen and (max-width: 767px) {
+    .bootbox .modal-content {
+      -webkit-box-shadow: 0 19px 130px rgba(0, 0, 0, 0.3);
+      -moz-box-shadow: 0 19px 130px rgba(0, 0, 0, 0.3);
+      -ms-box-shadow: 0 19px 130px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 19px 130px rgba(0, 0, 0, 0.3); } }
 .bootbox .bootbox-close-button {
   position: absolute;
   right: 5px;
@@ -3975,6 +3983,15 @@ img {
   margin-top: 0 !important;
   border: 0;
   background: transparent; }
+.bootbox.download-mobile-app .phone-container {
+  position: relative; }
+  .bootbox.download-mobile-app .phone-container .absolute-content {
+    bottom: 10px;
+    position: absolute;
+    left: 50%;
+    -webkit-transform: translateX(-50%);
+    -ms-transform: translateX(-50%);
+    transform: translateX(-50%); }
 .bootbox.login-metamask-desktop .bootbox-close-button {
   display: none; }
 .bootbox.login-metamask-desktop .modal-dialog {
@@ -4402,7 +4419,7 @@ input[type=file].hide-input {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 1100;
+  z-index: 11000;
   display: none; }
   .response-layer .wrapper {
     text-align: center;
@@ -4503,7 +4520,7 @@ header .currently-offline {
 
 footer {
   color: white;
-  padding-top: 70px; }
+  padding-top: 100px; }
   footer .white-border {
     border-bottom: 2px solid white;
     margin-bottom: 15px; }
@@ -4557,7 +4574,11 @@ app-homepage .main-wrapper {
     app-homepage .main-wrapper {
       margin-bottom: 20px; } }
 app-homepage #qrcode {
-  width: 180px; }
+  width: 180px;
+  background-image: url(../images/qr-border.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  padding: 10px; }
 app-homepage .eth-address-container {
   padding-top: 10px;
   padding-bottom: 10px;
@@ -4569,10 +4590,10 @@ app-homepage .eth-address-container {
   -webkit-transform: translate(-50%, 50%);
   -ms-transform: translate(-50%, 50%);
   transform: translate(-50%, 50%);
-  -webkit-border-radius: 4px;
-  -moz-border-radius: 4px;
-  -ms-border-radius: 4px;
-  border-radius: 4px;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -ms-border-radius: 10px;
+  border-radius: 10px;
   -webkit-box-shadow: 0 6px 10px 0px rgba(0, 0, 0, 0.3);
   -moz-box-shadow: 0 6px 10px 0px rgba(0, 0, 0, 0.3);
   -ms-box-shadow: 0 6px 10px 0px rgba(0, 0, 0, 0.3);
@@ -4611,7 +4632,11 @@ app-homepage .eth-address-container {
       -moz-transform: none;
       -ms-transform: none;
       -o-transform: none;
-      transform: none; } }
+      transform: none; }
+      app-homepage .eth-address-container .fix-vertical-alignment-on-mobile {
+        margin-top: -10px; }
+        app-homepage .eth-address-container .fix-vertical-alignment-on-mobile .inline-block {
+          vertical-align: bottom; } }
   @media screen and (max-width: 450px) {
     app-homepage .eth-address-container .address-value {
       font-size: 10px !important;
@@ -4637,83 +4662,165 @@ app-buy-page #privacy-policy-agree, app-buy-page .privacy-policy-agree-label {
     -moz-border-radius: 0;
     -ms-border-radius: 0;
     border-radius: 0; } }
-app-send-page .section-send .combobox-container {
-  width: calc(100% - 80px);
-  display: inline-block;
-  vertical-align: middle;
-  font-size: 16px;
-  position: relative; }
-  app-send-page .section-send .combobox-container .clinics-input {
-    border: 2px solid #dddddd;
-    border-right: 0;
-    cursor: pointer;
-    width: 100%;
-    font-family: 'Calibri-Regular';
-    padding: 10px 15px;
-    -webkit-border-radius: 4px 0 0 4px;
-    -moz-border-radius: 4px 0 0 4px;
-    -ms-border-radius: 4px 0 0 4px;
-    border-radius: 4px 0 0 4px; }
-  app-send-page .section-send .combobox-container .dropdown-menu {
-    width: 100%;
-    max-height: 300px;
-    overflow-y: auto;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    z-index: 1000;
-    display: none;
-    float: left;
-    min-width: 160px;
-    padding: 5px 0;
-    margin: 2px 0 0;
-    font-size: 14px;
-    text-align: left;
-    list-style: none;
-    background-color: #fff;
-    -webkit-background-clip: padding-box;
-    background-clip: padding-box;
-    border: 1px solid rgba(0, 0, 0, 0.15);
-    border-radius: 4px;
-    -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175); }
-    app-send-page .section-send .combobox-container .dropdown-menu > li > a {
-      display: block;
-      padding: 3px 20px;
-      clear: both;
-      font-weight: 400;
-      line-height: 1.42857143;
-      color: #333;
-      white-space: nowrap; }
-  app-send-page .section-send .combobox-container .dropdown-menu > .active > a, app-send-page .section-send .combobox-container .dropdown-menu > .active > a:focus, app-send-page .section-send .combobox-container .dropdown-menu > .active > a:hover {
-    color: #fff;
-    text-decoration: none;
-    background-color: #00b7e2;
-    outline: 0; }
-  @media screen and (max-width: 767px) {
-    app-send-page .section-send .combobox-container {
-      width: 100%; }
-      app-send-page .section-send .combobox-container .clinics-input {
-        border: 2px solid #dddddd;
+app-send-page .section-send {
+  /*.combobox-container {
+      width: calc(100% - 80px);
+      display: inline-block;
+      vertical-align: middle;
+      font-size: 16px;
+      position: relative;
+      .clinics-input {
+          border: 2px solid #dddddd;
+          border-right: 0;
+          cursor: pointer;
+          width: 100%;
+          font-family: 'Calibri-Regular';
+          padding: 10px 15px;
+          @include rounded(4px 0 0 4px);
+      }
+      .dropdown-menu {
+          width: 100%;
+          max-height: 300px;
+          overflow-y: auto;
+          position: absolute;
+          top: 100%;
+          left: 0;
+          z-index: 1000;
+          display: none;
+          float: left;
+          min-width: 160px;
+          padding: 5px 0;
+          margin: 2px 0 0;
+          font-size: 14px;
+          text-align: left;
+          list-style: none;
+          background-color: #fff;
+          -webkit-background-clip: padding-box;
+          background-clip: padding-box;
+          border: 1px solid rgba(0,0,0,.15);
+          border-radius: 4px;
+          -webkit-box-shadow: 0 6px 12px rgba(0,0,0,.175);
+          box-shadow: 0 6px 12px rgba(0,0,0,.175);
+          & > li > a {
+              display: block;
+              padding: 3px 20px;
+              clear: both;
+              font-weight: 400;
+              line-height: 1.42857143;
+              color: #333;
+              white-space: nowrap;
+          }
+      }
+      .dropdown-menu>.active>a, .dropdown-menu>.active>a:focus, .dropdown-menu>.active>a:hover {
+          color: #fff;
+          text-decoration: none;
+          background-color: $light_blue;
+          outline: 0;
+      }
+      @include breakpoint($xs) {
+          width: 100%;
+          .clinics-input {
+              border: 2px solid #dddddd;
+              padding: 10px 5px;
+              @include rounded(4px);
+          }
+      }
+  }*/ }
+  app-send-page .section-send .search-field {
+    width: calc(100% - 80px);
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 16px;
+    position: relative; }
+    app-send-page .section-send .search-field #search {
+      border-right: 0;
+      -webkit-border-radius: 4px 0 0 4px;
+      -moz-border-radius: 4px 0 0 4px;
+      -ms-border-radius: 4px 0 0 4px;
+      border-radius: 4px 0 0 4px; }
+    app-send-page .section-send .search-field .search-result {
+      display: none;
+      background-color: white;
+      position: absolute;
+      width: 100%;
+      z-index: 1000;
+      -webkit-border-radius: 4px;
+      -moz-border-radius: 4px;
+      -ms-border-radius: 4px;
+      border-radius: 4px;
+      -webkit-box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.25);
+      -moz-box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.25);
+      -ms-box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.25); }
+      app-send-page .section-send .search-field .search-result .search-header a {
+        width: 50%;
+        text-align: center;
+        font-size: 18px;
         padding: 10px 5px;
-        -webkit-border-radius: 4px;
-        -moz-border-radius: 4px;
-        -ms-border-radius: 4px;
-        border-radius: 4px; } }
-@media screen and (max-width: 767px) {
-  app-send-page .section-send .scan-qr-code {
-    width: 100%;
-    max-width: none !important;
-    text-align: center; }
-    app-send-page .section-send .scan-qr-code figure {
-      width: 100px;
-      margin: 0 auto; } }
-@media screen and (max-width: 767px) {
-  app-send-page .section-send .main-wrapper {
-    -webkit-border-radius: 0;
-    -moz-border-radius: 0;
-    -ms-border-radius: 0;
-    border-radius: 0; } }
+        color: #888888;
+        border-bottom: 1.5px solid #dddddd; }
+        app-send-page .section-send .search-field .search-result .search-header a.active {
+          color: #00b7e2;
+          font-family: 'Lato-Bold';
+          border-bottom: 1.5px solid black; }
+      app-send-page .section-send .search-field .search-result .search-body {
+        max-height: 250px;
+        min-height: 120px;
+        overflow-y: auto; }
+        app-send-page .section-send .search-field .search-result .search-body .clinics ul, app-send-page .section-send .search-field .search-result .search-body .address-book ul {
+          width: 100%; }
+          app-send-page .section-send .search-field .search-result .search-body .clinics ul li a, app-send-page .section-send .search-field .search-result .search-body .address-book ul li a {
+            padding: 5px 15px;
+            cursor: pointer;
+            -webkit-transition: 0.3s;
+            -moz-transition: 0.3s;
+            -o-transition: 0.3s;
+            -ms-transition: 0.3s;
+            transition: 0.3s; }
+            app-send-page .section-send .search-field .search-result .search-body .clinics ul li a:hover, app-send-page .section-send .search-field .search-result .search-body .address-book ul li a:hover {
+              background-color: #00b7e2;
+              color: white; }
+          app-send-page .section-send .search-field .search-result .search-body .clinics ul li.removeable-element a, app-send-page .section-send .search-field .search-result .search-body .address-book ul li.removeable-element a {
+            width: calc(100% - 30px);
+            font-size: 16px; }
+          app-send-page .section-send .search-field .search-result .search-body .clinics ul li.removeable-element button, app-send-page .section-send .search-field .search-result .search-body .address-book ul li.removeable-element button {
+            width: 30px;
+            border: 0;
+            background: transparent;
+            color: red;
+            font-size: 24px; }
+        app-send-page .section-send .search-field .search-result .search-body .address-book {
+          display: none; }
+      app-send-page .section-send .search-field .search-result .search-footer {
+        margin-top: 10px;
+        border-top: 1.5px solid #dddddd; }
+        app-send-page .section-send .search-field .search-result .search-footer a {
+          display: block;
+          padding: 10px 15px;
+          color: #00b7e2; }
+    @media screen and (max-width: 767px) {
+      app-send-page .section-send .search-field {
+        width: 100%; }
+        app-send-page .section-send .search-field #search {
+          border: 2px solid #dddddd;
+          -webkit-border-radius: 4px;
+          -moz-border-radius: 4px;
+          -ms-border-radius: 4px;
+          border-radius: 4px; } }
+  @media screen and (max-width: 767px) {
+    app-send-page .section-send .scan-qr-code {
+      width: 100%;
+      max-width: none !important;
+      text-align: center; }
+      app-send-page .section-send .scan-qr-code figure {
+        width: 100px;
+        margin: 0 auto; } }
+  @media screen and (max-width: 767px) {
+    app-send-page .section-send .main-wrapper {
+      -webkit-border-radius: 0;
+      -moz-border-radius: 0;
+      -ms-border-radius: 0;
+      border-radius: 0; } }
 app-send-page .section-amount-to {
   display: none; }
   app-send-page .section-amount-to .send-to {
@@ -4742,6 +4849,8 @@ app-send-page .section-amount-to {
       display: inline-block;
       text-align: left; } }
 
+app-spend-page-pay-for-dental-services .mobile-nav a, app-spend-page-gift-cards .mobile-nav a, app-spend-page-exchanges .mobile-nav a, app-spend-page-pay-assurance-fees .mobile-nav a {
+  display: none; }
 @media screen and (max-width: 767px) {
   app-spend-page-pay-for-dental-services .main-wrapper, app-spend-page-gift-cards .main-wrapper, app-spend-page-exchanges .main-wrapper, app-spend-page-pay-assurance-fees .main-wrapper {
     -webkit-border-radius: 0;
@@ -4749,32 +4858,19 @@ app-send-page .section-amount-to {
     -ms-border-radius: 0;
     border-radius: 0; }
   app-spend-page-pay-for-dental-services .module.spend-navigation, app-spend-page-gift-cards .module.spend-navigation, app-spend-page-exchanges .module.spend-navigation, app-spend-page-pay-assurance-fees .module.spend-navigation {
-    padding-top: 30px; }
-    app-spend-page-pay-for-dental-services .module.spend-navigation .prev, app-spend-page-gift-cards .module.spend-navigation .prev, app-spend-page-exchanges .module.spend-navigation .prev, app-spend-page-pay-assurance-fees .module.spend-navigation .prev {
-      padding-left: 0;
-      background-image: url(../images/gray-arrow-left.svg);
-      color: #7D8EA1;
-      font-size: 0 !important;
-      width: 10px;
-      height: 20px;
-      display: inline-block; }
-    app-spend-page-pay-for-dental-services .module.spend-navigation .next, app-spend-page-gift-cards .module.spend-navigation .next, app-spend-page-exchanges .module.spend-navigation .next, app-spend-page-pay-assurance-fees .module.spend-navigation .next {
-      padding-right: 0;
-      background-image: url(../images/gray-arrow-right.svg);
-      color: #7D8EA1;
-      font-size: 0 !important;
-      width: 10px;
-      height: 20px;
-      display: inline-block; }
-  app-spend-page-pay-for-dental-services h1, app-spend-page-gift-cards h1, app-spend-page-exchanges h1, app-spend-page-pay-assurance-fees h1 {
-    width: calc(100% - 70px);
-    line-height: 30px;
-    top: -25px;
-    position: absolute;
-    left: 50%;
-    -webkit-transform: translateX(-50%);
-    -ms-transform: translateX(-50%);
-    transform: translateX(-50%); } }
+    display: none; }
+  app-spend-page-pay-for-dental-services .mobile-nav a, app-spend-page-gift-cards .mobile-nav a, app-spend-page-exchanges .mobile-nav a, app-spend-page-pay-assurance-fees .mobile-nav a {
+    display: inline-block;
+    width: 20px;
+    vertical-align: middle; }
+    app-spend-page-pay-for-dental-services .mobile-nav a img, app-spend-page-gift-cards .mobile-nav a img, app-spend-page-exchanges .mobile-nav a img, app-spend-page-pay-assurance-fees .mobile-nav a img {
+      max-width: 15px; }
+  app-spend-page-pay-for-dental-services .mobile-nav h1, app-spend-page-gift-cards .mobile-nav h1, app-spend-page-exchanges .mobile-nav h1, app-spend-page-pay-assurance-fees .mobile-nav h1 {
+    padding-left: 15px;
+    padding-right: 15px;
+    width: calc(100% - 40px);
+    display: inline-block;
+    vertical-align: middle; } }
 
 app-spend-page-pay-for-dental-services iframe {
   width: 100%;
@@ -4856,7 +4952,11 @@ app-spend-page-exchanges .camping-for-exchanges {
       list-style: disc inside none; }
     .faq-container .list .section-row > ul > li .question-content a {
       text-decoration: underline;
-      color: white; }
+      color: white;
+      -webkit-border-radius: 10px;
+      -moz-border-radius: 10px;
+      -ms-border-radius: 10px;
+      border-radius: 10px; }
 @media screen and (max-width: 767px) {
   .faq-container .list .section-row ul {
     padding-left: 0; }

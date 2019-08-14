@@ -5,10 +5,28 @@
     <section class="padding-top-100 padding-bottom-70 padding-top-xs-40 padding-bottom-xs-50 section-send">
         <div class="container-fluid no-gutter-xs">
             <div class="row">
-                <div class="col-xs-12 col-sm-8 col-sm-offset-2 fs-0">
-                    <select class="combobox clinics-input">
-                        <option></option>
-                    </select>
+                <div class="col-xs-12 col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2 fs-0">
+                    <div class="inline-block search-field">
+                        <div class="custom-google-label-style module" data-input-light-blue-border="true">
+                            <label for="search" id="search-label">Enter receiving address/ clinic name or scan QR</label>
+                            <input type="text" id="search" maxlength="42"/>
+                        </div>
+                        <div class="search-result">
+                            <div class="search-header">
+                                <a class="inline-block active" data-type="clinics" href="javascript:void(0)">Clinics/ dentists</a>
+                                <a class="inline-block" data-type="address-book" href="javascript:void(0)">Address Book</a>
+                            </div>
+                            <div class="search-body">
+                                <div class="clinics hideable-element">
+                                    <ul class="clinics-list"></ul>
+                                </div>
+                                <div class="address-book hideable-element"><i class="display-block-important padding-top-15 padding-left-15 padding-bottom-15 padding-right-15">Empty Address Book</i></div>
+                            </div>
+                            <div class="search-footer">
+                                <a href="javascript:void(0)" class="add-to-address-book">+ Add to Address Book</a>
+                            </div>
+                        </div>
+                    </div>
                     <div class="calibri-light fs-14 color-solid-gray padding-bottom-xs-20 padding-top-5 show-on-xs">For payments to Dentacoin Partner Dentists, just type their name in the field above (Feature not supported yet).</div>
                     <a href="javascript:void(0)" class="inline-block max-width-80 scan-qr-code">
                         <figure itemscope="" itemtype="http://schema.org/ImageObject">

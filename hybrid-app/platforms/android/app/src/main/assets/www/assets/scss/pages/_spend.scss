@@ -1,34 +1,32 @@
 app-spend-page-pay-for-dental-services, app-spend-page-gift-cards, app-spend-page-exchanges, app-spend-page-pay-assurance-fees {
+    .mobile-nav {
+        a {
+            display: none;
+        }
+    }
     @include breakpoint($xs) {
         .main-wrapper {
             @include rounded(0);
         }
         .module.spend-navigation {
-            padding-top: 30px;
-            .prev {
-                padding-left: 0;
-                background-image: url(../images/gray-arrow-left.svg);
-                color: #7D8EA1;
-                font-size: 0 !important;
-                width: 10px;
-                height: 20px;
-                display: inline-block;
-            }
-            .next {
-                padding-right: 0;
-                background-image: url(../images/gray-arrow-right.svg);
-                color: #7D8EA1;
-                font-size: 0 !important;
-                width: 10px;
-                height: 20px;
-                display: inline-block;
-            }
+            display: none;
         }
-        h1 {
-            width: calc(100% - 70px);
-            line-height: 30px;
-            top: -25px;
-            @include horizontal-align(absolute);
+        .mobile-nav {
+            a {
+                display: inline-block;
+                width: 20px;
+                vertical-align: middle;
+                img {
+                    max-width: 15px;
+                }
+            }
+            h1 {
+                padding-left: 15px;
+                padding-right: 15px;
+                width: calc(100% - 40px);
+                display: inline-block;
+                vertical-align: middle;
+            }
         }
     }
 }

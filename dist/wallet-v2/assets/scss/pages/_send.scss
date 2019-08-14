@@ -5,7 +5,95 @@ app-send-page {
         }
     }
     .section-send {
-        .combobox-container {
+        .search-field {
+            width: calc(100% - 80px);
+            display: inline-block;
+            vertical-align: middle;
+            font-size: 16px;
+            position: relative;
+            #search {
+                border-right: 0;
+                @include rounded(4px 0 0 4px);
+            }
+            .search-result {
+                display: none;
+                background-color: white;
+                position: absolute;
+                width: 100%;
+                z-index: 1000;
+                @include rounded(4px);
+                @include box-shadow(0 1px 5px 1px rgba(0, 0, 0, 0.25));
+                .search-header {
+                    a {
+                        width: 50%;
+                        text-align: center;
+                        font-size: 18px;
+                        padding: 10px 5px;
+                        color: #888888;
+                        border-bottom: 1.5px solid #dddddd;
+                        &.active {
+                            color: $light_blue;
+                            font-family: 'Lato-Bold';
+                            border-bottom: 1.5px solid black;
+                        }
+                    }
+                }
+                .search-body {
+                    max-height: 250px;
+                    min-height: 120px;
+                    overflow-y: auto;
+                    .clinics, .address-book {
+                        ul {
+                            width: 100%;
+                            li {
+                                a {
+                                    padding: 5px 15px;
+                                    cursor: pointer;
+                                    @include simple_transition(.3s);
+                                    &:hover {
+                                        background-color: $light_blue;
+                                        color: white;
+                                    }
+                                }
+                                &.removeable-element {
+                                    a {
+                                        width: calc(100% - 30px);
+                                        font-size: 16px;
+                                    }
+                                    button {
+                                        width: 30px;
+                                        border: 0;
+                                        background: transparent;
+                                        color: red;
+                                        font-size: 24px;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .address-book {
+                        display: none;
+                    }
+                }
+                .search-footer {
+                    margin-top: 10px;
+                    border-top: 1.5px solid #dddddd;
+                    a {
+                        display: block;
+                        padding: 10px 15px;
+                        color: $light_blue;
+                    }
+                }
+            }
+            @include breakpoint($xs) {
+                width: 100%;
+                #search {
+                    border: 2px solid #dddddd;
+                    @include rounded(4px);
+                }
+            }
+        }
+        /*.combobox-container {
             width: calc(100% - 80px);
             display: inline-block;
             vertical-align: middle;
@@ -67,7 +155,7 @@ app-send-page {
                     @include rounded(4px);
                 }
             }
-        }
+        }*/
         .scan-qr-code {
             @include breakpoint($xs) {
                 width: 100%;

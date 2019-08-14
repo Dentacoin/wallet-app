@@ -1,5 +1,6 @@
 import { Component, AfterViewInit } from '@angular/core';
 import { Router } from '@angular/router';
+import {Meta, Title} from '@angular/platform-browser';
 
 declare function initdApp(): any;
 
@@ -9,7 +10,13 @@ declare function initdApp(): any;
 })
 
 export class SpendPagePayForDentalServicesComponent implements AfterViewInit {
-    constructor(private router: Router) { }
+    constructor(private router: Router, private meta: Meta, private titleService: Title) {
+        this.titleService.setTitle('Pay for dental services in Dentacoin | Dentacoin Wallet DApp');
+        this.meta.updateTag({name: 'description', content: 'Cover your dental treatment in Dentacoin tokens at all partner dentists, accepting DCN. Pay directly with ease via Dentacoin Wallet DApp.'});
+        this.meta.updateTag({name: 'keywords', content: 'dentacoin accepted, dental currency, dental payment, spend dentacoin, pay with dentacoin'});
+        this.meta.updateTag({name: 'og:title', content: 'Pay for dental services with Dentacoin'});
+        this.meta.updateTag({name: 'og:description', content: 'Cover your dental treatment in Dentacoin tokens at all partner dentists and clinics, accepting DCN. Handle payments with ease via Dentacoin Wallet DApp.'});
+        this.meta.updateTag({name: 'og:image', content: 'https://wallet.dentacoin.com/assets/images/dentist-pay-with-dentacoin.png'}); }
 
     ngAfterViewInit() {
         initdApp();
