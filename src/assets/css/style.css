@@ -4526,12 +4526,12 @@ footer {
     margin-bottom: 15px; }
   footer ul {
     font-size: 0;
-    padding-top: 30px;
-    padding-bottom: 20px; }
+    padding-top: 20px;
+    padding-bottom: 30px;
+    text-align: center; }
     footer ul li {
-      width: 20%;
-      text-align: center;
-      font-size: 22px;
+      width: 15%;
+      font-size: 16px;
       padding: 0 10px; }
       footer ul li.go-next {
         display: none;

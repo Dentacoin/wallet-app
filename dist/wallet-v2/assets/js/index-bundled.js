@@ -81372,7 +81372,11 @@ var pages_data = {
                 }
             });
 
-            $('.search-field #search').on('input focus', function() {
+            $('.search-field #search').on('focus', function() {
+                $('.search-result').show();
+            });
+
+            $('.search-field #search').on('input', function() {
                 if($(this).val().trim() != '') {
                     $('.search-result').show();
 
