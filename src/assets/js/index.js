@@ -107,6 +107,7 @@ var dApp = {
         });
     },
     buildTransactionHistory: async function() {
+        console.log('buildTransactionHistory');
         await dApp.helper.getBlockNum();
         var etherscan_transactions = await getEtherscanTransactionsHistory(global_state.account, global_state.curr_block);
         var ethereum_transactions_arr = [];
@@ -123,6 +124,7 @@ var dApp = {
         var to_events = await dApp.getTransferToEvents();
 
         var merged_events_arr = from_events.concat(to_events, ethereum_transactions_arr);
+        console.log(merged_events_arr, 'merged_events_arr');
         if(merged_events_arr.length > 0) {
             //sorting the mixed array by blockNumber
             sortByKey(merged_events_arr, 'blockNumber');
@@ -1471,7 +1473,7 @@ async function getEtherscanTransactionsHistory(address, latest_block) {
     console.log(latest_block, 'latest_block');
     return await $.ajax({
         type: 'GET',
-        url: 'http://api.etherscan.io/api?module=account&action=txlist&address='+address+'&startblock='+block_number_of_dcn_creation+'&endblock='+latest_block,
+        url: 'https://api.etherscan.io/api?module=account&action=txlist&address='+address+'&startblock='+block_number_of_dcn_creation+'&endblock='+latest_block,
         dataType: 'json'
     });
 }
