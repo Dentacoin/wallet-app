@@ -4526,12 +4526,12 @@ footer {
     margin-bottom: 15px; }
   footer ul {
     font-size: 0;
-    padding-top: 30px;
-    padding-bottom: 20px; }
+    padding-top: 20px;
+    padding-bottom: 30px;
+    text-align: center; }
     footer ul li {
-      width: 20%;
-      text-align: center;
-      font-size: 22px;
+      width: 15%;
+      font-size: 16px;
       padding: 0 10px; }
       footer ul li.go-next {
         display: none;
@@ -4662,83 +4662,165 @@ app-buy-page #privacy-policy-agree, app-buy-page .privacy-policy-agree-label {
     -moz-border-radius: 0;
     -ms-border-radius: 0;
     border-radius: 0; } }
-app-send-page .section-send .combobox-container {
-  width: calc(100% - 80px);
-  display: inline-block;
-  vertical-align: middle;
-  font-size: 16px;
-  position: relative; }
-  app-send-page .section-send .combobox-container .clinics-input {
-    border: 2px solid #dddddd;
-    border-right: 0;
-    cursor: pointer;
-    width: 100%;
-    font-family: 'Calibri-Regular';
-    padding: 10px 15px;
-    -webkit-border-radius: 4px 0 0 4px;
-    -moz-border-radius: 4px 0 0 4px;
-    -ms-border-radius: 4px 0 0 4px;
-    border-radius: 4px 0 0 4px; }
-  app-send-page .section-send .combobox-container .dropdown-menu {
-    width: 100%;
-    max-height: 300px;
-    overflow-y: auto;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    z-index: 1000;
-    display: none;
-    float: left;
-    min-width: 160px;
-    padding: 5px 0;
-    margin: 2px 0 0;
-    font-size: 14px;
-    text-align: left;
-    list-style: none;
-    background-color: #fff;
-    -webkit-background-clip: padding-box;
-    background-clip: padding-box;
-    border: 1px solid rgba(0, 0, 0, 0.15);
-    border-radius: 4px;
-    -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175); }
-    app-send-page .section-send .combobox-container .dropdown-menu > li > a {
-      display: block;
-      padding: 3px 20px;
-      clear: both;
-      font-weight: 400;
-      line-height: 1.42857143;
-      color: #333;
-      white-space: nowrap; }
-  app-send-page .section-send .combobox-container .dropdown-menu > .active > a, app-send-page .section-send .combobox-container .dropdown-menu > .active > a:focus, app-send-page .section-send .combobox-container .dropdown-menu > .active > a:hover {
-    color: #fff;
-    text-decoration: none;
-    background-color: #00b7e2;
-    outline: 0; }
-  @media screen and (max-width: 767px) {
-    app-send-page .section-send .combobox-container {
-      width: 100%; }
-      app-send-page .section-send .combobox-container .clinics-input {
-        border: 2px solid #dddddd;
+app-send-page .section-send {
+  /*.combobox-container {
+      width: calc(100% - 80px);
+      display: inline-block;
+      vertical-align: middle;
+      font-size: 16px;
+      position: relative;
+      .clinics-input {
+          border: 2px solid #dddddd;
+          border-right: 0;
+          cursor: pointer;
+          width: 100%;
+          font-family: 'Calibri-Regular';
+          padding: 10px 15px;
+          @include rounded(4px 0 0 4px);
+      }
+      .dropdown-menu {
+          width: 100%;
+          max-height: 300px;
+          overflow-y: auto;
+          position: absolute;
+          top: 100%;
+          left: 0;
+          z-index: 1000;
+          display: none;
+          float: left;
+          min-width: 160px;
+          padding: 5px 0;
+          margin: 2px 0 0;
+          font-size: 14px;
+          text-align: left;
+          list-style: none;
+          background-color: #fff;
+          -webkit-background-clip: padding-box;
+          background-clip: padding-box;
+          border: 1px solid rgba(0,0,0,.15);
+          border-radius: 4px;
+          -webkit-box-shadow: 0 6px 12px rgba(0,0,0,.175);
+          box-shadow: 0 6px 12px rgba(0,0,0,.175);
+          & > li > a {
+              display: block;
+              padding: 3px 20px;
+              clear: both;
+              font-weight: 400;
+              line-height: 1.42857143;
+              color: #333;
+              white-space: nowrap;
+          }
+      }
+      .dropdown-menu>.active>a, .dropdown-menu>.active>a:focus, .dropdown-menu>.active>a:hover {
+          color: #fff;
+          text-decoration: none;
+          background-color: $light_blue;
+          outline: 0;
+      }
+      @include breakpoint($xs) {
+          width: 100%;
+          .clinics-input {
+              border: 2px solid #dddddd;
+              padding: 10px 5px;
+              @include rounded(4px);
+          }
+      }
+  }*/ }
+  app-send-page .section-send .search-field {
+    width: calc(100% - 80px);
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 16px;
+    position: relative; }
+    app-send-page .section-send .search-field #search {
+      border-right: 0;
+      -webkit-border-radius: 4px 0 0 4px;
+      -moz-border-radius: 4px 0 0 4px;
+      -ms-border-radius: 4px 0 0 4px;
+      border-radius: 4px 0 0 4px; }
+    app-send-page .section-send .search-field .search-result {
+      display: none;
+      background-color: white;
+      position: absolute;
+      width: 100%;
+      z-index: 1000;
+      -webkit-border-radius: 4px;
+      -moz-border-radius: 4px;
+      -ms-border-radius: 4px;
+      border-radius: 4px;
+      -webkit-box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.25);
+      -moz-box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.25);
+      -ms-box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.25); }
+      app-send-page .section-send .search-field .search-result .search-header a {
+        width: 50%;
+        text-align: center;
+        font-size: 18px;
         padding: 10px 5px;
-        -webkit-border-radius: 4px;
-        -moz-border-radius: 4px;
-        -ms-border-radius: 4px;
-        border-radius: 4px; } }
-@media screen and (max-width: 767px) {
-  app-send-page .section-send .scan-qr-code {
-    width: 100%;
-    max-width: none !important;
-    text-align: center; }
-    app-send-page .section-send .scan-qr-code figure {
-      width: 100px;
-      margin: 0 auto; } }
-@media screen and (max-width: 767px) {
-  app-send-page .section-send .main-wrapper {
-    -webkit-border-radius: 0;
-    -moz-border-radius: 0;
-    -ms-border-radius: 0;
-    border-radius: 0; } }
+        color: #888888;
+        border-bottom: 1.5px solid #dddddd; }
+        app-send-page .section-send .search-field .search-result .search-header a.active {
+          color: #00b7e2;
+          font-family: 'Lato-Bold';
+          border-bottom: 1.5px solid black; }
+      app-send-page .section-send .search-field .search-result .search-body {
+        max-height: 250px;
+        min-height: 120px;
+        overflow-y: auto; }
+        app-send-page .section-send .search-field .search-result .search-body .clinics ul, app-send-page .section-send .search-field .search-result .search-body .address-book ul {
+          width: 100%; }
+          app-send-page .section-send .search-field .search-result .search-body .clinics ul li a, app-send-page .section-send .search-field .search-result .search-body .address-book ul li a {
+            padding: 5px 15px;
+            cursor: pointer;
+            -webkit-transition: 0.3s;
+            -moz-transition: 0.3s;
+            -o-transition: 0.3s;
+            -ms-transition: 0.3s;
+            transition: 0.3s; }
+            app-send-page .section-send .search-field .search-result .search-body .clinics ul li a:hover, app-send-page .section-send .search-field .search-result .search-body .address-book ul li a:hover {
+              background-color: #00b7e2;
+              color: white; }
+          app-send-page .section-send .search-field .search-result .search-body .clinics ul li.removeable-element a, app-send-page .section-send .search-field .search-result .search-body .address-book ul li.removeable-element a {
+            width: calc(100% - 30px);
+            font-size: 16px; }
+          app-send-page .section-send .search-field .search-result .search-body .clinics ul li.removeable-element button, app-send-page .section-send .search-field .search-result .search-body .address-book ul li.removeable-element button {
+            width: 30px;
+            border: 0;
+            background: transparent;
+            color: red;
+            font-size: 24px; }
+        app-send-page .section-send .search-field .search-result .search-body .address-book {
+          display: none; }
+      app-send-page .section-send .search-field .search-result .search-footer {
+        margin-top: 10px;
+        border-top: 1.5px solid #dddddd; }
+        app-send-page .section-send .search-field .search-result .search-footer a {
+          display: block;
+          padding: 10px 15px;
+          color: #00b7e2; }
+    @media screen and (max-width: 767px) {
+      app-send-page .section-send .search-field {
+        width: 100%; }
+        app-send-page .section-send .search-field #search {
+          border: 2px solid #dddddd;
+          -webkit-border-radius: 4px;
+          -moz-border-radius: 4px;
+          -ms-border-radius: 4px;
+          border-radius: 4px; } }
+  @media screen and (max-width: 767px) {
+    app-send-page .section-send .scan-qr-code {
+      width: 100%;
+      max-width: none !important;
+      text-align: center; }
+      app-send-page .section-send .scan-qr-code figure {
+        width: 100px;
+        margin: 0 auto; } }
+  @media screen and (max-width: 767px) {
+    app-send-page .section-send .main-wrapper {
+      -webkit-border-radius: 0;
+      -moz-border-radius: 0;
+      -ms-border-radius: 0;
+      border-radius: 0; } }
 app-send-page .section-amount-to {
   display: none; }
   app-send-page .section-amount-to .send-to {
