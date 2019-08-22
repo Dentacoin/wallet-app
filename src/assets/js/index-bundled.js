@@ -80822,6 +80822,8 @@ module.exports = {getWeb3, getContractInstance, generateKeystoreFile, importKeys
 (function (Buffer){
 var {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey} = require('./helper');
 
+console.log("( ͡° ͜ʖ ͡°) I see you.");
+
 $(document).ready(function() {
     loadMobileBottomFixedNav();
 });
@@ -80930,6 +80932,7 @@ var dApp = {
     },
     buildTransactionHistory: async function() {
         console.log('buildTransactionHistory');
+        return false;
         await dApp.helper.getBlockNum();
         var etherscan_transactions = await getEtherscanTransactionsHistory(global_state.account, global_state.curr_block);
         var ethereum_transactions_arr = [];
@@ -81177,7 +81180,7 @@ var dApp = {
                 $('.camping-transaction-history table tr').addClass('show-this');
             }
         } else {
-            $('.camping-transaction-history').html('<h2 class="lato-bold fs-16 text-center color-white"><span>No current Transaction history</span></h2>');
+            $('.camping-transaction-history').html('<h2 class="lato-bold fs-16 text-center color-white"><span>No transactions yet</span></h2>');
         }
     },
     getTransferFromEvents: function () {
@@ -81474,6 +81477,8 @@ var pages_data = {
             core_db_clinics = await getClinics();
             hideLoader();
         }
+        console.log(core_db_clinics, 'core_db_clinics');
+        console.log(core_db_clinics.length, 'core_db_clinics.length');
 
         if(core_db_clinics.success) {
             var clinics_select_html = '';
@@ -81501,9 +81506,6 @@ var pages_data = {
 
             $(document).click(function(event) {
                 var $target = event.target;
-                console.log(event.target, 'event.target');
-                console.log($target.closest('.search-result'));
-
                 if($target.closest('.search-field') == null) {
                     $('.search-result').hide();
                 }
@@ -82339,6 +82341,7 @@ async function getClinics() {
         dataType: 'json',
         data: {
             status: 'approved',
+            is_partner: true,
             type: 'all-dentists',
             items_per_page: 10000
         }
@@ -82601,7 +82604,34 @@ async function initAccountChecker()  {
                                     });
                                 });
                             } else if(basic.getMobileOperatingSystem() == 'iOS') {
-                                alert('Downloading still not tested in iOS');
+                                console.log('iOS DOWNLOAD');
+                                console.log(cordova.file, 'cordova.file');
+                                window.resolveLocalFileSystemURL(cordova.file.documentsDirectory , function (dirEntry) {
+                                    console.log(dirEntry, 'dirEntry');
+                                    dirEntry.getFile(keystore_file_name, { create: true, exclusive: true }, function (fileEntry) {
+                                        console.log(fileEntry, 'fileEntry');
+                                        fileEntry.createWriter(function (fileWriter) {
+                                            fileWriter.onwriteend = function (e) {
+                                                $('.custom-auth-popup .popup-left[data-step="second"] .popup-body .continue-btn > a').removeClass('disabled');
+                                                keystore_downloaded = true;
+                                                fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
+                                                basic.showAlert('File ' + keystore_file_name + ' has been downloaded to the top-level directory of your device file system.', '', true);
+                                            };
+
+                                            fileWriter.onerror = function (e) {
+                                                alert('Something went wrong with caching your file (Core error 3). Please contact admin@dentacoin.com.');
+                                            };
+
+                                            // Create a new Blob and write they keystore content inside of it
+                                            var blob = new Blob([JSON.stringify(generated_keystore.success.keystore)], {type: 'text/plain'});
+                                            fileWriter.write(blob);
+                                        }, function(err) {
+                                            alert('Something went wrong with caching your file (Core error 4). Please contact admin@dentacoin.com.');
+                                        });
+                                    }, function(err) {
+                                        alert('Seems like file with this name already exist in your root directory, move it or delete it and try again.');
+                                    });
+                                });
                             }
                         } else {
                             //BROWSER
@@ -82887,7 +82917,7 @@ function initCustomInputFileAnimation(this_btn) {
 }
 
 function showLoader() {
-    $('.camping-loader').html('<div class="response-layer"><div class="wrapper"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/wallet-loading.svg" class="max-width-160" alt="Loader"></figure></div></div>');
+    $('.camping-loader').html('<div class="response-layer"><div class="wrapper"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/wallet-loading.png" class="max-width-160 width-100" alt="Loader"></figure></div></div>');
     $('.response-layer').show();
 }
 
@@ -82923,7 +82953,7 @@ function initComboboxes() {
 
 $(document).on('click', '.open-settings', function() {
     basic.closeDialog();
-    var settings_html = '<div class="text-center fs-0 color-white lato-bold popup-header"><a href="javascript:void(0)" class="custom-close-bootbox max-width-20 inline-block margin-right-10"><svg class="width-100" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 62 52.3" style="enable-background:new 0 0 62 52.3;" xml:space="preserve"><style type="text/css">.st1{fill:#FFFFFF;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="52.3" width="62" x="19" y="48.9"/></sfw></metadata><path class="st1" d="M62,26.2c0-2.2-1.8-4-4-4H14.2L30.4,7c1.7-1.4,1.8-4,0.4-5.6c-1.4-1.7-4-1.8-5.6-0.4C25.1,1,25,1.1,25,1.2 L1.3,23.2c-1.6,1.5-1.7,4-0.2,5.7C1.1,29,1.2,29,1.3,29.1L25,51.2c1.6,1.5,4.1,1.4,5.7-0.2c1.5-1.6,1.4-4.1-0.2-5.7L14.2,30.2H58 C60.2,30.2,62,28.4,62,26.2z"/></svg></a><span class="inline-block text-center fs-28 fs-xs-16">DENTACOIN WALLET OPTIONS</span></div><div class="popup-body">';
+    var settings_html = '<div class="text-center fs-0 color-white lato-bold popup-header"><a href="javascript:void(0)" class="custom-close-bootbox max-width-20 inline-block margin-right-10"><svg class="width-100" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 62 52.3" style="enable-background:new 0 0 62 52.3;" xml:space="preserve"><style type="text/css">.st1{fill:#FFFFFF;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="52.3" width="62" x="19" y="48.9"/></sfw></metadata><path class="st1" d="M62,26.2c0-2.2-1.8-4-4-4H14.2L30.4,7c1.7-1.4,1.8-4,0.4-5.6c-1.4-1.7-4-1.8-5.6-0.4C25.1,1,25,1.1,25,1.2 L1.3,23.2c-1.6,1.5-1.7,4-0.2,5.7C1.1,29,1.2,29,1.3,29.1L25,51.2c1.6,1.5,4.1,1.4,5.7-0.2c1.5-1.6,1.4-4.1-0.2-5.7L14.2,30.2H58 C60.2,30.2,62,28.4,62,26.2z"/></svg></a><span class="inline-block text-center fs-28 fs-xs-16">DENTACOIN WALLET SETTINGS</span></div><div class="popup-body">';
 
     if((is_hybrid && window.localStorage.getItem('keystore_file') == null) || (!is_hybrid && window.localStorage.getItem('keystore_file') == null)) {
         settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important remember-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M14,0H2C0.9,0,0,0.9,0,2v12c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V2C16,0.9,15.1,0,14,0z M15,14c0,0.6-0.4,1-1,1 H2c-0.6,0-1-0.4-1-1v-3h14V14z M15,10H1V6h14V10z M1,5V2c0-0.6,0.4-1,1-1h12c0.6,0,1,0.4,1,1v3H1z M14,3.5C14,3.8,13.8,4,13.5,4h-1 C12.2,4,12,3.8,12,3.5v-1C12,2.2,12.2,2,12.5,2h1C13.8,2,14,2.2,14,2.5V3.5z M14,8.5C14,8.8,13.8,9,13.5,9h-1C12.2,9,12,8.8,12,8.5 v-1C12,7.2,12.2,7,12.5,7h1C13.8,7,14,7.2,14,7.5V8.5z M14,13.5c0,0.3-0.2,0.5-0.5,0.5h-1c-0.3,0-0.5-0.2-0.5-0.5v-1 c0-0.3,0.2-0.5,0.5-0.5h1c0.3,0,0.5,0.2,0.5,0.5V13.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold">Remember Keystore File</span></a><div class="fs-14 option-description">By doing so, you will not be asked to upload it every time you want to access your wallet.</div><div class="camping-for-action"></div></div>';

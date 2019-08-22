@@ -502,6 +502,9 @@ img {
                         &:first-child {
                             border-top-left-radius: 12px;
                             border-bottom-left-radius: 12px;
+                            @include breakpoint($xs) {
+                                display: none;
+                            }
                         }
                         &:last-child {
                             border-top-right-radius: 12px;
@@ -725,6 +728,11 @@ img {
                             @include breakpoint($xs) {
                                 padding-left: 10px;
                                 padding-right: 10px;
+                                .row-with-image-and-text {
+                                    .text {
+                                        text-align: left;
+                                    }
+                                }
                             }
                         }
                     }
@@ -1057,6 +1065,12 @@ img {
                     }
                 }
             }
+        }
+    }
+    @include breakpoint($sm-down) {
+        .modal-content {
+            background-clip: border-box;
+            @include rounded(0);
         }
     }
 }
