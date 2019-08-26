@@ -47,10 +47,12 @@ function isInt(n){
     return Number(n) === n && n % 1 === 0;
 }
 
+var request_response = {};
+var transaction_history_request_response = {};
 var is_hybrid;
 var meta_mask_installed = false;
 var meta_mask_logged = false;
-var temporally_timestamp = 0;
+var temporally_timestamps = {};
 var global_state = {};
 var getInstance;
 var DCNContract;
@@ -64,12 +66,10 @@ var dApp = {
     web3Provider: null,
     web3_0_2: null,
     web3_1_0: null,
-    init: async function () {
+    init: function () {
         dApp.loaded = true;
-        return await dApp.initWeb3();
-    },
-    initWeb3: async function () {
-        console.log( 'initWeb3');
+
+        //init web3
         if(typeof(web3) !== 'undefined') {
             console.log('METAMASK INSTALLED');
             //METAMASK INSTALLED
@@ -85,280 +85,373 @@ var dApp = {
                 global_state.account = window.localStorage.getItem('current_account');
             }
 
-            dApp.web3_1_0 = getWeb3(new Web3.providers.HttpProvider('https://mainnet.infura.io/c6ab28412b494716bc5315550c0d4071'));
+            dApp.web3_1_0 = getWeb3(new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/c6ab28412b494716bc5315550c0d4071'));
         }
 
         if(typeof(global_state.account) != 'undefined' && typeof(web3) == 'undefined') {
             $('.logo-and-settings-row').append('<div class="col-xs-6 inline-block"><figure itemscope="" itemtype="http://schema.org/Organization" class="text-right"><a href="javascript:void(0)" itemprop="url" class="open-settings"><img src="assets/images/settings-icon.svg" class="max-width-30" itemprop="logo" alt="Settings icon"/></a></figure></div>');
         }
 
-
+        //init contract
         if(typeof(global_state.account) != 'undefined') {
-            return await dApp.initContract();
-        }
-    },
-    initContract: async function () {
-        console.log('initContract');
-        await $.getJSON('assets/jsons/DentacoinToken.json', async function (DCNArtifact) {
-            console.log('DentacoinToken');
-            // get the contract artifact file and use it to instantiate a truffle contract abstraction
-            getInstance = getContractInstance(dApp.web3_1_0);
-            DCNContract = getInstance(DCNArtifact, dApp.contract_address);
+            $.getJSON('assets/jsons/DentacoinToken.json', function (DCNArtifact) {
+                // get the contract artifact file and use it to instantiate a truffle contract abstraction
+                getInstance = getContractInstance(dApp.web3_1_0);
+                DCNContract = getInstance(DCNArtifact, dApp.contract_address);
 
-            await dApp.buildTransactionHistory();
-        });
-    },
-    buildTransactionHistory: async function() {
-        console.log('buildTransactionHistory');
-        await dApp.helper.getBlockNum();
-        var etherscan_transactions = await getEtherscanTransactionsHistory(global_state.account, global_state.curr_block);
-        var ethereum_transactions_arr = [];
-        if(etherscan_transactions.result) {
-            for(var i = 0, len = etherscan_transactions.result.length; i < len; i+=1) {
-                if(etherscan_transactions.result[i].input == '0x') {
-                    etherscan_transactions.result[i].type = 'eth_transaction';
-                    ethereum_transactions_arr.push(etherscan_transactions.result[i]);
-                }
-            }
-        }
-
-        var from_events = await dApp.getTransferFromEvents();
-        var to_events = await dApp.getTransferToEvents();
-
-        var merged_events_arr = from_events.concat(to_events, ethereum_transactions_arr);
-        console.log(merged_events_arr, 'merged_events_arr');
-        if(merged_events_arr.length > 0) {
-            //sorting the mixed array by blockNumber
-            sortByKey(merged_events_arr, 'blockNumber');
-            merged_events_arr = merged_events_arr.reverse();
-            var ethereum_data = await getEthereumDataByCoingecko();
-
-            $('.camping-transaction-history').html('<h2 class="lato-bold fs-25 text-center white-crossed-label color-white"><span>Transaction history</span></h2><div class="transaction-history container"><div class="row"><div class="col-xs-12 no-gutter-xs col-md-10 col-md-offset-1 padding-top-20"><table class="color-white"><tbody></tbody></table></div></div><div class="row camping-show-more"></div></div>');
-
-            $(document).on('click', '.camping-transaction-history .show-more', function() {
-                $(this).fadeOut();
-                $(this).attr('show-all-transactions', 'true');
-                $('.camping-transaction-history table tr').addClass('show-this');
+                dApp.buildTransactionHistory();
             });
-
-            var transaction_history_html = '';
-            var dentacoin_data = await getDentacoinDataByCoingecko();
-            var array_with_already_shown_transactions = [];
-
-            //clearing the array with transactions from dupped ones
-            for(var i = 0, len = merged_events_arr.length; i < len; i+=1) {
-                if(basic.property_exists(merged_events_arr[i], 'hash')) {
-                    if(array_with_already_shown_transactions.includes(merged_events_arr[i].hash)) {
-                        merged_events_arr.splice(i, 1);
-                    } else {
-                        array_with_already_shown_transactions.push(merged_events_arr[i].hash);
-                    }
-                } else if(basic.property_exists(merged_events_arr[i], 'transactionHash')) {
-                    if(array_with_already_shown_transactions.includes(merged_events_arr[i].transactionHash)) {
-                        merged_events_arr.splice(i, 1);
-                    } else {
-                        array_with_already_shown_transactions.push(merged_events_arr[i].transactionHash);
-                    }
-                }
-            }
-
-            for(var i = 0, len = 5; i < len; i+=1) {
-                var other_address = '';
-                var class_name = '';
-                var label = '';
-                if(basic.property_exists(merged_events_arr[i], 'type') && merged_events_arr[i].type == 'eth_transaction') {
-                    //eth transaction
-
-                    var eth_amount_symbol;
-                    if(checksumAddress(merged_events_arr[i].to) == checksumAddress(global_state.account)) {
-                        //IF THE CURRENT ACCOUNT IS RECEIVER
-                        other_address = merged_events_arr[i].from;
-                        label = 'Received from';
-                        class_name = 'received_from';
-                        eth_amount_symbol = '+';
-                    } else if(checksumAddress(merged_events_arr[i].from) == checksumAddress(global_state.account)) {
-                        //IF THE CURRENT ACCOUNT IS SENDER
-                        other_address = merged_events_arr[i].to;
-                        label = 'Sent to';
-                        class_name = 'sent_to';
-                        eth_amount_symbol = '-';
-                    }
-
-                    var eth_amount = dApp.web3_1_0.utils.fromWei(merged_events_arr[i].value, 'ether');
-                    var usd_amount = (ethereum_data.market_data.current_price.usd * eth_amount).toFixed(2);
-                    var timestamp_javascript = merged_events_arr[i].timeStamp*1000;
-                    var date_obj = new Date(timestamp_javascript);
-                    var minutes;
-                    var hours;
-
-                    if(new Date(timestamp_javascript).getMinutes() < 10) {
-                        minutes = '0'+new Date(timestamp_javascript).getMinutes();
-                    }else {
-                        minutes = new Date(timestamp_javascript).getMinutes();
-                    }
-
-                    if(new Date(timestamp_javascript).getHours() < 10) {
-                        hours = '0'+new Date(timestamp_javascript).getHours();
-                    }else {
-                        hours = new Date(timestamp_javascript).getHours();
-                    }
-
-                    if(basic.isMobile()) {
-                        other_address = substr_replace(other_address, '...', -25);
-                    }
-
-                    transaction_history_html+='<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+merged_events_arr[i].hash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+merged_events_arr[i].hash+'" target="_blank" class="lato-bold color-white">Transaction ID</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+eth_amount_symbol+eth_amount+' ETH</li><li>'+usd_amount+' USD</li></ul></td></tr>';
-                } else {
-                    //dcn transaction
-                    merged_events_arr[i].timestamp = await dApp.helper.addBlockTimestampToTransaction(merged_events_arr[i].blockNumber);
-
-                    var dcn_amount_symbol;
-                    var usd_amount = (parseInt(merged_events_arr[i].returnValues._value) * dentacoin_data.market_data.current_price.usd).toFixed(2);
-                    if(checksumAddress(merged_events_arr[i].returnValues._to) == checksumAddress(global_state.account)) {
-                        //IF THE CURRENT ACCOUNT IS RECEIVER
-                        other_address = merged_events_arr[i].returnValues._from;
-                        label = 'Received from';
-                        class_name = 'received_from';
-                        dcn_amount_symbol = '+';
-                    } else if(checksumAddress(merged_events_arr[i].returnValues._from) == checksumAddress(global_state.account)) {
-                        //IF THE CURRENT ACCOUNT IS SENDER
-                        other_address = merged_events_arr[i].returnValues._to;
-                        label = 'Sent to';
-                        class_name = 'sent_to';
-                        dcn_amount_symbol = '-';
-                    }
-
-                    var dcn_amount = dcn_amount_symbol+merged_events_arr[i].returnValues._value+' DCN';
-                    var timestamp_javascript = merged_events_arr[i].timestamp*1000;
-                    var date_obj = new Date(timestamp_javascript);
-                    var minutes;
-                    var hours;
-
-                    if(new Date(timestamp_javascript).getMinutes() < 10) {
-                        minutes = '0'+new Date(timestamp_javascript).getMinutes();
-                    }else {
-                        minutes = new Date(timestamp_javascript).getMinutes();
-                    }
-
-                    if(new Date(timestamp_javascript).getHours() < 10) {
-                        hours = '0'+new Date(timestamp_javascript).getHours();
-                    }else {
-                        hours = new Date(timestamp_javascript).getHours();
-                    }
-
-                    if(basic.isMobile()) {
-                        other_address = substr_replace(other_address, '...', -25);
-                    }
-
-                    transaction_history_html+='<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+merged_events_arr[i].transactionHash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+merged_events_arr[i].transactionHash+'" target="_blank" class="lato-bold color-white">Transaction ID</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+dcn_amount+'</li><li>'+usd_amount+' USD</li></ul></td></tr>';
-                }
-            }
-
-            transaction_history_html+='<tr class="loading-tr"><td class="text-center" colspan="5"><figure class="inline-block rotate-animation"><img src="assets/images/exchange.png" alt="Exchange icon"/></figure></td></tr>';
-
-            $('.camping-transaction-history table tbody').html(transaction_history_html);
-            $('.camping-transaction-history .camping-show-more').html('<div class="col-xs-12 text-center padding-top-30"><a href="javascript:void(0)" class="white-light-blue-btn show-more">Show more</a></div>');
-
-            var next_transaction_history_html = '';
-            for(var i = 5, len = merged_events_arr.length; i < len; i+=1) {
-                if(basic.property_exists(merged_events_arr[i], 'type') && merged_events_arr[i].type == 'eth_transaction') {
-                    console.log(merged_events_arr[i].hash, 'merged_events_arr[i].hash');
-                    //eth transaction
-                    var eth_amount_symbol;
-                    if(checksumAddress(merged_events_arr[i].to) == checksumAddress(global_state.account)) {
-                        //IF THE CURRENT ACCOUNT IS RECEIVER
-                        other_address = merged_events_arr[i].from;
-                        label = 'Received from';
-                        class_name = 'received_from';
-                        eth_amount_symbol = '+';
-                    } else if(checksumAddress(merged_events_arr[i].from) == checksumAddress(global_state.account)) {
-                        //IF THE CURRENT ACCOUNT IS SENDER
-                        other_address = merged_events_arr[i].to;
-                        label = 'Sent to';
-                        class_name = 'sent_to';
-                        eth_amount_symbol = '-';
-                    }
-
-                    var eth_amount = dApp.web3_1_0.utils.fromWei(merged_events_arr[i].value, 'ether');
-                    var usd_amount = (ethereum_data.market_data.current_price.usd * eth_amount).toFixed(2);
-                    var timestamp_javascript = merged_events_arr[i].timeStamp*1000;
-                    var date_obj = new Date(timestamp_javascript);
-                    var minutes;
-                    var hours;
-
-                    if(new Date(timestamp_javascript).getMinutes() < 10) {
-                        minutes = '0'+new Date(timestamp_javascript).getMinutes();
-                    }else {
-                        minutes = new Date(timestamp_javascript).getMinutes();
-                    }
-
-                    if(new Date(timestamp_javascript).getHours() < 10) {
-                        hours = '0'+new Date(timestamp_javascript).getHours();
-                    }else {
-                        hours = new Date(timestamp_javascript).getHours();
-                    }
-
-                    if(basic.isMobile()) {
-                        other_address = substr_replace(other_address, '...', -25);
-                    }
-
-                    next_transaction_history_html+='<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+merged_events_arr[i].hash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+merged_events_arr[i].hash+'" target="_blank" class="lato-bold color-white">Transaction ID</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+eth_amount_symbol+eth_amount+' ETH</li><li>'+usd_amount+' USD</li></ul></td></tr>';
-                } else {
-                    //dcn transaction
-                    merged_events_arr[i].timestamp = await dApp.helper.addBlockTimestampToTransaction(merged_events_arr[i].blockNumber);
-
-                    var other_address = '';
-                    var class_name = '';
-                    var label = '';
-                    var dcn_amount_symbol;
-                    var usd_amount = (parseInt(merged_events_arr[i].returnValues._value) * dentacoin_data.market_data.current_price.usd).toFixed(2);
-                    if(checksumAddress(merged_events_arr[i].returnValues._to) == checksumAddress(global_state.account))    {
-                        //IF THE CURRENT ACCOUNT IS RECEIVER
-                        other_address = merged_events_arr[i].returnValues._from;
-                        label = 'Received from';
-                        class_name = 'received_from';
-                        dcn_amount_symbol = '+';
-                    }else if(checksumAddress(merged_events_arr[i].returnValues._from) == checksumAddress(global_state.account)) {
-                        //IF THE CURRENT ACCOUNT IS SENDER
-                        other_address = merged_events_arr[i].returnValues._to;
-                        label = 'Sent to';
-                        class_name = 'sent_to';
-                        dcn_amount_symbol = '-';
-                    }
-
-                    var dcn_amount = dcn_amount_symbol+merged_events_arr[i].returnValues._value+' DCN';
-                    var timestamp_javascript = merged_events_arr[i].timestamp*1000;
-                    var date_obj = new Date(timestamp_javascript);
-                    var minutes;
-                    var hours;
-
-                    if(new Date(timestamp_javascript).getMinutes() < 10) {
-                        minutes = '0'+new Date(timestamp_javascript).getMinutes();
-                    }else {
-                        minutes = new Date(timestamp_javascript).getMinutes();
-                    }
-
-                    if(new Date(timestamp_javascript).getHours() < 10) {
-                        hours = '0'+new Date(timestamp_javascript).getHours();
-                    }else {
-                        hours = new Date(timestamp_javascript).getHours();
-                    }
-
-                    if(basic.isMobile()) {
-                        other_address = substr_replace(other_address, '...', -25);
-                    }
-
-                    next_transaction_history_html+='<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+merged_events_arr[i].transactionHash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+merged_events_arr[i].transactionHash+'" target="_blank" class="lato-bold color-white">Transaction ID</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+dcn_amount+'</li><li>'+usd_amount+' USD</li></ul></td></tr>';
-                }
-            }
-            $('.camping-transaction-history table tbody tr.loading-tr').remove();
-            $('.camping-transaction-history table tbody').append(next_transaction_history_html);
-            if($('.camping-transaction-history .show-more').attr('show-all-transactions') == 'true') {
-                $('.camping-transaction-history table tr').addClass('show-this');
-            }
-        } else {
-            $('.camping-transaction-history').html('<h2 class="lato-bold fs-16 text-center color-white"><span>No transactions yet</span></h2>');
         }
+    },
+    buildTransactionHistory: function() {
+        getEtherscanTransactionsHistory(global_state.account);
+
+        var request_interval = setInterval(function() {
+            if(Object.keys(transaction_history_request_response).length != 0) {
+                clearInterval(request_interval);
+
+                var etherscan_transactions = transaction_history_request_response;
+                transaction_history_request_response = {};
+
+                var ethereum_transactions_arr = [];
+                if(etherscan_transactions.result) {
+                    for(var i = 0, len = etherscan_transactions.result.length; i < len; i+=1) {
+                        if(etherscan_transactions.result[i].input == '0x') {
+                            etherscan_transactions.result[i].type = 'eth_transaction';
+                            ethereum_transactions_arr.push(etherscan_transactions.result[i]);
+                        }
+                    }
+                }
+
+                DCNContract.getPastEvents('Transfer', {
+                    filter: {_from: global_state.account},
+                    fromBlock: block_number_of_dcn_creation,
+                    toBlock: 'latest'
+                }, function(events_from_user_err, events_from_user){
+                    if(!events_from_user_err) {
+                        DCNContract.getPastEvents('Transfer', {
+                            filter: {_to: global_state.account},
+                            fromBlock: block_number_of_dcn_creation,
+                            toBlock: 'latest'
+                        }, function(events_to_user_err, events_to_user){
+                            if(!events_to_user_err) {
+                                var merged_events_arr = events_from_user.concat(events_to_user, ethereum_transactions_arr);
+
+                                if(merged_events_arr.length > 0) {
+                                    //sorting the mixed array by blockNumber
+                                    sortByKey(merged_events_arr, 'blockNumber');
+                                    merged_events_arr = merged_events_arr.reverse();
+
+                                    //getting ethereum data by Coingecko
+                                    getEthereumDataByCoingecko('history');
+
+                                    request_interval = setInterval(function() {
+                                        if (Object.keys(transaction_history_request_response).length != 0) {
+                                            clearInterval(request_interval);
+                                            var ethereum_data = transaction_history_request_response;
+                                            console.log(ethereum_data, 'ethereum_data');
+                                            transaction_history_request_response = {};
+
+                                            //getting dentacoin data by Coingecko
+                                            getDentacoinDataByCoingecko('history');
+                                            request_interval = setInterval(function() {
+                                                if (Object.keys(transaction_history_request_response).length != 0) {
+                                                    clearInterval(request_interval);
+                                                    var dentacoin_data = transaction_history_request_response;
+                                                    transaction_history_request_response = {};
+                                                    
+                                                    $('.camping-transaction-history').html('<h2 class="lato-bold fs-25 text-center white-crossed-label color-white"><span>Transaction history</span></h2><div class="transaction-history container"><div class="row"><div class="col-xs-12 no-gutter-xs col-md-10 col-md-offset-1 padding-top-20"><table class="color-white"><tbody></tbody></table></div></div><div class="row camping-show-more"></div></div>');
+
+                                                    $(document).on('click', '.camping-transaction-history .show-more', function() {
+                                                        $(this).fadeOut();
+                                                        $(this).attr('show-all-transactions', 'true');
+                                                        $('.camping-transaction-history table tr').addClass('show-this');
+                                                    });
+
+                                                    var transaction_history_html = '';
+                                                    var array_with_already_shown_transactions = [];
+
+                                                    //clearing the array with transactions from dupped ones
+                                                    for(var i = 0, len = merged_events_arr.length; i < len; i+=1) {
+                                                        if(basic.property_exists(merged_events_arr[i], 'hash')) {
+                                                            if(array_with_already_shown_transactions.includes(merged_events_arr[i].hash)) {
+                                                                merged_events_arr.splice(i, 1);
+                                                            } else {
+                                                                array_with_already_shown_transactions.push(merged_events_arr[i].hash);
+                                                            }
+                                                        } else if(basic.property_exists(merged_events_arr[i], 'transactionHash')) {
+                                                            if(array_with_already_shown_transactions.includes(merged_events_arr[i].transactionHash)) {
+                                                                merged_events_arr.splice(i, 1);
+                                                            } else {
+                                                                array_with_already_shown_transactions.push(merged_events_arr[i].transactionHash);
+                                                            }
+                                                        }
+                                                    }
+
+                                                    var stop_intervals = false;
+                                                    function recursiveLoop(custom_iterator) {
+                                                        if(custom_iterator < 5) {
+                                                            var other_address = '';
+                                                            var class_name = '';
+                                                            var label = '';
+                                                            if(basic.property_exists(merged_events_arr[custom_iterator], 'type') && merged_events_arr[custom_iterator].type == 'eth_transaction') {
+                                                                //eth transaction
+                                                                var eth_amount_symbol;
+                                                                if(checksumAddress(merged_events_arr[custom_iterator].to) == checksumAddress(global_state.account)) {
+                                                                    //IF THE CURRENT ACCOUNT IS RECEIVER
+                                                                    other_address = merged_events_arr[custom_iterator].from;
+                                                                    label = 'Received from';
+                                                                    class_name = 'received_from';
+                                                                    eth_amount_symbol = '+';
+                                                                } else if(checksumAddress(merged_events_arr[custom_iterator].from) == checksumAddress(global_state.account)) {
+                                                                    //IF THE CURRENT ACCOUNT IS SENDER
+                                                                    other_address = merged_events_arr[custom_iterator].to;
+                                                                    label = 'Sent to';
+                                                                    class_name = 'sent_to';
+                                                                    eth_amount_symbol = '-';
+                                                                }
+
+                                                                var eth_amount = dApp.web3_1_0.utils.fromWei(merged_events_arr[custom_iterator].value, 'ether');
+                                                                var usd_amount = (ethereum_data.market_data.current_price.usd * eth_amount).toFixed(2);
+                                                                var timestamp_javascript = merged_events_arr[custom_iterator].timeStamp*1000;
+                                                                var date_obj = new Date(timestamp_javascript);
+                                                                var minutes;
+                                                                var hours;
+
+                                                                if(new Date(timestamp_javascript).getMinutes() < 10) {
+                                                                    minutes = '0'+new Date(timestamp_javascript).getMinutes();
+                                                                }else {
+                                                                    minutes = new Date(timestamp_javascript).getMinutes();
+                                                                }
+
+                                                                if(new Date(timestamp_javascript).getHours() < 10) {
+                                                                    hours = '0'+new Date(timestamp_javascript).getHours();
+                                                                }else {
+                                                                    hours = new Date(timestamp_javascript).getHours();
+                                                                }
+
+                                                                if(basic.isMobile()) {
+                                                                    other_address = substr_replace(other_address, '...', -25);
+                                                                }
+
+                                                                transaction_history_html+='<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+merged_events_arr[custom_iterator].hash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+merged_events_arr[custom_iterator].hash+'" target="_blank" class="lato-bold color-white">Transaction ID</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+eth_amount_symbol+eth_amount+' ETH</li><li>'+usd_amount+' USD</li></ul></td></tr>';
+
+                                                                if(custom_iterator < 5) {
+                                                                    custom_iterator+=1;
+                                                                    recursiveLoop(custom_iterator);
+                                                                } else {
+                                                                    stop_intervals = true;
+                                                                }
+                                                            } else {
+                                                                //dcn transaction
+                                                                dApp.helper.addBlockTimestampToTransaction(merged_events_arr[custom_iterator].blockNumber, custom_iterator);
+
+                                                                request_interval = setInterval(function() {
+                                                                    if(!stop_intervals) {
+                                                                        if (temporally_timestamps[custom_iterator] != 0 && temporally_timestamps[custom_iterator] != undefined) {
+                                                                            clearInterval(request_interval);
+                                                                            merged_events_arr[custom_iterator].timestamp = temporally_timestamps[custom_iterator];
+
+                                                                            var dcn_amount_symbol;
+                                                                            var usd_amount = (parseInt(merged_events_arr[custom_iterator].returnValues._value) * dentacoin_data.market_data.current_price.usd).toFixed(2);
+                                                                            if(checksumAddress(merged_events_arr[custom_iterator].returnValues._to) == checksumAddress(global_state.account)) {
+                                                                                //IF THE CURRENT ACCOUNT IS RECEIVER
+                                                                                other_address = merged_events_arr[custom_iterator].returnValues._from;
+                                                                                label = 'Received from';
+                                                                                class_name = 'received_from';
+                                                                                dcn_amount_symbol = '+';
+                                                                            } else if(checksumAddress(merged_events_arr[custom_iterator].returnValues._from) == checksumAddress(global_state.account)) {
+                                                                                //IF THE CURRENT ACCOUNT IS SENDER
+                                                                                other_address = merged_events_arr[custom_iterator].returnValues._to;
+                                                                                label = 'Sent to';
+                                                                                class_name = 'sent_to';
+                                                                                dcn_amount_symbol = '-';
+                                                                            }
+
+                                                                            var dcn_amount = dcn_amount_symbol+merged_events_arr[custom_iterator].returnValues._value+' DCN';
+                                                                            var timestamp_javascript = merged_events_arr[custom_iterator].timestamp*1000;
+                                                                            var date_obj = new Date(timestamp_javascript);
+                                                                            var minutes;
+                                                                            var hours;
+
+                                                                            if(new Date(timestamp_javascript).getMinutes() < 10) {
+                                                                                minutes = '0'+new Date(timestamp_javascript).getMinutes();
+                                                                            }else {
+                                                                                minutes = new Date(timestamp_javascript).getMinutes();
+                                                                            }
+
+                                                                            if(new Date(timestamp_javascript).getHours() < 10) {
+                                                                                hours = '0'+new Date(timestamp_javascript).getHours();
+                                                                            }else {
+                                                                                hours = new Date(timestamp_javascript).getHours();
+                                                                            }
+
+                                                                            if(basic.isMobile()) {
+                                                                                other_address = substr_replace(other_address, '...', -25);
+                                                                            }
+
+                                                                            transaction_history_html+='<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+merged_events_arr[custom_iterator].transactionHash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+merged_events_arr[custom_iterator].transactionHash+'" target="_blank" class="lato-bold color-white">Transaction ID</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+dcn_amount+'</li><li>'+usd_amount+' USD</li></ul></td></tr>';
+
+                                                                            if(custom_iterator < 5) {
+                                                                                custom_iterator+=1;
+                                                                                recursiveLoop(custom_iterator);
+                                                                            } else {
+                                                                                stop_intervals = true;
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }, 300);
+                                                            }
+                                                        } else {
+                                                            transaction_history_html+='<tr class="loading-tr"><td class="text-center" colspan="5"><figure class="inline-block rotate-animation"><img src="assets/images/exchange.png" alt="Exchange icon"/></figure></td></tr>';
+
+                                                            $('.camping-transaction-history table tbody').html(transaction_history_html);
+                                                            $('.camping-transaction-history .camping-show-more').html('<div class="col-xs-12 text-center padding-top-30"><a href="javascript:void(0)" class="white-light-blue-btn show-more">Show more</a></div>');
+
+                                                            stop_intervals = false;
+                                                            console.log('HAPPENS ONLY ONCE!');
+                                                            recursiveLoopForRestOfHistory(5);
+                                                        }
+                                                    }
+                                                    recursiveLoop(0);
+
+                                                    var next_transaction_history_html = '';
+                                                    function recursiveLoopForRestOfHistory(custom_iterator) {
+                                                        if(custom_iterator < merged_events_arr.length) {
+                                                            var other_address = '';
+                                                            var class_name = '';
+                                                            var label = '';
+                                                            if(basic.property_exists(merged_events_arr[custom_iterator], 'type') && merged_events_arr[custom_iterator].type == 'eth_transaction') {
+                                                                //eth transaction
+                                                                var eth_amount_symbol;
+                                                                if(checksumAddress(merged_events_arr[custom_iterator].to) == checksumAddress(global_state.account)) {
+                                                                    //IF THE CURRENT ACCOUNT IS RECEIVER
+                                                                    other_address = merged_events_arr[custom_iterator].from;
+                                                                    label = 'Received from';
+                                                                    class_name = 'received_from';
+                                                                    eth_amount_symbol = '+';
+                                                                } else if(checksumAddress(merged_events_arr[custom_iterator].from) == checksumAddress(global_state.account)) {
+                                                                    //IF THE CURRENT ACCOUNT IS SENDER
+                                                                    other_address = merged_events_arr[custom_iterator].to;
+                                                                    label = 'Sent to';
+                                                                    class_name = 'sent_to';
+                                                                    eth_amount_symbol = '-';
+                                                                }
+
+                                                                var eth_amount = dApp.web3_1_0.utils.fromWei(merged_events_arr[custom_iterator].value, 'ether');
+                                                                var usd_amount = (ethereum_data.market_data.current_price.usd * eth_amount).toFixed(2);
+                                                                var timestamp_javascript = merged_events_arr[custom_iterator].timeStamp*1000;
+                                                                var date_obj = new Date(timestamp_javascript);
+                                                                var minutes;
+                                                                var hours;
+
+                                                                if(new Date(timestamp_javascript).getMinutes() < 10) {
+                                                                    minutes = '0'+new Date(timestamp_javascript).getMinutes();
+                                                                }else {
+                                                                    minutes = new Date(timestamp_javascript).getMinutes();
+                                                                }
+
+                                                                if(new Date(timestamp_javascript).getHours() < 10) {
+                                                                    hours = '0'+new Date(timestamp_javascript).getHours();
+                                                                }else {
+                                                                    hours = new Date(timestamp_javascript).getHours();
+                                                                }
+
+                                                                if(basic.isMobile()) {
+                                                                    other_address = substr_replace(other_address, '...', -25);
+                                                                }
+
+                                                                next_transaction_history_html+='<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+merged_events_arr[custom_iterator].hash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+merged_events_arr[custom_iterator].hash+'" target="_blank" class="lato-bold color-white">Transaction ID</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+eth_amount_symbol+eth_amount+' ETH</li><li>'+usd_amount+' USD</li></ul></td></tr>';
+
+                                                                if(custom_iterator < merged_events_arr.length) {
+                                                                    custom_iterator+=1;
+                                                                    recursiveLoopForRestOfHistory(custom_iterator);
+                                                                } else {
+                                                                    stop_intervals = true;
+                                                                }
+                                                            } else {
+                                                                //dcn transaction
+                                                                dApp.helper.addBlockTimestampToTransaction(merged_events_arr[custom_iterator].blockNumber, custom_iterator);
+
+                                                                request_interval = setInterval(function() {
+                                                                    if(!stop_intervals) {
+                                                                        if (temporally_timestamps[custom_iterator] != 0 && temporally_timestamps[custom_iterator] != undefined) {
+                                                                            clearInterval(request_interval);
+                                                                            merged_events_arr[custom_iterator].timestamp = temporally_timestamps[custom_iterator];
+
+                                                                            var other_address = '';
+                                                                            var class_name = '';
+                                                                            var label = '';
+                                                                            var dcn_amount_symbol;
+                                                                            var usd_amount = (parseInt(merged_events_arr[custom_iterator].returnValues._value) * dentacoin_data.market_data.current_price.usd).toFixed(2);
+                                                                            if(checksumAddress(merged_events_arr[custom_iterator].returnValues._to) == checksumAddress(global_state.account))    {
+                                                                                //IF THE CURRENT ACCOUNT IS RECEIVER
+                                                                                other_address = merged_events_arr[custom_iterator].returnValues._from;
+                                                                                label = 'Received from';
+                                                                                class_name = 'received_from';
+                                                                                dcn_amount_symbol = '+';
+                                                                            }else if(checksumAddress(merged_events_arr[custom_iterator].returnValues._from) == checksumAddress(global_state.account)) {
+                                                                                //IF THE CURRENT ACCOUNT IS SENDER
+                                                                                other_address = merged_events_arr[custom_iterator].returnValues._to;
+                                                                                label = 'Sent to';
+                                                                                class_name = 'sent_to';
+                                                                                dcn_amount_symbol = '-';
+                                                                            }
+
+                                                                            var dcn_amount = dcn_amount_symbol+merged_events_arr[custom_iterator].returnValues._value+' DCN';
+                                                                            var timestamp_javascript = merged_events_arr[custom_iterator].timestamp*1000;
+                                                                            var date_obj = new Date(timestamp_javascript);
+                                                                            var minutes;
+                                                                            var hours;
+
+                                                                            if(new Date(timestamp_javascript).getMinutes() < 10) {
+                                                                                minutes = '0'+new Date(timestamp_javascript).getMinutes();
+                                                                            }else {
+                                                                                minutes = new Date(timestamp_javascript).getMinutes();
+                                                                            }
+
+                                                                            if(new Date(timestamp_javascript).getHours() < 10) {
+                                                                                hours = '0'+new Date(timestamp_javascript).getHours();
+                                                                            }else {
+                                                                                hours = new Date(timestamp_javascript).getHours();
+                                                                            }
+
+                                                                            if(basic.isMobile()) {
+                                                                                other_address = substr_replace(other_address, '...', -25);
+                                                                            }
+
+                                                                            next_transaction_history_html+='<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+merged_events_arr[custom_iterator].transactionHash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+merged_events_arr[custom_iterator].transactionHash+'" target="_blank" class="lato-bold color-white">Transaction ID</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+dcn_amount+'</li><li>'+usd_amount+' USD</li></ul></td></tr>';
+                                                                            if(custom_iterator < merged_events_arr.length) {
+                                                                                custom_iterator+=1;
+                                                                                recursiveLoopForRestOfHistory(custom_iterator);
+                                                                            } else {
+                                                                                stop_intervals = true;
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }, 300);
+                                                            }
+                                                        } else {
+                                                            $('.camping-transaction-history table tbody tr.loading-tr').remove();
+                                                            $('.camping-transaction-history table tbody').append(next_transaction_history_html);
+                                                            if($('.camping-transaction-history .show-more').attr('show-all-transactions') == 'true') {
+                                                                $('.camping-transaction-history table tr').addClass('show-this');
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }, 300);
+                                        }
+                                    }, 300);
+                                } else {
+                                    $('.camping-transaction-history').html('<h2 class="lato-bold fs-16 text-center color-white"><span>No transactions yet</span></h2>');
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        }, 300);
     },
     getTransferFromEvents: function () {
         return new Promise(function(resolve, reject) {
@@ -416,15 +509,14 @@ var dApp = {
                 });
             });
         },
-        addBlockTimestampToTransaction: function(blockNumber)    {
-            return new Promise(function(resolve, reject) {
-                dApp.web3_1_0.eth.getBlock(blockNumber, function(error, result) {
-                    if (error !== null) {
-                        reject(error);
-                    }
-                    temporally_timestamp = result.timestamp;
-                    resolve(temporally_timestamp);
-                });
+        addBlockTimestampToTransaction: function(blockNumber, object_key)    {
+            dApp.web3_1_0.eth.getBlock(blockNumber, function(error, result) {
+                if (error !== null) {
+
+                }
+                if(result != undefined && result != null) {
+                    temporally_timestamps[object_key] = result.timestamp;
+                }
             });
         },
         getAddressETHBalance: function(address)    {
@@ -449,9 +541,9 @@ var dApp = {
 
 var bidali_lib_loaded = false;
 var pages_data = {
-    homepage: async function() {
+    homepage: function() {
         if(typeof(global_state.account) != 'undefined') {
-            async function refreshAccountDataButtonLogic(init_loader) {
+            function refreshAccountDataButtonLogic(init_loader) {
                 if(init_loader != undefined) {
                     showLoader();
 
@@ -465,24 +557,46 @@ var pages_data = {
             }
             refreshAccountDataButtonLogic();
 
-            async function updateUserAccountData(hide_loader) {
+            function updateUserAccountData(hide_loader) {
                 //show user ethereum address
                 $('.eth-address-container .address-value').val(global_state.account);
 
                 //update dentacoin amount
-                var dcn_balance = parseInt(await dApp.methods.getDCNBalance(global_state.account));
-                $('.dcn-amount').html(dcn_balance);
+                var dcn_balance_promise = dApp.methods.getDCNBalance(global_state.account);
+                var request_interval = setInterval(function() {
+                    if(Object.keys(dcn_balance_promise).length != 0 && basic.property_exists(dcn_balance_promise, '__zone_symbol__value') && dcn_balance_promise['__zone_symbol__value'].length != 0) {
+                        clearInterval(request_interval);
+                        var dcn_balance = parseInt(dcn_balance_promise['__zone_symbol__value']);
+                        request_response = {};
 
-                //update usd amount (dentacoins in usd)
-                var dentacoin_data = await getDentacoinDataByCoingecko();
-                $('.usd-amount').html((dcn_balance * dentacoin_data.market_data.current_price.usd).toFixed(2));
+                        $('.dcn-amount').html(dcn_balance);
 
-                //update ether amount
-                $('.eth-amount').html(parseFloat(dApp.web3_1_0.utils.fromWei(await dApp.helper.getAddressETHBalance(global_state.account))).toFixed(6));
+                        //update usd amount (dentacoins in usd)
+                        getDentacoinDataByCoingecko();
+                        request_interval = setInterval(function() {
+                            if(Object.keys(request_response).length != 0) {
+                                clearInterval(request_interval);
+                                var dentacoin_data = request_response;
+                                request_response = {};
 
-                if(hide_loader != undefined) {
-                    hideLoader();
-                }
+                                $('.usd-amount').html((dcn_balance * dentacoin_data.market_data.current_price.usd).toFixed(2));
+
+                                //update ether amount
+                                dApp.web3_1_0.eth.getBalance(global_state.account, function(error, result) {
+                                    if(error) {
+                                        console.log(error);
+                                    } else {
+                                        $('.eth-amount').html(parseFloat(dApp.web3_1_0.utils.fromWei(result)).toFixed(6));
+
+                                        if(hide_loader != undefined) {
+                                            hideLoader();
+                                        }
+                                    }
+                                });
+                            }
+                        }, 300);
+                    }
+                }, 300);
             }
 
             $(document).on('click', '.refresh-account-data', function() {
@@ -547,227 +661,353 @@ var pages_data = {
             html: true
         });
     },
-    buy_page: async function() {
+    buy_page: function() {
         if(typeof(global_state.account) != 'undefined') {
             $('section.ready-to-purchase-with-external-api input#dcn_address').parent().find('label').addClass('active-label');
             $('section.ready-to-purchase-with-external-api input#dcn_address').val(global_state.account);
         }
 
-        //dividing with 100, because with indacoin api you cannot get prices for 1 crypto
-        var dcn_for_one_usd = parseFloat(await getCryptoDataByIndacoin('DCN')) / 100;
-        var eth_for_one_usd = parseFloat(await getCryptoDataByIndacoin('ETH')) / 100;
-        $('section.ready-to-purchase-with-external-api #crypto-amount').val(Math.floor(dcn_for_one_usd * parseFloat($('section.ready-to-purchase-with-external-api #usd-value').val().trim())));
+        //getting DCN data from Indacoin
+        getCryptoDataByIndacoin('DCN');
 
-        $('section.ready-to-purchase-with-external-api #usd-value').on('input', function() {
-            if($(this).val().trim() < 30)   {
-                $(this).parent().addClass('error-field');
-            }else {
-                $(this).parent().removeClass('error-field');
+        var request_interval = setInterval(function() {
+            if (Object.keys(request_response).length != 0 && basic.property_exists(request_response, 'value')) {
+                clearInterval(request_interval);
+                //dividing with 100, because with indacoin api you cannot get prices for 1 crypto
+                var dcn_for_one_usd = parseFloat(request_response.value) / 100;
+                request_response = {};
+
+                //getting ETH data from Indacoin
+                getCryptoDataByIndacoin('ETH');
+                request_interval = setInterval(function() {
+                    if (Object.keys(request_response).length != 0 && basic.property_exists(request_response, 'value')) {
+                        clearInterval(request_interval);
+                        //dividing with 100, because with indacoin api you cannot get prices for 1 crypto
+                        var eth_for_one_usd = parseFloat(request_response.value) / 100;
+                        request_response = {};
+
+                        $('section.ready-to-purchase-with-external-api #crypto-amount').val(Math.floor(dcn_for_one_usd * parseFloat($('section.ready-to-purchase-with-external-api #usd-value').val().trim())));
+
+                        $('section.ready-to-purchase-with-external-api #usd-value').on('input', function() {
+                            if($(this).val().trim() < 30)   {
+                                $(this).parent().addClass('error-field');
+                            }else {
+                                $(this).parent().removeClass('error-field');
+                            }
+
+                            if(parseFloat($(this).val().trim()) < 0)    {
+                                $(this).val(30);
+                            }else if(parseFloat($(this).val().trim()) > 6000)    {
+                                $(this).val(6000);
+                            }
+
+                            if($('section.ready-to-purchase-with-external-api #active-crypto').val() == 'dcn') {
+                                $('section.ready-to-purchase-with-external-api #crypto-amount').val(Math.floor(dcn_for_one_usd * parseFloat($(this).val().trim())));
+                            } else if($('section.ready-to-purchase-with-external-api #active-crypto').val() == 'eth') {
+                                $('section.ready-to-purchase-with-external-api #crypto-amount').val(eth_for_one_usd * parseFloat($(this).val().trim()));
+                            }
+                        });
+
+                        $('section.ready-to-purchase-with-external-api #active-crypto').on('change', function() {
+                            $('section.ready-to-purchase-with-external-api #usd-value').val(30);
+                            $('section.ready-to-purchase-with-external-api #usd-value').parent().removeClass('error-field');
+
+                            if($(this).val() == 'dcn') {
+                                $('section.ready-to-purchase-with-external-api #crypto-amount').val(Math.floor(dcn_for_one_usd * 30));
+                            } else if($(this).val() == 'eth') {
+                                $('section.ready-to-purchase-with-external-api #crypto-amount').val(eth_for_one_usd * 30);
+                            }
+                        });
+
+                        $('section.ready-to-purchase-with-external-api #crypto-amount').on('input', function() {
+                            if($(this).val().trim() <= 0) {
+                                $('section.ready-to-purchase-with-external-api #usd-value').val(30);
+                                if($('section.ready-to-purchase-with-external-api #active-crypto').val() == 'dcn') {
+                                    $(this).val(Math.floor(dcn_for_one_usd * parseFloat($('section.ready-to-purchase-with-external-api #usd-value').val().trim())));
+                                } else if($('section.ready-to-purchase-with-external-api #active-crypto').val() == 'eth') {
+                                    $(this).val(eth_for_one_usd * parseFloat($('section.ready-to-purchase-with-external-api #usd-value').val().trim()));
+                                }
+                            } else {
+                                var divisor;
+                                if($('section.ready-to-purchase-with-external-api #active-crypto').val() == 'dcn') {
+                                    divisor = dcn_for_one_usd;
+                                } else if($('section.ready-to-purchase-with-external-api #active-crypto').val() == 'eth') {
+                                    divisor = eth_for_one_usd;
+                                }
+
+                                if(parseFloat($(this).val().trim()) / divisor > 6000)   {
+                                    $(this).val(divisor * 6000);
+                                }
+                                $('section.ready-to-purchase-with-external-api #usd-value').val(parseFloat($(this).val().trim()) / divisor);
+
+                                if(parseInt($('section.ready-to-purchase-with-external-api #usd-value').val()) < 30) {
+                                    $('section.ready-to-purchase-with-external-api #usd-value').parent().addClass('error-field');
+                                } else {
+                                    $('section.ready-to-purchase-with-external-api #usd-value').parent().removeClass('error-field');
+                                }
+                            }
+                        });
+
+                        $('.buy-crypto-btn').click(function() {
+                            var currency = $('section.ready-to-purchase-with-external-api #active-crypto').val();
+                            var currency_amount_for_one_usd;
+                            if(currency == 'dcn') {
+                                currency_amount_for_one_usd = dcn_for_one_usd;
+                            } else if(currency == 'eth') {
+                                currency_amount_for_one_usd = eth_for_one_usd;
+                            }
+
+                            if(parseFloat($('section.ready-to-purchase-with-external-api #usd-value').val().trim()) < 30)  {
+                                basic.showAlert('The minimum transaction limit is 30 USD.', '', true);
+                            }else if(parseFloat($('section.ready-to-purchase-with-external-api #usd-value').val().trim()) > 6000)  {
+                                basic.showAlert('The maximum transaction limit is 6000 USD.', '', true);
+                            }else if(parseFloat($('section.ready-to-purchase-with-external-api #crypto-amount').val().trim()) < Math.floor(currency_amount_for_one_usd * 30))  {
+                                basic.showAlert('The minimum transaction limit is 30 USD in '+currency.toUpperCase()+'.', '', true);
+                            }else if(parseFloat($('section.ready-to-purchase-with-external-api #crypto-amount').val().trim()) > currency_amount_for_one_usd * 6000)  {
+                                basic.showAlert('The maximum transaction limit is 6000 USD in '+currency.toUpperCase()+'.', '', true);
+                            }else if(!innerAddressCheck($('section.ready-to-purchase-with-external-api input#dcn_address').val().trim())) {
+                                basic.showAlert('Please enter a valid wallet address. It should start with "0x" and be followed by 40 characters (numbers and letters).', '', true);
+                            }else if(!basic.validateEmail($('section.ready-to-purchase-with-external-api input#email').val().trim()))  {
+                                basic.showAlert('Please enter a valid email.', '', true);
+                            }else if(!$('section.ready-to-purchase-with-external-api #privacy-policy-agree').is(':checked')) {
+                                basic.showAlert('Please agree with our Privacy Policy.', '', true);
+                            }else {
+                                window.open('https://indacoin.com/gw/payment_form?partner=dentacoin&cur_from=USD&cur_to='+currency.toUpperCase()+'&amount='+$('section.ready-to-purchase-with-external-api #usd-value').val().trim()+'&address='+$('section.ready-to-purchase-with-external-api input#dcn_address').val().trim()+'&user_id='+$('section.ready-to-purchase-with-external-api input#email').val().trim(), '_blank');
+                            }
+                        });
+                    }
+                }, 300);
             }
-
-            if(parseFloat($(this).val().trim()) < 0)    {
-                $(this).val(30);
-            }else if(parseFloat($(this).val().trim()) > 6000)    {
-                $(this).val(6000);
-            }
-
-            if($('section.ready-to-purchase-with-external-api #active-crypto').val() == 'dcn') {
-                $('section.ready-to-purchase-with-external-api #crypto-amount').val(Math.floor(dcn_for_one_usd * parseFloat($(this).val().trim())));
-            } else if($('section.ready-to-purchase-with-external-api #active-crypto').val() == 'eth') {
-                $('section.ready-to-purchase-with-external-api #crypto-amount').val(eth_for_one_usd * parseFloat($(this).val().trim()));
-            }
-        });
-
-        $('section.ready-to-purchase-with-external-api #active-crypto').on('change', function() {
-            $('section.ready-to-purchase-with-external-api #usd-value').val(30);
-            $('section.ready-to-purchase-with-external-api #usd-value').parent().removeClass('error-field');
-
-            if($(this).val() == 'dcn') {
-                $('section.ready-to-purchase-with-external-api #crypto-amount').val(Math.floor(dcn_for_one_usd * 30));
-            } else if($(this).val() == 'eth') {
-                $('section.ready-to-purchase-with-external-api #crypto-amount').val(eth_for_one_usd * 30);
-            }
-        });
-
-        $('section.ready-to-purchase-with-external-api #crypto-amount').on('input', function() {
-            if($(this).val().trim() <= 0) {
-                $('section.ready-to-purchase-with-external-api #usd-value').val(30);
-                if($('section.ready-to-purchase-with-external-api #active-crypto').val() == 'dcn') {
-                    $(this).val(Math.floor(dcn_for_one_usd * parseFloat($('section.ready-to-purchase-with-external-api #usd-value').val().trim())));
-                } else if($('section.ready-to-purchase-with-external-api #active-crypto').val() == 'eth') {
-                    $(this).val(eth_for_one_usd * parseFloat($('section.ready-to-purchase-with-external-api #usd-value').val().trim()));
-                }
-            } else {
-                var divisor;
-                if($('section.ready-to-purchase-with-external-api #active-crypto').val() == 'dcn') {
-                    divisor = dcn_for_one_usd;
-                } else if($('section.ready-to-purchase-with-external-api #active-crypto').val() == 'eth') {
-                    divisor = eth_for_one_usd;
-                }
-
-                if(parseFloat($(this).val().trim()) / divisor > 6000)   {
-                    $(this).val(divisor * 6000);
-                }
-                $('section.ready-to-purchase-with-external-api #usd-value').val(parseFloat($(this).val().trim()) / divisor);
-
-                if(parseInt($('section.ready-to-purchase-with-external-api #usd-value').val()) < 30) {
-                    $('section.ready-to-purchase-with-external-api #usd-value').parent().addClass('error-field');
-                } else {
-                    $('section.ready-to-purchase-with-external-api #usd-value').parent().removeClass('error-field');
-                }
-            }
-        });
-
-        $('.buy-crypto-btn').click(function() {
-            var currency = $('section.ready-to-purchase-with-external-api #active-crypto').val();
-            var currency_amount_for_one_usd;
-            if(currency == 'dcn') {
-                currency_amount_for_one_usd = dcn_for_one_usd;
-            } else if(currency == 'eth') {
-                currency_amount_for_one_usd = eth_for_one_usd;
-            }
-
-            if(parseFloat($('section.ready-to-purchase-with-external-api #usd-value').val().trim()) < 30)  {
-                basic.showAlert('The minimum transaction limit is 30 USD.', '', true);
-            }else if(parseFloat($('section.ready-to-purchase-with-external-api #usd-value').val().trim()) > 6000)  {
-                basic.showAlert('The maximum transaction limit is 6000 USD.', '', true);
-            }else if(parseFloat($('section.ready-to-purchase-with-external-api #crypto-amount').val().trim()) < Math.floor(currency_amount_for_one_usd * 30))  {
-                basic.showAlert('The minimum transaction limit is 30 USD in '+currency.toUpperCase()+'.', '', true);
-            }else if(parseFloat($('section.ready-to-purchase-with-external-api #crypto-amount').val().trim()) > currency_amount_for_one_usd * 6000)  {
-                basic.showAlert('The maximum transaction limit is 6000 USD in '+currency.toUpperCase()+'.', '', true);
-            }else if(!innerAddressCheck($('section.ready-to-purchase-with-external-api input#dcn_address').val().trim())) {
-                basic.showAlert('Please enter a valid wallet address. It should start with "0x" and be followed by 40 characters (numbers and letters).', '', true);
-            }else if(!basic.validateEmail($('section.ready-to-purchase-with-external-api input#email').val().trim()))  {
-                basic.showAlert('Please enter a valid email.', '', true);
-            }else if(!$('section.ready-to-purchase-with-external-api #privacy-policy-agree').is(':checked')) {
-                basic.showAlert('Please agree with our Privacy Policy.', '', true);
-            }else {
-                window.open('https://indacoin.com/gw/payment_form?partner=dentacoin&cur_from=USD&cur_to='+currency.toUpperCase()+'&amount='+$('section.ready-to-purchase-with-external-api #usd-value').val().trim()+'&address='+$('section.ready-to-purchase-with-external-api input#dcn_address').val().trim()+'&user_id='+$('section.ready-to-purchase-with-external-api input#email').val().trim(), '_blank');
-            }
-        });
+        }, 300);
     },
-    send_page: async function() {
+    send_page: function() {
         //reading all clinics/ dentists from the CoreDB EVERY 1h
         if(core_db_clinics == undefined || core_db_clinics_time_to_request < Date.now()) {
             showLoader();
-            core_db_clinics_time_to_request = Date.now() + 3600 * 1000;
-            core_db_clinics = await getClinics();
+
+            getClinics();
+            var request_interval = setInterval(function() {
+                if (Object.keys(request_response).length != 0) {
+                    clearInterval(request_interval);
+                    core_db_clinics_time_to_request = Date.now() + 3600 * 1000;
+                    core_db_clinics = request_response;
+                    request_response = {};
+
+                    ifCoreDBReturnsClinics();
+                }
+            }, 300);
+
             hideLoader();
+        } else {
+            ifCoreDBReturnsClinics();
         }
 
-        if(core_db_clinics.success) {
-            var clinics_select_html = '';
-            for(var i = 0, len = core_db_clinics.data.length; i < len; i+=1) {
-                if(core_db_clinics.data[i].dcn_address != null) {
-                    clinics_select_html += '<li><a href="javascript:void(0);" class="display-block-important" data-value="'+core_db_clinics.data[i].dcn_address+'">'+core_db_clinics.data[i].name+'</a></li>';
-                }
-            }
-
-            $('.clinics-list').append(clinics_select_html);
-
-            $('.search-result .search-header a').click(function() {
-                $('.search-body .hideable-element').hide();
-                $('.search-result .search-header a').removeClass('active');
-
-                $(this).addClass('active');
-                $('.search-body .hideable-element.'+$(this).attr('data-type')).show();
-            });
-
-            $(document).on('click', '.search-result .search-body ul li a', function() {
-                $('.search-field #search').val($(this).attr('data-value')).trigger('change');
-                $('.search-field #search-label').html($(this).html());
-                $('.search-result').hide();
-            });
-
-            $(document).click(function(event) {
-                var $target = event.target;
-                console.log(event.target, 'event.target');
-                console.log($target.closest('.search-result'));
-
-                if($target.closest('.search-field') == null) {
-                    $('.search-result').hide();
-                }
-            });
-
-            $('.search-field #search').on('focus', function() {
-                $('.search-result').show();
-            });
-
-            $('.search-field #search').on('input', function() {
-                if($(this).val().trim() != '') {
-                    $('.search-result').show();
-
-                    var value_to_check = $(this).val().trim().toLowerCase();
-                    $('.search-result .search-body ul li a').each(function() {
-                        if($(this).html().toLowerCase().indexOf(value_to_check) == -1) {
-                            $(this).parent().addClass('hide-this');
-                        } else {
-                            $(this).parent().removeClass('hide-this');
-                        }
-                    });
+        $('.search-field #search').on('change keyup change focusout', function() {
+            var input_value = $(this).val().trim();
+            if(input_value != '') {
+                if(innerAddressCheck(input_value)) {
+                    $('.next-send').removeClass('disabled');
                 } else {
-                    $('.search-field #search-label').html('Enter receiving address/ clinic name or scan QR');
-                    $('.search-result').hide();
-                }
-            });
-
-            $('.search-field #search').on('change keyup change focusout', function() {
-                var input_value = $(this).val().trim();
-                if(input_value != '') {
-                    if(innerAddressCheck(input_value)) {
-                        $('.next-send').removeClass('disabled');
-                    } else {
-                        $('.next-send').addClass('disabled');
-                    }
-                }
-            });
-
-            function updateAddressBookHtml() {
-                var address_book_list_in_storage = window.localStorage.getItem('address_book');
-                if(address_book_list_in_storage != null && basic.isJsonString(address_book_list_in_storage)) {
-                    var address_book_list_in_storage_obj = JSON.parse(address_book_list_in_storage);
-                    var address_book_html = '<ul>';
-                    for(var i = 0, len = address_book_list_in_storage_obj.length; i < len; i+=1) {
-                        address_book_html += '<li class="removeable-element fs-0"><a href="javascript:void(0);" class="inline-block" data-value="'+address_book_list_in_storage_obj[i].address+'">'+address_book_list_in_storage_obj[i].name+'</a><button type="button" class="remove-address-book-element inline-block">×</button></li>';
-                    }
-                    address_book_html += '</ul>';
-
-                    $('.search-body .address-book').html(address_book_html);
+                    $('.next-send').addClass('disabled');
                 }
             }
-            updateAddressBookHtml();
+        });
 
-            function updateAddressBooklocalStorageVariable() {
-                var array = [];
-                $('.search-body .address-book ul li a').each(function() {
-                    array.push({'name': $(this).html().trim(), 'address': $(this).attr('data-value')});
+        function ifCoreDBReturnsClinics() {
+            if(core_db_clinics.success) {
+                var clinics_select_html = '';
+                for(var i = 0, len = core_db_clinics.data.length; i < len; i+=1) {
+                    if(core_db_clinics.data[i].dcn_address != null) {
+                        clinics_select_html += '<li><a href="javascript:void(0);" class="display-block-important" data-value="'+core_db_clinics.data[i].dcn_address+'">'+core_db_clinics.data[i].name+'</a></li>';
+                    }
+                }
+
+                $('.clinics-list').append(clinics_select_html);
+
+                $('.search-result .search-header a').click(function() {
+                    $('.search-body .hideable-element').hide();
+                    $('.search-result .search-header a').removeClass('active');
+
+                    $(this).addClass('active');
+                    $('.search-body .hideable-element.'+$(this).attr('data-type')).show();
                 });
 
-                window.localStorage.setItem('address_book', JSON.stringify(array));
-            }
+                $(document).on('click', '.search-result .search-body ul li a', function() {
+                    $('.search-field #search').val($(this).attr('data-value')).trigger('change');
+                    $('.search-field #search-label').html($(this).html());
+                    $('.search-result').hide();
+                });
 
-            $(document).on('click', '.search-body .address-book ul li button', function() {
-                var this_btn = $(this);
-                var delete_address_book_wallet_address = {};
-                delete_address_book_wallet_address.callback = function (result) {
-                    if (result) {
-                        this_btn.closest('li').remove();
-                        updateAddressBooklocalStorageVariable();
+                $(document).click(function(event) {
+                    var $target = event.target;
+                    if($target.closest('.search-field') == null) {
+                        $('.search-result').hide();
                     }
-                };
-                basic.showConfirm('Are you sure you want to remove this Wallet Address from Address Book?', '', delete_address_book_wallet_address, true);
-            });
+                });
 
-            $('.search-field .search-footer .add-to-address-book').click(function() {
-                basic.closeDialog();
-                basic.showDialog('<h2 class="fs-18 padding-bottom-20 text-center">Save to Address Book</h2><div class="custom-google-label-style module max-width-350 margin-0-auto margin-bottom-15" data-input-light-blue-border="true"><label for="contact-name">Name:</label><input type="text" id="contact-name" maxlength="100" class="full-rounded"></div><div class="custom-google-label-style module max-width-350 margin-0-auto" data-input-light-blue-border="true"><label for="wallet-address">Wallet Address:</label><input type="text" id="wallet-address" maxlength="42" class="full-rounded"></div><div class="padding-top-10"><a href="javascript:void(0)" class="display-block-important margin-0-auto max-width-80 add-to-address-book-scan-qr-code"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/scan-qr-code.svg" class="width-100" alt="Scan QR code icon" itemprop="contentUrl"/></figure></a></div><div class="padding-top-20 padding-bottom-15 text-center"><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border save-to-address-book min-width-160">Save</a></div>', 'popup-save-to-address-book', null, true);
+                $('.search-field #search').on('focus', function() {
+                    $('.search-result').show();
+                });
 
-                //open QR code reader to add new address to address book
-                $('.add-to-address-book-scan-qr-code').click(async function() {
+                $('.search-field #search').on('input', function() {
+                    if($(this).val().trim() != '') {
+                        $('.search-result').show();
+
+                        var value_to_check = $(this).val().trim().toLowerCase();
+                        $('.search-result .search-body ul li a').each(function() {
+                            if($(this).html().toLowerCase().indexOf(value_to_check) == -1) {
+                                $(this).parent().addClass('hide-this');
+                            } else {
+                                $(this).parent().removeClass('hide-this');
+                            }
+                        });
+                    } else {
+                        $('.search-field #search-label').html('Enter receiving address/ clinic name or scan QR');
+                        $('.search-result').hide();
+                    }
+                });
+
+                function updateAddressBookHtml() {
+                    var address_book_list_in_storage = window.localStorage.getItem('address_book');
+                    if(address_book_list_in_storage != null && basic.isJsonString(address_book_list_in_storage)) {
+                        var address_book_list_in_storage_obj = JSON.parse(address_book_list_in_storage);
+                        var address_book_html = '<ul>';
+                        for(var i = 0, len = address_book_list_in_storage_obj.length; i < len; i+=1) {
+                            address_book_html += '<li class="removeable-element fs-0"><a href="javascript:void(0);" class="inline-block" data-value="'+address_book_list_in_storage_obj[i].address+'">'+address_book_list_in_storage_obj[i].name+'</a><button type="button" class="remove-address-book-element inline-block">×</button></li>';
+                        }
+                        address_book_html += '</ul>';
+
+                        $('.search-body .address-book').html(address_book_html);
+                    }
+                }
+                updateAddressBookHtml();
+
+                function updateAddressBooklocalStorageVariable() {
+                    var array = [];
+                    $('.search-body .address-book ul li a').each(function() {
+                        array.push({'name': $(this).html().trim(), 'address': $(this).attr('data-value')});
+                    });
+
+                    window.localStorage.setItem('address_book', JSON.stringify(array));
+                }
+
+                $(document).on('click', '.search-body .address-book ul li button', function() {
+                    var this_btn = $(this);
+                    var delete_address_book_wallet_address = {};
+                    delete_address_book_wallet_address.callback = function (result) {
+                        if (result) {
+                            this_btn.closest('li').remove();
+                            updateAddressBooklocalStorageVariable();
+                        }
+                    };
+                    basic.showConfirm('Are you sure you want to remove this Wallet Address from Address Book?', '', delete_address_book_wallet_address, true);
+                });
+
+                $('.search-field .search-footer .add-to-address-book').click(function() {
+                    basic.closeDialog();
+                    basic.showDialog('<h2 class="fs-18 padding-bottom-20 text-center">Save to Address Book</h2><div class="custom-google-label-style module max-width-350 margin-0-auto margin-bottom-15" data-input-light-blue-border="true"><label for="contact-name">Name:</label><input type="text" id="contact-name" maxlength="100" class="full-rounded"></div><div class="custom-google-label-style module max-width-350 margin-0-auto" data-input-light-blue-border="true"><label for="wallet-address">Wallet Address:</label><input type="text" id="wallet-address" maxlength="42" class="full-rounded"></div><div class="padding-top-10"><a href="javascript:void(0)" class="display-block-important margin-0-auto max-width-80 add-to-address-book-scan-qr-code"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/scan-qr-code.svg" class="width-100" alt="Scan QR code icon" itemprop="contentUrl"/></figure></a></div><div class="padding-top-20 padding-bottom-15 text-center"><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border save-to-address-book min-width-160">Save</a></div>', 'popup-save-to-address-book', null, true);
+
+                    //open QR code reader to add new address to address book
+                    $('.add-to-address-book-scan-qr-code').click(function() {
+                        if(is_hybrid) {
+                            cordova.plugins.barcodeScanner.scan(
+                                function (result) {
+                                    $('.popup-save-to-address-book #wallet-address').val(result.text).trigger('change');
+                                },
+                                function (error) {
+                                    alert('Scanning failed. Please go to Settings/ Permissions and allow Camera access to Dentacoin Wallet and try again.');
+                                }
+                            );
+                        } else {
+                            //BROWSER SCAN
+                            if(load_qr_code_lib) {
+                                showLoader();
+                                $.getScript('https://rawgit.com/schmich/instascan-builds/master/instascan.min.js', function() {
+                                    load_qr_code_lib = false;
+                                    hideLoader();
+
+                                    initQRCodePopupForAddressBook();
+                                });
+                            } else {
+                                initQRCodePopupForAddressBook();
+                            }
+                            
+                            function initQRCodePopupForAddressBook() {
+                                basic.showDialog('<div class="video-container"><video id="qr-preview"></video></div>', 'popup-scan-qr-code', null, true);
+
+                                var cameras_global;
+                                var scanner = new Instascan.Scanner({ video: document.getElementById('qr-preview') });
+                                scanner.addListener('scan', function (content) {
+                                    $('.popup-save-to-address-book #wallet-address').val(content).trigger('change');
+                                    scanner.stop(cameras_global[0]);
+                                    $('.popup-scan-qr-code .bootbox-close-button').click();
+                                });
+
+                                Instascan.Camera.getCameras().then(function (cameras) {
+                                    console.log(cameras, 'cameras');
+                                    if (cameras.length > 0) {
+                                        cameras_global = cameras;
+                                        scanner.start(cameras[0]);
+                                    } else {
+                                        alert('No cameras found.');
+                                    }
+                                }).catch(function (e) {
+                                    console.error(e);
+                                });
+
+                                $('.popup-scan-qr-code .bootbox-close-button').click(function() {
+                                    if (cameras_global.length > 0) {
+                                        scanner.stop(cameras_global[0]);
+                                    }
+                                });
+                            }
+                        }
+                    });
+
+                    $('.save-to-address-book').click(function() {
+                        if($('.popup-save-to-address-book #contact-name').val().trim() == '') {
+                            basic.showAlert('Please enter name.', '', true);
+                        } else if($('.popup-save-to-address-book #wallet-address').val().trim() == '' || !innerAddressCheck($('.popup-save-to-address-book #wallet-address').val().trim())){
+                            basic.showAlert('Please enter valid Wallet Address.', '', true);
+                        } else {
+                            var address_book_list_in_storage = window.localStorage.getItem('address_book');
+
+                            if(address_book_list_in_storage == null) {
+                                window.localStorage.setItem('address_book', JSON.stringify([{'name' : $('.popup-save-to-address-book #contact-name').val().trim(), 'address' : $('.popup-save-to-address-book #wallet-address').val().trim()}]));
+
+                                updateAddressBookHtml();
+                                basic.closeDialog();
+                                basic.showAlert('Address book updated successfully.', '', true);
+                            } else {
+                                if(basic.isJsonString(address_book_list_in_storage)) {
+                                    var object = JSON.parse(address_book_list_in_storage);
+                                    object.unshift({'name' : $('.popup-save-to-address-book #contact-name').val().trim(), 'address' : $('.popup-save-to-address-book #wallet-address').val().trim()});
+
+                                    window.localStorage.setItem('address_book', JSON.stringify(object));
+
+                                    updateAddressBookHtml();
+                                    basic.closeDialog();
+                                    basic.showAlert('Address book updated successfully.', '', true);
+                                } else {
+                                    //if the local storage variable is not object remove it and recreate it with object
+                                    window.localStorage.removeItem('address_book');
+
+                                    window.localStorage.setItem('address_book', JSON.stringify([{'name' : $('.popup-save-to-address-book #contact-name').val().trim(), 'address' : $('.popup-save-to-address-book #wallet-address').val().trim()}]));
+
+                                    updateAddressBookHtml();
+                                    basic.closeDialog();
+                                    basic.showAlert('Address book updated successfully.', '', true);
+                                }
+                            }
+                        }
+                    });
+                });
+
+                $('.scan-qr-code').click(function() {
                     if(is_hybrid) {
                         cordova.plugins.barcodeScanner.scan(
                             function (result) {
-                                $('.popup-save-to-address-book #wallet-address').val(result.text).trigger('change');
+                                $('#search').val(result.text).trigger('change');
                             },
                             function (error) {
                                 alert('Scanning failed. Please go to Settings/ Permissions and allow Camera access to Dentacoin Wallet and try again.');
@@ -777,327 +1017,308 @@ var pages_data = {
                         //BROWSER SCAN
                         if(load_qr_code_lib) {
                             showLoader();
-                            load_qr_code_lib = false;
-                            await $.getScript('https://rawgit.com/schmich/instascan-builds/master/instascan.min.js');
+                            $.getScript('https://rawgit.com/schmich/instascan-builds/master/instascan.min.js', function() {
+                                load_qr_code_lib = false;
+                                hideLoader();
+
+                                initQRCodePopupForSendingTransaction();
+                            });
                             hideLoader();
+                        } else {
+                            initQRCodePopupForSendingTransaction();
                         }
-                        basic.showDialog('<div class="video-container"><video id="qr-preview"></video></div>', 'popup-scan-qr-code', null, true);
 
-                        var cameras_global;
-                        var scanner = new Instascan.Scanner({ video: document.getElementById('qr-preview') });
-                        scanner.addListener('scan', function (content) {
-                            $('.popup-save-to-address-book #wallet-address').val(content).trigger('change');
-                            scanner.stop(cameras_global[0]);
-                            $('.popup-scan-qr-code .bootbox-close-button').click();
-                        });
+                        function initQRCodePopupForSendingTransaction() {
+                            basic.showDialog('<div class="video-container"><video id="qr-preview"></video></div>', 'popup-scan-qr-code', null, true);
 
-                        Instascan.Camera.getCameras().then(function (cameras) {
-                            console.log(cameras, 'cameras');
-                            if (cameras.length > 0) {
-                                cameras_global = cameras;
-                                scanner.start(cameras[0]);
-                            } else {
-                                alert('No cameras found.');
-                            }
-                        }).catch(function (e) {
-                            console.error(e);
-                        });
-
-                        $('.popup-scan-qr-code .bootbox-close-button').click(function() {
-                            if (cameras_global.length > 0) {
+                            var cameras_global;
+                            var scanner = new Instascan.Scanner({ video: document.getElementById('qr-preview') });
+                            console.log(scanner, 'scanner');
+                            scanner.addListener('scan', function (content) {
+                                $('#search').val(content).trigger('change');
                                 scanner.stop(cameras_global[0]);
-                            }
-                        });
-                    }
-                });
-
-                $('.save-to-address-book').click(function() {
-                    if($('.popup-save-to-address-book #contact-name').val().trim() == '') {
-                        basic.showAlert('Please enter name.', '', true);
-                    } else if($('.popup-save-to-address-book #wallet-address').val().trim() == '' || !innerAddressCheck($('.popup-save-to-address-book #wallet-address').val().trim())){
-                        basic.showAlert('Please enter valid Wallet Address.', '', true);
-                    } else {
-                        var address_book_list_in_storage = window.localStorage.getItem('address_book');
-
-                        if(address_book_list_in_storage == null) {
-                            window.localStorage.setItem('address_book', JSON.stringify([{'name' : $('.popup-save-to-address-book #contact-name').val().trim(), 'address' : $('.popup-save-to-address-book #wallet-address').val().trim()}]));
-
-                            updateAddressBookHtml();
-                            basic.closeDialog();
-                            basic.showAlert('Address book updated successfully.', '', true);
-                        } else {
-                            if(basic.isJsonString(address_book_list_in_storage)) {
-                                var object = JSON.parse(address_book_list_in_storage);
-                                object.unshift({'name' : $('.popup-save-to-address-book #contact-name').val().trim(), 'address' : $('.popup-save-to-address-book #wallet-address').val().trim()});
-
-                                window.localStorage.setItem('address_book', JSON.stringify(object));
-
-                                updateAddressBookHtml();
                                 basic.closeDialog();
-                                basic.showAlert('Address book updated successfully.', '', true);
-                            } else {
-                                //if the local storage variable is not object remove it and recreate it with object
-                                window.localStorage.removeItem('address_book');
+                            });
 
-                                window.localStorage.setItem('address_book', JSON.stringify([{'name' : $('.popup-save-to-address-book #contact-name').val().trim(), 'address' : $('.popup-save-to-address-book #wallet-address').val().trim()}]));
+                            Instascan.Camera.getCameras().then(function (cameras) {
+                                console.log(cameras, 'cameras');
+                                if (cameras.length > 0) {
+                                    cameras_global = cameras;
+                                    scanner.start(cameras[0]);
+                                } else {
+                                    alert('No cameras found.');
+                                }
+                            }).catch(function (e) {
+                                console.error(e);
+                            });
 
-                                updateAddressBookHtml();
-                                basic.closeDialog();
-                                basic.showAlert('Address book updated successfully.', '', true);
-                            }
+                            $('.popup-scan-qr-code .bootbox-close-button').click(function() {
+                                if (cameras_global.length > 0) {
+                                    scanner.stop(cameras_global[0]);
+                                }
+                            });
                         }
                     }
                 });
-            });
-
-            $('.scan-qr-code').click(async function() {
-                if(is_hybrid) {
-                    cordova.plugins.barcodeScanner.scan(
-                        function (result) {
-                            $('#search').val(result.text).trigger('change');
-                        },
-                        function (error) {
-                            alert('Scanning failed. Please go to Settings/ Permissions and allow Camera access to Dentacoin Wallet and try again.');
-                        }
-                    );
-                } else {
-                    //BROWSER SCAN
-                    if(load_qr_code_lib) {
-                        showLoader();
-                        load_qr_code_lib = false;
-                        await $.getScript('https://rawgit.com/schmich/instascan-builds/master/instascan.min.js');
-                        hideLoader();
-                    }
-
-                    basic.showDialog('<div class="video-container"><video id="qr-preview"></video></div>', 'popup-scan-qr-code', null, true);
-
-                    var cameras_global;
-                    var scanner = new Instascan.Scanner({ video: document.getElementById('qr-preview') });
-                    console.log(scanner, 'scanner');
-                    scanner.addListener('scan', function (content) {
-                        $('#search').val(content).trigger('change');
-                        scanner.stop(cameras_global[0]);
-                        basic.closeDialog();
-                    });
-
-                    Instascan.Camera.getCameras().then(function (cameras) {
-                        console.log(cameras, 'cameras');
-                        if (cameras.length > 0) {
-                            cameras_global = cameras;
-                            scanner.start(cameras[0]);
-                        } else {
-                            alert('No cameras found.');
-                        }
-                    }).catch(function (e) {
-                        console.error(e);
-                    });
-
-                    $('.popup-scan-qr-code .bootbox-close-button').click(function() {
-                        if (cameras_global.length > 0) {
-                            scanner.stop(cameras_global[0]);
-                        }
-                    });
-                }
-            });
+                bindSendPageElementsEvents();
+            } else {
+                bindSendPageElementsEvents();
+            }
         }
 
-        $('.section-send .next-send').click(function() {
-            if(!$(this).hasClass('disabled')) {
-                fireGoogleAnalyticsEvent('Pay', 'Next', 'DCN Address');
+        function bindSendPageElementsEvents() {
+            $('.section-send .next-send').click(function() {
+                if(!$(this).hasClass('disabled')) {
+                    fireGoogleAnalyticsEvent('Pay', 'Next', 'DCN Address');
 
-                $('.section-send').hide();
-                $('.section-amount-to .address-cell').html($('.search-field #search').val().trim()).attr('data-receiver', $('.search-field #search').val().trim());
-                $('.section-amount-to').fadeIn(500);
-            }
-        });
-
-        $('.section-amount-to .edit-address').click(function() {
-            $('.section-amount-to').hide();
-            $('.section-send').fadeIn(500);
-        });
-
-        var dentacoin_data = await getDentacoinDataByCoingecko();
-        var ethereum_data = await getEthereumDataByCoingecko();
-        //on input in dcn/ eth input change usd input
-        $('.section-amount-to input#crypto-amount').on('input', function()  {
-            var to_fixed_num = 2;
-            if($('.section-amount-to #active-crypto').val() == 'dcn') {
-                if(($(this).val().trim() * dentacoin_data.market_data.current_price.usd) < 0.01) {
-                    to_fixed_num = 4;
+                    $('.section-send').hide();
+                    $('.section-amount-to .address-cell').html($('.search-field #search').val().trim()).attr('data-receiver', $('.search-field #search').val().trim());
+                    $('.section-amount-to').fadeIn(500);
                 }
-                $('.section-amount-to input#usd-val').val(($(this).val().trim() * dentacoin_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
-            } else if($('.section-amount-to #active-crypto').val() == 'eth') {
-                if(($(this).val().trim() * ethereum_data.market_data.current_price.usd) < 0.01) {
-                    to_fixed_num = 4;
-                }
-                $('.section-amount-to input#usd-val').val(($(this).val().trim() * ethereum_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
-            }
-        });
+            });
 
-        //on input in usd input change dcn/ eth input
-        $('.section-amount-to input#usd-val').on('input', function()  {
-            if($('.section-amount-to #active-crypto').val() == 'dcn') {
-                $('.section-amount-to input#crypto-amount').val(Math.floor($(this).val().trim() / dentacoin_data.market_data.current_price.usd)).trigger('change');
-            } else if($('.section-amount-to #active-crypto').val() == 'eth') {
-                $('.section-amount-to input#crypto-amount').val($(this).val().trim() / ethereum_data.market_data.current_price.usd).trigger('change');
-            }
-        });
+            $('.section-amount-to .edit-address').click(function() {
+                $('.section-amount-to').hide();
+                $('.section-send').fadeIn(500);
+            });
 
-        //on select with cryptocurrencies options change
-        $('.section-amount-to #active-crypto').on('change', function() {
-            var to_fixed_num = 2;
-            if($(this).val() == 'dcn') {
-                if(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd) < 0.01) {
-                    to_fixed_num = 4;
-                }
-                $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
-            } else if($(this).val() == 'eth') {
-                if(($('.section-amount-to input#crypto-amount').val().trim() * ethereum_data.market_data.current_price.usd) < 0.01) {
-                    to_fixed_num = 4;
-                }
-                $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * ethereum_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
-            }
-        });
+            getEthereumDataByCoingecko();
 
-        var ethgasstation_data = await getEthgasstationData();
-        $('.section-amount-to .open-transaction-recipe').click(async function() {
-            var crypto_val = $('.section-amount-to input#crypto-amount').val().trim();
-            var usd_val = $('.section-amount-to input#usd-val').val().trim();
-            var sending_to_address = $('.section-amount-to .address-cell').attr('data-receiver');
+            var request_interval = setInterval(function() {
+                if (Object.keys(request_response).length != 0) {
+                    clearInterval(request_interval);
+                    var ethereum_data = request_response;
+                    console.log(ethereum_data, 'ethereum_data');
+                    request_response = {};
 
-            if (isNaN(crypto_val) || isNaN(usd_val) || crypto_val == '' || crypto_val == 0 || usd_val == '' || usd_val == 0) {
-                //checking if not a number or empty values
-                basic.showAlert('Please make sure all values are numbers.', '', true);
-                return false;
-            } else if (crypto_val < 0 || usd_val < 0) {
-                //checking if negative numbers
-                basic.showAlert('Please make sure all values are greater than 0.', '', true);
-                return false;
-            } else if (crypto_val < 10 && $('.section-amount-to #active-crypto').val() == 'dcn') {
-                //checking if dcn value is lesser than 10 (contract condition)
-                basic.showAlert('Please make sure DCN value is greater than 10. You cannot send less than 10 DCN.', '', true);
-                return false;
-            } else if (0.005 > parseFloat(dApp.web3_1_0.utils.fromWei(await dApp.helper.getAddressETHBalance(global_state.account)))) {
-                //checking if current balance is lower than the desired value to send
-                basic.showAlert('For signing transaction you need at least 0.005 ETH. Please refill.', '', true);
-                return false;
-            } else if($('.section-amount-to #active-crypto').val() == 'dcn' && crypto_val > parseInt(await dApp.methods.getDCNBalance(global_state.account))) {
-                basic.showAlert('The value you want to send is higher than your balance.', '', true);
-                return false;
-            } else if($('.section-amount-to #active-crypto').val() == 'eth' && crypto_val > parseFloat(dApp.web3_1_0.utils.fromWei(await dApp.helper.getAddressETHBalance(global_state.account)))) {
-                basic.showAlert('The value you want to send is higher than your balance.', '', true);
-                return false;
-            } else if (!innerAddressCheck(sending_to_address)) {
-                //checking again if valid address
-                basic.showAlert('Please enter a valid wallet address. It should start with "0x" and be followed by 40 characters (numbers and letters).', '', true);
-                return false;
-            } else if(!$('.section-amount-to #verified-receiver-address').is(':checked')) {
-                //checking again if valid address
-                basic.showAlert('Please check the checkbox.', '', true);
-                return false;
-            }
+                    //getting dentacoin data by Coingecko
+                    getDentacoinDataByCoingecko();
 
-            if(meta_mask_installed)    {
-                if($('.section-amount-to #active-crypto').val() == 'dcn') {
-                    dApp.methods.transfer(sending_to_address, crypto_val);
-                } else if($('.section-amount-to #active-crypto').val() == 'eth') {
-                    dApp.web3_1_0.eth.sendTransaction({
-                        from: global_state.account, to: sending_to_address, value: dApp.web3_1_0.utils.toWei(crypto_val, 'ether')
-                    }).on('transactionHash', function(hash){
-                        displayMessageOnDCNTransactionSend('Ethers', hash);
-                    }).catch(function(err) {
-                        basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
-                    });
-                }
-            } else {
-                showLoader();
+                    request_interval = setInterval(function() {
+                        if (Object.keys(request_response).length != 0) {
+                            clearInterval(request_interval);
+                            var dentacoin_data = request_response;
+                            console.log(dentacoin_data, 'dentacoin_data');
+                            request_response = {};
 
-                var function_abi;
-                var token_symbol;
-                if($('.section-amount-to #active-crypto').val() == 'dcn') {
-                    token_symbol = 'DCN';
-                    function_abi = DCNContract.methods.transfer(sending_to_address, crypto_val).encodeABI();
-                } else if($('.section-amount-to #active-crypto').val() == 'eth') {
-                    token_symbol = 'ETH';
-                }
-
-                //calculating the fee from the gas price and the estimated gas price
-                const on_popup_load_gwei = ethgasstation_data.safeLow;
-                //adding 10% of the outcome just in case transactions don't take so long
-                const on_popup_load_gas_price = on_popup_load_gwei * 100000000 + ((on_popup_load_gwei * 100000000) * 10/100);
-
-                //using ethgasstation gas price and not await dApp.helper.getGasPrice(), because its more accurate
-                var eth_fee = dApp.web3_1_0.utils.fromWei((on_popup_load_gas_price * await dApp.helper.estimateGas(sending_to_address, function_abi)).toString(), 'ether');
-
-                var transaction_popup_html = '<div class="title">Send confirmation</div><div class="pictogram-and-dcn-usd-price"><svg version="1.1" class="width-100 max-width-100 margin-bottom-10" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><style type="text/css">.st0{fill:#FFFFFF;}.st1{fill:#CA675A;}.st2{fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="100" width="105.7" x="-7.2" y="-6.4"></sliceSourceBounds></sfw></metadata><circle class="st0" cx="50" cy="50" r="50"/><g><g><g><path class="st1" d="M50.1,93.7c-18.7,0-36-12.4-41.3-31.3C2.4,39.6,15.8,16,38.5,9.6C48.9,6.7,60,7.8,69.6,12.8c1.2,0.6,1.6,2,1,3.2s-2,1.6-3.2,1c-8.6-4.4-18.4-5.4-27.7-2.8c-20.1,5.6-32,26.7-26.3,46.9s26.7,32.1,46.9,26.4s32.1-26.7,26.4-46.9c-1.1-3.9-2.8-7.6-5-10.9c-0.7-1.1-0.4-2.6,0.7-3.3c1.1-0.7,2.6-0.4,3.3,0.7c2.5,3.8,4.4,7.9,5.6,12.3c6.4,22.8-7,46.5-29.7,52.8C57.8,93.2,53.9,93.7,50.1,93.7z"/></g><g><path class="st1" d="M33.1,78.6c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.4l40.4-50.5c0.8-1,2.3-1.2,3.4-0.4c1,0.8,1.2,2.3,0.4,3.4L35,77.7C34.5,78.3,33.8,78.6,33.1,78.6z"/></g><g><g><path class="st2" d="M105.7,56.9"/></g></g></g><g><path class="st1" d="M73.7,54.2c-0.1,0-0.2,0-0.2,0c-1.3-0.2-2.3-1.4-2.2-2.7L74,23.9L47.6,39.8c-1.1,0.7-2.6,0.3-3.3-0.8c-0.7-1.1-0.3-2.6,0.8-3.3l34.5-20.8L76.1,52C76,53.2,74.9,54.2,73.7,54.2z"/></g></g></svg><div class="dcn-amount">-'+crypto_val+' '+token_symbol+'</div><div class="usd-amount">=$'+usd_val+'</div></div><div class="confirm-row to"> <div class="label inline-block">To:</div><div class="value inline-block">'+sending_to_address+'</div></div><div class="confirm-row from"> <div class="label inline-block">From:</div><div class="value inline-block">'+global_state.account+'</div></div><div class="confirm-row free"> <div class="label inline-block">Ether fee:</div><div class="value inline-block">'+parseFloat(eth_fee).toFixed(8)+'</div></div>';
-
-                if(window.localStorage.getItem('keystore_file') != null) {
-                    //cached keystore path on mobile device or cached keystore file on browser
-                    transaction_popup_html+='<div class="container-fluid"><div class="row padding-top-25 cached-keystore-file"><div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">Secret password:</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">Confirm</a></div></div></div>';
-                    basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
-
-                    $('.cached-keystore-file .confirm-transaction.keystore-file').click(function() {
-                        if($('.cached-keystore-file #your-secret-key-password').val().trim() == '') {
-                            basic.showAlert('Please enter valid secret file password.', '', true);
-                        } else {
-                            showLoader();
-
-                            setTimeout(function() {
-                                showLoader();
-
-                                setTimeout(function () {
-                                    var decrypting_keystore = decryptKeystore(window.localStorage.getItem('keystore_file'), $('.cached-keystore-file #your-secret-key-password').val().trim());
-                                    if(decrypting_keystore.success) {
-                                        submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, decrypting_keystore.success);
-                                    } else if(decrypting_keystore.error) {
-                                        basic.showAlert(decrypting_keystore.message, '', true);
-                                        hideLoader();
+                            //on input in dcn/ eth input change usd input
+                            $('.section-amount-to input#crypto-amount').on('input', function()  {
+                                var to_fixed_num = 2;
+                                if($('.section-amount-to #active-crypto').val() == 'dcn') {
+                                    if(($(this).val().trim() * dentacoin_data.market_data.current_price.usd) < 0.01) {
+                                        to_fixed_num = 4;
                                     }
-                                }, 500);
-                            }, 500);
+                                    $('.section-amount-to input#usd-val').val(($(this).val().trim() * dentacoin_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
+                                } else if($('.section-amount-to #active-crypto').val() == 'eth') {
+                                    if(($(this).val().trim() * ethereum_data.market_data.current_price.usd) < 0.01) {
+                                        to_fixed_num = 4;
+                                    }
+                                    $('.section-amount-to input#usd-val').val(($(this).val().trim() * ethereum_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
+                                }
+                            });
+
+                            //on input in usd input change dcn/ eth input
+                            $('.section-amount-to input#usd-val').on('input', function()  {
+                                if($('.section-amount-to #active-crypto').val() == 'dcn') {
+                                    $('.section-amount-to input#crypto-amount').val(Math.floor($(this).val().trim() / dentacoin_data.market_data.current_price.usd)).trigger('change');
+                                } else if($('.section-amount-to #active-crypto').val() == 'eth') {
+                                    $('.section-amount-to input#crypto-amount').val($(this).val().trim() / ethereum_data.market_data.current_price.usd).trigger('change');
+                                }
+                            });
+
+                            //on select with cryptocurrencies options change
+                            $('.section-amount-to #active-crypto').on('change', function() {
+                                var to_fixed_num = 2;
+                                if($(this).val() == 'dcn') {
+                                    if(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd) < 0.01) {
+                                        to_fixed_num = 4;
+                                    }
+                                    $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
+                                } else if($(this).val() == 'eth') {
+                                    if(($('.section-amount-to input#crypto-amount').val().trim() * ethereum_data.market_data.current_price.usd) < 0.01) {
+                                        to_fixed_num = 4;
+                                    }
+                                    $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * ethereum_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
+                                }
+                            });
+
+                            getEthgasstationData();
+
+                            request_interval = setInterval(function() {
+                                if (Object.keys(request_response).length != 0) {
+                                    clearInterval(request_interval);
+                                    var ethgasstation_data = request_response;
+                                    request_response = {};
+
+                                    $('.section-amount-to .open-transaction-recipe').click(function() {
+                                        var crypto_val = $('.section-amount-to input#crypto-amount').val().trim();
+                                        var usd_val = $('.section-amount-to input#usd-val').val().trim();
+                                        var sending_to_address = $('.section-amount-to .address-cell').attr('data-receiver');
+
+                                        var dcn_balance_promise = dApp.methods.getDCNBalance(global_state.account);
+                                        request_interval = setInterval(function() {
+                                            if (Object.keys(dcn_balance_promise).length != 0 && basic.property_exists(dcn_balance_promise, '__zone_symbol__value') && dcn_balance_promise['__zone_symbol__value'].length != 0) {
+                                                clearInterval(request_interval);
+                                                var dcn_balance = parseInt(dcn_balance_promise['__zone_symbol__value']);
+                                                request_response = {};
+
+                                                dApp.web3_1_0.eth.getBalance(global_state.account, function(error, eth_balance) {
+                                                    if(error) {
+                                                        console.log(error);
+                                                    } else {
+                                                        if (isNaN(crypto_val) || isNaN(usd_val) || crypto_val == '' || crypto_val == 0 || usd_val == '' || usd_val == 0) {
+                                                            //checking if not a number or empty values
+                                                            basic.showAlert('Please make sure all values are numbers.', '', true);
+                                                            return false;
+                                                        } else if (crypto_val < 0 || usd_val < 0) {
+                                                            //checking if negative numbers
+                                                            basic.showAlert('Please make sure all values are greater than 0.', '', true);
+                                                            return false;
+                                                        } else if (crypto_val < 10 && $('.section-amount-to #active-crypto').val() == 'dcn') {
+                                                            //checking if dcn value is lesser than 10 (contract condition)
+                                                            basic.showAlert('Please make sure DCN value is greater than 10. You cannot send less than 10 DCN.', '', true);
+                                                            return false;
+                                                        } else if (0.005 > parseFloat(dApp.web3_1_0.utils.fromWei(eth_balance))) {
+                                                            //checking if current balance is lower than the desired value to send
+                                                            basic.showAlert('For signing transaction you need at least 0.005 ETH. Please refill.', '', true);
+                                                            return false;
+                                                        } else if($('.section-amount-to #active-crypto').val() == 'dcn' && crypto_val > parseInt(dcn_balance)) {
+                                                            basic.showAlert('The value you want to send is higher than your balance.', '', true);
+                                                            return false;
+                                                        } else if($('.section-amount-to #active-crypto').val() == 'eth' && crypto_val > parseFloat(dApp.web3_1_0.utils.fromWei(eth_balance))) {
+                                                            basic.showAlert('The value you want to send is higher than your balance.', '', true);
+                                                            return false;
+                                                        } else if (!innerAddressCheck(sending_to_address)) {
+                                                            //checking again if valid address
+                                                            basic.showAlert('Please enter a valid wallet address. It should start with "0x" and be followed by 40 characters (numbers and letters).', '', true);
+                                                            return false;
+                                                        } else if(!$('.section-amount-to #verified-receiver-address').is(':checked')) {
+                                                            //checking again if valid address
+                                                            basic.showAlert('Please check the checkbox.', '', true);
+                                                            return false;
+                                                        }
+
+                                                        if(meta_mask_installed)    {
+                                                            if($('.section-amount-to #active-crypto').val() == 'dcn') {
+                                                                dApp.methods.transfer(sending_to_address, crypto_val);
+                                                            } else if($('.section-amount-to #active-crypto').val() == 'eth') {
+                                                                dApp.web3_1_0.eth.sendTransaction({
+                                                                    from: global_state.account, to: sending_to_address, value: dApp.web3_1_0.utils.toWei(crypto_val, 'ether')
+                                                                }).on('transactionHash', function(hash){
+                                                                    displayMessageOnDCNTransactionSend('Ethers', hash);
+                                                                }).catch(function(err) {
+                                                                    basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
+                                                                });
+                                                            }
+                                                        } else {
+                                                            showLoader();
+
+                                                            var function_abi;
+                                                            var token_symbol;
+                                                            if($('.section-amount-to #active-crypto').val() == 'dcn') {
+                                                                token_symbol = 'DCN';
+                                                                function_abi = DCNContract.methods.transfer(sending_to_address, crypto_val).encodeABI();
+                                                            } else if($('.section-amount-to #active-crypto').val() == 'eth') {
+                                                                token_symbol = 'ETH';
+                                                            }
+
+                                                            //calculating the fee from the gas price and the estimated gas price
+                                                            const on_popup_load_gwei = ethgasstation_data.safeLow;
+                                                            //adding 10% of the outcome just in case transactions don't take so long
+                                                            const on_popup_load_gas_price = on_popup_load_gwei * 100000000 + ((on_popup_load_gwei * 100000000) * 10/100);
+
+                                                            //using ethgasstation gas price and not dApp.helper.getGasPrice(), because its more accurate
+                                                            dApp.web3_1_0.eth.estimateGas({
+                                                                to: sending_to_address,
+                                                                data: function_abi
+                                                            }, function(error, result) {
+                                                                if(error) {
+                                                                    console.log(error);
+                                                                } else {
+                                                                    var eth_fee = dApp.web3_1_0.utils.fromWei((on_popup_load_gas_price * result).toString(), 'ether');
+
+                                                                    var transaction_popup_html = '<div class="title">Send confirmation</div><div class="pictogram-and-dcn-usd-price"><svg version="1.1" class="width-100 max-width-100 margin-bottom-10" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><style type="text/css">.st0{fill:#FFFFFF;}.st1{fill:#CA675A;}.st2{fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="100" width="105.7" x="-7.2" y="-6.4"></sliceSourceBounds></sfw></metadata><circle class="st0" cx="50" cy="50" r="50"/><g><g><g><path class="st1" d="M50.1,93.7c-18.7,0-36-12.4-41.3-31.3C2.4,39.6,15.8,16,38.5,9.6C48.9,6.7,60,7.8,69.6,12.8c1.2,0.6,1.6,2,1,3.2s-2,1.6-3.2,1c-8.6-4.4-18.4-5.4-27.7-2.8c-20.1,5.6-32,26.7-26.3,46.9s26.7,32.1,46.9,26.4s32.1-26.7,26.4-46.9c-1.1-3.9-2.8-7.6-5-10.9c-0.7-1.1-0.4-2.6,0.7-3.3c1.1-0.7,2.6-0.4,3.3,0.7c2.5,3.8,4.4,7.9,5.6,12.3c6.4,22.8-7,46.5-29.7,52.8C57.8,93.2,53.9,93.7,50.1,93.7z"/></g><g><path class="st1" d="M33.1,78.6c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.4l40.4-50.5c0.8-1,2.3-1.2,3.4-0.4c1,0.8,1.2,2.3,0.4,3.4L35,77.7C34.5,78.3,33.8,78.6,33.1,78.6z"/></g><g><g><path class="st2" d="M105.7,56.9"/></g></g></g><g><path class="st1" d="M73.7,54.2c-0.1,0-0.2,0-0.2,0c-1.3-0.2-2.3-1.4-2.2-2.7L74,23.9L47.6,39.8c-1.1,0.7-2.6,0.3-3.3-0.8c-0.7-1.1-0.3-2.6,0.8-3.3l34.5-20.8L76.1,52C76,53.2,74.9,54.2,73.7,54.2z"/></g></g></svg><div class="dcn-amount">-'+crypto_val+' '+token_symbol+'</div><div class="usd-amount">=$'+usd_val+'</div></div><div class="confirm-row to"> <div class="label inline-block">To:</div><div class="value inline-block">'+sending_to_address+'</div></div><div class="confirm-row from"> <div class="label inline-block">From:</div><div class="value inline-block">'+global_state.account+'</div></div><div class="confirm-row free"> <div class="label inline-block">Ether fee:</div><div class="value inline-block">'+parseFloat(eth_fee).toFixed(8)+'</div></div>';
+
+                                                                    if(window.localStorage.getItem('keystore_file') != null) {
+                                                                        //cached keystore path on mobile device or cached keystore file on browser
+                                                                        transaction_popup_html+='<div class="container-fluid"><div class="row padding-top-25 cached-keystore-file"><div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">Secret password:</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">Confirm</a></div></div></div>';
+                                                                        basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
+
+                                                                        $('.cached-keystore-file .confirm-transaction.keystore-file').click(function() {
+                                                                            if($('.cached-keystore-file #your-secret-key-password').val().trim() == '') {
+                                                                                basic.showAlert('Please enter valid secret file password.', '', true);
+                                                                            } else {
+                                                                                showLoader();
+
+                                                                                setTimeout(function() {
+                                                                                    showLoader();
+
+                                                                                    setTimeout(function () {
+                                                                                        var decrypting_keystore = decryptKeystore(window.localStorage.getItem('keystore_file'), $('.cached-keystore-file #your-secret-key-password').val().trim());
+                                                                                        if(decrypting_keystore.success) {
+                                                                                            submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, decrypting_keystore.success);
+                                                                                        } else if(decrypting_keystore.error) {
+                                                                                            basic.showAlert(decrypting_keystore.message, '', true);
+                                                                                            hideLoader();
+                                                                                        }
+                                                                                    }, 500);
+                                                                                }, 500);
+                                                                            }
+                                                                        });
+                                                                    } else {
+                                                                        //nothing is cached
+                                                                        transaction_popup_html+='<div class="container-fluid proof-of-address padding-top-20 padding-bottom-20"> <div class="row fs-0"> <div class="col-xs-12 col-sm-5 inline-block padding-left-30 padding-left-xs-15"> <a href="javascript:void(0)" class="light-blue-white-btn text-center enter-private-key display-block-important fs-18 line-height-18"><span>Enter your Private Key<div class="fs-16">(not recommended)</div></span></a> </div><div class="col-xs-12 col-sm-2 text-center calibri-bold fs-20 inline-block">or</div><div class="col-xs-12 col-sm-5 inline-block padding-right-30 padding-right-xs-15"> <div class="upload-file-container" data-id="upload-keystore-file" data-label="Upload your Keystore file"> <input type="file" id="upload-keystore-file" class="custom-upload-keystore-file hide-input"/> <div class="btn-wrapper"></div></div></div></div><div class="row on-change-result"></div></div>';
+                                                                        basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
+
+                                                                        //init private key btn logic
+                                                                        $(document).on('click', '.enter-private-key', function() {
+                                                                            $('.proof-of-address #upload-keystore-file').val('');
+                                                                            $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-20"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-private-key">Your Private Key:</label><input type="text" id="your-private-key" maxlength="64" class="full-rounded"/></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction private-key">Confirm</a></div>');
+
+                                                                            $('.confirm-transaction.private-key').click(function() {
+                                                                                if($('.proof-of-address #your-private-key').val().trim() == '') {
+                                                                                    basic.showAlert('Please enter valid private key.', '', true);
+                                                                                } else {
+                                                                                    showLoader();
+
+                                                                                    setTimeout(function() {
+                                                                                        var validating_private_key = validatePrivateKey($('.proof-of-address #your-private-key').val().trim());
+                                                                                        console.log(validating_private_key, 'validating_private_key');
+                                                                                        if(validating_private_key.success) {
+                                                                                            if(checksumAddress(validating_private_key.success.address) == checksumAddress(global_state.account)) {
+                                                                                                submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, new Buffer($('.proof-of-address #your-private-key').val().trim(), 'hex'));
+                                                                                            } else {
+                                                                                                basic.showAlert('Please enter private key related to your Wallet Address', '', true);
+                                                                                                hideLoader();
+                                                                                            }
+                                                                                        } else if(validating_private_key.error) {
+                                                                                            basic.showAlert(validating_private_key.message, '', true);
+                                                                                            hideLoader();
+                                                                                        }
+                                                                                    }, 500);
+                                                                                }
+                                                                            });
+                                                                        });
+
+                                                                        //init keystore btn logic
+                                                                        styleKeystoreUploadBtnForTx(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price);
+                                                                    }
+                                                                    hideLoader();
+                                                                }
+                                                            });
+                                                        }
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    });
+                                }
+                            }, 300);
                         }
-                    });
-                } else {
-                    //nothing is cached
-                    transaction_popup_html+='<div class="container-fluid proof-of-address padding-top-20 padding-bottom-20"> <div class="row fs-0"> <div class="col-xs-12 col-sm-5 inline-block padding-left-30 padding-left-xs-15"> <a href="javascript:void(0)" class="light-blue-white-btn text-center enter-private-key display-block-important fs-18 line-height-18"><span>Enter your Private Key<div class="fs-16">(not recommended)</div></span></a> </div><div class="col-xs-12 col-sm-2 text-center calibri-bold fs-20 inline-block">or</div><div class="col-xs-12 col-sm-5 inline-block padding-right-30 padding-right-xs-15"> <div class="upload-file-container" data-id="upload-keystore-file" data-label="Upload your Keystore file"> <input type="file" id="upload-keystore-file" class="custom-upload-keystore-file hide-input"/> <div class="btn-wrapper"></div></div></div></div><div class="row on-change-result"></div></div>';
-                    basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
-
-                    //init private key btn logic
-                    $(document).on('click', '.enter-private-key', function() {
-                        $('.proof-of-address #upload-keystore-file').val('');
-                        $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-20"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-private-key">Your Private Key:</label><input type="text" id="your-private-key" maxlength="64" class="full-rounded"/></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction private-key">Confirm</a></div>');
-
-                        $('.confirm-transaction.private-key').click(function() {
-                            if($('.proof-of-address #your-private-key').val().trim() == '') {
-                                basic.showAlert('Please enter valid private key.', '', true);
-                            } else {
-                                showLoader();
-
-                                setTimeout(function() {
-                                    var validating_private_key = validatePrivateKey($('.proof-of-address #your-private-key').val().trim());
-                                    console.log(validating_private_key, 'validating_private_key');
-                                    if(validating_private_key.success) {
-                                        if(checksumAddress(validating_private_key.success.address) == checksumAddress(global_state.account)) {
-                                            submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, new Buffer($('.proof-of-address #your-private-key').val().trim(), 'hex'));
-                                        } else {
-                                            basic.showAlert('Please enter private key related to your Wallet Address', '', true);
-                                            hideLoader();
-                                        }
-                                    } else if(validating_private_key.error) {
-                                        basic.showAlert(validating_private_key.message, '', true);
-                                        hideLoader();
-                                    }
-                                }, 500);
-                            }
-                        });
-                    });
-
-                    //init keystore btn logic
-                    styleKeystoreUploadBtnForTx(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price);
+                    }, 300);
                 }
-                hideLoader();
-            }
-        });
+            }, 300);
+        }
     },
     faq_page_gift_cards: function() {
         if($('.list .question').length > 0) {
@@ -1106,36 +1327,47 @@ var pages_data = {
             });
         }
     },
-    spend_page_gift_cards: async function() {
+    spend_page_gift_cards: function() {
         if(!bidali_lib_loaded) {
             showLoader();
-            await $.getScript('assets/libs/bidali/bidali-commerce.js');
-            bidali_lib_loaded = true;
-            hideLoader();
+            $.getScript('assets/libs/bidali/bidali-commerce.js', function() {
+                bidali_lib_loaded = true;
+                hideLoader();
+                bidaliWidgetInit();
+            });
+        } else {
+            bidaliWidgetInit();
         }
 
-        $('.buy-gift-cards').click(function() {
-            bidaliSdk.Commerce.render({
-                apiKey: 'pk_n6mvpompwzm83egzrz2vnh',
-                paymentCurrencies: ['DCN']
+        function bidaliWidgetInit() {
+            $('.buy-gift-cards').click(function() {
+                bidaliSdk.Commerce.render({
+                    apiKey: 'pk_n6mvpompwzm83egzrz2vnh',
+                    paymentCurrencies: ['DCN']
+                });
             });
-        });
+        }
     },
-    spend_page_exchanges: async function() {
+    spend_page_exchanges: function() {
         showLoader();
+        getExchanges();
 
-        var exchanges = await getExchanges();
-        setTimeout(function() {
+        var request_interval = setInterval(function() {
+            if (Object.keys(request_response).length != 0) {
+                clearInterval(request_interval);
+                var exchanges = request_response;
+                request_response = {};
 
-            var exchanges_html = '';
-            for(var i = 0, len = exchanges.length; i < len; i+=1) {
-                exchanges_html+='<li><a href="'+exchanges[i].link+'" target="_blank">• '+exchanges[i].title+'</a></li>';
+                var exchanges_html = '';
+                for(var i = 0, len = exchanges.length; i < len; i+=1) {
+                    exchanges_html+='<li><a href="'+exchanges[i].link+'" target="_blank">• '+exchanges[i].title+'</a></li>';
+                }
+
+                $('.camping-for-exchanges').html(exchanges_html);
+
+                hideLoader();
             }
-
-            $('.camping-for-exchanges').html(exchanges_html);
-
-            hideLoader();
-        }, 1000);
+        }, 300);
     }
 };
 
@@ -1300,15 +1532,22 @@ function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver
         //signing the transaction
         tx.sign(key);
         //sending the transaction
-        dApp.web3_1_0.eth.sendSignedTransaction('0x' + tx.serialize().toString('hex'), async function (err, transactionHash) {
+        dApp.web3_1_0.eth.sendSignedTransaction('0x' + tx.serialize().toString('hex'), function (err, transactionHash) {
             hideLoader();
             basic.closeDialog();
 
             if(symbol == 'DCN') {
                 fireGoogleAnalyticsEvent('Pay', 'Next', 'DCN', token_val);
             } else if(symbol == 'ETH') {
-                var ethereum_data = await getEthereumDataByCoingecko();
-                fireGoogleAnalyticsEvent('Pay', 'Next', 'ETH in USD', Math.floor(parseFloat(token_val) * ethereum_data.market_data.current_price.usd));
+                getEthereumDataByCoingecko();
+
+                var request_interval = setInterval(function() {
+                    if (Object.keys(request_response).length != 0) {
+                        clearInterval(request_interval);
+                        fireGoogleAnalyticsEvent('Pay', 'Next', 'ETH in USD', Math.floor(parseFloat(token_val) * request_response.market_data.current_price.usd));
+                        request_response = {};
+                    }
+                }, 300);
             }
 
             displayMessageOnDCNTransactionSend(token_label, transactionHash);
@@ -1322,10 +1561,6 @@ function displayMessageOnDCNTransactionSend(token_label, tx_hash)  {
     $('.section-amount-to #verified-receiver-address').prop('checked', false);
 
     basic.showAlert('<div class="padding-top-15 padding-bottom-10 fs-16">Your '+token_label+' are on their way to the Receiver\'s wallet. Check transaction status <a href="https://etherscan.io/tx/'+tx_hash+'" target="_blank" class="lato-bold color-light-blue">Etherscan</a>.</div>', '', true);
-}
-
-async function additionalMethodsAfterAngularViewInit() {
-    await dApp.init();
 }
 
 //custom fix for parent menu active class
@@ -1345,103 +1580,114 @@ setInterval(function() {
     }
 }, 500);
 
-window.getHomepageData = async function() {
+window.getHomepageData = function() {
     initAccountChecker();
 
     if(!dApp.loaded) {
-        await additionalMethodsAfterAngularViewInit();
-    }
-    if($.isReady) {
-        //called on route change
-        pages_data.homepage();
+        dApp.init();
+        var request_interval = setInterval(function() {
+            if(DCNContract != undefined) {
+                clearInterval(request_interval);
+                loadHomepageData();
+            }
+        }, 300);
     } else {
-        //called on page init
-        $(document).ready(async function() {
+        loadHomepageData();
+    }
+
+    function loadHomepageData() {
+        if($.isReady) {
+            //called on route change
             pages_data.homepage();
-        });
+        } else {
+            //called on page init
+            $(document).ready(function() {
+                pages_data.homepage();
+            });
+        }
     }
 };
 
-window.getBuyPageData = async function(){
+window.getBuyPageData = function(){
     if(!dApp.loaded) {
-        additionalMethodsAfterAngularViewInit();
+        dApp.init();
     }
     if($.isReady) {
         //called on route change
         pages_data.buy_page();
     } else {
         //called on page init
-        $(document).ready(async function() {
+        $(document).ready(function() {
             pages_data.buy_page();
         });
     }
 };
 
-window.getSendPageData = async function(){
+window.getSendPageData = function(){
     initAccountChecker();
 
     if(!dApp.loaded) {
-        additionalMethodsAfterAngularViewInit();
+        dApp.init();
     }
     if($.isReady) {
         //called on route change
         pages_data.send_page();
     } else {
         //called on page init
-        $(document).ready(async function() {
+        $(document).ready(function() {
             pages_data.send_page();
         });
     }
 };
 
-window.getFaqPageData = async function(){
+window.getFaqPageData = function(){
     if(!dApp.loaded) {
-        additionalMethodsAfterAngularViewInit();
+        dApp.init();
     }
     if($.isReady) {
         //called on route change
         pages_data.faq_page_gift_cards();
     } else {
         //called on page init
-        $(document).ready(async function() {
+        $(document).ready(function() {
             pages_data.faq_page_gift_cards();
         });
     }
 };
 
-window.getSpendPageGiftCards = async function(){
+window.getSpendPageGiftCards = function(){
     if(!dApp.loaded) {
-        additionalMethodsAfterAngularViewInit();
+        dApp.init();
     }
     if($.isReady) {
         //called on route change
         pages_data.spend_page_gift_cards();
     } else {
         //called on page init
-        $(document).ready(async function() {
+        $(document).ready(function() {
             pages_data.spend_page_gift_cards();
         });
     }
 };
 
-window.getSpendPageExchanges = async function(){
+window.getSpendPageExchanges = function(){
     if(!dApp.loaded) {
-        additionalMethodsAfterAngularViewInit();
+        dApp.init();
     }
     if($.isReady) {
         //called on route change
         pages_data.spend_page_exchanges();
     } else {
         //called on page init
-        $(document).ready(async function() {
+        $(document).ready(function() {
             pages_data.spend_page_exchanges();
         });
     }
 };
 
-window.initdApp = async function(){
+window.initdApp = function(){
     if(!dApp.loaded) {
-        additionalMethodsAfterAngularViewInit();
+        dApp.init();
     }
 };
 
@@ -1467,69 +1713,6 @@ function sortByKey(array, key) {
             y = (""+y).toLowerCase();
         }
         return ((x < y) ? -1 : ((x > y) ? 1 : 0));
-    });
-}
-
-async function getEtherscanTransactionsHistory(address, latest_block) {
-    console.log(address, 'address');
-    console.log(latest_block, 'latest_block');
-    return await $.ajax({
-        type: 'GET',
-        url: 'https://api.etherscan.io/api?module=account&action=txlist&address='+address+'&startblock='+block_number_of_dcn_creation+'&endblock='+latest_block,
-        dataType: 'json'
-    });
-}
-
-async function getEthgasstationData() {
-    return await $.ajax({
-        type: 'GET',
-        url: 'https://ethgasstation.info/json/ethgasAPI.json',
-        dataType: 'json'
-    });
-}
-
-async function getDentacoinDataByCoingecko() {
-    return await $.ajax({
-        type: 'GET',
-        url: 'https://api.coingecko.com/api/v3/coins/dentacoin',
-        dataType: 'json'
-    });
-}
-
-async function getEthereumDataByCoingecko() {
-    return await $.ajax({
-        type: 'GET',
-        url: 'https://api.coingecko.com/api/v3/coins/ethereum',
-        dataType: 'json'
-    });
-}
-
-async function getCryptoDataByIndacoin(cryptocurrency_symbol) {
-    return await $.ajax({
-        type: 'GET',
-        url: 'https://indacoin.com/api/GetCoinConvertAmount/USD/'+cryptocurrency_symbol+'/100/dentacoin',
-        dataType: 'json'
-    });
-}
-
-async function getClinics() {
-    return await $.ajax({
-        type: 'POST',
-        url: 'https://api.dentacoin.com/api/users/',
-        dataType: 'json',
-        data: {
-            status: 'approved',
-            type: 'all-dentists',
-            items_per_page: 10000
-        }
-    });
-}
-
-async function getExchanges() {
-    return await $.ajax({
-        type: 'GET',
-        url: 'https://dentacoin.com/info/exchanges',
-        dataType: 'json'
     });
 }
 
@@ -1590,59 +1773,55 @@ if(typeof(web3) !== 'undefined' && web3.currentProvider.isMetaMask === true) {
     current_meta_mask_account = web3.eth.defaultAccount;
 }
 
-async function initAccountChecker()  {
+function initAccountChecker()  {
     is_hybrid = $('#main-container').attr('hybrid') == 'true';
     checkIfLoadingFromMobileBrowser();
 
     //checking if metamask
     if(typeof(web3) !== 'undefined' && web3.currentProvider.isMetaMask === true) {
-        console.log(1);
         meta_mask_installed = true;
 
-        console.log(current_meta_mask_account, 'current_meta_mask_account');
-
-        window.ethereum.on('accountsChanged', async function () {
-            var accounts = await web3.eth.getAccounts();
-            console.log(accounts, 'accounts accountsChanged');
-            if(accounts.length) {
-                console.log(current_meta_mask_account, 'current_meta_mask_account');
-                if(innerAddressCheck(current_meta_mask_account) && checksumAddress(current_meta_mask_account) != checksumAddress(accounts[0]) || current_meta_mask_account == null) {
-                    console.log('accountsChanged reload 1');
-                    window.location.reload();
+        window.ethereum.on('accountsChanged', function () {
+            web3.eth.getAccounts(function(error, accounts) {
+                if(error) {
+                    console.log(error);
+                } else {
+                    if(accounts.length) {
+                        if(innerAddressCheck(current_meta_mask_account) && checksumAddress(current_meta_mask_account) != checksumAddress(accounts[0]) || current_meta_mask_account == null) {
+                            window.location.reload();
+                        }
+                    } else if(current_meta_mask_account != undefined && current_meta_mask_account != null) {
+                        window.location.reload();
+                    }
                 }
-            } else if(current_meta_mask_account != undefined && current_meta_mask_account != null) {
-                console.log('accountsChanged reload 2');
-                window.location.reload();
-            }
+            });
         });
 
-        web3.currentProvider.publicConfigStore.on('update', async function() {
-            var accounts = await web3.eth.getAccounts();
-            console.log(accounts, 'accounts update');
-            if(accounts.length) {
-                console.log(current_meta_mask_account, 'current_meta_mask_account');
-                if(innerAddressCheck(current_meta_mask_account) && checksumAddress(current_meta_mask_account) != checksumAddress(accounts[0]) || current_meta_mask_account == null) {
-                    console.log('update reload 1');
-                    window.location.reload();
+        web3.currentProvider.publicConfigStore.on('update', function() {
+            web3.eth.getAccounts(function(error, accounts) {
+                if(error) {
+                    console.log(error);
+                } else {
+                    if(accounts.length) {
+                        if(innerAddressCheck(current_meta_mask_account) && checksumAddress(current_meta_mask_account) != checksumAddress(accounts[0]) || current_meta_mask_account == null) {
+                            window.location.reload();
+                        }
+                    } else if(current_meta_mask_account != undefined && current_meta_mask_account != null) {
+                        window.location.reload();
+                    }
                 }
-            } else if(current_meta_mask_account != undefined && current_meta_mask_account != null) {
-                console.log('update reload 2');
-                window.location.reload();
-            }
+            });
         });
 
         if(current_meta_mask_account != undefined && current_meta_mask_account != null)  {
-            console.log(1.1);
             meta_mask_logged = true;
         }else {
-            console.log(1.2);
             //if metamask is installed, but user not logged show login popup
             basic.showDialog('<div class="popup-body"><div class="title">Sign in to MetaMask</div><div class="subtitle">Open up your browser\'s MetaMask extention.</div><div class="separator"></div><figure class="gif"><img src="assets/images/metamask-animation.gif" alt="Login MetaMask animation"/> </figure></div>', 'login-metamask-desktop');
         }
     } else if(window.localStorage.getItem('current_account') == null && typeof(web3) === 'undefined') {
-        console.log(2);
         //show custom authentication popup
-        var popup_html = '<h2 class="title">Create a new wallet or import an existing one</h2><div class="left-right-side-holder fs-0"><div class="popup-left inline-block-top" data-step="first"><div class="navigation-link"><a href="javascript:void(0)" data-slug="first" class="active">CREATE</a></div><div class="navigation-link mobile"><a href="javascript:void(0)" data-slug="second">IMPORT</a></div><div class="popup-body first"><label class="custom-label">Choose a password for your secret key file</label><div class="custom-google-label-style margin-bottom-15 max-width-300 margin-left-right-auto module" data-input-light-blue-border="true"><label for="keystore-file-pass">Enter password:</label><input type="password" maxlength="30" id="keystore-file-pass" class="full-rounded keystore-file-pass"/></div><div class="custom-google-label-style max-width-300 margin-left-right-auto module" data-input-light-blue-border="true"><label for="second-pass">Repeat password:</label><input type="password" maxlength="30" id="second-pass" class="full-rounded second-pass"/></div><div class="btn-container text-center padding-top-30"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border create-keystore">CREATE</a></div></div></div><div class="popup-right inline-block-top"><div class="navigation-link"><a href="javascript:void(0)" data-slug="second">IMPORT</a></div><div class="popup-body second custom-hide"><div class="padding-top-20 padding-bottom-30 fs-0 row-with-image-and-text"><svg class="inline-block width-100 max-width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 70.8 86" style="enable-background:new 0 0 70.8 86;" xml:space="preserve"><style type="text/css">.st0{fill:#FFFFFF;}.st1{stroke:#000000;stroke-width:2;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="86" width="70.7" x="16" y="29"></sliceSourceBounds></sfw></metadata><path d="M44.7,0H3.1C1.4,0,0,1.3,0,3v80c0,1.6,1.4,3,3.1,3h57.9c1.7,0,3.1-1.3,3.1-3V18.8c0-0.9-0.4-1.8-1-2.5L47.2,1C46.5,0.4,45.6,0,44.7,0z"/><circle class="st0" cx="52.8" cy="23" r="16.8"/><rect x="28" y="49" class="st0" width="8" height="37"/><path class="st0" d="M18.2,58.8l13.4-14.6c0.3-0.3,0.7-0.3,1,0l13.4,14.7c0.4,0.4,0.1,1.2-0.5,1.2H18.6C18.1,60,17.8,59.2,18.2,58.8z"/><g><path class="st1" d="M52.3,6.5C61.5,6.5,69,14,69,23.1s-7.5,16.7-16.7,16.7s-16.7-7.5-16.7-16.7S43.1,6.5,52.3,6.5 M52.3,5.7c-9.7,0-17.5,7.8-17.5,17.5s7.8,17.5,17.5,17.5s17.5-7.8,17.5-17.5S61.9,5.7,52.3,5.7L52.3,5.7z"/></g><g><g><path d="M45,16c-1.9,1.9-1.9,4.9,0,6.8c1.9,1.9,4.9,1.9,6.8,0c1.9-1.9,1.9-4.9,0-6.8C49.8,14.1,46.8,14.1,45,16z M50.9,21.9c-1.4,1.4-3.7,1.4-5.1,0c-1.4-1.4-1.4-3.7,0-5.1c1.4-1.4,3.7-1.4,5.1,0C52.3,18.2,52.3,20.5,50.9,21.9z"/><polygon points="60.7,30.7 59.7,31.8 50.9,22.9 51.9,21.9 "/></g><rect x="59" y="28.4" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -2.9698 50.8809)" width="1.9" height="1.2"/><rect x="58.2" y="27.7" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -2.6509 50.155)" width="1.9" height="1.2"/></g></svg><div class="inline-block padding-left-15 fs-16 text">To access your wallet, please upload your Keystore/ Secret Key File:</div></div><div class="text-center import-keystore-file-row">';
+        var popup_html = '<div class="popup-header padding-bottom-5 text-center"><svg class="max-width-80" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 46.4 45.3" style="enable-background:new 0 0 46.4 45.3;" xml:space="preserve"><style type="text/css">.st0-popup-title{display:none;fill:#FFFFFF;}.st1-popup-title{fill:url(#SVGID_1_);}.st2-popup-title{fill:url(#SVGID_2_);}.st3-popup-title{fill:url(#SVGID_3_);}.st4-popup-title{fill:url(#SVGID_4_);}.st5-popup-title{fill:url(#SVGID_5_);}.st6-popup-title{fill:#FFFFFF;}.st7-popup-title{fill:url(#XMLID_4_);}.st8-popup-title{fill:url(#XMLID_5_);}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="53.9" width="49.8" x="0.1" y="2.4"></sliceSourceBounds></sfw></metadata><ellipse class="st0-popup-title" cx="23.2" cy="16.4" rx="24.9" ry="25"/><g><linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="-6.307843e-02" y1="-1931.0664" x2="6.6823" y2="-1931.0664" gradientTransform="matrix(1 0 0 -1 0 -1912.9928)"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="st1-popup-title" style="stroke: none;" d="M2.4,10.1l4.3-1.5c-1.2,0.5-2.1,1.7-2.1,3.2v15.8l-4.3-13C-0.5,12.7,0.6,10.7,2.4,10.1z"/><linearGradient id="SVGID_2_" gradientUnits="userSpaceOnUse" x1="6.4433" y1="-1917.2795" x2="38.0433" y2="-1917.2795" gradientTransform="matrix(1 0 0 -1 0 -1912.9928)"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="st2-popup-title" d="M36.2,2.5l2,5.9h-30C8,8.4,6.8,8.5,6.6,8.6l25.3-8.4C33.6-0.4,35.5,0.6,36.2,2.5z"/><linearGradient id="SVGID_3_" gradientUnits="userSpaceOnUse" x1="2.4606" y1="-1937.4664" x2="44.2464" y2="-1937.4664" gradientTransform="matrix(1 0 0 -1 0 -1912.9928)"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><circle class="st3-popup-title" cx="23.4" cy="24.5" r="20.8"/><linearGradient id="SVGID_4_" gradientUnits="userSpaceOnUse" x1="4.5372" y1="-1938.1664" x2="44.6541" y2="-1938.1664" gradientTransform="matrix(1 0 0 -1 0 -1912.9928)"><stop offset="0" style="stop-color:#00C4E6"/><stop offset="1" style="stop-color:#1E8BAC"/></linearGradient><path class="st4-popup-title" d="M41.1,42.1H8c-2,0-3.5-1.6-3.5-3.5V11.8c0-2,1.6-3.5,3.5-3.5h33.1c2,0,3.5,1.6,3.5,3.5v26.8C44.8,40.3,43.2,42.1,41.1,42.1z"/><linearGradient id="SVGID_5_" gradientUnits="userSpaceOnUse" x1="30.3692" y1="-1937.9664" x2="46.3295" y2="-1937.9664" gradientTransform="matrix(1 0 0 -1 0 -1912.9928)"><stop offset="0" style="stop-color:#0086AE"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="st5-popup-title" d="M34.9,19h10c0.9,0,1.5,0.7,1.5,1.5v9c0,0.9-0.7,1.5-1.5,1.5h-10c-2.5,0-4.4-2-4.4-4.4v-3.1C30.4,21,32.5,19,34.9,19z"/><circle class="st6-popup-title" cx="35.4" cy="25.2" r="2.5"/><g><linearGradient id="XMLID_4_" gradientUnits="userSpaceOnUse" x1="8.5554" y1="-1937.9164" x2="27.5731" y2="-1937.9164" gradientTransform="matrix(1 0 0 -1 0 -1912.9928)"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><path id="XMLID_2_" class="st7-popup-title" d="M27.6,25c0,5.2-4.3,9.5-9.6,9.5c-2.6,0-4.8-1.1-6.7-2.7c-1.7-1.7-2.8-4.1-2.8-6.9c0-5.2,4.3-9.5,9.6-9.5C23.4,15.4,27.6,19.7,27.6,25z"/><linearGradient id="XMLID_5_" gradientUnits="userSpaceOnUse" x1="8.5554" y1="-1937.9164" x2="27.5731" y2="-1937.9164" gradientTransform="matrix(1 0 0 -1 0 -1912.9928)"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><path id="XMLID_1_" class="st8-popup-title" d="M27.6,25c0,5.2-4.3,9.5-9.6,9.5c-2.6,0-4.8-1.1-6.7-2.7c-1.7-1.7-2.8-4.1-2.8-6.9c0-5.2,4.3-9.5,9.6-9.5C23.4,15.4,27.6,19.7,27.6,25z"/><path class="st6-popup-title" d="M13.6,28.2l-2.1,3.6c0,0,0.9,1.1,3.2,2.1l1.2-3.2l0.9-2.2l0.9-2.5l0.2-0.7v-0.1l0,0l0,0l0,0l0,0l0,0l0,0l0,0l0.1,0.2l0.1,0.5l0.6,1.7l0.5,1.5l0.7,2.3l0.6,1.6l0.2,0.9c0,0,1.9-0.5,3.6-2.1l-1-1.7l-0.7-1.2l-0.7-1.6l-0.6-1.4l-0.4-1.2l-0.4-1.2l-0.4-1.1L19.7,21l-0.4-1.4l-0.4-1.4l-0.4-1.5L18.1,16l-0.5,1.5l-0.7,1.9L16.4,21l-0.5,1.7l-0.5,1.4l-0.6,1.4l-0.6,1.1L13.6,28.2z"/></g></g></svg></div><div class="left-right-side-holder fs-0"><div class="popup-left inline-block-top" data-step="first"><div class="navigation-link"><a href="javascript:void(0)" data-slug="first" class="active">CREATE</a></div><div class="navigation-link mobile"><a href="javascript:void(0)" data-slug="second">IMPORT</a></div><div class="popup-body first"><div class="creation-text max-width-400 padding-top-20 padding-bottom-20"><svg class="inline-block-top" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 63.3 64.1" style="enable-background:new 0 0 63.3 64.1;" xml:space="preserve"><style type="text/css">.keyholder-st0{fill:url(#SVGID_1_);}.keyholder-st1{fill:url(#SVGID_2_);}.keyholder-st2{fill:url(#SVGID_3_);}.keyholder-st3{fill:url(#SVGID_4_);}.keyholder-st4{fill:url(#SVGID_5_);}.keyholder-st5{fill:url(#SVGID_6_);}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="64.1" width="63.3" x="1.3" y="17.4"></sliceSourceBounds></sfw></metadata><g><g><linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="23.7" y1="8.35" x2="38.6" y2="8.35"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st0" d="M31.2,16.7c4.2,0,7.4-5.2,7.4-9.3S35.3,0,31.2,0s-7.5,3.3-7.5,7.4S27,16.7,31.2,16.7z"/></g><g><linearGradient id="SVGID_2_" gradientUnits="userSpaceOnUse" x1="15.6" y1="20.5" x2="46.8" y2="20.5"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st1" d="M19.1,27.9h3.4c0.3-1.4,0.3-1.5,0.3-1.7c0-0.3,0.5-0.3,0.5,0v1.7h15.8v-1.7c0-0.1,0.3-0.7,0.8,1.5c0,0.1,0,0.1,0.1,0.2h1.9v-2.3c0-1.7,1.3-3,3-3h1.9c-0.5-3.6-1.5-9.3-7.7-9.5c-1.7,3.1-4.5,5.6-7.9,5.6s-6.3-2.5-7.9-5.6c-6.4,0.2-7.3,6.2-7.7,10.7C17,24.9,18.3,26.3,19.1,27.9z"/></g><g><linearGradient id="SVGID_3_" gradientUnits="userSpaceOnUse" x1="17.6" y1="39.35" x2="20.5" y2="39.35"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st2" d="M17.6,40.5c0.3,0,0.5-0.1,0.7-0.2c1-0.4,1.8-1.1,2.2-2.1h-1.4C18.7,39.1,18.2,39.8,17.6,40.5z"/></g><g><linearGradient id="SVGID_4_" gradientUnits="userSpaceOnUse" x1="23.3" y1="51.2" x2="39.1" y2="51.2"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st3" d="M23.3,60.5c0,1.9,1.5,3.5,3.4,3.5c1.9,0,3.5-1.6,3.5-3.5V44.7c0-0.5,0.5-1,1-1s1,0.5,1,1v15.9c0,1.9,1.5,3.5,3.5,3.5c1.9,0,3.4-1.6,3.4-3.5V38.3H23.3V60.5z"/></g><g><linearGradient id="SVGID_5_" gradientUnits="userSpaceOnUse" x1="43" y1="39.4" x2="49.5" y2="39.4"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st4" d="M46.2,40.5c1.4,0,2.8-0.8,3.3-2.2H43C43.4,39.7,44.8,40.5,46.2,40.5z"/></g><g><linearGradient id="SVGID_6_" gradientUnits="userSpaceOnUse" x1="0" y1="32" x2="63.3129" y2="32"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><path class="keyholder-st5" d="M62.4,29.9h-2.7v-7.2c0-0.6-0.5-1-1-1h-4.4c-0.6,0-1,0.4-1,1v7.2h-3.1v-4.3c0-0.6-0.5-1-1-1h-4.4c-0.5,0-1,0.4-1,1v4.3h-26c-1.3-3.6-4.8-6-8.6-6C4.1,23.9,0,28,0,33.1s4.1,9.2,9.2,9.2c3.9,0,7.3-2.4,8.6-6h44.5c0.5,0,1-0.5,1-1v-4.4C63.4,30.3,62.9,29.9,62.4,29.9z M9.2,36.8c-2.1,0-3.7-1.7-3.7-3.7s1.7-3.7,3.7-3.7c2.1,0,3.7,1.7,3.7,3.7S11.3,36.8,9.2,36.8z"/></g></g></svg><div class="inline-block-top text padding-left-10 fs-xs-14 fs-16"><div class="lato-bold fs-18">Let\'s create a new wallet!</div>Please set a secure password, download your Keystore File and keep it safe! If lost, there is no way to access your tokens. </div></div><div class="custom-google-label-style margin-bottom-15 max-width-300 margin-left-right-auto module" data-input-light-blue-border="true"><label for="keystore-file-pass">Enter password:</label><input type="password" maxlength="30" id="keystore-file-pass" class="full-rounded keystore-file-pass"/></div><div class="custom-google-label-style max-width-300 margin-left-right-auto module" data-input-light-blue-border="true"><label for="second-pass">Repeat password:</label><input type="password" maxlength="30" id="second-pass" class="full-rounded second-pass"/></div><div class="text-center padding-top-15"><input type="checkbox" id="agree-to-cache-create" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-create"><span class="padding-left-5 padding-right-5 inline-block">Remember keystore file</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block more-info-keystore-remember fs-0" data-content="Remembering your keystore file allows for easier and faster transactions. It is stored only in local device storage and nobody else has access to it."><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="btn-container text-center padding-top-15"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border login-into-wallet min-width-180">CREATE</a></div><div class="auth-popup-faq-link padding-top-20 text-center"><a href="//dentacoin.com/how-to-create-wallet" target="_blank">?</a></div></div></div><div class="popup-right inline-block-top"><div class="navigation-link"><a href="javascript:void(0)" data-slug="second">IMPORT</a></div><div class="popup-body second custom-hide"><div class="padding-top-20 padding-bottom-30 fs-0 row-with-image-and-text max-width-400 max-width-xs-300"><svg class="max-width-80 inline-block" version="1.1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 70.1 86" style="enable-background:new 0 0 70.1 86;" xml:space="preserve"><style type="text/css">.st0-import{fill:url(#SVGID_1_import);}.st1-import{fill:url(#SVGID_2_import);}.st2-import{fill:#FFFFFF;}.st3-import{fill:url(#SVGID_3_import);stroke:#FFFFFF;stroke-width:0.75;stroke-miterlimit:10;}.st4-import{fill:#FFFFFF;stroke:#FFFFFF;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="86" width="70.1" x="16" y="29"></sliceSourceBounds></sfw></metadata><linearGradient id="SVGID_1_import" gradientUnits="userSpaceOnUse" x1="0" y1="43" x2="64" y2="43"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="st0-import" d="M44.7,0H3.1C1.4,0,0,1.3,0,3v80c0,1.6,1.4,3,3.1,3h57.9c1.7,0,3.1-1.3,3.1-3V18.8c0-0.9-0.4-1.8-1-2.5L47.2,1C46.5,0.4,45.6,0,44.7,0z"/><linearGradient id="SVGID_2_import" gradientUnits="userSpaceOnUse" x1="35.9571" y1="23.008" x2="69.6066" y2="23.008"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><circle class="st1-import" cx="52.8" cy="23" r="16.8"/><rect x="28" y="49" class="st2-import" width="8" height="37"/><path class="st2-import" d="M18.2,58.8l13.4-14.6c0.3-0.3,0.7-0.3,1,0l13.4,14.7c0.4,0.4,0.1,1.2-0.5,1.2H18.6C18.1,60,17.8,59.2,18.2,58.8z"/><g><linearGradient id="SVGID_3_import" gradientUnits="userSpaceOnUse" x1="34.8246" y1="23.1469" x2="69.7484" y2="23.1469"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><path class="st3-import" d="M52.3,6.5C61.5,6.5,69,14,69,23.1s-7.5,16.7-16.7,16.7s-16.7-7.5-16.7-16.7S43.1,6.5,52.3,6.5 M52.3,5.7c-9.7,0-17.5,7.8-17.5,17.5s7.8,17.5,17.5,17.5s17.5-7.8,17.5-17.5S61.9,5.7,52.3,5.7L52.3,5.7z"/></g><g><rect x="59" y="28.4" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -2.9698 50.8809)" class="st4-import" width="1.9" height="1.2"/><rect x="58.2" y="27.7" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -2.6509 50.155)" class="st4-import" width="1.9" height="1.2"/><g><polygon class="st4-import" points="60.7,30.7 59.7,31.8 50.9,22.9 51.9,21.9 "/><path class="st4-import" d="M45,16c-1.9,1.9-1.9,4.9,0,6.8c1.9,1.9,4.9,1.9,6.8,0c1.9-1.9,1.9-4.9,0-6.8C49.8,14.1,46.8,14.1,45,16z M50.9,21.9c-1.4,1.4-3.7,1.4-5.1,0c-1.4-1.4-1.4-3.7,0-5.1c1.4-1.4,3.7-1.4,5.1,0C52.3,18.2,52.3,20.5,50.9,21.9z"/></g></g></svg><div class="inline-block padding-left-10 fs-16 fs-xs-14 text"><div class="lato-bold fs-18">Welcome back!</div>To import an existing wallet, please upload your Keystore File.</div></div><div class="text-center import-keystore-file-row">';
         if(is_hybrid) {
             popup_html+='<label class="button custom-upload-button">';
         } else {
@@ -1650,15 +1829,6 @@ async function initAccountChecker()  {
         }
         popup_html+='<a><span>Upload your Keystore File (recommended)</span><svg class="load" version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0 0 40 40" enable-background="new 0 0 40 40"><path opacity="0.3" fill="#fff" d="M20.201,5.169c-8.254,0-14.946,6.692-14.946,14.946c0,8.255,6.692,14.946,14.946,14.946s14.946-6.691,14.946-14.946C35.146,11.861,28.455,5.169,20.201,5.169z M20.201,31.749c-6.425,0-11.634-5.208-11.634-11.634c0-6.425,5.209-11.634,11.634-11.634c6.425,0,11.633,5.209,11.633,11.634C31.834,26.541,26.626,31.749,20.201,31.749z"/><path fill="#fff" d="M26.013,10.047l1.654-2.866c-2.198-1.272-4.743-2.012-7.466-2.012h0v3.312h0C22.32,8.481,24.301,9.057,26.013,10.047z"><animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 20 20" to="360 20 20" dur="0.5s" repeatCount="indefinite"/></path></svg><svg class="check" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></a><div><span></span></div></label></div><div class="camping-for-action"></div><div class="padding-top-10 text-center fs-14 lato-bold or-label">OR</div><div class="padding-top-10 text-center import-private-key-row"><a href="javascript:void(0);" class="import-private-key light-blue-white-btn fs-16 fs-xs-14">Import Private Key (not recommended)</a></div></div></div>';
         basic.showDialog(popup_html, 'custom-auth-popup', null, true);
-
-        var faq_link_position = setInterval(function() {
-            $('.auth-popup-faq-link').css({'top' : $('.custom-auth-popup.bootbox .modal-content').offset().top + $('.custom-auth-popup.bootbox .modal-content').height() + 'px', 'left' : $('.custom-auth-popup.bootbox .modal-content').offset().left + $('.custom-auth-popup.bootbox .modal-content').width() / 2, 'display' : 'block'});
-        }, 300);
-        $('.auth-popup-faq-link').click(function() {
-            $(this).hide();
-            clearInterval(faq_link_position);
-            basic.closeDialog();
-        });
 
         $(document).on('click', '.refresh-import-init-page', function() {
             $('.camping-for-action').html('').show();
@@ -1715,7 +1885,11 @@ async function initAccountChecker()  {
             $('.custom-auth-popup .popup-body.'+$(this).attr('data-slug')).removeClass('custom-hide');
         });
 
-        $('.custom-auth-popup .popup-left .btn-container a').click(function()   {
+        $('.more-info-keystore-remember').popover({
+            trigger: 'click'
+        });
+
+        $('.custom-auth-popup .popup-left .login-into-wallet').click(function()   {
             if($('.custom-auth-popup .keystore-file-pass').val().trim() == '')  {
                 basic.showAlert('Please enter password for your keystore file.', '', true);
             }else if($('.custom-auth-popup .keystore-file-pass').val().trim().length < 8 || $('.custom-auth-popup .keystore-file-pass').val().trim().length > 30)  {
@@ -1735,92 +1909,98 @@ async function initAccountChecker()  {
                         console.log('===== make request for save public keys for assurance =====');
                     }
 
-                    var private_key = generated_keystore.success.recovered.toString('hex');
+                    if(is_hybrid) {
+                        //MOBILE APP
+                        if(basic.getMobileOperatingSystem() == 'Android') {
+                            window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function (dirEntry) {
+                                dirEntry.getFile(keystore_file_name, { create: true, exclusive: true }, function (fileEntry) {
+                                    fileEntry.createWriter(function (fileWriter) {
+                                        fileWriter.onwriteend = function (e) {
+                                            fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
+                                            loginIntoWallet();
+                                        };
 
-                    var keystore_downloaded = false;
-                    $('.custom-auth-popup .popup-left').attr('data-step', 'second');
-                    $('.custom-auth-popup .popup-left[data-step="second"] .popup-body').html('<div class="padding-top-20 padding-bottom-30 fs-0 row-with-image-and-text"><svg class="inline-block width-100 max-width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 144.4 146.2" style="enable-background:new 0 0 144.4 146.2;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="146.2" width="144.4" x="-39.2" y="-23.6"></sliceSourceBounds></sfw></metadata><g><g><path d="M71.1,38.1c9.6,0,16.9-11.9,16.9-21.2S80.5,0,71.1,0C61.8,0,54,7.5,54,16.9S61.6,38.1,71.1,38.1z"/></g><g><path d="M43.6,63.6h7.8c0.7-3.2,0.7-3.4,0.7-3.9c0-0.7,1.1-0.7,1.1,0v3.9h36v-3.9c0-0.2,0.7-1.6,1.8,3.4c0,0.2,0,0.2,0.2,0.5h4.3v-5.2c0-3.9,3-6.8,6.8-6.8h4.3c-1.1-8.2-3.4-21.2-17.6-21.7c-3.9,7.1-10.3,12.8-18,12.8c-7.8,0-14.4-5.7-18-12.8C38.5,30.3,36.5,44,35.6,54.3C38.8,56.8,41.7,60,43.6,63.6z"/></g><g><path d="M40.1,92.4c0.7,0,1.1-0.2,1.6-0.5c2.3-0.9,4.1-2.5,5-4.8h-3.2C42.6,89.2,41.5,90.8,40.1,92.4z"/></g><g><path d="M53.1,138c0,4.3,3.4,8,7.8,8s8-3.6,8-8v-36c0-1.1,1.1-2.3,2.3-2.3c1.1,0,2.3,1.1,2.3,2.3v36.3c0,4.3,3.4,8,8,8c4.3,0,7.8-3.6,7.8-8V87.3h-36V138z"/></g><g><path d="M105.3,92.4c3.2,0,6.4-1.8,7.5-5H98C99,90.5,102.1,92.4,105.3,92.4z"/></g><g><path d="M142.3,68.2h-6.2V51.8c0-1.4-1.1-2.3-2.3-2.3h-10c-1.4,0-2.3,0.9-2.3,2.3v16.4h-7.1v-9.8c0-1.4-1.1-2.3-2.3-2.3h-10c-1.1,0-2.3,0.9-2.3,2.3v9.8H40.6C37.6,60,29.6,54.5,21,54.5c-11.6,0-21,9.3-21,21s9.3,21,21,21c8.9,0,16.6-5.5,19.6-13.7h101.5c1.1,0,2.3-1.1,2.3-2.3v-10C144.6,69.1,143.4,68.2,142.3,68.2z M21,83.9c-4.8,0-8.4-3.9-8.4-8.4c0-4.6,3.9-8.4,8.4-8.4c4.8,0,8.4,3.9,8.4,8.4C29.4,80,25.8,83.9,21,83.9z"/></g></g></svg><div class="inline-block padding-left-15 fs-16 text">Your Keystore/ Secret Key file contains <span class="calibri-bold">highly sensitive information. Please keep it safe</span> as it allows you to access and manage your Dentacoin tokens. </div></div><div class="download-btn btn-container" data-private-key=""><a href="javascript:void(0)" class="width-100 white-light-blue-btn no-hover"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="arrow-alt-down" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="width-100 max-width-30 inline-block margin-right-15 color-white"><path fill="currentColor" d="M176 32h96c13.3 0 24 10.7 24 24v200h103.8c21.4 0 32.1 25.8 17 41L241 473c-9.4 9.4-24.6 9.4-34 0L31.3 297c-15.1-15.1-4.4-41 17-41H152V56c0-13.3 10.7-24 24-24z" class=""></path></svg>Download Secret Key File (recommended)</a></div><div class="padding-top-15 padding-bottom-20 show-private-key-container"><a href="javascript:void(0);" class="width-100 show-private-key light-blue-white-btn">Show Private Key (not recommended)</a></div><div class="text-center padding-top-10"><input type="checkbox" id="agree-to-cache-create" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-create"><span class="padding-left-5 padding-right-5 inline-block">Remember keystore file</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block more-info-keystore-remember fs-0" data-content="Remembering your keystore file allows for easier and faster transactions. It is stored only in local device storage and nobody else has access to it."><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="continue-btn padding-top-20 padding-bottom-40 btn-container"><a href="javascript:void(0)" class="disabled white-light-blue-btn light-blue-border">I understand. CONTINUE</a></div>');
+                                        fileWriter.onerror = function (e) {
+                                            hideLoader();
+                                            alert('Something went wrong with caching your file (Core error 3). Please contact admin@dentacoin.com.');
+                                        };
 
-                    $('.more-info-keystore-remember').popover({
-                        trigger: 'click'
-                    });
-
-                    $('.show-private-key-container .show-private-key').click(function() {
-                        $(this).parent().hide();
-                        $(this).remove();
-                        $('.show-private-key-container').append('<div class="private-key-holder"><div class="scroll-content">'+private_key+'</div></div><div class="padding-top-10 padding-bottom-15 fs-14 color-warning-red">This is NOT a recommended way of accessing your wallet. The information is highly sensitive and should therefore be used in offline settings by experienced crypto users.</div><div class="padding-top-10 padding-bottom-10 padding-left-30 padding-right-30 padding-left-xs-10 padding-right-xs-10 text-left fs-14 color-white row-with-warning-red-background"><div>*Do not lose it! It cannot be recovered if you lose it.</div><div>*Do not share it! Your funds will be stolen if you use this file on a malicious/phishing site.</div><div>*Make a backup! Secure it like the millions of dollars it may one day be worth.</div></div>').fadeIn(1000);
-                    });
-
-
-                    $('.custom-auth-popup .popup-left[data-step="second"] .popup-body .download-btn > a').click(function() {
-                        if(is_hybrid) {
-                            //MOBILE APP
-                            if(basic.getMobileOperatingSystem() == 'Android') {
-                                window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function (dirEntry) {
-                                    dirEntry.getFile(keystore_file_name, { create: true, exclusive: true }, function (fileEntry) {
-                                        fileEntry.createWriter(function (fileWriter) {
-                                            fileWriter.onwriteend = function (e) {
-                                                $('.custom-auth-popup .popup-left[data-step="second"] .popup-body .continue-btn > a').removeClass('disabled');
-                                                keystore_downloaded = true;
-                                                fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
-                                                basic.showAlert('File ' + keystore_file_name + ' has been downloaded to the top-level directory of your device file system.', '', true);
-                                            };
-
-                                            fileWriter.onerror = function (e) {
-                                                alert('Something went wrong with caching your file (Core error 3). Please contact admin@dentacoin.com.');
-                                            };
-
-                                            // Create a new Blob and write they keystore content inside of it
-                                            var blob = new Blob([JSON.stringify(generated_keystore.success.keystore)], {type: 'text/plain'});
-                                            fileWriter.write(blob);
-                                        }, function(err) {
-                                            alert('Something went wrong with caching your file (Core error 4). Please contact admin@dentacoin.com.');
-                                        });
+                                        // Create a new Blob and write they keystore content inside of it
+                                        var blob = new Blob([JSON.stringify(generated_keystore.success.keystore)], {type: 'text/plain'});
+                                        fileWriter.write(blob);
                                     }, function(err) {
-                                        alert('Seems like file with this name already exist in your root directory, move it or delete it and try again.');
+                                        hideLoader();
+                                        alert('Something went wrong with caching your file (Core error 4). Please contact admin@dentacoin.com.');
                                     });
+                                }, function(err) {
+                                    basic.showAlert('Please go to Settings/ Permissions and allow Dentacoin Wallet application to download your new created keystore file.', '', true);
+                                    hideLoader();
                                 });
-                            } else if(basic.getMobileOperatingSystem() == 'iOS') {
-                                alert('Downloading still not tested in iOS');
-                            }
-                        } else {
-                            //BROWSER
-                            downloadFile(buildKeystoreFileName('0x' + generated_keystore.success.keystore.address), JSON.stringify(generated_keystore.success.keystore));
-                            $('.custom-auth-popup .popup-left[data-step="second"] .popup-body .continue-btn > a').removeClass('disabled');
-                            keystore_downloaded = true;
+                            });
+                        } else if(basic.getMobileOperatingSystem() == 'iOS') {
+                            console.log('iOS DOWNLOAD');
+                            console.log(cordova.file, 'cordova.file');
+                            window.resolveLocalFileSystemURL(cordova.file.documentsDirectory , function (dirEntry) {
+                                console.log(dirEntry, 'dirEntry');
+                                dirEntry.getFile(keystore_file_name, { create: true, exclusive: true }, function (fileEntry) {
+                                    console.log(fileEntry, 'fileEntry');
+                                    fileEntry.createWriter(function (fileWriter) {
+                                        fileWriter.onwriteend = function (e) {
+                                            fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
+                                            loginIntoWallet();
+                                        };
+
+                                        fileWriter.onerror = function (e) {
+                                            alert('Something went wrong with caching your file (Core error 3). Please contact admin@dentacoin.com.');
+                                        };
+
+                                        // Create a new Blob and write they keystore content inside of it
+                                        var blob = new Blob([JSON.stringify(generated_keystore.success.keystore)], {type: 'text/plain'});
+                                        fileWriter.write(blob);
+                                    }, function(err) {
+                                        alert('Something went wrong with caching your file (Core error 4). Please contact admin@dentacoin.com.');
+                                    });
+                                }, function(err) {
+                                    alert('Seems like file with this name already exist in your root directory, move it or delete it and try again.');
+                                });
+                            });
                         }
-                    });
+                    } else {
+                        //BROWSER
+                        downloadFile(buildKeystoreFileName('0x' + generated_keystore.success.keystore.address), JSON.stringify(generated_keystore.success.keystore));
+                        fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
+                        loginIntoWallet();
+                    }
 
+                    function loginIntoWallet() {
+                        hideLoader();
+                        if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
+                            if(is_hybrid) {
+                                //in browser saving keystore file in localstorage
+                                window.localStorage.setItem('keystore_file', JSON.stringify(generated_keystore.success.keystore));
+                                window.localStorage.setItem('current_account', '0x' + generated_keystore.success.keystore.address);
 
-                    hideLoader();
+                                fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
 
-                    //save address and/or keystore file path and page reload
-                    $('.custom-auth-popup .popup-left[data-step="second"] .popup-body .continue-btn > a').click(function() {
-                        if(keystore_downloaded) {
-                            if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
-                                if(is_hybrid) {
-                                    //in browser saving keystore file in localstorage
-                                    window.localStorage.setItem('keystore_file', JSON.stringify(generated_keystore.success.keystore));
-                                    window.localStorage.setItem('current_account', '0x' + generated_keystore.success.keystore.address);
-
-                                    fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
-
-                                    if(basic.getMobileOperatingSystem() == 'Android') {
-                                        navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
-                                    } else if(basic.getMobileOperatingSystem() == 'iOS') {
-                                        alert('App refresh is not tested yet with iOS');
-                                    }
-                                } else {
-                                    //in browser saving keystore file in localstorage
-                                    window.localStorage.setItem('keystore_file', JSON.stringify(generated_keystore.success.keystore));
-                                    window.localStorage.setItem('current_account', '0x' + generated_keystore.success.keystore.address);
-
-                                    fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
-
-                                    window.location.reload();
+                                if(basic.getMobileOperatingSystem() == 'Android') {
+                                    navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
+                                } else if(basic.getMobileOperatingSystem() == 'iOS') {
+                                    alert('App refresh is not tested yet with iOS');
                                 }
                             } else {
+                                //in browser saving keystore file in localstorage
+                                window.localStorage.setItem('keystore_file', JSON.stringify(generated_keystore.success.keystore));
                                 window.localStorage.setItem('current_account', '0x' + generated_keystore.success.keystore.address);
+
+                                fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
+
+                                window.location.reload();
+                            }
+                        } else {
+                            window.localStorage.setItem('current_account', '0x' + generated_keystore.success.keystore.address);
+                            basic.showAlert('File ' + keystore_file_name + ' has been downloaded to the top-level directory of your device file system.', '', true);
+
+                            setTimeout(function() {
                                 if(is_hybrid) {
                                     if(basic.getMobileOperatingSystem() == 'Android') {
                                         navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
@@ -1830,11 +2010,9 @@ async function initAccountChecker()  {
                                 } else {
                                     window.location.reload();
                                 }
-                            }
-                        } else {
-                            basic.showAlert('Please download the Keystore file and keep it safe!', '', true);
+                            }, 2000);
                         }
-                    });
+                    }
                 }, 500);
             }
         });
@@ -2287,8 +2465,8 @@ $(document).on('click', '.open-settings', function() {
 
             if(!generate_error) {
                 showLoader();
-                setTimeout(async function() {
-                    var generate_response = await generateKeystoreFromPrivateKey($('#generate-keystore-private-key').val().trim(), $('#generate-keystore-password').val().trim());
+                setTimeout(function() {
+                    var generate_response = generateKeystoreFromPrivateKey($('#generate-keystore-private-key').val().trim(), $('#generate-keystore-password').val().trim());
 
                     if(generate_response.success) {
                         if(is_hybrid) {
@@ -2400,4 +2578,100 @@ function fireGoogleAnalyticsEvent(category, action, label, value) {
     }
 
     gtag('event', label, event_obj);
+}
+
+function getEtherscanTransactionsHistory(address) {
+    $.ajax({
+        type: 'GET',
+        url: 'https://api.etherscan.io/api?module=account&action=txlist&address='+address+'&startblock='+block_number_of_dcn_creation,
+        dataType: 'json',
+        success: function(response) {
+            transaction_history_request_response = response;
+        }
+    });
+}
+
+function getEthereumDataByCoingecko(type) {
+    $.ajax({
+        type: 'GET',
+        url: 'https://api.coingecko.com/api/v3/coins/ethereum',
+        dataType: 'json',
+        success: function(response) {
+            if(type !== undefined) {
+                if(type == 'history') {
+                    transaction_history_request_response = response;
+                }
+            } else {
+                request_response = response;
+            }
+        }
+    });
+}
+
+function getDentacoinDataByCoingecko(type) {
+    $.ajax({
+        type: 'GET',
+        url: 'https://api.coingecko.com/api/v3/coins/dentacoin',
+        dataType: 'json',
+        success: function(response) {
+            if(type !== undefined) {
+                if(type == 'history') {
+                    transaction_history_request_response = response;
+                }
+            } else {
+                request_response = response;
+            }
+        }
+    });
+}
+
+function getClinics() {
+    $.ajax({
+        type: 'POST',
+        url: 'https://api.dentacoin.com/api/users/',
+        dataType: 'json',
+        data: {
+            status: 'approved',
+            is_partner: true,
+            type: 'all-dentists',
+            items_per_page: 10000
+        },
+        success: function(response) {
+            console.log(response, 'getClinics');
+            request_response = response;
+        }
+    });
+}
+
+function getEthgasstationData() {
+    $.ajax({
+        type: 'GET',
+        url: 'https://ethgasstation.info/json/ethgasAPI.json',
+        dataType: 'json',
+        success: function(response) {
+            request_response = response;
+        }
+    });
+}
+
+function getCryptoDataByIndacoin(cryptocurrency_symbol) {
+    $.ajax({
+        type: 'GET',
+        url: 'https://indacoin.com/api/GetCoinConvertAmount/USD/'+cryptocurrency_symbol+'/100/dentacoin',
+        dataType: 'json',
+        success: function(response) {
+            request_response.value = response;
+        }
+    });
+}
+
+function getExchanges() {
+    $.ajax({
+        type: 'GET',
+        url: 'https://dentacoin.com/info/exchanges',
+        dataType: 'json',
+        success: function(response) {
+            request_response = response;
+        }
+    });
 }

@@ -404,9 +404,10 @@
 
 body {
   margin: 0;
-  background-image: url(../images/background.png);
+  /*background-image: url(../images/background.png);
   background-repeat: no-repeat;
-  background-size: cover;
+  background-size: cover;*/
+  background-color: #2aa4c8;
   font-family: "Calibri-Regular"; }
   body.overflow-hidden {
     overflow: hidden; }
@@ -3970,22 +3971,29 @@ img {
   cursor: pointer; }
 
 .bootbox .modal-content {
-  border: 0; }
+  border: 0;
+  -webkit-box-shadow: 0 8px 44px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: 0 8px 44px rgba(0, 0, 0, 0.2);
+  -ms-box-shadow: 0 8px 44px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 44px rgba(0, 0, 0, 0.2); }
   @media screen and (max-width: 767px) {
     .bootbox .modal-content {
       -webkit-box-shadow: 0 19px 130px rgba(0, 0, 0, 0.3);
       -moz-box-shadow: 0 19px 130px rgba(0, 0, 0, 0.3);
       -ms-box-shadow: 0 19px 130px rgba(0, 0, 0, 0.3);
       box-shadow: 0 19px 130px rgba(0, 0, 0, 0.3); } }
+  .bootbox .modal-content .modal-body {
+    padding: 30px 20px; }
 .bootbox .bootbox-close-button {
   position: absolute;
-  right: 5px;
-  font-size: 26px;
   line-height: 22px;
-  top: 0;
   margin-top: 0 !important;
   border: 0;
-  background: transparent; }
+  background: transparent;
+  position: absolute;
+  right: 5px;
+  font-size: 40px;
+  top: 5px; }
 .bootbox.download-mobile-app .phone-container {
   position: relative; }
   .bootbox.download-mobile-app .phone-container .absolute-content {
@@ -4084,8 +4092,10 @@ img {
           @media screen and (max-width: 767px) {
             .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .popup-body.custom-hide, .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .popup-body.custom-hide {
               display: none; } }
-        .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .popup-body .row-with-image-and-text .text, .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .popup-body .row-with-image-and-text .text {
-          width: calc(100% - 100px); }
+        .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .popup-body .row-with-image-and-text, .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .popup-body .row-with-image-and-text {
+          margin: 0 auto; }
+          .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .popup-body .row-with-image-and-text .text, .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .popup-body .row-with-image-and-text .text {
+            width: calc(100% - 80px); }
         @media screen and (max-width: 767px) {
           .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .popup-body, .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .popup-body {
             padding-left: 10px;
@@ -4129,16 +4139,13 @@ img {
           border-radius: 10px; }
         .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .private-key-holder .scroll-content {
           width: 460px; }
-      .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .row-with-warning-red-background {
-        background-color: #ff0046;
-        margin-left: -30px;
-        margin-right: -30px; }
-        @media screen and (max-width: 767px) {
-          .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .row-with-warning-red-background {
-            margin-left: -10px;
-            margin-right: -10px; } }
-      .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left[data-step='second'] {
-        text-align: center; }
+      .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .creation-text {
+        font-size: 0;
+        margin: 0 auto; }
+        .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .creation-text svg {
+          width: 100px; }
+        .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .creation-text .text {
+          width: calc(100% - 100px); }
       @media screen and (max-width: 767px) {
         .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left {
           width: 100%;
@@ -4159,11 +4166,39 @@ img {
       padding-bottom: 20px; }
     .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .camping-for-action {
       text-align: center; }
+    .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .custom-upload-button a {
+      height: 45px;
+      -webkit-border-radius: 4px;
+      -moz-border-radius: 4px;
+      -ms-border-radius: 4px;
+      border-radius: 4px; }
+      .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .custom-upload-button a span {
+        height: 45px;
+        line-height: 45px; }
     @media screen and (max-width: 767px) {
       .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right {
         width: 100%; }
         .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .navigation-link {
           display: none; } }
+@media screen and (max-width: 767px) {
+  .bootbox.custom-auth-popup .modal-dialog {
+    margin: 0 !important;
+    width: 100%;
+    height: 100%;
+    background: white;
+    position: relative; }
+    .bootbox.custom-auth-popup .modal-dialog .modal-content {
+      width: 100%;
+      -webkit-box-shadow: none;
+      -moz-box-shadow: none;
+      -ms-box-shadow: none;
+      box-shadow: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      -webkit-transform: translate(-50%, -50%);
+      -ms-transform: translate(-50%, -50%);
+      transform: translate(-50%, -50%); } }
 .bootbox.mobile-dentacoin-address-and-qr .modal-body {
   padding-bottom: 30px;
   text-align: center; }
@@ -4469,27 +4504,20 @@ input[type=file].hide-input {
     -ms-box-shadow: 0 6px 10px 0px rgba(0, 0, 0, 0.3);
     box-shadow: 0 6px 10px 0px rgba(0, 0, 0, 0.3); }
 
-.auth-popup-faq-link {
-  position: absolute;
-  display: none;
-  z-index: 1100;
-  -webkit-transform: translate(-50%, -50%);
-  -ms-transform: translate(-50%, -50%);
-  transform: translate(-50%, -50%); }
-  .auth-popup-faq-link a {
-    width: 45px;
-    height: 45px;
-    line-height: 45px;
-    font-size: 36px;
-    font-family: "Calibri-Bold";
-    text-align: center;
-    display: inline-block;
-    background-color: #00b7e2;
-    color: white;
-    -webkit-border-radius: 50%;
-    -moz-border-radius: 50%;
-    -ms-border-radius: 50%;
-    border-radius: 50%; }
+.auth-popup-faq-link a {
+  width: 45px;
+  height: 45px;
+  line-height: 45px;
+  font-size: 36px;
+  font-family: "Calibri-Bold";
+  text-align: center;
+  display: inline-block;
+  background-color: #00b7e2;
+  color: white;
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  -ms-border-radius: 50%;
+  border-radius: 50%; }
 
 header .logo {
   padding-top: 10px;
