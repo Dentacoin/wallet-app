@@ -4348,6 +4348,43 @@ img {
       padding: 0; }
       .bootbox.settings-popup .modal-dialog .modal-content .modal-body .log-out:hover svg path {
         fill: white; }
+      .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder {
+        border: 1.5px solid #ff0046;
+        padding: 12px 10px;
+        text-align: center;
+        font-size: 14px;
+        overflow-x: auto;
+        margin-top: 20px;
+        -webkit-border-radius: 4px;
+        -moz-border-radius: 4px;
+        -ms-border-radius: 4px;
+        border-radius: 4px; }
+        .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder ::-webkit-scrollbar {
+          -webkit-appearance: none; }
+        .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder ::-webkit-scrollbar:vertical {
+          width: 12px; }
+        .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder ::-webkit-scrollbar:horizontal {
+          height: 12px; }
+        .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder ::-webkit-scrollbar-thumb {
+          background-color: rgba(0, 0, 0, 0.5);
+          border-radius: 10px;
+          border: 2px solid white; }
+        .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder ::-webkit-scrollbar-track {
+          background-color: white;
+          -webkit-border-radius: 10px;
+          -moz-border-radius: 10px;
+          -ms-border-radius: 10px;
+          border-radius: 10px; }
+        .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder .scroll-content {
+          width: 460px; }
+      .bootbox.settings-popup .modal-dialog .modal-content .modal-body .row-with-warning-red-background {
+        background-color: #ff0046;
+        margin-left: -70px;
+        margin-right: -70px; }
+        @media screen and (max-width: 767px) {
+          .bootbox.settings-popup .modal-dialog .modal-content .modal-body .row-with-warning-red-background {
+            margin-left: -10px;
+            margin-right: -10px; } }
       .bootbox.settings-popup .modal-dialog .modal-content .modal-body .popup-header {
         background-color: #00b7e2;
         padding: 10px; }
@@ -4473,6 +4510,8 @@ input[type=file].hide-input {
     padding-left: 15px;
     padding-right: 15px;
     font-size: 20px;
+    width: 100%;
+    max-width: 500px;
     position: absolute;
     top: 50%;
     left: 50%;
@@ -4480,8 +4519,14 @@ input[type=file].hide-input {
     -ms-transform: translate(-50%, -50%);
     transform: translate(-50%, -50%); }
     .response-layer .wrapper img {
-      width: 95%;
-      margin-bottom: 15px; }
+      width: 95%; }
+    .response-layer .wrapper .message {
+      margin: 0 auto;
+      padding-top: 20px;
+      padding-left: 15px;
+      padding-right: 15px;
+      color: #00b7e2;
+      text-align: center; }
 
 .zoom-checkbox {
   -ms-transform: scale(1.5);
@@ -4518,6 +4563,33 @@ input[type=file].hide-input {
   -moz-border-radius: 50%;
   -ms-border-radius: 50%;
   border-radius: 50%; }
+
+.camp-for-custom-popover {
+  width: 250px;
+  padding: 9px 14px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  background-color: white;
+  font-size: 14px;
+  z-index: 2000;
+  position: relative;
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  -ms-border-radius: 6px;
+  border-radius: 6px;
+  -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  -ms-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); }
+  .camp-for-custom-popover .arrow {
+    position: absolute;
+    top: -9px;
+    right: 10px;
+    width: 15px;
+    height: 15px;
+    background: white;
+    transform: rotate(45deg);
+    border-top: 1px solid rgba(0, 0, 0, 0.2);
+    border-left: 1px solid rgba(0, 0, 0, 0.2); }
 
 header .logo {
   padding-top: 10px;

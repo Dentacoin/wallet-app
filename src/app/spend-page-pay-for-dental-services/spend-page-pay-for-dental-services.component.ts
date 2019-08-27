@@ -2,7 +2,7 @@ import { Component, AfterViewInit } from '@angular/core';
 import { Router } from '@angular/router';
 import {Meta, Title} from '@angular/platform-browser';
 
-declare function initdApp(): any;
+/*declare function initdApp(): any;*/
 
 @Component({
   selector: 'app-spend-page-pay-for-dental-services',
@@ -19,7 +19,7 @@ export class SpendPagePayForDentalServicesComponent implements AfterViewInit {
         this.meta.updateTag({name: 'og:image', content: 'https://wallet.dentacoin.com/assets/images/dentist-pay-with-dentacoin.png'}); }
 
     ngAfterViewInit() {
-        initdApp();
+        //initdApp();
     }
 
     toSend() {

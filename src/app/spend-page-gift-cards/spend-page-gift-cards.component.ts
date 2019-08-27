@@ -2,7 +2,7 @@ import {AfterViewInit, Component} from '@angular/core';
 import { Router } from '@angular/router';
 import {Meta, Title} from '@angular/platform-browser';
 
-declare function getSpendPageGiftCards(): any;
+/*declare function getSpendPageGiftCards(): any;*/
 
 @Component({
   selector: 'app-spend-page-gift-cards',
@@ -20,7 +20,7 @@ export class SpendPageGiftCardsComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-      getSpendPageGiftCards();
+      //getSpendPageGiftCards();
   }
 
   toExchanges() {

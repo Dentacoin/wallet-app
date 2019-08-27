@@ -1,7 +1,7 @@
 import { Component, AfterViewInit } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 
-declare function getHomepageData(): any;
+/*declare function getHomepageData(): any;*/
 
 @Component({
     selector: 'app-homepage',
@@ -19,6 +19,6 @@ export class HomepageComponent implements AfterViewInit {
     }
 
     ngAfterViewInit() {
-        getHomepageData();
+        /*getHomepageData();*/
     }
 }

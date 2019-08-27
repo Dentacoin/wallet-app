@@ -2,7 +2,7 @@ import {Component, AfterViewInit} from '@angular/core';
 import { Router } from '@angular/router';
 import {Meta, Title} from '@angular/platform-browser';
 
-declare function initdApp(): any;
+/*declare function initdApp(): any;*/
 
 @Component({
     selector: 'app-spend-page-pay-assurance-fees',
@@ -20,7 +20,7 @@ export class SpendPagePayAssuranceFeesComponent implements AfterViewInit {
     }
 
     ngAfterViewInit() {
-        initdApp();
+        //initdApp();
     }
 
     toExchanges() {

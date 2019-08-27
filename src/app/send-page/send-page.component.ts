@@ -1,7 +1,7 @@
 import { Component, AfterViewInit } from '@angular/core';
 import {Meta, Title} from '@angular/platform-browser';
 
-declare function getSendPageData(): any;
+/*declare function getSendPageData(): any;*/
 
 @Component({
   selector: 'app-send-page',
@@ -19,6 +19,6 @@ export class SendPageComponent implements AfterViewInit {
     }
 
     ngAfterViewInit() {
-        getSendPageData();
+        //getSendPageData();
     }
 }

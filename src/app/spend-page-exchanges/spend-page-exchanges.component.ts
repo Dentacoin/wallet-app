@@ -2,7 +2,7 @@ import { Component, AfterViewInit } from '@angular/core';
 import {Router} from '@angular/router';
 import {Meta, Title} from '@angular/platform-browser';
 
-declare function getSpendPageExchanges(): any;
+/*declare function getSpendPageExchanges(): any;*/
 
 @Component({
   selector: 'app-spend-page-exchanges',
@@ -20,7 +20,7 @@ export class SpendPageExchangesComponent implements AfterViewInit {
     }
 
     ngAfterViewInit() {
-        getSpendPageExchanges();
+        //getSpendPageExchanges();
     }
 
     toSend() {

@@ -1056,6 +1056,49 @@ img {
                             }
                         }
                     }
+                    .private-key-holder {
+                        border: 1.5px solid $warning_red;
+                        padding: 12px 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        overflow-x: auto;
+                        margin-top: 20px;
+                        @include rounded(4px);
+                        ::-webkit-scrollbar {
+                            -webkit-appearance: none;
+                        }
+
+                        ::-webkit-scrollbar:vertical {
+                            width: 12px;
+                        }
+
+                        ::-webkit-scrollbar:horizontal {
+                            height: 12px;
+                        }
+
+                        ::-webkit-scrollbar-thumb {
+                            background-color: rgba(0, 0, 0, .5);
+                            border-radius: 10px;
+                            border: 2px solid white;
+                        }
+
+                        ::-webkit-scrollbar-track {
+                            background-color: white;
+                            @include rounded(10px);
+                        }
+                        .scroll-content {
+                            width: 460px;
+                        }
+                    }
+                    .row-with-warning-red-background {
+                        background-color: $warning_red;
+                        margin-left: -70px;
+                        margin-right: -70px;
+                        @include breakpoint($xs) {
+                            margin-left: -10px;
+                            margin-right: -10px;
+                        }
+                    }
                     .popup-header {
                         background-color: $light_blue;
                         padding: 10px;
@@ -1190,10 +1233,19 @@ input[type=file].hide-input {
         padding-left: 15px;
         padding-right: 15px;
         font-size: 20px;
+        width: 100%;
+        max-width: 500px;
         @include vertical-horizontal-align(absolute);
         img {
             width: 95%;
-            margin-bottom: 15px;
+        }
+        .message {
+            margin: 0 auto;
+            padding-top: 20px;
+            padding-left: 15px;
+            padding-right: 15px;
+            color: $light_blue;
+            text-align: center;
         }
     }
 }
@@ -1232,5 +1284,28 @@ input[type=file].hide-input {
         background-color: $light_blue;
         color: white;
         @include rounded(50%);
+    }
+}
+
+.camp-for-custom-popover {
+    width: 250px;
+    padding: 9px 14px;
+    border: 1px solid rgba(0,0,0,0.2);
+    background-color:white;
+    font-size: 14px;
+    z-index: 2000;
+    position: relative;
+    @include rounded(6px);
+    @include box-shadow(0 5px 10px rgba(0,0,0,0.2));
+    .arrow {
+        position: absolute;
+        top: -9px;
+        right: 10px;
+        width: 15px;
+        height: 15px;
+        background: white;
+        transform: rotate(45deg);
+        border-top: 1px solid rgba(0, 0, 0, 0.2);
+        border-left: 1px solid rgba(0, 0, 0, 0.2);
     }
 }

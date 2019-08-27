@@ -1,7 +1,7 @@
 import {Component, AfterViewInit} from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 
-declare function getBuyPageData(): any;
+/*declare function getBuyPageData(): any;*/
 
 @Component({
     selector: 'app-buy-page',
@@ -19,6 +19,6 @@ export class BuyPageComponent implements AfterViewInit {
     }
 
     ngAfterViewInit() {
-        getBuyPageData();
+        //getBuyPageData();
     }
 }
