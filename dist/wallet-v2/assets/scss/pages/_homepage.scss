@@ -1,0 +1,82 @@
+app-homepage {
+    .main-wrapper {
+        width: calc(100% - 20px);
+        margin: 0 auto;
+        @include breakpoint($xs) {
+            margin-bottom: 20px;
+        }
+    }
+    #qrcode {
+        width: 180px;
+        background-image: url(../images/qr-border.jpg);
+        background-repeat: no-repeat;
+        background-size: cover;
+        padding: 10px;
+    }
+    .eth-address-container {
+        padding-top: 10px;
+        padding-bottom: 10px;
+        background-color: $light_blue;
+        width: 60%;
+        bottom: 0;
+        position: absolute;
+        left: 50%;
+        -webkit-transform: translate(-50%, 50%);
+        -ms-transform: translate(-50%, 50%);
+        transform: translate(-50%, 50%);
+        @include rounded(10px);
+        @include box-shadow(0 6px 10px 0px rgba(0, 0, 0, 0.3));
+        &:hover {
+            color: white;
+        }
+        .address-value {
+            border: 0;
+            background: transparent;
+            color: white;
+            width: 400px;
+            font-weight: 500;
+            @include breakpoint($xs) {
+                width: 260px;
+                font-size: 12px;
+            }
+        }
+        .qr-code-icon {
+            display: none;
+            @include breakpoint($xs) {
+                display: inline-block;
+            }
+        }
+        @include breakpoint($sm-only) {
+            width: 75%;
+        }
+        @include breakpoint($xs) {
+            width: 100%;
+            left: 0;
+            top: calc(100% - 10px);
+            bottom: auto;
+            @include rounded(20px);
+            @include clear_transform();
+            .fix-vertical-alignment-on-mobile {
+                margin-top: -10px;
+                .inline-block {
+                    vertical-align: bottom;
+                }
+            }
+        }
+        @include breakpoint($xxs) {
+            .address-value {
+                font-size: 10px !important;
+                width: 240px;
+                text-align: center;
+            }
+            .copy-icon, .qr-code-icon {
+                img {
+                    max-width: 25px !important;
+                }
+            }
+        }
+    }
+    .fade-in-element {
+        display: none;
+    }
+}

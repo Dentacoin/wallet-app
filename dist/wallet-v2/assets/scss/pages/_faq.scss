@@ -1,0 +1,81 @@
+.faq-container {
+    h1 {
+        text-align: center;
+        color: white;
+        font-family: 'Calibri-Bold';
+    }
+    .container {
+        @include breakpoint($lgl) {
+            width: 65% !important;
+        }
+    }
+    .title {
+        hr {
+            border-color: #002248;
+        }
+    }
+    .list {
+        .section-row {
+            .section-title {
+                font-family: 'Calibri-Bold';
+                color: white;
+                @include breakpoint($sm-down) {
+                    padding-left: 15px;
+                    padding-right: 15px;
+                }
+            }
+            > ul {
+                padding-left: 20px;
+                > li {
+                    .question {
+                        padding: 15px 40px 15px 20px;
+                        margin-bottom: 15px;
+                        background-image: url(../images/angle-down-solid.svg);
+                        background-repeat: no-repeat;
+                        background-size: 15px auto;
+                        background-position: center right 20px;
+                        background-color: #f7f7f7;
+                        border-bottom: 1px solid #dddddd;
+                        display: block;
+                        color: black;
+                        span {
+                            color: #00b7d9;
+                            display: inline-block;
+                            padding-right: 10px;
+                            font-family: 'Calibri-Bold';
+                        }
+                    }
+                    .question-content {
+                        display: none;
+                        color: white;
+                        ul {
+                            li {
+                                list-style: disc inside none;
+                            }
+                        }
+                        a {
+                            text-decoration: underline;
+                            color: white;
+                            @include rounded(10px);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    @include breakpoint($xs) {
+        .list {
+            .section-row {
+                ul {
+                    padding-left: 0;
+                    li {
+                        .question {
+                            padding: 15px 30px 15px 10px;
+                            background-position: center right 10px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
