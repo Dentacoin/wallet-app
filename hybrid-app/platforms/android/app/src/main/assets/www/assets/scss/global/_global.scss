@@ -1309,3 +1309,17 @@ input[type=file].hide-input {
         border-left: 1px solid rgba(0, 0, 0, 0.2);
     }
 }
+
+.error-handle{
+     color: #a94442;
+     background-color: #f2dede;
+     border: 1px solid #a94442;
+     margin-top: 5px;
+     margin-bottom: 0;
+     font-size: 14px;
+     padding: 5px;
+     @include rounded(4px);
+     &.alert.alert-warning {
+         display: none;
+     }
+ }
