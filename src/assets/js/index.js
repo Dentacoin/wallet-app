@@ -2016,7 +2016,7 @@ function initAccountChecker()  {
                                 loginIntoWallet();
                             });
                         } else if(basic.getMobileOperatingSystem() == 'iOS') {
-                            window.resolveLocalFileSystemURL(cordova.file.documentsDirectory , function (fileSystem) {
+                            window.resolveLocalFileSystemURL(cordova.file.syncedDataDirectory , function (fileSystem) {
                                 fileSystem.getFile(keystore_file_name, {create: true, exclusive: true}, function (fileEntry) {
                                     fileEntry.createWriter(function (fileWriter) {
                                         fileWriter.onwriteend = function (e) {
