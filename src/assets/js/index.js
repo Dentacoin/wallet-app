@@ -1948,12 +1948,8 @@ function initAccountChecker()  {
                         fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
 
                         if(is_hybrid) {
-                            if(basic.getMobileOperatingSystem() == 'Android') {
-                                refreshApp();
-                                //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
-                            } else if(basic.getMobileOperatingSystem() == 'iOS') {
-                                alert('App refresh is not tested yet with iOS');
-                            }
+                            refreshApp();
+                            //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
                         } else {
                             window.location.reload();
                         }
@@ -2020,8 +2016,6 @@ function initAccountChecker()  {
                                 loginIntoWallet();
                             });
                         } else if(basic.getMobileOperatingSystem() == 'iOS') {
-                            console.log('iOS DOWNLOAD');
-                            console.log(cordova.file, 'cordova.file');
                             window.resolveLocalFileSystemURL(cordova.file.documentsDirectory , function (fileSystem) {
                                 fileSystem.getDirectory('Download', {create: true, exclusive: false}, function(dirEntry) {
                                     dirEntry.getFile(keystore_file_name, {create: true, exclusive: true}, function (fileEntry) {
@@ -2064,7 +2058,6 @@ function initAccountChecker()  {
                     }
 
                     function loginIntoWallet() {
-                        console.log('loginIntoWallet');
                         if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
                             window.localStorage.setItem('current_account', '0x' + generated_keystore.success.keystore.address);
                             basic.showAlert('File ' + keystore_file_name + ' has been stored to the Downloads folder of your device and remembered for faster transactions.', '', true);
@@ -2077,12 +2070,8 @@ function initAccountChecker()  {
 
                                     fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
 
-                                    if(basic.getMobileOperatingSystem() == 'Android') {
-                                        refreshApp();
-                                        //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
-                                    } else if(basic.getMobileOperatingSystem() == 'iOS') {
-                                        alert('App refresh is not tested yet with iOS');
-                                    }
+                                    refreshApp();
+                                    //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
                                 } else {
                                     //in browser saving keystore file in localstorage
                                     window.localStorage.setItem('keystore_file', JSON.stringify(generated_keystore.success.keystore));
@@ -2099,12 +2088,8 @@ function initAccountChecker()  {
 
                             setTimeout(function() {
                                 if(is_hybrid) {
-                                    if(basic.getMobileOperatingSystem() == 'Android') {
-                                        refreshApp();
-                                        //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
-                                    } else if(basic.getMobileOperatingSystem() == 'iOS') {
-                                        alert('App refresh is not tested yet with iOS');
-                                    }
+                                    refreshApp();
+                                    //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
                                 } else {
                                     window.location.reload();
                                 }
@@ -2179,12 +2164,7 @@ function styleKeystoreUploadBtn()    {
                                                                     window.localStorage.setItem('keystore_file', keystore_string);
                                                                     window.localStorage.setItem('current_account', '0x' + address);
 
-                                                                    if(basic.getMobileOperatingSystem() == 'Android') {
-                                                                        refreshApp();
-                                                                        //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
-                                                                    } else if(basic.getMobileOperatingSystem() == 'iOS') {
-                                                                        alert('App refresh is not tested yet with iOS');
-                                                                    }
+                                                                    refreshApp();
                                                                 } else {
                                                                     window.localStorage.setItem('current_account', '0x' + address);
                                                                     refreshApp();
@@ -2542,14 +2522,8 @@ $(document).on('click', '.open-settings', function() {
         log_out_reminder_warning.callback = function (result) {
             if (result) {
                 if(is_hybrid) {
-                    if(basic.getMobileOperatingSystem() == 'Android') {
-                        window.localStorage.clear();
-
-                        refreshApp();
-                        //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
-                    } else if(basic.getMobileOperatingSystem() == 'iOS') {
-                        alert('App refresh is not tested yet with iOS');
-                    }
+                    window.localStorage.clear();
+                    refreshApp();
                 } else {
                     window.localStorage.clear();
                     window.location.reload();
