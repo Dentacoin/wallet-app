@@ -2198,6 +2198,7 @@ function styleKeystoreUploadBtn()    {
             //iOS
             $('.custom-upload-button').click(function() {
                 console.log('CLIKCEDDDD ==========================');
+                console.log(cordova.file, 'cordova.file');
 
                 FilePicker.pickFile(function(path) {
                     alert("You picked this file: " + path);
