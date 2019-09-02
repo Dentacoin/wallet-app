@@ -2017,37 +2017,35 @@ function initAccountChecker()  {
                             });
                         } else if(basic.getMobileOperatingSystem() == 'iOS') {
                             window.resolveLocalFileSystemURL(cordova.file.documentsDirectory , function (fileSystem) {
-                                fileSystem.getDirectory('Download', {create: true, exclusive: false}, function(dirEntry) {
-                                    dirEntry.getFile(keystore_file_name, {create: true, exclusive: true}, function (fileEntry) {
-                                        fileEntry.createWriter(function (fileWriter) {
-                                            fileWriter.onwriteend = function (e) {
-                                                fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
-                                                loginIntoWallet();
-                                            };
+                                fileSystem.getFile(keystore_file_name, {create: true, exclusive: true}, function (fileEntry) {
+                                    fileEntry.createWriter(function (fileWriter) {
+                                        fileWriter.onwriteend = function (e) {
+                                            fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
+                                            loginIntoWallet();
+                                        };
 
-                                            fileWriter.onerror = function (e) {
-                                                hideLoader();
-                                                alert('Something went wrong with caching your file (Core error 3). Please contact admin@dentacoin.com.');
-                                            };
-
-                                            // Create a new Blob and write they keystore content inside of it
-                                            var blob = new Blob([JSON.stringify(generated_keystore.success.keystore)], {type: 'text/plain'});
-                                            fileWriter.write(blob);
-                                        }, function(err) {
-                                            console.log(err, 'err');
+                                        fileWriter.onerror = function (e) {
                                             hideLoader();
-                                            alert('Something went wrong with downloading your file (Core error 4). Please contact admin@dentacoin.com.');
-                                        });
+                                            alert('Something went wrong with caching your file (Core error 3). Please contact admin@dentacoin.com.');
+                                        };
+
+                                        // Create a new Blob and write they keystore content inside of it
+                                        var blob = new Blob([JSON.stringify(generated_keystore.success.keystore)], {type: 'text/plain'});
+                                        fileWriter.write(blob);
                                     }, function(err) {
                                         console.log(err, 'err');
                                         hideLoader();
-                                        alert('Seems like file with this name already exist in your root directory, move it or delete it and try again.');
+                                        alert('Something went wrong with downloading your file (Core error 4). Please contact admin@dentacoin.com.');
                                     });
                                 }, function(err) {
                                     console.log(err, 'err');
                                     hideLoader();
-                                    alert('Something went wrong with downloading your file (Core error 5). Please contact admin@dentacoin.com.');
+                                    alert('Seems like file with this name already exist in your root directory, move it or delete it and try again.');
                                 });
+                            }, function(err) {
+                                console.log(err, 'err');
+                                hideLoader();
+                                alert('Something went wrong with downloading your file (Core error 5). Please contact admin@dentacoin.com.');
                             });
                         }
                     } else {
