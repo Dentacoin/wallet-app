@@ -32,6 +32,9 @@
     <feature name="BarcodeScanner">
         <param name="ios-package" value="CDVBarcodeScanner" />
     </feature>
+    <feature name="FilePicker">
+        <param name="ios-package" value="FilePicker" />
+    </feature>
     <name>Dentacoin Wallet</name>
     <description>
         A sample Apache Cordova application that responds to the deviceready event.
@@ -63,7 +66,4 @@
     <preference name="PaginationBreakingMode" value="page" />
     <preference name="PaginationMode" value="unpaginated" />
     <preference name="orientation" value="portrait" />
-    <feature name="FilePicker">
-        <param name="ios-package" value="FilePicker" />
-    </feature>
 </widget>

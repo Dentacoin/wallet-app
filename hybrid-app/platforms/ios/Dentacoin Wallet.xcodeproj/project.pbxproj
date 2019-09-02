@@ -5,6 +5,7 @@
 	};
 	objectVersion = 46;
 	objects = {
+
 /* Begin PBXBuildFile section */
 		0207DA581B56EA530066E2B4 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0207DA571B56EA530066E2B4 /* Images.xcassets */; };
 		03484815F244404E84AB2A6F /* scannerOverlay.xib in Resources */ = {isa = PBXBuildFile; fileRef = 78117DA84EA84205BB3C77B7 /* scannerOverlay.xib */; };
@@ -12,6 +13,7 @@
 		16BB6BE240B54D089CC8B726 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D1408BBD1FD4CB29E9AC35C /* AVFoundation.framework */; };
 		1D3623260D0F684500981E51 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D3623250D0F684500981E51 /* AppDelegate.m */; };
 		1D60589B0D05DD56006BFB54 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; };
+		2FB2F3073E1D41F88E5BFC72 /* FilePicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 25213B0AE9734B72804D5984 /* FilePicker.m */; };
 		301BF552109A68D80062928A /* libCordova.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 301BF535109A57CC0062928A /* libCordova.a */; settings = {ATTRIBUTES = (Required, ); }; };
 		302D95F114D2391D003F00A1 /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 302D95EF14D2391D003F00A1 /* MainViewController.m */; };
 		302D95F214D2391D003F00A1 /* MainViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 302D95F014D2391D003F00A1 /* MainViewController.xib */; };
@@ -26,7 +28,6 @@
 		9BBA909110C240468453D40A /* CDVBarcodeScanner.mm in Sources */ = {isa = PBXBuildFile; fileRef = 68D996A8DE1341E393B9CB04 /* CDVBarcodeScanner.mm */; };
 		C66F5AC2BCB243BB9E5115F5 /* CDVAssetLibraryFilesystem.m in Sources */ = {isa = PBXBuildFile; fileRef = E6D1A3B236AB40B3BF0DFB41 /* CDVAssetLibraryFilesystem.m */; };
 		D1465A080BF4402E81BBEBB9 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 94D2E65F0E45487E86373CB3 /* SystemConfiguration.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
-		2FB2F3073E1D41F88E5BFC72 /* FilePicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 25213B0AE9734B72804D5984 /* FilePicker.m */; };
 		F51EE58488A84A99B3668998 /* Dentacoin Wallet.entitlements in Resources */ = {isa = PBXBuildFile; fileRef = 6B0DD1AA23E24096AAE2BD93 /* Dentacoin Wallet.entitlements */; };
 /* End PBXBuildFile section */
 
@@ -56,12 +57,14 @@
 
 /* Begin PBXFileReference section */
 		0207DA571B56EA530066E2B4 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = "Dentacoin Wallet/Images.xcassets"; sourceTree = SOURCE_ROOT; };
+		08D6195239B148EBABF5E4AC /* FilePicker.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = FilePicker.h; path = "cordova-plugin-filepicker/FilePicker.h"; sourceTree = "<group>"; };
 		10C83A9B49954E34961DC37F /* CDVFile.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; name = CDVFile.m; path = "cordova-plugin-file/CDVFile.m"; sourceTree = "<group>"; };
 		1AC7332FF35C4E6D8DD813E7 /* AudioToolbox.framework */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		1D3623240D0F684500981E51 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		1D3623250D0F684500981E51 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		1D6058910D05DD3D006BFB54 /* Dentacoin Wallet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Dentacoin Wallet.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		21ABE7FF1F674321BFED9B41 /* CDVReachability.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; name = CDVReachability.m; path = "cordova-plugin-network-information/CDVReachability.m"; sourceTree = "<group>"; };
+		25213B0AE9734B72804D5984 /* FilePicker.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; name = FilePicker.m; path = "cordova-plugin-filepicker/FilePicker.m"; sourceTree = "<group>"; };
 		25D25E86D46C4E728E789138 /* CDVFile.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = CDVFile.h; path = "cordova-plugin-file/CDVFile.h"; sourceTree = "<group>"; };
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		2B873A47E974495CB550A5E9 /* CDVConnection.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = CDVConnection.h; path = "cordova-plugin-network-information/CDVConnection.h"; sourceTree = "<group>"; };
@@ -79,6 +82,7 @@
 		4974DE41FF3A4AFF9097F0A5 /* CDVBarcodeScanner.bundle */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.plug-in"; path = CDVBarcodeScanner.bundle; sourceTree = "<group>"; };
 		68D996A8DE1341E393B9CB04 /* CDVBarcodeScanner.mm */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = CDVBarcodeScanner.mm; path = "phonegap-plugin-barcodescanner/CDVBarcodeScanner.mm"; sourceTree = "<group>"; };
 		6AFF5BF81D6E424B00AB3073 /* CDVLaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = CDVLaunchScreen.storyboard; path = "Dentacoin Wallet/CDVLaunchScreen.storyboard"; sourceTree = SOURCE_ROOT; };
+		6B0DD1AA23E24096AAE2BD93 /* Dentacoin Wallet.entitlements */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; path = "Dentacoin Wallet.entitlements"; sourceTree = "<group>"; };
 		74C48F4E472C45D381D9C09B /* CDVConnection.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; name = CDVConnection.m; path = "cordova-plugin-network-information/CDVConnection.m"; sourceTree = "<group>"; };
 		78117DA84EA84205BB3C77B7 /* scannerOverlay.xib */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = file.xib; path = scannerOverlay.xib; sourceTree = "<group>"; };
 		7FF1791C74B3458F9C2650EB /* CDVDevice.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = CDVDevice.h; path = "cordova-plugin-device/CDVDevice.h"; sourceTree = "<group>"; };
@@ -94,9 +98,6 @@
 		EB87FDF41871DAF40020F90C /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = ../../config.xml; sourceTree = "<group>"; };
 		ED33DF2A687741AEAF9F8254 /* Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
 		F840E1F0165FE0F500CFE078 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = "Dentacoin Wallet/config.xml"; sourceTree = "<group>"; };
-		25213B0AE9734B72804D5984 /* FilePicker.m */ = {isa = PBXFileReference; name = "FilePicker.m"; path = "cordova-plugin-filepicker/FilePicker.m"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; explicitFileType = undefined; includeInIndex = 0; };
-		08D6195239B148EBABF5E4AC /* FilePicker.h */ = {isa = PBXFileReference; name = "FilePicker.h"; path = "cordova-plugin-filepicker/FilePicker.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
-		6B0DD1AA23E24096AAE2BD93 /* Dentacoin Wallet.entitlements */ = {isa = PBXFileReference; name = "Dentacoin Wallet.entitlements"; path = "Dentacoin Wallet.entitlements"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -390,6 +391,7 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_ENTITLEMENTS = "Dentacoin Wallet/Resources/Dentacoin Wallet.entitlements";
 				COPY_PHASE_STRIP = NO;
 				DEVELOPMENT_TEAM = 9VFT72C446;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -401,10 +403,9 @@
 				INFOPLIST_FILE = "Dentacoin Wallet/Dentacoin Wallet-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = wallet.dentacoin.com;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dentacoin.wallet;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
-				CODE_SIGN_ENTITLEMENTS = "Dentacoin Wallet/Resources/Dentacoin Wallet.entitlements";
 			};
 			name = Debug;
 		};
@@ -417,6 +418,7 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_ENTITLEMENTS = "Dentacoin Wallet/Resources/Dentacoin Wallet.entitlements";
 				COPY_PHASE_STRIP = YES;
 				DEVELOPMENT_TEAM = 9VFT72C446;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -426,10 +428,9 @@
 				INFOPLIST_FILE = "Dentacoin Wallet/Dentacoin Wallet-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = wallet.dentacoin.com;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dentacoin.wallet;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
-				CODE_SIGN_ENTITLEMENTS = "Dentacoin Wallet/Resources/Dentacoin Wallet.entitlements";
 			};
 			name = Release;
 		};
@@ -456,6 +457,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = "Dentacoin Wallet/Resources/Dentacoin Wallet.entitlements";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = c99;
@@ -472,7 +474,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = wallet.dentacoin.com;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = NO;
-				CODE_SIGN_ENTITLEMENTS = "Dentacoin Wallet/Resources/Dentacoin Wallet.entitlements";
 			};
 			name = Debug;
 		};
@@ -499,6 +500,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = "Dentacoin Wallet/Resources/Dentacoin Wallet.entitlements";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -513,7 +515,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = wallet.dentacoin.com;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = NO;
-				CODE_SIGN_ENTITLEMENTS = "Dentacoin Wallet/Resources/Dentacoin Wallet.entitlements";
 			};
 			name = Release;
 		};

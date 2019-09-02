@@ -1893,8 +1893,99 @@ function initAccountChecker()  {
             basic.showDialog('<div class="popup-body"><div class="title">Sign in to MetaMask</div><div class="subtitle">Open up your browser\'s MetaMask extention.</div><div class="separator"></div><figure class="gif"><img src="assets/images/metamask-animation.gif" alt="Login MetaMask animation"/> </figure></div>', 'login-metamask-desktop');
         }
     } else if(window.localStorage.getItem('current_account') == null && typeof(web3) === 'undefined') {
+
+        $(document).on('click', '#download-one', function() {
+            console.log('download-one');
+            var hiddenElement = document.createElement('a');
+            hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI('Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.');
+            hiddenElement.target = '_blank';
+            hiddenElement.download = 'export.csv';
+            hiddenElement.style.display = 'none';
+            document.body.appendChild(hiddenElement);
+            hiddenElement.click();
+        });
+
+        $(document).on('click', '#download-two', function() {
+            console.log('download-two');
+            downloadFile('testing-name', 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.');
+        });
+
+        $(document).on('click', '#download-three', function() {
+            console.log('download-three');
+            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0,
+                function onFileSystemSuccess(fileSystem) {
+                console.log(fileSystem, 'fileSystem');
+                    fileSystem.root.getFile(
+                    "dummy.html", {create: true, exclusive: false},
+                    function gotFileEntry(fileEntry) {
+                        var sPath = fileEntry.fullPath.replace("dummy.html", "");
+                        var fileTransfer = new FileTransfer();
+                        fileEntry.remove();
+                        console.log(sPath, 'sPath');
+
+                        fileTransfer.download(
+                            "http://www.w3.org/2011/web-apps-ws/papers/Nitobi.pdf",
+                            sPath + "theFile.pdf",
+                            function(theFile) {
+                                console.log("download complete: " + theFile.toURI());
+                            },
+                            function(error) {
+                                console.log("download error source " + error.source);
+                                console.log("download error target " + error.target);
+                                console.log("upload error code: " + error.code);
+                            }
+                        );
+                    }, function(err) {
+                        console.log(err);
+                    });
+            }, function(err) {
+                console.log(err);
+            });
+        });
+
+        $(document).on('click', '#download-four', function() {
+            console.log('download-four');
+            var file_path;
+            if(basic.getMobileOperatingSystem() == 'iOS') {
+                file_path = "res//db//";
+                //4 apache//iOS/desktop
+
+                FilePicker.pickFile(function(path) {
+                    console.log(path, 'path');
+                    window.resolveLocalFileSystemURL(decodeURIComponent(path), function (entry) {
+                        window.resolveLocalFileSystemURL(file_path, function (rootEntry) {
+                            console.log(rootEntry, 'rootEntry');
+                            rootEntry.getFile(decodeURIComponent(entry.fullPath), {create: false}, function (fileEntry) {
+                                console.log(fileEntry, 'fileEntry');
+                                fileEntry.file(function (file) {
+                                    var reader = new FileReader();
+
+                                    initCustomInputFileAnimation(this_btn);
+
+                                    reader.onloadend = function () {
+                                        var keystore_string = this.result;
+                                        console.log(keystore_string, 'keystore_string');
+                                    }
+
+                                    reader.readAsText(file);
+                                });
+                            }, function (err) {
+                                alert('Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.');
+                            });
+                        });
+                    });
+                }, function(err) {
+                    alert('File importing failed. Please update to one of the latest iOS versions in order to have file importing working.');
+                });
+            }
+        });
+
+        $(document).on('change', '#import-one', function() {
+            console.log($(this).val());
+        });
+
         //show custom authentication popup
-        var popup_html = '<div class="popup-header padding-bottom-5 text-center"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/wallet-loading.png" class="max-width-80 width-100" alt="Dentacoin wallet logo"></figure></div><div class="left-right-side-holder fs-0"><div class="popup-left inline-block-top" data-step="first"><div class="navigation-link"><a href="javascript:void(0)" data-slug="first" class="active">CREATE</a></div><div class="navigation-link mobile"><a href="javascript:void(0)" data-slug="second">IMPORT</a></div><div class="popup-body first"><div class="creation-text max-width-400 padding-top-20 padding-bottom-20"><svg class="inline-block-top" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 63.3 64.1" style="enable-background:new 0 0 63.3 64.1;" xml:space="preserve"><style type="text/css">.keyholder-st0{fill:url(#SVGID_1_);}.keyholder-st1{fill:url(#SVGID_2_);}.keyholder-st2{fill:url(#SVGID_3_);}.keyholder-st3{fill:url(#SVGID_4_);}.keyholder-st4{fill:url(#SVGID_5_);}.keyholder-st5{fill:url(#SVGID_6_);}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="64.1" width="63.3" x="1.3" y="17.4"></sliceSourceBounds></sfw></metadata><g><g><linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="23.7" y1="8.35" x2="38.6" y2="8.35"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st0" d="M31.2,16.7c4.2,0,7.4-5.2,7.4-9.3S35.3,0,31.2,0s-7.5,3.3-7.5,7.4S27,16.7,31.2,16.7z"/></g><g><linearGradient id="SVGID_2_" gradientUnits="userSpaceOnUse" x1="15.6" y1="20.5" x2="46.8" y2="20.5"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st1" d="M19.1,27.9h3.4c0.3-1.4,0.3-1.5,0.3-1.7c0-0.3,0.5-0.3,0.5,0v1.7h15.8v-1.7c0-0.1,0.3-0.7,0.8,1.5c0,0.1,0,0.1,0.1,0.2h1.9v-2.3c0-1.7,1.3-3,3-3h1.9c-0.5-3.6-1.5-9.3-7.7-9.5c-1.7,3.1-4.5,5.6-7.9,5.6s-6.3-2.5-7.9-5.6c-6.4,0.2-7.3,6.2-7.7,10.7C17,24.9,18.3,26.3,19.1,27.9z"/></g><g><linearGradient id="SVGID_3_" gradientUnits="userSpaceOnUse" x1="17.6" y1="39.35" x2="20.5" y2="39.35"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st2" d="M17.6,40.5c0.3,0,0.5-0.1,0.7-0.2c1-0.4,1.8-1.1,2.2-2.1h-1.4C18.7,39.1,18.2,39.8,17.6,40.5z"/></g><g><linearGradient id="SVGID_4_" gradientUnits="userSpaceOnUse" x1="23.3" y1="51.2" x2="39.1" y2="51.2"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st3" d="M23.3,60.5c0,1.9,1.5,3.5,3.4,3.5c1.9,0,3.5-1.6,3.5-3.5V44.7c0-0.5,0.5-1,1-1s1,0.5,1,1v15.9c0,1.9,1.5,3.5,3.5,3.5c1.9,0,3.4-1.6,3.4-3.5V38.3H23.3V60.5z"/></g><g><linearGradient id="SVGID_5_" gradientUnits="userSpaceOnUse" x1="43" y1="39.4" x2="49.5" y2="39.4"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st4" d="M46.2,40.5c1.4,0,2.8-0.8,3.3-2.2H43C43.4,39.7,44.8,40.5,46.2,40.5z"/></g><g><linearGradient id="SVGID_6_" gradientUnits="userSpaceOnUse" x1="0" y1="32" x2="63.3129" y2="32"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><path class="keyholder-st5" d="M62.4,29.9h-2.7v-7.2c0-0.6-0.5-1-1-1h-4.4c-0.6,0-1,0.4-1,1v7.2h-3.1v-4.3c0-0.6-0.5-1-1-1h-4.4c-0.5,0-1,0.4-1,1v4.3h-26c-1.3-3.6-4.8-6-8.6-6C4.1,23.9,0,28,0,33.1s4.1,9.2,9.2,9.2c3.9,0,7.3-2.4,8.6-6h44.5c0.5,0,1-0.5,1-1v-4.4C63.4,30.3,62.9,29.9,62.4,29.9z M9.2,36.8c-2.1,0-3.7-1.7-3.7-3.7s1.7-3.7,3.7-3.7c2.1,0,3.7,1.7,3.7,3.7S11.3,36.8,9.2,36.8z"/></g></g></svg><div class="inline-block-top text padding-left-10 fs-xs-14 fs-16"><div class="lato-bold fs-18">Let\'s create a new wallet!</div>Please set a secure password, download your Backup File and keep it safe! If lost, there is no way to access your tokens. </div></div><div class="field-parent margin-bottom-15 max-width-300 margin-left-right-auto"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="keystore-file-pass">Enter password:</label><input type="password" maxlength="30" id="keystore-file-pass" class="full-rounded keystore-file-pass required-field"/></div></div><div class="field-parent max-width-300 margin-left-right-auto"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="second-pass">Repeat password:</label><input type="password" maxlength="30" id="second-pass" class="full-rounded second-pass required-field"/></div></div><div class="text-center padding-top-15"><input type="checkbox" checked id="agree-to-cache-create" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-create"><span class="padding-left-5 padding-right-5 inline-block">Remember backup file</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block more-info-keystore-remember fs-0" data-content="Remembering your backup file allows for easier and faster transactions. It is stored only in local device storage and nobody else has access to it."><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="btn-container text-center padding-top-15"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border login-into-wallet min-width-180">CREATE</a></div><div class="auth-popup-faq-link padding-top-20 text-center"><a href="//dentacoin.com/how-to-create-wallet" target="_blank">?</a></div></div></div><div class="popup-right inline-block-top"><div class="navigation-link"><a href="javascript:void(0)" data-slug="second">IMPORT</a></div><div class="popup-body second custom-hide"><div class="padding-top-20 padding-bottom-30 fs-0 row-with-image-and-text max-width-400 max-width-xs-300"><svg class="max-width-80 inline-block" version="1.1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 70.1 86" style="enable-background:new 0 0 70.1 86;" xml:space="preserve"><style type="text/css">.st0-import{fill:url(#SVGID_1_import);}.st1-import{fill:url(#SVGID_2_import);}.st2-import{fill:#FFFFFF;}.st3-import{fill:url(#SVGID_3_import);stroke:#FFFFFF;stroke-width:0.75;stroke-miterlimit:10;}.st4-import{fill:#FFFFFF;stroke:#FFFFFF;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="86" width="70.1" x="16" y="29"></sliceSourceBounds></sfw></metadata><linearGradient id="SVGID_1_import" gradientUnits="userSpaceOnUse" x1="0" y1="43" x2="64" y2="43"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="st0-import" d="M44.7,0H3.1C1.4,0,0,1.3,0,3v80c0,1.6,1.4,3,3.1,3h57.9c1.7,0,3.1-1.3,3.1-3V18.8c0-0.9-0.4-1.8-1-2.5L47.2,1C46.5,0.4,45.6,0,44.7,0z"/><linearGradient id="SVGID_2_import" gradientUnits="userSpaceOnUse" x1="35.9571" y1="23.008" x2="69.6066" y2="23.008"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><circle class="st1-import" cx="52.8" cy="23" r="16.8"/><rect x="28" y="49" class="st2-import" width="8" height="37"/><path class="st2-import" d="M18.2,58.8l13.4-14.6c0.3-0.3,0.7-0.3,1,0l13.4,14.7c0.4,0.4,0.1,1.2-0.5,1.2H18.6C18.1,60,17.8,59.2,18.2,58.8z"/><g><linearGradient id="SVGID_3_import" gradientUnits="userSpaceOnUse" x1="34.8246" y1="23.1469" x2="69.7484" y2="23.1469"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><path class="st3-import" d="M52.3,6.5C61.5,6.5,69,14,69,23.1s-7.5,16.7-16.7,16.7s-16.7-7.5-16.7-16.7S43.1,6.5,52.3,6.5 M52.3,5.7c-9.7,0-17.5,7.8-17.5,17.5s7.8,17.5,17.5,17.5s17.5-7.8,17.5-17.5S61.9,5.7,52.3,5.7L52.3,5.7z"/></g><g><rect x="59" y="28.4" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -2.9698 50.8809)" class="st4-import" width="1.9" height="1.2"/><rect x="58.2" y="27.7" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -2.6509 50.155)" class="st4-import" width="1.9" height="1.2"/><g><polygon class="st4-import" points="60.7,30.7 59.7,31.8 50.9,22.9 51.9,21.9 "/><path class="st4-import" d="M45,16c-1.9,1.9-1.9,4.9,0,6.8c1.9,1.9,4.9,1.9,6.8,0c1.9-1.9,1.9-4.9,0-6.8C49.8,14.1,46.8,14.1,45,16z M50.9,21.9c-1.4,1.4-3.7,1.4-5.1,0c-1.4-1.4-1.4-3.7,0-5.1c1.4-1.4,3.7-1.4,5.1,0C52.3,18.2,52.3,20.5,50.9,21.9z"/></g></g></svg><div class="inline-block padding-left-10 fs-16 fs-xs-14 text"><div class="lato-bold fs-18">Welcome back!</div>To import an existing wallet, please upload your Backup File.</div></div><div class="text-center import-keystore-file-row">';
+        var popup_html = '<div><input type="button" value="Download 1" id="download-one"/></div><br><br><div><input type="button" value="Download 2" id="download-two"/></div><br><br><div><input type="button" value="Download 3" id="download-three"/></div><br><br><div><input type="button" value="Download 4" id="download-four"/></div><br><br><input type="file" id="import-one"/></div><br><br><div class="popup-header padding-bottom-5 text-center"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/wallet-loading.png" class="max-width-80 width-100" alt="Dentacoin wallet logo"></figure></div><div class="left-right-side-holder fs-0"><div class="popup-left inline-block-top" data-step="first"><div class="navigation-link"><a href="javascript:void(0)" data-slug="first" class="active">CREATE</a></div><div class="navigation-link mobile"><a href="javascript:void(0)" data-slug="second">IMPORT</a></div><div class="popup-body first"><div class="creation-text max-width-400 padding-top-20 padding-bottom-20"><svg class="inline-block-top" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 63.3 64.1" style="enable-background:new 0 0 63.3 64.1;" xml:space="preserve"><style type="text/css">.keyholder-st0{fill:url(#SVGID_1_);}.keyholder-st1{fill:url(#SVGID_2_);}.keyholder-st2{fill:url(#SVGID_3_);}.keyholder-st3{fill:url(#SVGID_4_);}.keyholder-st4{fill:url(#SVGID_5_);}.keyholder-st5{fill:url(#SVGID_6_);}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="64.1" width="63.3" x="1.3" y="17.4"></sliceSourceBounds></sfw></metadata><g><g><linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="23.7" y1="8.35" x2="38.6" y2="8.35"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st0" d="M31.2,16.7c4.2,0,7.4-5.2,7.4-9.3S35.3,0,31.2,0s-7.5,3.3-7.5,7.4S27,16.7,31.2,16.7z"/></g><g><linearGradient id="SVGID_2_" gradientUnits="userSpaceOnUse" x1="15.6" y1="20.5" x2="46.8" y2="20.5"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st1" d="M19.1,27.9h3.4c0.3-1.4,0.3-1.5,0.3-1.7c0-0.3,0.5-0.3,0.5,0v1.7h15.8v-1.7c0-0.1,0.3-0.7,0.8,1.5c0,0.1,0,0.1,0.1,0.2h1.9v-2.3c0-1.7,1.3-3,3-3h1.9c-0.5-3.6-1.5-9.3-7.7-9.5c-1.7,3.1-4.5,5.6-7.9,5.6s-6.3-2.5-7.9-5.6c-6.4,0.2-7.3,6.2-7.7,10.7C17,24.9,18.3,26.3,19.1,27.9z"/></g><g><linearGradient id="SVGID_3_" gradientUnits="userSpaceOnUse" x1="17.6" y1="39.35" x2="20.5" y2="39.35"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st2" d="M17.6,40.5c0.3,0,0.5-0.1,0.7-0.2c1-0.4,1.8-1.1,2.2-2.1h-1.4C18.7,39.1,18.2,39.8,17.6,40.5z"/></g><g><linearGradient id="SVGID_4_" gradientUnits="userSpaceOnUse" x1="23.3" y1="51.2" x2="39.1" y2="51.2"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st3" d="M23.3,60.5c0,1.9,1.5,3.5,3.4,3.5c1.9,0,3.5-1.6,3.5-3.5V44.7c0-0.5,0.5-1,1-1s1,0.5,1,1v15.9c0,1.9,1.5,3.5,3.5,3.5c1.9,0,3.4-1.6,3.4-3.5V38.3H23.3V60.5z"/></g><g><linearGradient id="SVGID_5_" gradientUnits="userSpaceOnUse" x1="43" y1="39.4" x2="49.5" y2="39.4"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st4" d="M46.2,40.5c1.4,0,2.8-0.8,3.3-2.2H43C43.4,39.7,44.8,40.5,46.2,40.5z"/></g><g><linearGradient id="SVGID_6_" gradientUnits="userSpaceOnUse" x1="0" y1="32" x2="63.3129" y2="32"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><path class="keyholder-st5" d="M62.4,29.9h-2.7v-7.2c0-0.6-0.5-1-1-1h-4.4c-0.6,0-1,0.4-1,1v7.2h-3.1v-4.3c0-0.6-0.5-1-1-1h-4.4c-0.5,0-1,0.4-1,1v4.3h-26c-1.3-3.6-4.8-6-8.6-6C4.1,23.9,0,28,0,33.1s4.1,9.2,9.2,9.2c3.9,0,7.3-2.4,8.6-6h44.5c0.5,0,1-0.5,1-1v-4.4C63.4,30.3,62.9,29.9,62.4,29.9z M9.2,36.8c-2.1,0-3.7-1.7-3.7-3.7s1.7-3.7,3.7-3.7c2.1,0,3.7,1.7,3.7,3.7S11.3,36.8,9.2,36.8z"/></g></g></svg><div class="inline-block-top text padding-left-10 fs-xs-14 fs-16"><div class="lato-bold fs-18">Let\'s create a new wallet!</div>Please set a secure password, download your Backup File and keep it safe! If lost, there is no way to access your tokens. </div></div><div class="field-parent margin-bottom-15 max-width-300 margin-left-right-auto"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="keystore-file-pass">Enter password:</label><input type="password" maxlength="30" id="keystore-file-pass" class="full-rounded keystore-file-pass required-field"/></div></div><div class="field-parent max-width-300 margin-left-right-auto"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="second-pass">Repeat password:</label><input type="password" maxlength="30" id="second-pass" class="full-rounded second-pass required-field"/></div></div><div class="text-center padding-top-15"><input type="checkbox" checked id="agree-to-cache-create" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-create"><span class="padding-left-5 padding-right-5 inline-block">Remember backup file</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block more-info-keystore-remember fs-0" data-content="Remembering your backup file allows for easier and faster transactions. It is stored only in local device storage and nobody else has access to it."><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="btn-container text-center padding-top-15"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border login-into-wallet min-width-180">CREATE</a></div><div class="auth-popup-faq-link padding-top-20 text-center"><a href="//dentacoin.com/how-to-create-wallet" target="_blank">?</a></div></div></div><div class="popup-right inline-block-top"><div class="navigation-link"><a href="javascript:void(0)" data-slug="second">IMPORT</a></div><div class="popup-body second custom-hide"><div class="padding-top-20 padding-bottom-30 fs-0 row-with-image-and-text max-width-400 max-width-xs-300"><svg class="max-width-80 inline-block" version="1.1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 70.1 86" style="enable-background:new 0 0 70.1 86;" xml:space="preserve"><style type="text/css">.st0-import{fill:url(#SVGID_1_import);}.st1-import{fill:url(#SVGID_2_import);}.st2-import{fill:#FFFFFF;}.st3-import{fill:url(#SVGID_3_import);stroke:#FFFFFF;stroke-width:0.75;stroke-miterlimit:10;}.st4-import{fill:#FFFFFF;stroke:#FFFFFF;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="86" width="70.1" x="16" y="29"></sliceSourceBounds></sfw></metadata><linearGradient id="SVGID_1_import" gradientUnits="userSpaceOnUse" x1="0" y1="43" x2="64" y2="43"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="st0-import" d="M44.7,0H3.1C1.4,0,0,1.3,0,3v80c0,1.6,1.4,3,3.1,3h57.9c1.7,0,3.1-1.3,3.1-3V18.8c0-0.9-0.4-1.8-1-2.5L47.2,1C46.5,0.4,45.6,0,44.7,0z"/><linearGradient id="SVGID_2_import" gradientUnits="userSpaceOnUse" x1="35.9571" y1="23.008" x2="69.6066" y2="23.008"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><circle class="st1-import" cx="52.8" cy="23" r="16.8"/><rect x="28" y="49" class="st2-import" width="8" height="37"/><path class="st2-import" d="M18.2,58.8l13.4-14.6c0.3-0.3,0.7-0.3,1,0l13.4,14.7c0.4,0.4,0.1,1.2-0.5,1.2H18.6C18.1,60,17.8,59.2,18.2,58.8z"/><g><linearGradient id="SVGID_3_import" gradientUnits="userSpaceOnUse" x1="34.8246" y1="23.1469" x2="69.7484" y2="23.1469"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><path class="st3-import" d="M52.3,6.5C61.5,6.5,69,14,69,23.1s-7.5,16.7-16.7,16.7s-16.7-7.5-16.7-16.7S43.1,6.5,52.3,6.5 M52.3,5.7c-9.7,0-17.5,7.8-17.5,17.5s7.8,17.5,17.5,17.5s17.5-7.8,17.5-17.5S61.9,5.7,52.3,5.7L52.3,5.7z"/></g><g><rect x="59" y="28.4" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -2.9698 50.8809)" class="st4-import" width="1.9" height="1.2"/><rect x="58.2" y="27.7" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -2.6509 50.155)" class="st4-import" width="1.9" height="1.2"/><g><polygon class="st4-import" points="60.7,30.7 59.7,31.8 50.9,22.9 51.9,21.9 "/><path class="st4-import" d="M45,16c-1.9,1.9-1.9,4.9,0,6.8c1.9,1.9,4.9,1.9,6.8,0c1.9-1.9,1.9-4.9,0-6.8C49.8,14.1,46.8,14.1,45,16z M50.9,21.9c-1.4,1.4-3.7,1.4-5.1,0c-1.4-1.4-1.4-3.7,0-5.1c1.4-1.4,3.7-1.4,5.1,0C52.3,18.2,52.3,20.5,50.9,21.9z"/></g></g></svg><div class="inline-block padding-left-10 fs-16 fs-xs-14 text"><div class="lato-bold fs-18">Welcome back!</div>To import an existing wallet, please upload your Backup File.</div></div><div class="text-center import-keystore-file-row">';
         if(is_hybrid) {
             popup_html+='<label class="button custom-upload-button">';
         } else {
@@ -2016,7 +2107,7 @@ function initAccountChecker()  {
                                 loginIntoWallet();
                             });
                         } else if(basic.getMobileOperatingSystem() == 'iOS') {
-                            window.resolveLocalFileSystemURL(cordova.file.documentsDirectory , function (fileSystem) {
+                            window.resolveLocalFileSystemURL(cordova.file.syncedDataDirectory , function (fileSystem) {
                                 fileSystem.getFile(keystore_file_name, {create: true, exclusive: true}, function (fileEntry) {
                                     fileEntry.createWriter(function (fileWriter) {
                                         fileWriter.onwriteend = function (e) {
@@ -2198,7 +2289,15 @@ function styleKeystoreUploadBtn()    {
             //iOS
             $('.custom-upload-button').click(function() {
                 console.log('CLIKCEDDDD ==========================');
-                var this_btn = $(this);
+                console.log(cordova.file, 'cordova.file');
+
+                FilePicker.pickFile(function(path) {
+                    alert("You picked this file: " + path);
+                }, function(err) {
+                    alert('File importing failed. Please update to one of the latest iOS versions in order to have file importing working.');
+                });
+
+                /*var this_btn = $(this);
                 fileChooser.open(function (file_uri) {
                     console.log(file_uri, 'file_uri');
 
@@ -2222,7 +2321,7 @@ function styleKeystoreUploadBtn()    {
                             });
                         });
                     });
-                });
+                });*/
             });
         }
     } else {
