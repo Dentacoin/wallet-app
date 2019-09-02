@@ -2197,6 +2197,7 @@ function styleKeystoreUploadBtn()    {
         }else if(basic.getMobileOperatingSystem() == 'iOS') {
             //iOS
             $('.custom-upload-button').click(function() {
+                console.log('CLIKCEDDDD ==========================');
                 var this_btn = $(this);
                 fileChooser.open(function (file_uri) {
                     console.log(file_uri, 'file_uri');
