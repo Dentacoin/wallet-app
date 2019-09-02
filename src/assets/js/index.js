@@ -1904,7 +1904,7 @@ function initAccountChecker()  {
                     function gotFileEntry(fileEntry) {
                         var sPath = fileEntry.fullPath.replace("dummy.html", "");
                         console.log(sPath, 'sPath');
-                        
+
                         var fileTransfer = new FileTransfer();
                         fileEntry.remove();
 

@@ -1,5 +1,6 @@
 import { Component, AfterViewInit } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
+import { DomSanitizer } from '@angular/platform-browser';
 
 /*declare function getHomepageData(): any;*/
 
@@ -9,13 +10,20 @@ import { Meta, Title } from '@angular/platform-browser';
 })
 
 export class HomepageComponent implements AfterViewInit {
-    constructor(private meta: Meta, private titleService: Title) {
+    href;
+    constructor(private meta: Meta, private titleService: Title, private sanitizer: DomSanitizer) {
         this.titleService.setTitle('Dentacoin Wallet App: Buy, Store & Manage Your DCN Tokens');
         this.meta.updateTag({name: 'description', content: 'Dentacoin Wallet allows users to easily and securely store, send, receive DCN tokens, as well as to buy DCN with credit card and other cryptocurrencies.'});
         this.meta.updateTag({name: 'keywords', content: 'buy dentacoin, store dentacoin, dentacoin wallet, pay with dentacoin'});
         this.meta.updateTag({name: 'og:title', content: 'Dentacoin Wallet App: Buy, Store & Manage Your DCN Tokens'});
         this.meta.updateTag({name: 'og:description', content: 'Dentacoin Wallet allows users to easily and securely store, send, receive DCN tokens, as well as to buy DCN with credit card and other cryptocurrencies.'});
         this.meta.updateTag({name: 'og:image', content: 'https://wallet.dentacoin.com/assets/images/dentacoin-wallet-dapp.png'});
+
+
+        const data = 'some text';
+        const blob = new Blob([data], { type: 'application/octet-stream' });
+        this.href = this.sanitizer.bypassSecurityTrustResourceUrl(window.URL.createObjectURL(blob));
+        this.href = this.href.changingThisBreaksApplicationSecurity;
     }
 
     ngAfterViewInit() {
