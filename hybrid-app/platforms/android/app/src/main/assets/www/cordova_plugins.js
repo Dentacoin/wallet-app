@@ -213,6 +213,14 @@ cordova.define('cordova/plugin_list', function(require, exports, module) {
       "clobbers": [
         "Connection"
       ]
+    },
+    {
+      "id": "cordova-plugin-filepicker.FilePicker",
+      "file": "plugins/cordova-plugin-filepicker/www/FilePicker.js",
+      "pluginId": "cordova-plugin-filepicker",
+      "clobbers": [
+        "FilePicker"
+      ]
     }
   ];
   module.exports.metadata = {
@@ -221,6 +229,7 @@ cordova.define('cordova/plugin_list', function(require, exports, module) {
     "cordova-plugin-file": "6.0.2",
     "cordova-plugin-filechooser": "1.2.0",
     "phonegap-plugin-barcodescanner": "8.1.0",
-    "cordova-plugin-network-information": "2.0.2"
+    "cordova-plugin-network-information": "2.0.2",
+    "cordova-plugin-filepicker": "1.1.6"
   };
 });

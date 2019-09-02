@@ -46,5 +46,13 @@
     },
     "is_top_level": true,
     "variables": {}
+  },
+  "cordova-plugin-filepicker": {
+    "source": {
+      "type": "registry",
+      "id": "cordova-plugin-filepicker"
+    },
+    "is_top_level": true,
+    "variables": {}
   }
 }

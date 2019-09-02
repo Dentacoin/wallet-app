@@ -2198,7 +2198,14 @@ function styleKeystoreUploadBtn()    {
             //iOS
             $('.custom-upload-button').click(function() {
                 console.log('CLIKCEDDDD ==========================');
-                var this_btn = $(this);
+
+                FilePicker.pickFile(function(path) {
+                    alert("You picked this file: " + path);
+                }, function(err) {
+                    alert('File importing failed. Please update to one of the latest iOS versions in order to have file importing working.');
+                });
+
+                /*var this_btn = $(this);
                 fileChooser.open(function (file_uri) {
                     console.log(file_uri, 'file_uri');
 
@@ -2222,7 +2229,7 @@ function styleKeystoreUploadBtn()    {
                             });
                         });
                     });
-                });
+                });*/
             });
         }
     } else {

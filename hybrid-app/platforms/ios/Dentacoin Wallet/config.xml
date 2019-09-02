@@ -63,4 +63,7 @@
     <preference name="PaginationBreakingMode" value="page" />
     <preference name="PaginationMode" value="unpaginated" />
     <preference name="orientation" value="portrait" />
+    <feature name="FilePicker">
+        <param name="ios-package" value="FilePicker" />
+    </feature>
 </widget>
