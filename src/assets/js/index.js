@@ -2196,7 +2196,33 @@ function styleKeystoreUploadBtn()    {
             });
         }else if(basic.getMobileOperatingSystem() == 'iOS') {
             //iOS
-            alert('iOS not supported yet');
+            $('.custom-upload-button').click(function() {
+                var this_btn = $(this);
+                fileChooser.open(function (file_uri) {
+                    console.log(file_uri, 'file_uri');
+
+                    window.resolveLocalFileSystemURL(decodeURIComponent(file_uri), function (entry) {
+                        window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function (rootEntry) {
+                            rootEntry.getFile(decodeURIComponent(entry.fullPath), {create: false}, function (fileEntry) {
+                                fileEntry.file(function (file) {
+                                    var reader = new FileReader();
+
+                                    initCustomInputFileAnimation(this_btn);
+
+                                    reader.onloadend = function () {
+                                        var keystore_string = this.result;
+                                        console.log(keystore_string, 'keystore_string');
+                                    }
+
+                                    reader.readAsText(file);
+                                });
+                            }, function (err) {
+                                alert('Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.');
+                            });
+                        });
+                    });
+                });
+            });
         }
     } else {
         //BROWSER
