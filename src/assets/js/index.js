@@ -2027,7 +2027,8 @@ function initAccountChecker()  {
                                     dirEntry.getFile(keystore_file_name, {create: true, exclusive: true}, function (fileEntry) {
                                         fileEntry.createWriter(function (fileWriter) {
                                             fileWriter.onwriteend = function (e) {
-                                                callback();
+                                                fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
+                                                loginIntoWallet();
                                             };
 
                                             fileWriter.onerror = function (e) {
