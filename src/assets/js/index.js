@@ -1974,6 +1974,7 @@ function initAccountChecker()  {
         // ================================= CREATING ==========================================
 
         $('.custom-auth-popup .popup-left .login-into-wallet').click(function()   {
+            console.log('CLICK CREATION');
             var login_errors = false;
             $('.popup-left .error-handle').remove();
             var login_fields = $('.popup-left .required-field');
@@ -1997,8 +1998,12 @@ function initAccountChecker()  {
                 showLoader('This might take a few minutes... <br>Please allow access to your device if asked for it.');
 
                 setTimeout(function() {
+                    console.log($('.custom-auth-popup .keystore-file-pass').val().trim(), 'start generating keystorefile');
                     var generated_keystore = generateKeystoreFile($('.custom-auth-popup .keystore-file-pass').val().trim());
                     var keystore_file_name = buildKeystoreFileName('0x' + generated_keystore.success.keystore.address);
+
+                    console.log(generated_keystore, 'generated_keystore');
+                    console.log(keystore_file_name, 'keystore_file_name');
 
                     //save the public key to assurance
                     var internet = navigator.onLine;
@@ -2006,6 +2011,7 @@ function initAccountChecker()  {
                         console.log('===== make request for save public keys for assurance =====');
                     }
 
+                    console.log(is_hybrid, 'is_hybrid');
                     if(is_hybrid) {
                         //MOBILE APP
                         if(basic.getMobileOperatingSystem() == 'Android') {
@@ -2057,6 +2063,7 @@ function initAccountChecker()  {
                     }
 
                     function loginIntoWallet() {
+                        console.log('loginIntoWallet');
                         if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
                             window.localStorage.setItem('current_account', '0x' + generated_keystore.success.keystore.address);
                             basic.showAlert('File ' + keystore_file_name + ' has been stored to the Downloads folder of your device and remembered for faster transactions.', '', true);
