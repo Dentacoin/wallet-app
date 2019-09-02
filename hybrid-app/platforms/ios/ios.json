@@ -27,6 +27,10 @@
             {
               "xml": "<feature name=\"FilePicker\"><param name=\"ios-package\" value=\"FilePicker\" /></feature>",
               "count": 1
+            },
+            {
+              "xml": "<feature name=\"FileTransfer\"><param name=\"ios-package\" value=\"CDVFileTransfer\" /></feature>",
+              "count": 1
             }
           ]
         }
@@ -53,6 +57,9 @@
       "PACKAGE_NAME": "$(PRODUCT_BUNDLE_IDENTIFIER)"
     },
     "cordova-plugin-filepicker": {
+      "PACKAGE_NAME": "$(PRODUCT_BUNDLE_IDENTIFIER)"
+    },
+    "cordova-plugin-file-transfer": {
       "PACKAGE_NAME": "$(PRODUCT_BUNDLE_IDENTIFIER)"
     }
   },
@@ -279,6 +286,22 @@
       "clobbers": [
         "FilePicker"
       ]
+    },
+    {
+      "id": "cordova-plugin-file-transfer.FileTransferError",
+      "file": "plugins/cordova-plugin-file-transfer/www/FileTransferError.js",
+      "pluginId": "cordova-plugin-file-transfer",
+      "clobbers": [
+        "window.FileTransferError"
+      ]
+    },
+    {
+      "id": "cordova-plugin-file-transfer.FileTransfer",
+      "file": "plugins/cordova-plugin-file-transfer/www/FileTransfer.js",
+      "pluginId": "cordova-plugin-file-transfer",
+      "clobbers": [
+        "window.FileTransfer"
+      ]
     }
   ],
   "plugin_metadata": {
@@ -288,6 +311,7 @@
     "cordova-plugin-network-information": "2.0.2",
     "cordova-plugin-whitelist": "1.3.4",
     "phonegap-plugin-barcodescanner": "8.1.0",
-    "cordova-plugin-filepicker": "1.1.6"
+    "cordova-plugin-filepicker": "1.1.6",
+    "cordova-plugin-file-transfer": "1.7.1"
   }
 }

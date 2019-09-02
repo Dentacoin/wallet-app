@@ -18,6 +18,7 @@
     "cordova-plugin-device": "^2.0.3",
     "cordova-plugin-file": "^6.0.2",
     "cordova-plugin-file-chooser": "git+https://github.com/caixiangsap/filechooser.git",
+    "cordova-plugin-file-transfer": "^1.7.1",
     "cordova-plugin-filechooser": "git+ssh://git@github.com/ihadeed/cordova-filechooser.git",
     "cordova-plugin-filepicker": "^1.1.6",
     "cordova-plugin-network-information": "^2.0.2",
@@ -36,7 +37,8 @@
         "ANDROID_SUPPORT_V4_VERSION": "27.+"
       },
       "cordova-plugin-network-information": {},
-      "cordova-plugin-filepicker": {}
+      "cordova-plugin-filepicker": {},
+      "cordova-plugin-file-transfer": {}
     },
     "platforms": [
       "android",

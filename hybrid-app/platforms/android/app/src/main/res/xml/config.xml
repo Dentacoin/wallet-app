@@ -42,4 +42,7 @@
     <icon density="xxhdpi" height="144" src="/app-resources/images/wallet-app-icon-144x144px.png" width="144" />
     <preference name="loglevel" value="DEBUG" />
     <preference name="orientation" value="portrait" />
+    <feature name="FileTransfer">
+        <param name="android-package" value="org.apache.cordova.filetransfer.FileTransfer" />
+    </feature>
 </widget>

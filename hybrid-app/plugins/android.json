@@ -28,6 +28,9 @@
     },
     "cordova-plugin-filepicker": {
       "PACKAGE_NAME": "wallet.dentacoin.com"
+    },
+    "cordova-plugin-file-transfer": {
+      "PACKAGE_NAME": "wallet.dentacoin.com"
     }
   },
   "dependent_plugins": {}

@@ -31,6 +31,10 @@
             {
               "xml": "<feature name=\"NetworkStatus\"><param name=\"android-package\" value=\"org.apache.cordova.networkinformation.NetworkManager\" /></feature>",
               "count": 1
+            },
+            {
+              "xml": "<feature name=\"FileTransfer\"><param name=\"android-package\" value=\"org.apache.cordova.filetransfer.FileTransfer\" /></feature>",
+              "count": 1
             }
           ],
           "/widget": [
@@ -46,7 +50,7 @@
           "/*": [
             {
               "xml": "<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\" />",
-              "count": 1
+              "count": 2
             },
             {
               "xml": "<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\" />",
@@ -107,6 +111,9 @@
       "PACKAGE_NAME": "wallet.dentacoin.com"
     },
     "cordova-plugin-filepicker": {
+      "PACKAGE_NAME": "wallet.dentacoin.com"
+    },
+    "cordova-plugin-file-transfer": {
       "PACKAGE_NAME": "wallet.dentacoin.com"
     }
   },
@@ -333,6 +340,22 @@
       "clobbers": [
         "FilePicker"
       ]
+    },
+    {
+      "id": "cordova-plugin-file-transfer.FileTransferError",
+      "file": "plugins/cordova-plugin-file-transfer/www/FileTransferError.js",
+      "pluginId": "cordova-plugin-file-transfer",
+      "clobbers": [
+        "window.FileTransferError"
+      ]
+    },
+    {
+      "id": "cordova-plugin-file-transfer.FileTransfer",
+      "file": "plugins/cordova-plugin-file-transfer/www/FileTransfer.js",
+      "pluginId": "cordova-plugin-file-transfer",
+      "clobbers": [
+        "window.FileTransfer"
+      ]
     }
   ],
   "plugin_metadata": {
@@ -342,6 +365,7 @@
     "cordova-plugin-filechooser": "1.2.0",
     "phonegap-plugin-barcodescanner": "8.1.0",
     "cordova-plugin-network-information": "2.0.2",
-    "cordova-plugin-filepicker": "1.1.6"
+    "cordova-plugin-filepicker": "1.1.6",
+    "cordova-plugin-file-transfer": "1.7.1"
   }
 }
