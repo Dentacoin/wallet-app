@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Dentacoin Wallet.ipa</key>
+	<array>
+		<dict>
+			<key>architectures</key>
+			<array>
+				<string>armv7</string>
+				<string>arm64</string>
+			</array>
+			<key>certificate</key>
+			<dict>
+				<key>SHA1</key>
+				<string>5B4E3FE21A9764BE567F3BCEF258F266CB3B1455</string>
+				<key>dateExpires</key>
+				<string>2.09.20</string>
+				<key>type</key>
+				<string>iOS Development</string>
+			</dict>
+			<key>entitlements</key>
+			<dict>
+				<key>application-identifier</key>
+				<string>9VFT72C446.com.dentacoin.wallet</string>
+				<key>com.apple.developer.icloud-container-environment</key>
+				<string>Development</string>
+				<key>com.apple.developer.icloud-container-identifiers</key>
+				<array>
+					<string>iCloud.com.dentacoin.wallet</string>
+				</array>
+				<key>com.apple.developer.icloud-services</key>
+				<array>
+					<string>CloudDocuments</string>
+				</array>
+				<key>com.apple.developer.team-identifier</key>
+				<string>9VFT72C446</string>
+				<key>com.apple.developer.ubiquity-container-identifiers</key>
+				<array>
+					<string>iCloud.com.dentacoin.wallet</string>
+				</array>
+				<key>get-task-allow</key>
+				<true/>
+			</dict>
+			<key>name</key>
+			<string>Dentacoin Wallet.app</string>
+			<key>profile</key>
+			<dict>
+				<key>UUID</key>
+				<string>b6e06b2a-7817-415e-b835-151955fa5cdf</string>
+				<key>name</key>
+				<string>iOS Team Provisioning Profile: com.dentacoin.wallet</string>
+			</dict>
+			<key>team</key>
+			<dict>
+				<key>id</key>
+				<string>9VFT72C446</string>
+				<key>name</key>
+				<string>Dentacoin B.V.</string>
+			</dict>
+		</dict>
+	</array>
+</dict>
+</plist>
