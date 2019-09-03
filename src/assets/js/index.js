@@ -2010,9 +2010,6 @@ function initAccountChecker()  {
                     var generated_keystore = generateKeystoreFile($('.custom-auth-popup .keystore-file-pass').val().trim());
                     var keystore_file_name = buildKeystoreFileName('0x' + generated_keystore.success.keystore.address);
 
-                    console.log(generated_keystore, 'generated_keystore');
-                    console.log(keystore_file_name, 'keystore_file_name');
-
                     //save the public key to assurance
                     var internet = navigator.onLine;
                     if(internet) {
@@ -2028,7 +2025,7 @@ function initAccountChecker()  {
                             });
                         } else if(basic.getMobileOperatingSystem() == 'iOS') {
                             //if iOS adding 2 more additional buttons. Downloads in iOS are not possible, because they have different file architecture. First button is for export (copy or share in socials) the keystore file and second one is to login in the Wallet
-                            $(this_btn).parent().html('<div class="padding-bottom-20 text-center"><a href="white-light-blue-btn light-blue-border ios-export-keystore min-width-200">Export Backup file</a></div><div><a href="white-light-blue-btn light-blue-border ios-login-into-wallet disabled min-width-200">Login into Wallet</a></div>');
+                            $(this_btn).parent().html('<div class="padding-bottom-20 text-center"><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border ios-export-keystore min-width-200">Export Backup file</a></div><div><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border ios-login-into-wallet disabled min-width-200">Login into Wallet</a></div>');
                             hideLoader();
 
                             $('.ios-export-keystore').click(function() {
