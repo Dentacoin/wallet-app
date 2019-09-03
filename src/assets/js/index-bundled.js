@@ -32154,17 +32154,21 @@ module.exports = {
    * @return {Object}
    */
   dump: function (password, privateKey, salt, iv, options, cb) {
+    console.log('dump');
     options = options || {};
     iv = this.str2buf(iv);
     privateKey = this.str2buf(privateKey);
 
     // synchronous if no callback provided
     if (!isFunction(cb)) {
+      console.log('isFunction(cb)');
       return this.marshal(this.deriveKey(password, salt, options), privateKey, salt, iv, options);
     }
 
+    console.log('asynchronous if callback provided1');
     // asynchronous if callback provided
     this.deriveKey(password, salt, options, function (derivedKey) {
+        console.log('asynchronous if callback provided2');
       cb(this.marshal(derivedKey, privateKey, salt, iv, options));
     }.bind(this));
   },
