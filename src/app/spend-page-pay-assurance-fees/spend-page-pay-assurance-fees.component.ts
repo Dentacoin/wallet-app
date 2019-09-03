@@ -1,5 +1,5 @@
 import {Component, AfterViewInit} from '@angular/core';
-import { Router } from '@angular/router';
+import {Router} from '@angular/router';
 import {Meta, Title} from '@angular/platform-browser';
 
 /*declare function initdApp(): any;*/

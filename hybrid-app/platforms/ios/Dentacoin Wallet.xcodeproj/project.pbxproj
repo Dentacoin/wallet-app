@@ -29,6 +29,10 @@
 		D1465A080BF4402E81BBEBB9 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 94D2E65F0E45487E86373CB3 /* SystemConfiguration.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		F51EE58488A84A99B3668998 /* Dentacoin Wallet.entitlements in Resources */ = {isa = PBXBuildFile; fileRef = 6B0DD1AA23E24096AAE2BD93 /* Dentacoin Wallet.entitlements */; };
 		F7E484E07BD448AD8FC0EE9D /* CDVFileTransfer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9685581FE23A49129D79D879 /* CDVFileTransfer.m */; };
+		1E24CE128B8C43A98E7C5AA4 /* NSString+SSURLEncoding.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B5FBB3B2F44480AAA97EA11 /* NSString+SSURLEncoding.m */; };
+		7CA935A382AC41E2B5B1D32D /* SocialSharing.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F7405E5987B437D853E22C6 /* SocialSharing.m */; };
+		07DA31068B7741688AC9D5F3 /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34BF635F118942EC87D64EA3 /* Social.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		4A3B8941A4C748A8B37C7AF0 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 16C1CDFA4A794E0D8D994605 /* MessageUI.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -100,6 +104,12 @@
 		F840E1F0165FE0F500CFE078 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = "Dentacoin Wallet/config.xml"; sourceTree = "<group>"; };
 		9685581FE23A49129D79D879 /* CDVFileTransfer.m */ = {isa = PBXFileReference; name = "CDVFileTransfer.m"; path = "cordova-plugin-file-transfer/CDVFileTransfer.m"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; explicitFileType = undefined; includeInIndex = 0; };
 		B608329A7FB2482EAE6F61DB /* CDVFileTransfer.h */ = {isa = PBXFileReference; name = "CDVFileTransfer.h"; path = "cordova-plugin-file-transfer/CDVFileTransfer.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
+		4B5FBB3B2F44480AAA97EA11 /* NSString+SSURLEncoding.m */ = {isa = PBXFileReference; name = "NSString+SSURLEncoding.m"; path = "cordova-plugin-x-socialsharing/NSString+SSURLEncoding.m"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; explicitFileType = undefined; includeInIndex = 0; };
+		5F7405E5987B437D853E22C6 /* SocialSharing.m */ = {isa = PBXFileReference; name = "SocialSharing.m"; path = "cordova-plugin-x-socialsharing/SocialSharing.m"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; explicitFileType = undefined; includeInIndex = 0; };
+		B0BA499F29414DB4ABBB70FA /* NSString+SSURLEncoding.h */ = {isa = PBXFileReference; name = "NSString+SSURLEncoding.h"; path = "cordova-plugin-x-socialsharing/NSString+SSURLEncoding.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
+		8FEBF81328094E59BDB3CCCB /* SocialSharing.h */ = {isa = PBXFileReference; name = "SocialSharing.h"; path = "cordova-plugin-x-socialsharing/SocialSharing.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
+		34BF635F118942EC87D64EA3 /* Social.framework */ = {isa = PBXFileReference; name = "Social.framework"; path = "System/Library/Frameworks/Social.framework"; sourceTree = SDKROOT; fileEncoding = undefined; lastKnownFileType = wrapper.framework; explicitFileType = undefined; includeInIndex = 0; };
+		16C1CDFA4A794E0D8D994605 /* MessageUI.framework */ = {isa = PBXFileReference; name = "MessageUI.framework"; path = "System/Library/Frameworks/MessageUI.framework"; sourceTree = SDKROOT; fileEncoding = undefined; lastKnownFileType = wrapper.framework; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -112,6 +122,8 @@
 				53BFDA099C1F4BC4884139E4 /* CoreTelephony.framework in Frameworks */,
 				16BB6BE240B54D089CC8B726 /* AVFoundation.framework in Frameworks */,
 				542C07AFD15C40D78AE1E308 /* AudioToolbox.framework in Frameworks */,
+				07DA31068B7741688AC9D5F3 /* Social.framework in Frameworks */,
+				4A3B8941A4C748A8B37C7AF0 /* MessageUI.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -189,6 +201,8 @@
 				2D181A84DBB640B6939E8225 /* CoreTelephony.framework */,
 				2D1408BBD1FD4CB29E9AC35C /* AVFoundation.framework */,
 				1AC7332FF35C4E6D8DD813E7 /* AudioToolbox.framework */,
+				34BF635F118942EC87D64EA3 /* Social.framework */,
+				16C1CDFA4A794E0D8D994605 /* MessageUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -232,6 +246,10 @@
 				08D6195239B148EBABF5E4AC /* FilePicker.h */,
 				9685581FE23A49129D79D879 /* CDVFileTransfer.m */,
 				B608329A7FB2482EAE6F61DB /* CDVFileTransfer.h */,
+				4B5FBB3B2F44480AAA97EA11 /* NSString+SSURLEncoding.m */,
+				5F7405E5987B437D853E22C6 /* SocialSharing.m */,
+				B0BA499F29414DB4ABBB70FA /* NSString+SSURLEncoding.h */,
+				8FEBF81328094E59BDB3CCCB /* SocialSharing.h */,
 			);
 			name = Plugins;
 			path = "Dentacoin Wallet/Plugins";
@@ -373,6 +391,8 @@
 				9BBA909110C240468453D40A /* CDVBarcodeScanner.mm in Sources */,
 				2FB2F3073E1D41F88E5BFC72 /* FilePicker.m in Sources */,
 				F7E484E07BD448AD8FC0EE9D /* CDVFileTransfer.m in Sources */,
+				1E24CE128B8C43A98E7C5AA4 /* NSString+SSURLEncoding.m in Sources */,
+				7CA935A382AC41E2B5B1D32D /* SocialSharing.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

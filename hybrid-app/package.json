@@ -22,6 +22,8 @@
     "cordova-plugin-filechooser": "git+ssh://git@github.com/ihadeed/cordova-filechooser.git",
     "cordova-plugin-filepicker": "^1.1.6",
     "cordova-plugin-network-information": "^2.0.2",
+    "cordova-plugin-x-socialsharing": "git+https://github.com/EddyVerbruggen/SocialSharing-PhoneGap-Plugin.git",
+    "es6-promise-plugin": "^4.2.2",
     "phonegap-plugin-barcodescanner": "^8.1.0"
   },
   "devDependencies": {
@@ -38,7 +40,12 @@
       },
       "cordova-plugin-network-information": {},
       "cordova-plugin-filepicker": {},
-      "cordova-plugin-file-transfer": {}
+      "cordova-plugin-file-transfer": {},
+      "cordova-plugin-x-socialsharing": {
+        "ANDROID_SUPPORT_V4_VERSION": "24.1.1+",
+        "PHOTO_LIBRARY_ADD_USAGE_DESCRIPTION": "This app requires photo library access to function properly.",
+        "PHOTO_LIBRARY_USAGE_DESCRIPTION": "This app requires photo library access to function properly."
+      }
     },
     "platforms": [
       "android",

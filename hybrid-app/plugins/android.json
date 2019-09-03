@@ -31,7 +31,15 @@
     },
     "cordova-plugin-file-transfer": {
       "PACKAGE_NAME": "wallet.dentacoin.com"
+    },
+    "cordova-plugin-x-socialsharing": {
+      "ANDROID_SUPPORT_V4_VERSION": "24.1.1+",
+      "PACKAGE_NAME": "wallet.dentacoin.com"
     }
   },
-  "dependent_plugins": {}
+  "dependent_plugins": {
+    "es6-promise-plugin": {
+      "PACKAGE_NAME": "wallet.dentacoin.com"
+    }
+  }
 }

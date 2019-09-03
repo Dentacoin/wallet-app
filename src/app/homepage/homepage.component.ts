@@ -1,6 +1,7 @@
 import { Component, AfterViewInit } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { DomSanitizer } from '@angular/platform-browser';
+import {Router} from '@angular/router';
 
 /*declare function getHomepageData(): any;*/
 
@@ -11,7 +12,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 
 export class HomepageComponent implements AfterViewInit {
     href;
-    constructor(private meta: Meta, private titleService: Title, private sanitizer: DomSanitizer) {
+    constructor(private meta: Meta, private titleService: Title, private sanitizer: DomSanitizer, private router: Router) {
         this.titleService.setTitle('Dentacoin Wallet App: Buy, Store & Manage Your DCN Tokens');
         this.meta.updateTag({name: 'description', content: 'Dentacoin Wallet allows users to easily and securely store, send, receive DCN tokens, as well as to buy DCN with credit card and other cryptocurrencies.'});
         this.meta.updateTag({name: 'keywords', content: 'buy dentacoin, store dentacoin, dentacoin wallet, pay with dentacoin'});
@@ -28,5 +29,9 @@ export class HomepageComponent implements AfterViewInit {
 
     ngAfterViewInit() {
         /*getHomepageData();*/
+    }
+
+    toExternalLink() {
+        this.router.navigateByUrl(this.href);
     }
 }
