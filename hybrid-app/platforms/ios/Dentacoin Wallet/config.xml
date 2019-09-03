@@ -35,6 +35,13 @@
     <feature name="FilePicker">
         <param name="ios-package" value="FilePicker" />
     </feature>
+    <feature name="FileTransfer">
+        <param name="ios-package" value="CDVFileTransfer" />
+    </feature>
+    <feature name="SocialSharing">
+        <param name="ios-package" value="SocialSharing" />
+        <param name="onload" value="true" />
+    </feature>
     <name>Dentacoin Wallet</name>
     <description>
         A sample Apache Cordova application that responds to the deviceready event.
@@ -52,6 +59,22 @@
     <allow-intent href="geo:*" />
     <allow-intent href="itms:*" />
     <allow-intent href="itms-apps:*" />
+    <icon height="180" src="app-resources/images/wallet-app-icon-180px.png" width="180" />
+    <icon height="60" src="app-resources/images/wallet-app-icon-60px.png" width="60" />
+    <icon height="120" src="app-resources/images/wallet-app-icon-120px.png" width="120" />
+    <icon height="76" src="app-resources/images/wallet-app-icon-76px.png" width="76" />
+    <icon height="152" src="app-resources/images/wallet-app-icon-152px.png" width="152" />
+    <icon height="40" src="app-resources/images/wallet-app-icon-40px.png" width="40" />
+    <icon height="80" src="app-resources/images/wallet-app-icon-80px.png" width="80" />
+    <icon height="57" src="app-resources/images/wallet-app-icon-57px.png" width="57" />
+    <icon height="114" src="app-resources/images/wallet-app-icon-114px.png" width="114" />
+    <icon height="72" src="app-resources/images/wallet-app-icon-72px.png" width="72" />
+    <icon height="144" src="app-resources/images/wallet-app-icon-144px.png" width="144" />
+    <icon height="29" src="app-resources/images/wallet-app-icon-29px.png" width="29" />
+    <icon height="58" src="app-resources/images/wallet-app-icon-58px.png" width="58" />
+    <icon height="50" src="app-resources/images/wallet-app-icon-50px.png" width="50" />
+    <icon height="100" src="app-resources/images/wallet-app-icon-100px.png" width="100" />
+    <icon height="167" src="app-resources/images/wallet-app-icon-167px.png" width="167" />
     <preference name="AllowInlineMediaPlayback" value="false" />
     <preference name="BackupWebStorage" value="cloud" />
     <preference name="DisallowOverscroll" value="false" />
@@ -66,11 +89,4 @@
     <preference name="PaginationBreakingMode" value="page" />
     <preference name="PaginationMode" value="unpaginated" />
     <preference name="orientation" value="portrait" />
-    <feature name="FileTransfer">
-        <param name="ios-package" value="CDVFileTransfer" />
-    </feature>
-    <feature name="SocialSharing">
-        <param name="ios-package" value="SocialSharing" />
-        <param name="onload" value="true" />
-    </feature>
 </widget>
