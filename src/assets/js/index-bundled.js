@@ -47535,12 +47535,16 @@ module.exports = {
    * @return {Object<string,buffer>} Private key, IV and salt.
    */
   create: function (params, cb) {
+    console.log('create');
+    console.log(params, 'params');
+    console.log(cb, 'cb');
     var keyBytes, ivBytes, self = this;
     params = params || {};
     keyBytes = params.keyBytes || this.constants.keyBytes;
     ivBytes = params.ivBytes || this.constants.ivBytes;
 
     function checkBoundsAndCreateObject(randomBytes) {
+      console.log('checkBoundsAndCreateObject');
       var privateKey = randomBytes.slice(0, keyBytes);
       if (!secp256k1.privateKeyVerify(privateKey)) return self.create(params, cb);
       return {
@@ -47556,7 +47560,9 @@ module.exports = {
     }
 
     // asynchronous key generation
+      console.log('asynchronous key generation 1');
     this.crypto.randomBytes(keyBytes + ivBytes + keyBytes, function (err, randomBytes) {
+        console.log('asynchronous key generation 2');
       if (err) return cb(err);
       cb(checkBoundsAndCreateObject(randomBytes));
     });
@@ -80721,7 +80727,9 @@ const getContractInstance = (web3) => (contractName, address) => {
 };
 
 function generateKeystoreFile(password) {
+    console.log(password, 'generateKeystoreFile');
     var dk = keythereum.create({keyBytes: 32, ivBytes: 16});
+    console.log(dk, 'dk');
     var keyObjectExported = keythereum.dump(password, dk.privateKey, dk.salt, dk.iv, {
         cipher: 'aes-128-ctr',
         kdfparams: {
@@ -80730,8 +80738,10 @@ function generateKeystoreFile(password) {
             prf: 'hmac-sha256'
         }
     });
+    console.log(keyObjectExported, 'keyObjectExported');
 
     const public_key = EthCrypto.publicKeyByPrivateKey(dk.privateKey.toString('hex'));
+    console.log(public_key, 'public_key');
 
     return {
         success: {
@@ -82832,9 +82842,6 @@ function initAccountChecker()  {
                     var generated_keystore = generateKeystoreFile($('.custom-auth-popup .keystore-file-pass').val().trim());
                     var keystore_file_name = buildKeystoreFileName('0x' + generated_keystore.success.keystore.address);
 
-                    console.log(generated_keystore, 'generated_keystore');
-                    console.log(keystore_file_name, 'keystore_file_name');
-
                     //save the public key to assurance
                     var internet = navigator.onLine;
                     if(internet) {
@@ -82850,11 +82857,11 @@ function initAccountChecker()  {
                             });
                         } else if(basic.getMobileOperatingSystem() == 'iOS') {
                             //if iOS adding 2 more additional buttons. Downloads in iOS are not possible, because they have different file architecture. First button is for export (copy or share in socials) the keystore file and second one is to login in the Wallet
-                            $(this_btn).parent().html('<div class="padding-bottom-20 text-center"><a href="white-light-blue-btn light-blue-border ios-export-keystore min-width-200">Export Backup file</a></div><div><a href="white-light-blue-btn light-blue-border ios-login-into-wallet disabled min-width-200">Login into Wallet</a></div>');
+                            $(this_btn).parent().html('<div class="padding-bottom-20 text-center"><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border ios-export-keystore min-width-200">Export Backup file</a></div><div><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border ios-login-into-wallet disabled min-width-200">Login into Wallet</a></div>');
                             hideLoader();
 
                             $('.ios-export-keystore').click(function() {
-                                window.plugins.socialsharing.share('Message only');
+                                window.plugins.socialsharing.share(JSON.stringify(generated_keystore.success.keystore));
                                 $('.ios-login-into-wallet').removeClass('disabled');
                             });
 
@@ -82863,8 +82870,12 @@ function initAccountChecker()  {
                                 if($(this).hasClass('disabled')) {
                                     basic.showAlert('Please make sure you copied and saved your Backup file and keep it in a safe place. Only you are responsible for it!', '', true);
                                 } else {
-                                    fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
-                                    loginIntoWallet();
+                                    window.localStorage.setItem('keystore_file', JSON.stringify(generated_keystore.success.keystore));
+                                    window.localStorage.setItem('current_account', '0x' + generated_keystore.success.keystore.address);
+
+                                    fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
+
+                                    refreshApp();
                                 }
                             });
                         }
