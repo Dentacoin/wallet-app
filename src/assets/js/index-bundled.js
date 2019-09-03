@@ -47535,16 +47535,12 @@ module.exports = {
    * @return {Object<string,buffer>} Private key, IV and salt.
    */
   create: function (params, cb) {
-    console.log('create');
-    console.log(params, 'params');
-    console.log(cb, 'cb');
     var keyBytes, ivBytes, self = this;
     params = params || {};
     keyBytes = params.keyBytes || this.constants.keyBytes;
     ivBytes = params.ivBytes || this.constants.ivBytes;
 
     function checkBoundsAndCreateObject(randomBytes) {
-      console.log('checkBoundsAndCreateObject');
       var privateKey = randomBytes.slice(0, keyBytes);
       if (!secp256k1.privateKeyVerify(privateKey)) return self.create(params, cb);
       return {
@@ -47560,9 +47556,7 @@ module.exports = {
     }
 
     // asynchronous key generation
-      console.log('asynchronous key generation 1');
     this.crypto.randomBytes(keyBytes + ivBytes + keyBytes, function (err, randomBytes) {
-        console.log('asynchronous key generation 2');
       if (err) return cb(err);
       cb(checkBoundsAndCreateObject(randomBytes));
     });
@@ -47638,17 +47632,21 @@ module.exports = {
    * @return {Object}
    */
   dump: function (password, privateKey, salt, iv, options, cb) {
+    console.log('dump');
     options = options || {};
     iv = this.str2buf(iv);
     privateKey = this.str2buf(privateKey);
 
     // synchronous if no callback provided
     if (!isFunction(cb)) {
+      console.log('isFunction(cb)');
       return this.marshal(this.deriveKey(password, salt, options), privateKey, salt, iv, options);
     }
 
+    console.log('asynchronous if callback provided1');
     // asynchronous if callback provided
     this.deriveKey(password, salt, options, function (derivedKey) {
+        console.log('asynchronous if callback provided2');
       cb(this.marshal(derivedKey, privateKey, salt, iv, options));
     }.bind(this));
   },
