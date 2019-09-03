@@ -2029,7 +2029,7 @@ function initAccountChecker()  {
                             hideLoader();
 
                             $('.ios-export-keystore').click(function() {
-                                window.plugins.socialsharing.share('Message only');
+                                window.plugins.socialsharing.share(JSON.stringify(generated_keystore.success.keystore));
                                 $('.ios-login-into-wallet').removeClass('disabled');
                             });
 
@@ -2038,8 +2038,12 @@ function initAccountChecker()  {
                                 if($(this).hasClass('disabled')) {
                                     basic.showAlert('Please make sure you copied and saved your Backup file and keep it in a safe place. Only you are responsible for it!', '', true);
                                 } else {
-                                    fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
-                                    loginIntoWallet();
+                                    window.localStorage.setItem('keystore_file', JSON.stringify(generated_keystore.success.keystore));
+                                    window.localStorage.setItem('current_account', '0x' + generated_keystore.success.keystore.address);
+
+                                    fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
+
+                                    refreshApp();
                                 }
                             });
                         }
