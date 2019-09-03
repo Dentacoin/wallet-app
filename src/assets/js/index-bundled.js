@@ -80832,7 +80832,7 @@ var {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, dec
 
 console.log("( ͡° ͜ʖ ͡°) I see you.");
 
-$(document).ready(function() {
+$(document).ready(function() { 
     loadMobileBottomFixedNav();
 });
 
