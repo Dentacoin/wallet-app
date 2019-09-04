@@ -82865,8 +82865,14 @@ function initAccountChecker()  {
                             }
                         } else {
                             if(basic.getMobileOperatingSystem() == 'iOS' && basic.isMobile()) {
+                                console.log('MOBILE SAFARI');
                                 basic.showAlert('Backup File has been opened in new tab of your browser. Please make sure to share/ copy and keep it in a safe place. Only you are responsible for it!', 'mobile-safari-keystore-creation', true);
+
+                                console.log($('.mobile-safari-keystore-creation footer .btn.btn-primary').length);
+                                console.log($('.mobile-safari-keystore-creation .bootbox-close-button.close').length);
+
                                 $('.mobile-safari-keystore-creation footer .btn.btn-primary, .mobile-safari-keystore-creation .bootbox-close-button.close').click(function() {
+                                    console.log('HALLO');
                                     if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
                                         window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
                                     }
@@ -82874,6 +82880,7 @@ function initAccountChecker()  {
 
                                     fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
                                     refreshApp();
+                                    console.log('HALLO1');
                                 });
 
                                 //mobile safari
