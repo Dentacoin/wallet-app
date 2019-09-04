@@ -82879,6 +82879,17 @@ function initAccountChecker()  {
                                 document.body.removeChild(element);
 
                                 loginIntoWallet();
+
+                                basic.showAlert('Backup File has been opened in new tab of your browser. Please make sure to share/ copy and keep it in a safe place. Only you are responsible for it!', 'mobile-safari-keystore-creation', true);
+                                $('.mobile-safari-keystore-creation footer .btn.btn-primary, .mobile-safari-keystore-creation .bootbox-close-button.close').click(function() {
+                                    if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
+                                        window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
+                                    }
+                                    window.localStorage.setItem('current_account', '0x' + keystore.address);
+
+                                    fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
+                                    refreshApp();
+                                })
                             } else {
                                 //BROWSER
                                 downloadFile(buildKeystoreFileName('0x' + keystore.address), JSON.stringify(keystore));
@@ -82890,13 +82901,7 @@ function initAccountChecker()  {
                         function loginIntoWallet() {
                             if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
                                 window.localStorage.setItem('current_account', '0x' + keystore.address);
-
-                                if(basic.getMobileOperatingSystem() == 'iOS' && basic.isMobile() && !is_hybrid) {
-                                    //mobile safari
-                                    basic.showAlert('Backup File has been opened in new tab of your browser. Please make sure to share/ copy and keep it in a safe place. Only you are responsible for it!', '', true);
-                                } else {
-                                    basic.showAlert('File ' + keystore_file_name + ' has been stored to the Downloads folder of your device and remembered for faster transactions.', '', true);
-                                }
+                                basic.showAlert('File ' + keystore_file_name + ' has been stored to the Downloads folder of your device and remembered for faster transactions.', '', true);
 
                                 setTimeout(function() {
                                     if(is_hybrid) {
@@ -82920,13 +82925,7 @@ function initAccountChecker()  {
                                 }, 6000);
                             } else {
                                 window.localStorage.setItem('current_account', '0x' + keystore.address);
-
-                                if(basic.getMobileOperatingSystem() == 'iOS' && basic.isMobile() && !is_hybrid) {
-                                    //mobile safari
-                                    basic.showAlert('Backup File has been opened in new tab of your browser. Please make sure to share/ copy and keep it in a safe place. Only you are responsible for it!', '', true);
-                                } else {
-                                    basic.showAlert('File ' + keystore_file_name + ' has been stored to the Downloads folder of your device.', '', true);
-                                }
+                                basic.showAlert('File ' + keystore_file_name + ' has been stored to the Downloads folder of your device.', '', true);
 
                                 setTimeout(function() {
                                     if(is_hybrid) {
@@ -83228,6 +83227,7 @@ function downloadFile(filename, text) {
     var element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
     element.setAttribute('download', filename);
+    element.setAttribute('target', '_blank');
 
     element.style.display = 'none';
     document.body.appendChild(element);
@@ -83380,9 +83380,10 @@ $(document).on('click', '.open-settings', function() {
                 }
             } else {
                 //BROWSER
-                downloadFile(buildKeystoreFileName(global_state.account), window.localStorage.getItem('keystore_file'));
                 basic.closeDialog();
                 basic.showAlert('File ' + buildKeystoreFileName(global_state.account) + ' has been downloaded to the top-level directory of your device file system.', '', true);
+
+                downloadFile(buildKeystoreFileName(global_state.account), window.localStorage.getItem('keystore_file'));
             }
         });
     }
