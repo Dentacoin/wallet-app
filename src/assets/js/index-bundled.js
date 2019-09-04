@@ -83562,6 +83562,7 @@ exports.createScript = function (code) {
     return exports.Script(code);
 };
 
+<<<<<<< HEAD
 exports.createContext = Script.createContext = function (context) {
     var copy = new Context();
     if(typeof context === 'object') {
@@ -83571,6 +83572,133 @@ exports.createContext = Script.createContext = function (context) {
     }
     return copy;
 };
+=======
+},{"global/window":394,"is-function":414,"parse-headers":449,"xtend":582}],582:[function(require,module,exports){
+arguments[4][174][0].apply(exports,arguments)
+},{"dup":174}],583:[function(require,module,exports){
+(function (Buffer){
+const Web3 = require('../../../node_modules/web3'); // import web3 v1.0 constructor
+const keythereum = require('../../../node_modules/keythereum');
+const EthCrypto = require('../../../node_modules/eth-crypto');
+var Wallet = require('../../../node_modules/ethereumjs-wallet');
+
+// use globally injected web3 to find the currentProvider and wrap with web3 v1.0
+const getWeb3 = (provider) => {
+    if(provider === undefined)  {
+        provider = null;
+    }
+    const myWeb3 = new Web3(provider);
+    return myWeb3;
+};
+
+// assumes passed-in web3 is v1.0 and creates a function to receive contract name
+const getContractInstance = (web3) => (contractName, address) => {
+    const instance = new web3.eth.Contract(contractName.abi, address);
+    return instance;
+};
+
+function generateKeystoreFile(password) {
+    console.log(password, 'generateKeystoreFile');
+    var dk = keythereum.create({keyBytes: 32, ivBytes: 16});
+    console.log(dk, 'dk');
+    console.log(dk, 'dk123');
+    var keyObjectExported = keythereum.dump(password, dk.privateKey, dk.salt, dk.iv, {
+        cipher: 'aes-128-ctr',
+        kdfparams: {
+            c: 262144,
+            dklen: 32,
+            prf: 'hmac-sha256'
+        }
+    });
+    console.log(keyObjectExported, 'keyObjectExported');
+
+    const public_key = EthCrypto.publicKeyByPrivateKey(dk.privateKey.toString('hex'));
+    console.log(public_key, 'public_key');
+
+    return {
+        success: {
+            public_key: public_key,
+            keystore: keyObjectExported,
+            recovered: keythereum.recover(password, keyObjectExported)
+        }
+    };
+}
+
+function importKeystoreFile(keystore, password) {
+    try {
+        const keyObject = JSON.parse(keystore);
+        const private_key = keythereum.recover(password, keyObject);
+        const public_key = EthCrypto.publicKeyByPrivateKey(private_key.toString('hex'));
+        return {
+            success: keyObject,
+            public_key: public_key,
+            address: JSON.parse(keystore).address
+        }
+    } catch (e) {
+        return {
+            error: true,
+            message: 'Wrong secret password.'
+        }
+    }
+}
+
+function decryptKeystore(keystore, password) {
+    try {
+        return {
+            success: keythereum.recover(password, JSON.parse(keystore)), to_string: keythereum.recover(password, JSON.parse(keystore)).toString('hex')
+        }
+    } catch (e) {
+        return {
+            error: true,
+            message: 'Wrong secret password.'
+        }
+    }
+}
+
+function validatePrivateKey(private_key) {
+    try {
+        const public_key = EthCrypto.publicKeyByPrivateKey(private_key);
+        const address = EthCrypto.publicKey.toAddress(public_key);
+
+        return {
+            success: {
+                public_key: public_key,
+                address: address
+            }
+        };
+    } catch (e) {
+        return {
+            error: true,
+            message: 'Wrong secret private key.'
+        }
+    }
+}
+
+function generateKeystoreFromPrivateKey(private_key, password) {
+    try {
+        const public_key = EthCrypto.publicKeyByPrivateKey(private_key);
+        const address = EthCrypto.publicKey.toAddress(public_key);
+        const wallet = Wallet.fromPrivateKey(Buffer.from(private_key, 'hex'));
+        const keystore_file = wallet.toV3String(password);
+
+        return {
+            success: {
+                keystore_file: keystore_file,
+                public_key: public_key,
+                address: address
+            }
+        };
+    } catch (e) {
+        return {
+            error: true,
+            message: 'Wrong secret private key.'
+        }
+    }
+}
+
+module.exports = {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey};
+
+>>>>>>> b213c87a148309c97968d329f0147be5b778b53a
 
 },{}],601:[function(require,module,exports){
 arguments[4][408][0].apply(exports,arguments)
