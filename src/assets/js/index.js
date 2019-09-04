@@ -1971,7 +1971,6 @@ function initAccountChecker()  {
 
         $('.custom-auth-popup .popup-left .login-into-wallet').click(function() {
             console.log('CLICK CREATION');
-            console.log(is_hybrid, 'is_hybrid');
             var this_btn = this;
             var login_errors = false;
             $('.popup-left .error-handle').remove();
@@ -1992,8 +1991,6 @@ function initAccountChecker()  {
                 login_errors = true;
             }
 
-            console.log(login_errors, 'login_errors');
-
             if(!login_errors) {
                 if(is_hybrid) {
                     //MOBILE APP
@@ -2007,92 +2004,93 @@ function initAccountChecker()  {
                 }
 
                 setTimeout(function() {
-                    var generated_keystore = generateKeystoreFile($('.custom-auth-popup .keystore-file-pass').val().trim());
-                    var keystore_file_name = buildKeystoreFileName('0x' + generated_keystore.success.keystore.address);
+                    var generated_keystore = generateKeystoreFile($('.custom-auth-popup .keystore-file-pass').val().trim(), function(public_key, keystore) {
+                        var keystore_file_name = buildKeystoreFileName('0x' + keystore.address);
 
-                    //save the public key to assurance
-                    var internet = navigator.onLine;
-                    if(internet) {
-                        console.log('===== make request for save public keys for assurance =====');
-                    }
-
-                    if(is_hybrid) {
-                        //MOBILE APP
-                        if(basic.getMobileOperatingSystem() == 'Android') {
-                            androidFileDownload(keystore_file_name, JSON.stringify(generated_keystore.success.keystore), function() {
-                                fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
-                                loginIntoWallet();
-                            });
-                        } else if(basic.getMobileOperatingSystem() == 'iOS') {
-                            //if iOS adding 2 more additional buttons. Downloads in iOS are not possible, because they have different file architecture. First button is for export (copy or share in socials) the keystore file and second one is to login in the Wallet
-                            $(this_btn).parent().html('<div class="padding-bottom-20 text-center"><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border ios-export-keystore min-width-200">Export Backup file</a></div><div><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border ios-login-into-wallet disabled min-width-200">Login into Wallet</a></div>');
-                            hideLoader();
-
-                            $('.ios-export-keystore').click(function() {
-                                window.plugins.socialsharing.share(JSON.stringify(generated_keystore.success.keystore));
-                                $('.ios-login-into-wallet').removeClass('disabled');
-                            });
-
-                            //logging into wallet
-                            $('.ios-login-into-wallet').click(function() {
-                                if($(this).hasClass('disabled')) {
-                                    basic.showAlert('Please make sure you copied and saved your Backup file and keep it in a safe place. Only you are responsible for it!', '', true);
-                                } else {
-                                    window.localStorage.setItem('keystore_file', JSON.stringify(generated_keystore.success.keystore));
-                                    window.localStorage.setItem('current_account', '0x' + generated_keystore.success.keystore.address);
-
-                                    fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
-
-                                    refreshApp();
-                                }
-                            });
+                        //save the public key to assurance
+                        var internet = navigator.onLine;
+                        if(internet) {
+                            console.log('===== make request for save public keys for assurance =====');
                         }
-                    } else {
-                        //BROWSER
-                        downloadFile(buildKeystoreFileName('0x' + generated_keystore.success.keystore.address), JSON.stringify(generated_keystore.success.keystore));
-                        fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
-                        loginIntoWallet();
-                    }
 
-                    function loginIntoWallet() {
-                        if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
-                            window.localStorage.setItem('current_account', '0x' + generated_keystore.success.keystore.address);
-                            basic.showAlert('File ' + keystore_file_name + ' has been stored to the Downloads folder of your device and remembered for faster transactions.', '', true);
+                        if(is_hybrid) {
+                            //MOBILE APP
+                            if(basic.getMobileOperatingSystem() == 'Android') {
+                                androidFileDownload(keystore_file_name, JSON.stringify(keystore), function() {
+                                    fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
+                                    loginIntoWallet();
+                                });
+                            } else if(basic.getMobileOperatingSystem() == 'iOS') {
+                                //if iOS adding 2 more additional buttons. Downloads in iOS are not possible, because they have different file architecture. First button is for export (copy or share in socials) the keystore file and second one is to login in the Wallet
+                                $(this_btn).parent().html('<div class="padding-bottom-20 text-center"><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border ios-export-keystore min-width-200">Export Backup file</a></div><div><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border ios-login-into-wallet disabled min-width-200">Login into Wallet</a></div>');
+                                hideLoader();
 
-                            setTimeout(function() {
-                                if(is_hybrid) {
-                                    //in browser saving keystore file in localstorage
-                                    window.localStorage.setItem('keystore_file', JSON.stringify(generated_keystore.success.keystore));
-                                    window.localStorage.setItem('current_account', '0x' + generated_keystore.success.keystore.address);
+                                $('.ios-export-keystore').click(function() {
+                                    window.plugins.socialsharing.share(JSON.stringify(keystore));
+                                    $('.ios-login-into-wallet').removeClass('disabled');
+                                });
 
-                                    fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
+                                //logging into wallet
+                                $('.ios-login-into-wallet').click(function() {
+                                    if($(this).hasClass('disabled')) {
+                                        basic.showAlert('Please make sure you copied and saved your Backup file and keep it in a safe place. Only you are responsible for it!', '', true);
+                                    } else {
+                                        window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
+                                        window.localStorage.setItem('current_account', '0x' + keystore.address);
 
-                                    refreshApp();
-                                    //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
-                                } else {
-                                    //in browser saving keystore file in localstorage
-                                    window.localStorage.setItem('keystore_file', JSON.stringify(generated_keystore.success.keystore));
-                                    window.localStorage.setItem('current_account', '0x' + generated_keystore.success.keystore.address);
+                                        fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
 
-                                    fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
-
-                                    window.location.reload();
-                                }
-                            }, 6000);
+                                        refreshApp();
+                                    }
+                                });
+                            }
                         } else {
-                            window.localStorage.setItem('current_account', '0x' + generated_keystore.success.keystore.address);
-                            basic.showAlert('File ' + keystore_file_name + ' has been stored to the Downloads folder of your device.', '', true);
-
-                            setTimeout(function() {
-                                if(is_hybrid) {
-                                    refreshApp();
-                                    //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
-                                } else {
-                                    window.location.reload();
-                                }
-                            }, 6000);
+                            //BROWSER
+                            downloadFile(buildKeystoreFileName('0x' + keystore.address), JSON.stringify(keystore));
+                            fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
+                            loginIntoWallet();
                         }
-                    }
+
+                        function loginIntoWallet() {
+                            if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
+                                window.localStorage.setItem('current_account', '0x' + keystore.address);
+                                basic.showAlert('File ' + keystore_file_name + ' has been stored to the Downloads folder of your device and remembered for faster transactions.', '', true);
+
+                                setTimeout(function() {
+                                    if(is_hybrid) {
+                                        //in browser saving keystore file in localstorage
+                                        window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
+                                        window.localStorage.setItem('current_account', '0x' + keystore.address);
+
+                                        fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
+
+                                        refreshApp();
+                                        //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
+                                    } else {
+                                        //in browser saving keystore file in localstorage
+                                        window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
+                                        window.localStorage.setItem('current_account', '0x' + keystore.address);
+
+                                        fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
+
+                                        window.location.reload();
+                                    }
+                                }, 6000);
+                            } else {
+                                window.localStorage.setItem('current_account', '0x' + keystore.address);
+                                basic.showAlert('File ' + keystore_file_name + ' has been stored to the Downloads folder of your device.', '', true);
+
+                                setTimeout(function() {
+                                    if(is_hybrid) {
+                                        refreshApp();
+                                        //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
+                                    } else {
+                                        window.location.reload();
+                                    }
+                                }, 6000);
+                            }
+                        }
+                    });
                 }, 500);
             }
         });
