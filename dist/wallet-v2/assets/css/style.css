@@ -305,8 +305,6 @@
     cursor: pointer;
     margin: 0;
     width: calc(100% - 20px) !important;
-    padding-bottom: 10px !important;
-    padding-top: 10px !important;
     background-color: white;
     left: 10px;
     color: #888888;
@@ -316,6 +314,8 @@
     -webkit-transform: translateY(-50%);
     -ms-transform: translateY(-50%);
     transform: translateY(-50%);
+    padding-top: 8px;
+    height: calc(100% - 8px);
     -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
     -ms-border-radius: 4px;
@@ -334,7 +334,8 @@
       -ms-transform: none;
       transform: none;
       color: #00b7e2;
-      font-weight: bold; }
+      font-weight: bold;
+      height: auto; }
   .module.custom-google-label-style .left-side {
     width: calc(100% - 100px);
     position: relative; }

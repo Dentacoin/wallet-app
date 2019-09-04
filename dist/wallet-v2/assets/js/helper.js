@@ -18,26 +18,25 @@ const getContractInstance = (web3) => (contractName, address) => {
     return instance;
 };
 
-function generateKeystoreFile(password) {
+function generateKeystoreFile(password, callback) {
+    console.log(password, 'generateKeystoreFile');
     var dk = keythereum.create({keyBytes: 32, ivBytes: 16});
-    var keyObjectExported = keythereum.dump(password, dk.privateKey, dk.salt, dk.iv, {
+    console.log(dk, 'dk');
+    keythereum.dump(password, dk.privateKey, dk.salt, dk.iv, {
         cipher: 'aes-128-ctr',
         kdfparams: {
             c: 262144,
             dklen: 32,
             prf: 'hmac-sha256'
         }
+    }, function(result) {
+        console.log(result, 'result');
+
+        const public_key = EthCrypto.publicKeyByPrivateKey(dk.privateKey.toString('hex'));
+        console.log(public_key, 'public_key');
+
+        callback(public_key, result);
     });
-
-    const public_key = EthCrypto.publicKeyByPrivateKey(dk.privateKey.toString('hex'));
-
-    return {
-        success: {
-            public_key: public_key,
-            keystore: keyObjectExported,
-            recovered: keythereum.recover(password, keyObjectExported)
-        }
-    };
 }
 
 function importKeystoreFile(keystore, password) {
