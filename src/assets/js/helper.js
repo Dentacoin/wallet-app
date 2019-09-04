@@ -38,8 +38,7 @@ function generateKeystoreFile(password) {
         return {
             success: {
                 public_key: public_key,
-                keystore: result,
-                recovered: keythereum.recover(password, result)
+                keystore: result
             }
         };
     });

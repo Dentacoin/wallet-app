@@ -67390,7 +67390,7 @@ function generateKeystoreFile(password) {
     console.log(password, 'generateKeystoreFile');
     var dk = keythereum.create({keyBytes: 32, ivBytes: 16});
     console.log(dk, 'dk');
-    var keyObjectExported = keythereum.dump(password, dk.privateKey, dk.salt, dk.iv, {
+    keythereum.dump(password, dk.privateKey, dk.salt, dk.iv, {
         cipher: 'aes-128-ctr',
         kdfparams: {
             c: 262144,
@@ -67406,8 +67406,7 @@ function generateKeystoreFile(password) {
         return {
             success: {
                 public_key: public_key,
-                keystore: keyObjectExported,
-                recovered: keythereum.recover(password, keyObjectExported)
+                keystore: result
             }
         };
     });
