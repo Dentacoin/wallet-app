@@ -2044,9 +2044,6 @@ function initAccountChecker()  {
                             }
                         } else {
                             if(basic.getMobileOperatingSystem() == 'iOS' && basic.isMobile()) {
-                                //mobile safari
-                                downloadFile(keystore_file_name, JSON.stringify(keystore));
-
                                 basic.showAlert('Backup File has been opened in new tab of your browser. Please make sure to share/ copy and keep it in a safe place. Only you are responsible for it!', 'mobile-safari-keystore-creation', true);
                                 $('.mobile-safari-keystore-creation footer .btn.btn-primary, .mobile-safari-keystore-creation .bootbox-close-button.close').click(function() {
                                     if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
@@ -2056,7 +2053,10 @@ function initAccountChecker()  {
 
                                     fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
                                     refreshApp();
-                                })
+                                });
+
+                                //mobile safari
+                                downloadFile(keystore_file_name, JSON.stringify(keystore));
                             } else {
                                 //BROWSER
                                 downloadFile(buildKeystoreFileName('0x' + keystore.address), JSON.stringify(keystore));
@@ -2547,10 +2547,10 @@ $(document).on('click', '.open-settings', function() {
                 }
             } else {
                 if(basic.getMobileOperatingSystem() == 'iOS' && basic.isMobile()) {
+                    basic.showAlert('Backup File has been opened in new tab of your browser. Please make sure to share/ copy and keep it in a safe place. Only you are responsible for it!', '', true);
+
                     //mobile safari
                     downloadFile(buildKeystoreFileName(global_state.account), window.localStorage.getItem('keystore_file'));
-
-                    basic.showAlert('Backup File has been opened in new tab of your browser. Please make sure to share/ copy and keep it in a safe place. Only you are responsible for it!', 'mobile-safari-keystore-creation', true);
                 } else {
                     //BROWSER
                     basic.closeDialog();
