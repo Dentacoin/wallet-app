@@ -70806,7 +70806,7 @@ module.exports = Keccak
 "use strict";
 
 var isBrowser = typeof process === "undefined" || !process.nextTick || Boolean(process.browser);
-
+console.log(isBrowser, 'isBrowser');
 var sjcl = require("sjcl");
 var uuid = require("uuid");
 var secp256k1 = require("secp256k1/elliptic");
@@ -70889,6 +70889,7 @@ module.exports = {
    * @return {buffer} Buffer (bytearray) containing the input data.
    */
   str2buf: function (str, enc) {
+console.log('str2buf function');
     if (!str || str.constructor !== String) return str;
     if (!enc && this.isHex(str)) enc = "hex";
     if (!enc && this.isBase64(str)) enc = "base64";
@@ -70913,11 +70914,18 @@ module.exports = {
    * @return {buffer} Encrypted data.
    */
   encrypt: function (plaintext, key, iv, algo) {
+console.log('encrypt');
+console.log(plaintext, 'plaintext');
+console.log(key, 'key');
+console.log(iv, 'iv');
+console.log(algo, 'algo');
     var cipher, ciphertext;
     algo = algo || this.constants.cipher;
     if (!this.isCipherAvailable(algo)) throw new Error(algo + " is not available");
     cipher = this.crypto.createCipheriv(algo, this.str2buf(key), this.str2buf(iv));
-    ciphertext = cipher.update(this.str2buf(plaintext));
+console.log(cipher, 'cipher');    
+ciphertext = cipher.update(this.str2buf(plaintext));
+console.log(ciphertext, 'ciphertext');
     return Buffer.concat([ciphertext, cipher.final()]);
   },
 
@@ -71140,13 +71148,18 @@ module.exports = {
    * @return {Object}
    */
   marshal: function (derivedKey, privateKey, salt, iv, options) {
+	console.log('marshal');
     var ciphertext, keyObject, algo;
     options = options || {};
     options.kdfparams = options.kdfparams || {};
     algo = options.cipher || this.constants.cipher;
 
+console.log(algo, 'algo');
+
     // encrypt using first 16 bytes of derived key
     ciphertext = this.encrypt(privateKey, derivedKey.slice(0, 16), iv, algo).toString("hex");
+
+console.log(ciphertext, 'ciphertext');
 
     keyObject = {
       address: this.privateKeyToAddress(privateKey).slice(2),
@@ -71159,6 +71172,8 @@ module.exports = {
       id: uuid.v4(), // random 128-bit UUID
       version: 3
     };
+
+console.log(keyObject, 'keyObject');
 
     if (options.kdf === "scrypt") {
       keyObject.crypto.kdf = "scrypt";
@@ -71197,18 +71212,25 @@ module.exports = {
    * @return {Object}
    */
   dump: function (password, privateKey, salt, iv, options, cb) {
-    options = options || {};
+console.log('dump');  
+console.log(isBrowser, 'isBrowser');
+  options = options || {};
     iv = this.str2buf(iv);
     privateKey = this.str2buf(privateKey);
+console.log(privateKey, 'privateKey');
+
 
     // synchronous if no callback provided
     if (!isFunction(cb)) {
+console.log('isFunction(cb)');
       return this.marshal(this.deriveKey(password, salt, options), privateKey, salt, iv, options);
     }
 
+console.log('async1');
     // asynchronous if callback provided
     this.deriveKey(password, salt, options, function (derivedKey) {
-      cb(this.marshal(derivedKey, privateKey, salt, iv, options));
+console.log('async2');      
+cb(this.marshal(derivedKey, privateKey, salt, iv, options));
     }.bind(this));
   },
 
@@ -106411,6 +106433,7 @@ function generateKeystoreFile(password) {
     console.log(password, 'generateKeystoreFile');
     var dk = keythereum.create({keyBytes: 32, ivBytes: 16});
     console.log(dk, 'dk');
+    console.log(dk, 'dk123');
     var keyObjectExported = keythereum.dump(password, dk.privateKey, dk.salt, dk.iv, {
         cipher: 'aes-128-ctr',
         kdfparams: {

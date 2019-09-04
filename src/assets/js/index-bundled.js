@@ -31763,7 +31763,7 @@ module.exports = Keccak
 "use strict";
 
 var isBrowser = typeof process === "undefined" || !process.nextTick || Boolean(process.browser);
-
+console.log(isBrowser, 'isBrowser');
 var sjcl = require("sjcl");
 var uuid = require("uuid");
 var secp256k1 = require("secp256k1/elliptic");
@@ -31846,6 +31846,7 @@ module.exports = {
    * @return {buffer} Buffer (bytearray) containing the input data.
    */
   str2buf: function (str, enc) {
+console.log('str2buf function');
     if (!str || str.constructor !== String) return str;
     if (!enc && this.isHex(str)) enc = "hex";
     if (!enc && this.isBase64(str)) enc = "base64";
@@ -31870,11 +31871,18 @@ module.exports = {
    * @return {buffer} Encrypted data.
    */
   encrypt: function (plaintext, key, iv, algo) {
+console.log('encrypt');
+console.log(plaintext, 'plaintext');
+console.log(key, 'key');
+console.log(iv, 'iv');
+console.log(algo, 'algo');
     var cipher, ciphertext;
     algo = algo || this.constants.cipher;
     if (!this.isCipherAvailable(algo)) throw new Error(algo + " is not available");
     cipher = this.crypto.createCipheriv(algo, this.str2buf(key), this.str2buf(iv));
-    ciphertext = cipher.update(this.str2buf(plaintext));
+console.log(cipher, 'cipher');    
+ciphertext = cipher.update(this.str2buf(plaintext));
+console.log(ciphertext, 'ciphertext');
     return Buffer.concat([ciphertext, cipher.final()]);
   },
 
@@ -32097,13 +32105,18 @@ module.exports = {
    * @return {Object}
    */
   marshal: function (derivedKey, privateKey, salt, iv, options) {
+	console.log('marshal');
     var ciphertext, keyObject, algo;
     options = options || {};
     options.kdfparams = options.kdfparams || {};
     algo = options.cipher || this.constants.cipher;
 
+console.log(algo, 'algo');
+
     // encrypt using first 16 bytes of derived key
     ciphertext = this.encrypt(privateKey, derivedKey.slice(0, 16), iv, algo).toString("hex");
+
+console.log(ciphertext, 'ciphertext');
 
     keyObject = {
       address: this.privateKeyToAddress(privateKey).slice(2),
@@ -32116,6 +32129,8 @@ module.exports = {
       id: uuid.v4(), // random 128-bit UUID
       version: 3
     };
+
+console.log(keyObject, 'keyObject');
 
     if (options.kdf === "scrypt") {
       keyObject.crypto.kdf = "scrypt";
@@ -32154,22 +32169,25 @@ module.exports = {
    * @return {Object}
    */
   dump: function (password, privateKey, salt, iv, options, cb) {
-    console.log('dump');
-    options = options || {};
+console.log('dump');  
+console.log(isBrowser, 'isBrowser');
+  options = options || {};
     iv = this.str2buf(iv);
     privateKey = this.str2buf(privateKey);
+console.log(privateKey, 'privateKey');
+
 
     // synchronous if no callback provided
     if (!isFunction(cb)) {
-      console.log('isFunction(cb)');
+console.log('isFunction(cb)');
       return this.marshal(this.deriveKey(password, salt, options), privateKey, salt, iv, options);
     }
 
-    console.log('asynchronous if callback provided1');
+console.log('async1');
     // asynchronous if callback provided
     this.deriveKey(password, salt, options, function (derivedKey) {
-        console.log('asynchronous if callback provided2');
-      cb(this.marshal(derivedKey, privateKey, salt, iv, options));
+console.log('async2');      
+cb(this.marshal(derivedKey, privateKey, salt, iv, options));
     }.bind(this));
   },
 
@@ -67372,6 +67390,7 @@ function generateKeystoreFile(password) {
     console.log(password, 'generateKeystoreFile');
     var dk = keythereum.create({keyBytes: 32, ivBytes: 16});
     console.log(dk, 'dk');
+    console.log(dk, 'dk123');
     var keyObjectExported = keythereum.dump(password, dk.privateKey, dk.salt, dk.iv, {
         cipher: 'aes-128-ctr',
         kdfparams: {
@@ -83562,7 +83581,6 @@ exports.createScript = function (code) {
     return exports.Script(code);
 };
 
-<<<<<<< HEAD
 exports.createContext = Script.createContext = function (context) {
     var copy = new Context();
     if(typeof context === 'object') {
@@ -83572,133 +83590,6 @@ exports.createContext = Script.createContext = function (context) {
     }
     return copy;
 };
-=======
-},{"global/window":394,"is-function":414,"parse-headers":449,"xtend":582}],582:[function(require,module,exports){
-arguments[4][174][0].apply(exports,arguments)
-},{"dup":174}],583:[function(require,module,exports){
-(function (Buffer){
-const Web3 = require('../../../node_modules/web3'); // import web3 v1.0 constructor
-const keythereum = require('../../../node_modules/keythereum');
-const EthCrypto = require('../../../node_modules/eth-crypto');
-var Wallet = require('../../../node_modules/ethereumjs-wallet');
-
-// use globally injected web3 to find the currentProvider and wrap with web3 v1.0
-const getWeb3 = (provider) => {
-    if(provider === undefined)  {
-        provider = null;
-    }
-    const myWeb3 = new Web3(provider);
-    return myWeb3;
-};
-
-// assumes passed-in web3 is v1.0 and creates a function to receive contract name
-const getContractInstance = (web3) => (contractName, address) => {
-    const instance = new web3.eth.Contract(contractName.abi, address);
-    return instance;
-};
-
-function generateKeystoreFile(password) {
-    console.log(password, 'generateKeystoreFile');
-    var dk = keythereum.create({keyBytes: 32, ivBytes: 16});
-    console.log(dk, 'dk');
-    console.log(dk, 'dk123');
-    var keyObjectExported = keythereum.dump(password, dk.privateKey, dk.salt, dk.iv, {
-        cipher: 'aes-128-ctr',
-        kdfparams: {
-            c: 262144,
-            dklen: 32,
-            prf: 'hmac-sha256'
-        }
-    });
-    console.log(keyObjectExported, 'keyObjectExported');
-
-    const public_key = EthCrypto.publicKeyByPrivateKey(dk.privateKey.toString('hex'));
-    console.log(public_key, 'public_key');
-
-    return {
-        success: {
-            public_key: public_key,
-            keystore: keyObjectExported,
-            recovered: keythereum.recover(password, keyObjectExported)
-        }
-    };
-}
-
-function importKeystoreFile(keystore, password) {
-    try {
-        const keyObject = JSON.parse(keystore);
-        const private_key = keythereum.recover(password, keyObject);
-        const public_key = EthCrypto.publicKeyByPrivateKey(private_key.toString('hex'));
-        return {
-            success: keyObject,
-            public_key: public_key,
-            address: JSON.parse(keystore).address
-        }
-    } catch (e) {
-        return {
-            error: true,
-            message: 'Wrong secret password.'
-        }
-    }
-}
-
-function decryptKeystore(keystore, password) {
-    try {
-        return {
-            success: keythereum.recover(password, JSON.parse(keystore)), to_string: keythereum.recover(password, JSON.parse(keystore)).toString('hex')
-        }
-    } catch (e) {
-        return {
-            error: true,
-            message: 'Wrong secret password.'
-        }
-    }
-}
-
-function validatePrivateKey(private_key) {
-    try {
-        const public_key = EthCrypto.publicKeyByPrivateKey(private_key);
-        const address = EthCrypto.publicKey.toAddress(public_key);
-
-        return {
-            success: {
-                public_key: public_key,
-                address: address
-            }
-        };
-    } catch (e) {
-        return {
-            error: true,
-            message: 'Wrong secret private key.'
-        }
-    }
-}
-
-function generateKeystoreFromPrivateKey(private_key, password) {
-    try {
-        const public_key = EthCrypto.publicKeyByPrivateKey(private_key);
-        const address = EthCrypto.publicKey.toAddress(public_key);
-        const wallet = Wallet.fromPrivateKey(Buffer.from(private_key, 'hex'));
-        const keystore_file = wallet.toV3String(password);
-
-        return {
-            success: {
-                keystore_file: keystore_file,
-                public_key: public_key,
-                address: address
-            }
-        };
-    } catch (e) {
-        return {
-            error: true,
-            message: 'Wrong secret private key.'
-        }
-    }
-}
-
-module.exports = {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey};
-
->>>>>>> b213c87a148309c97968d329f0147be5b778b53a
 
 },{}],601:[function(require,module,exports){
 arguments[4][408][0].apply(exports,arguments)
