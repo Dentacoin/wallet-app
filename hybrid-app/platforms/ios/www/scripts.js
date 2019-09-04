@@ -106441,6 +106441,9 @@ function generateKeystoreFile(password) {
             dklen: 32,
             prf: 'hmac-sha256'
         }
+    }, function(result) {
+        console.log('callback');
+        console.log(result, 'result');
     });
     console.log(keyObjectExported, 'keyObjectExported');
 
