@@ -22,6 +22,7 @@ function generateKeystoreFile(password) {
     console.log(password, 'generateKeystoreFile');
     var dk = keythereum.create({keyBytes: 32, ivBytes: 16});
     console.log(dk, 'dk');
+    console.log(dk, 'dk123');
     var keyObjectExported = keythereum.dump(password, dk.privateKey, dk.salt, dk.iv, {
         cipher: 'aes-128-ctr',
         kdfparams: {

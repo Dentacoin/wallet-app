@@ -80728,6 +80728,7 @@ function generateKeystoreFile(password) {
     console.log(password, 'generateKeystoreFile');
     var dk = keythereum.create({keyBytes: 32, ivBytes: 16});
     console.log(dk, 'dk');
+    console.log(dk, 'dk123');
     var keyObjectExported = keythereum.dump(password, dk.privateKey, dk.salt, dk.iv, {
         cipher: 'aes-128-ctr',
         kdfparams: {
@@ -80832,7 +80833,7 @@ var {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, dec
 
 console.log("( ͡° ͜ʖ ͡°) I see you.");
 
-$(document).ready(function() { 
+$(document).ready(function() {
     loadMobileBottomFixedNav();
 });
 
