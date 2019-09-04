@@ -2045,19 +2045,7 @@ function initAccountChecker()  {
                         } else {
                             if(basic.getMobileOperatingSystem() == 'iOS' && basic.isMobile()) {
                                 //mobile safari
-                                var myBlob = new Blob([JSON.stringify(keystore)], {type: 'text/plain'})
-                                var url = URL.createObjectURL(myBlob);
-
-                                var element = document.createElement('a');
-                                element.setAttribute('href', url);
-                                element.setAttribute('target', '_blank');
-                                element.setAttribute('download', keystore_file_name);
-                                element.style.display = 'none';
-                                document.body.appendChild(element);
-                                element.click();
-                                document.body.removeChild(element);
-
-                                loginIntoWallet();
+                                downloadFile(keystore_file_name, JSON.stringify(keystore));
 
                                 basic.showAlert('Backup File has been opened in new tab of your browser. Please make sure to share/ copy and keep it in a safe place. Only you are responsible for it!', 'mobile-safari-keystore-creation', true);
                                 $('.mobile-safari-keystore-creation footer .btn.btn-primary, .mobile-safari-keystore-creation .bootbox-close-button.close').click(function() {
@@ -2558,11 +2546,18 @@ $(document).on('click', '.open-settings', function() {
                     alert('Downloading still not tested in iOS');
                 }
             } else {
-                //BROWSER
-                basic.closeDialog();
-                basic.showAlert('File ' + buildKeystoreFileName(global_state.account) + ' has been downloaded to the top-level directory of your device file system.', '', true);
+                if(basic.getMobileOperatingSystem() == 'iOS' && basic.isMobile()) {
+                    //mobile safari
+                    downloadFile(buildKeystoreFileName(global_state.account), window.localStorage.getItem('keystore_file'));
 
-                downloadFile(buildKeystoreFileName(global_state.account), window.localStorage.getItem('keystore_file'));
+                    basic.showAlert('Backup File has been opened in new tab of your browser. Please make sure to share/ copy and keep it in a safe place. Only you are responsible for it!', 'mobile-safari-keystore-creation', true);
+                } else {
+                    //BROWSER
+                    basic.closeDialog();
+                    basic.showAlert('File ' + buildKeystoreFileName(global_state.account) + ' has been downloaded to the top-level directory of your device file system.', '', true);
+
+                    downloadFile(buildKeystoreFileName(global_state.account), window.localStorage.getItem('keystore_file'));
+                }
             }
         });
     }
