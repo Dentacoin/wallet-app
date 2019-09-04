@@ -67390,7 +67390,6 @@ function generateKeystoreFile(password) {
     console.log(password, 'generateKeystoreFile');
     var dk = keythereum.create({keyBytes: 32, ivBytes: 16});
     console.log(dk, 'dk');
-    console.log(dk, 'dk123');
     var keyObjectExported = keythereum.dump(password, dk.privateKey, dk.salt, dk.iv, {
         cipher: 'aes-128-ctr',
         kdfparams: {
@@ -67399,21 +67398,19 @@ function generateKeystoreFile(password) {
             prf: 'hmac-sha256'
         }
     }, function(result) {
-        console.log('callback');
         console.log(result, 'result');
+
+        const public_key = EthCrypto.publicKeyByPrivateKey(dk.privateKey.toString('hex'));
+        console.log(public_key, 'public_key');
+
+        return {
+            success: {
+                public_key: public_key,
+                keystore: keyObjectExported,
+                recovered: keythereum.recover(password, keyObjectExported)
+            }
+        };
     });
-    console.log(keyObjectExported, 'keyObjectExported');
-
-    const public_key = EthCrypto.publicKeyByPrivateKey(dk.privateKey.toString('hex'));
-    console.log(public_key, 'public_key');
-
-    return {
-        success: {
-            public_key: public_key,
-            keystore: keyObjectExported,
-            recovered: keythereum.recover(password, keyObjectExported)
-        }
-    };
 }
 
 function importKeystoreFile(keystore, password) {
