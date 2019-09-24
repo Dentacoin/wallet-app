@@ -124,13 +124,13 @@ AndroidManifest.prototype.getActivity = function () {
 });
 
 AndroidManifest.prototype.getDebuggable = function () {
-    return this.doc.getroot().find('./application').attrib['android:debuggable'] === 'true';
+    return this.doc.getroot().find('./application').attrib['android:debuggable'] === 'false';
 };
 
 AndroidManifest.prototype.setDebuggable = function (value) {
     var application = this.doc.getroot().find('./application');
     if (value) {
-        application.attrib['android:debuggable'] = 'true';
+        application.attrib['android:debuggable'] = 'false';
     } else {
         // The default value is "false", so we can remove attribute at all.
         delete application.attrib['android:debuggable'];

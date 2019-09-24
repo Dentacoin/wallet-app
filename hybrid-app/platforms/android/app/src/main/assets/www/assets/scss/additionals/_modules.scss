@@ -76,8 +76,6 @@
             cursor: pointer;
             margin: 0;
             width: calc(100% - 20px) !important;
-            padding-bottom: 10px !important;
-            padding-top: 10px !important;
             background-color: white;
             left: 10px;
             color: #888888;
@@ -87,6 +85,8 @@
             -webkit-transform: translateY(-50%);
             -ms-transform: translateY(-50%);
             transform: translateY(-50%);
+            padding-top: 8px;
+            height: calc(100% - 8px);
             @include rounded(4px);
             @include simple_transition(.3s);
             &.active-label {
@@ -99,6 +99,7 @@
                 transform: none;
                 color: $light_blue;
                 font-weight: bold;
+                height: auto;
             }
         }
         .left-side {
