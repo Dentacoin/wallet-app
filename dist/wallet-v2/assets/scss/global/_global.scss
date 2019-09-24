@@ -858,6 +858,15 @@ img {
                     width: 100%;
                     @include box-shadow(none);
                     @include vertical-horizontal-align(absolute);
+                    &.clear-center-position {
+                        position: static;
+                        top: auto;
+                        left: auto;
+                        @include clear_transform();
+                    }
+                    .modal-body {
+                        padding: 15px 0;
+                    }
                 }
             }
         }
@@ -1324,3 +1333,21 @@ input[type=file].hide-input {
          display: none;
      }
  }
+
+.container-404 {
+    .num-404 {
+        font-size: 180px;
+        font-family: "Calibri-Bold";
+    }
+    @include breakpoint($xs)    {
+        .num-404 {
+            font-size: 100px;
+        }
+    }
+    @include breakpoint($xxs)    {
+        .num-404 {
+            font-size: 100px;
+            text-align: center;
+        }
+    }
+}

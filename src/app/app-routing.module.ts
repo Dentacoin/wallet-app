@@ -8,6 +8,7 @@ import { SpendPagePayForDentalServicesComponent } from './spend-page-pay-for-den
 import { SpendPageGiftCardsComponent } from './spend-page-gift-cards/spend-page-gift-cards.component';
 import { SpendPageExchangesComponent } from './spend-page-exchanges/spend-page-exchanges.component';
 import { SpendPagePayAssuranceFeesComponent } from './spend-page-pay-assurance-fees/spend-page-pay-assurance-fees.component';
+import { NotFoundPageComponent } from './not-found-page/not-found-page.component';
 
 const routes: Routes = [
     {path: '', component: HomepageComponent},
@@ -16,7 +17,8 @@ const routes: Routes = [
     {path: 'spend-pay-for-dental-services', component: SpendPagePayForDentalServicesComponent},
     {path: 'spend-gift-cards', component: SpendPageGiftCardsComponent},
     {path: 'spend-exchanges', component: SpendPageExchangesComponent},
-    {path: 'spend-pay-assurance-fees', component: SpendPagePayAssuranceFeesComponent}
+    {path: 'spend-pay-assurance-fees', component: SpendPagePayAssuranceFeesComponent},
+    {path: '**', component: NotFoundPageComponent}
 ];
 
 @NgModule({
@@ -26,4 +28,4 @@ const routes: Routes = [
 
 export class AppRoutingModule {}
 
-export const routingComponents = [HomepageComponent, BuyPageComponent, SendPageComponent, SpendPagePayForDentalServicesComponent, SpendPageGiftCardsComponent, SpendPageExchangesComponent, SpendPagePayAssuranceFeesComponent]
+export const routingComponents = [HomepageComponent, BuyPageComponent, SendPageComponent, SpendPagePayForDentalServicesComponent, SpendPageGiftCardsComponent, SpendPageExchangesComponent, SpendPagePayAssuranceFeesComponent, NotFoundPageComponent]

@@ -1406,11 +1406,21 @@ var pages_data = {
 
         function bidaliWidgetInit() {
             $('.buy-gift-cards').click(function() {
-                bidaliSdk.Commerce.render({
-                    apiKey: 'pk_n6mvpompwzm83egzrz2vnh',
-                    paymentCurrencies: ['DCN']
-                });
+                if(is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
+                    window.open('https://wallet.dentacoin.com/spend-gift-cards?show-vouchers=true', '_system');
+                    return false;
+                } else {
+                    bidaliSdk.Commerce.render({
+                        apiKey: 'pk_n6mvpompwzm83egzrz2vnh',
+                        paymentCurrencies: ['DCN']
+                    });
+                }
             });
+
+            var get_params = getGETParameters();
+            if(basic.property_exists(get_params, 'show-vouchers')) {
+                $('.buy-gift-cards').click();
+            }
         }
     },
     spend_page_exchanges: function() {
@@ -3010,4 +3020,19 @@ function updateExternalURLsForiOSDevice() {
             }
         }
     }
+}
+
+function getGETParameters() {
+    var prmstr = window.location.search.substr(1);
+    return prmstr != null && prmstr != "" ? transformToAssocArray(prmstr) : {};
+}
+
+function transformToAssocArray( prmstr ) {
+    var params = {};
+    var prmarr = prmstr.split("&");
+    for ( var i = 0; i < prmarr.length; i++) {
+        var tmparr = prmarr[i].split("=");
+        params[tmparr[0]] = tmparr[1];
+    }
+    return params;
 }

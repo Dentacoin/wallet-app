@@ -4619,6 +4619,17 @@ input[type=file].hide-input {
   .error-handle.alert.alert-warning {
     display: none; }
 
+.container-404 .num-404 {
+  font-size: 180px;
+  font-family: "Calibri-Bold"; }
+@media screen and (max-width: 767px) {
+  .container-404 .num-404 {
+    font-size: 100px; } }
+@media screen and (max-width: 450px) {
+  .container-404 .num-404 {
+    font-size: 100px;
+    text-align: center; } }
+
 header .logo {
   padding-top: 10px;
   padding-bottom: 10px; }

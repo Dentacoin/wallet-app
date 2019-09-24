@@ -4200,7 +4200,18 @@ img {
       left: 50%;
       -webkit-transform: translate(-50%, -50%);
       -ms-transform: translate(-50%, -50%);
-      transform: translate(-50%, -50%); } }
+      transform: translate(-50%, -50%); }
+      .bootbox.custom-auth-popup .modal-dialog .modal-content.clear-center-position {
+        position: static;
+        top: auto;
+        left: auto;
+        -webkit-transform: none;
+        -moz-transform: none;
+        -ms-transform: none;
+        -o-transform: none;
+        transform: none; }
+      .bootbox.custom-auth-popup .modal-dialog .modal-content .modal-body {
+        padding: 15px 0; } }
 .bootbox.mobile-dentacoin-address-and-qr .modal-body {
   padding-bottom: 30px;
   text-align: center; }
@@ -4608,6 +4619,17 @@ input[type=file].hide-input {
   .error-handle.alert.alert-warning {
     display: none; }
 
+.container-404 .num-404 {
+  font-size: 180px;
+  font-family: "Calibri-Bold"; }
+@media screen and (max-width: 767px) {
+  .container-404 .num-404 {
+    font-size: 100px; } }
+@media screen and (max-width: 450px) {
+  .container-404 .num-404 {
+    font-size: 100px;
+    text-align: center; } }
+
 header .logo {
   padding-top: 10px;
   padding-bottom: 10px; }
@@ -4769,10 +4791,10 @@ app-homepage .eth-address-container {
   @media screen and (max-width: 450px) {
     app-homepage .eth-address-container .address-value {
       font-size: 10px !important;
-      width: 240px;
+      width: 230px;
       text-align: center; }
     app-homepage .eth-address-container .copy-icon img, app-homepage .eth-address-container .qr-code-icon img {
-      max-width: 25px !important; } }
+      max-width: 20px !important; } }
 app-homepage .fade-in-element {
   display: none; }
 
@@ -5037,7 +5059,7 @@ app-spend-page-exchanges .camping-for-exchanges {
         display: block; } }
 
 @media screen and (max-width: 767px) {
-  app-spend-page-pay-assurance-fees video {
+  app-spend-page-pay-assurance-fees video, app-spend-page-gift-cards video {
     height: 220px; } }
 
 /*# sourceMappingURL=style.css.map */
