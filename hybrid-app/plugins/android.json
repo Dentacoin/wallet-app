@@ -35,6 +35,9 @@
     "cordova-plugin-x-socialsharing": {
       "ANDROID_SUPPORT_V4_VERSION": "24.1.1+",
       "PACKAGE_NAME": "wallet.dentacoin.com"
+    },
+    "cordova-plugin-statusbar": {
+      "PACKAGE_NAME": "wallet.dentacoin.com"
     }
   },
   "dependent_plugins": {
