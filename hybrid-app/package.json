@@ -22,6 +22,7 @@
     "cordova-plugin-filechooser": "git+ssh://git@github.com/ihadeed/cordova-filechooser.git",
     "cordova-plugin-filepicker": "^1.1.6",
     "cordova-plugin-network-information": "^2.0.2",
+    "cordova-plugin-splashscreen": "^5.0.3",
     "cordova-plugin-statusbar": "^2.4.3",
     "cordova-plugin-x-socialsharing": "git+https://github.com/EddyVerbruggen/SocialSharing-PhoneGap-Plugin.git",
     "es6-promise-plugin": "^4.2.2",
@@ -47,7 +48,8 @@
         "PHOTO_LIBRARY_ADD_USAGE_DESCRIPTION": "This app requires photo library access to function properly.",
         "PHOTO_LIBRARY_USAGE_DESCRIPTION": "This app requires photo library access to function properly."
       },
-      "cordova-plugin-statusbar": {}
+      "cordova-plugin-statusbar": {},
+      "cordova-plugin-splashscreen": {}
     },
     "platforms": [
       "android",

@@ -34,6 +34,8 @@
 		F51EE58488A84A99B3668998 /* Dentacoin Wallet.entitlements in Resources */ = {isa = PBXBuildFile; fileRef = 6B0DD1AA23E24096AAE2BD93 /* Dentacoin Wallet.entitlements */; };
 		F7E484E07BD448AD8FC0EE9D /* CDVFileTransfer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9685581FE23A49129D79D879 /* CDVFileTransfer.m */; };
 		E6573114599F472E87AE7B31 /* CDVStatusBar.m in Sources */ = {isa = PBXBuildFile; fileRef = F68D2197ACD646659DBA7E82 /* CDVStatusBar.m */; };
+		D390CA2FD5764AD08E261A96 /* CDVSplashScreen.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B4D612A486C4111BDA232AB /* CDVSplashScreen.m */; };
+		16C9D12FC496428F99714260 /* CDVViewController+SplashScreen.m in Sources */ = {isa = PBXBuildFile; fileRef = CBD563DABA954C99BA1DAB27 /* CDVViewController+SplashScreen.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -113,6 +115,10 @@
 		F840E1F0165FE0F500CFE078 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = "Dentacoin Wallet/config.xml"; sourceTree = "<group>"; };
 		F68D2197ACD646659DBA7E82 /* CDVStatusBar.m */ = {isa = PBXFileReference; name = "CDVStatusBar.m"; path = "cordova-plugin-statusbar/CDVStatusBar.m"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; explicitFileType = undefined; includeInIndex = 0; };
 		C3E05DB81B1345F2A61DDC0E /* CDVStatusBar.h */ = {isa = PBXFileReference; name = "CDVStatusBar.h"; path = "cordova-plugin-statusbar/CDVStatusBar.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
+		1B4D612A486C4111BDA232AB /* CDVSplashScreen.m */ = {isa = PBXFileReference; name = "CDVSplashScreen.m"; path = "cordova-plugin-splashscreen/CDVSplashScreen.m"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; explicitFileType = undefined; includeInIndex = 0; };
+		CBD563DABA954C99BA1DAB27 /* CDVViewController+SplashScreen.m */ = {isa = PBXFileReference; name = "CDVViewController+SplashScreen.m"; path = "cordova-plugin-splashscreen/CDVViewController+SplashScreen.m"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; explicitFileType = undefined; includeInIndex = 0; };
+		BFBBF714C9A5416D9F8D9B75 /* CDVSplashScreen.h */ = {isa = PBXFileReference; name = "CDVSplashScreen.h"; path = "cordova-plugin-splashscreen/CDVSplashScreen.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
+		50A06CFC24054F17817A7FFA /* CDVViewController+SplashScreen.h */ = {isa = PBXFileReference; name = "CDVViewController+SplashScreen.h"; path = "cordova-plugin-splashscreen/CDVViewController+SplashScreen.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -255,6 +261,10 @@
 				8FEBF81328094E59BDB3CCCB /* SocialSharing.h */,
 				F68D2197ACD646659DBA7E82 /* CDVStatusBar.m */,
 				C3E05DB81B1345F2A61DDC0E /* CDVStatusBar.h */,
+				1B4D612A486C4111BDA232AB /* CDVSplashScreen.m */,
+				CBD563DABA954C99BA1DAB27 /* CDVViewController+SplashScreen.m */,
+				BFBBF714C9A5416D9F8D9B75 /* CDVSplashScreen.h */,
+				50A06CFC24054F17817A7FFA /* CDVViewController+SplashScreen.h */,
 			);
 			name = Plugins;
 			path = "Dentacoin Wallet/Plugins";
@@ -404,6 +414,8 @@
 				1E24CE128B8C43A98E7C5AA4 /* NSString+SSURLEncoding.m in Sources */,
 				7CA935A382AC41E2B5B1D32D /* SocialSharing.m in Sources */,
 				E6573114599F472E87AE7B31 /* CDVStatusBar.m in Sources */,
+				D390CA2FD5764AD08E261A96 /* CDVSplashScreen.m in Sources */,
+				16C9D12FC496428F99714260 /* CDVViewController+SplashScreen.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
