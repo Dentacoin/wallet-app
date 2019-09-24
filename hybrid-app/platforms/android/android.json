@@ -45,7 +45,7 @@
               "count": 1
             },
             {
-              "xml": "<feature name=\"SplashScreen\"><param name=\"android-package\" value=\"org.apache.cordova.splashscreen.SplashScreen\" /><param name=\"onload\" value=\"true\" /></feature>",
+              "xml": "<feature name=\"InAppBrowser\"><param name=\"android-package\" value=\"org.apache.cordova.inappbrowser.InAppBrowser\" /></feature>",
               "count": 1
             }
           ],
@@ -148,7 +148,7 @@
     "cordova-plugin-statusbar": {
       "PACKAGE_NAME": "wallet.dentacoin.com"
     },
-    "cordova-plugin-splashscreen": {
+    "cordova-plugin-inappbrowser": {
       "PACKAGE_NAME": "wallet.dentacoin.com"
     }
   },
@@ -415,11 +415,12 @@
       ]
     },
     {
-      "id": "cordova-plugin-splashscreen.SplashScreen",
-      "file": "plugins/cordova-plugin-splashscreen/www/splashscreen.js",
-      "pluginId": "cordova-plugin-splashscreen",
+      "id": "cordova-plugin-inappbrowser.inappbrowser",
+      "file": "plugins/cordova-plugin-inappbrowser/www/inappbrowser.js",
+      "pluginId": "cordova-plugin-inappbrowser",
       "clobbers": [
-        "navigator.splashscreen"
+        "cordova.InAppBrowser.open",
+        "window.open"
       ]
     }
   ],
@@ -435,6 +436,6 @@
     "es6-promise-plugin": "4.2.2",
     "cordova-plugin-x-socialsharing": "5.4.7",
     "cordova-plugin-statusbar": "2.4.3",
-    "cordova-plugin-splashscreen": "5.0.3"
+    "cordova-plugin-inappbrowser": "3.1.0"
   }
 }

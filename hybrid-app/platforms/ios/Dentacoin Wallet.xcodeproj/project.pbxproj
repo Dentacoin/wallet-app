@@ -34,8 +34,12 @@
 		F51EE58488A84A99B3668998 /* Dentacoin Wallet.entitlements in Resources */ = {isa = PBXBuildFile; fileRef = 6B0DD1AA23E24096AAE2BD93 /* Dentacoin Wallet.entitlements */; };
 		F7E484E07BD448AD8FC0EE9D /* CDVFileTransfer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9685581FE23A49129D79D879 /* CDVFileTransfer.m */; };
 		E6573114599F472E87AE7B31 /* CDVStatusBar.m in Sources */ = {isa = PBXBuildFile; fileRef = F68D2197ACD646659DBA7E82 /* CDVStatusBar.m */; };
-		D390CA2FD5764AD08E261A96 /* CDVSplashScreen.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B4D612A486C4111BDA232AB /* CDVSplashScreen.m */; };
-		16C9D12FC496428F99714260 /* CDVViewController+SplashScreen.m in Sources */ = {isa = PBXBuildFile; fileRef = CBD563DABA954C99BA1DAB27 /* CDVViewController+SplashScreen.m */; };
+		7E93EC8735E54DD0AF36509B /* CDVInAppBrowser.m in Sources */ = {isa = PBXBuildFile; fileRef = 716325F6062043D0AA6938F1 /* CDVInAppBrowser.m */; };
+		9A9C5D2289B34E628136B098 /* CDVInAppBrowserOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E634AD713464261AE8AFCF5 /* CDVInAppBrowserOptions.m */; };
+		681DCB737FED45D494830E6C /* CDVInAppBrowserNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 02F439F32CD3496F85C2DA3F /* CDVInAppBrowserNavigationController.m */; };
+		22654B0902D447C481A7376F /* CDVUIInAppBrowser.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CDA2DBE154C48749322CC25 /* CDVUIInAppBrowser.m */; };
+		9CF25D9136B742C2BE6E45DA /* CDVWKInAppBrowser.m in Sources */ = {isa = PBXBuildFile; fileRef = B6B6E1E6B0D4422FBB2B08E9 /* CDVWKInAppBrowser.m */; };
+		9BD74423432546EC9472F942 /* CDVWKInAppBrowserUIDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 45588406C75A4934B9667C37 /* CDVWKInAppBrowserUIDelegate.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -115,10 +119,18 @@
 		F840E1F0165FE0F500CFE078 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = "Dentacoin Wallet/config.xml"; sourceTree = "<group>"; };
 		F68D2197ACD646659DBA7E82 /* CDVStatusBar.m */ = {isa = PBXFileReference; name = "CDVStatusBar.m"; path = "cordova-plugin-statusbar/CDVStatusBar.m"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; explicitFileType = undefined; includeInIndex = 0; };
 		C3E05DB81B1345F2A61DDC0E /* CDVStatusBar.h */ = {isa = PBXFileReference; name = "CDVStatusBar.h"; path = "cordova-plugin-statusbar/CDVStatusBar.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
-		1B4D612A486C4111BDA232AB /* CDVSplashScreen.m */ = {isa = PBXFileReference; name = "CDVSplashScreen.m"; path = "cordova-plugin-splashscreen/CDVSplashScreen.m"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; explicitFileType = undefined; includeInIndex = 0; };
-		CBD563DABA954C99BA1DAB27 /* CDVViewController+SplashScreen.m */ = {isa = PBXFileReference; name = "CDVViewController+SplashScreen.m"; path = "cordova-plugin-splashscreen/CDVViewController+SplashScreen.m"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; explicitFileType = undefined; includeInIndex = 0; };
-		BFBBF714C9A5416D9F8D9B75 /* CDVSplashScreen.h */ = {isa = PBXFileReference; name = "CDVSplashScreen.h"; path = "cordova-plugin-splashscreen/CDVSplashScreen.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
-		50A06CFC24054F17817A7FFA /* CDVViewController+SplashScreen.h */ = {isa = PBXFileReference; name = "CDVViewController+SplashScreen.h"; path = "cordova-plugin-splashscreen/CDVViewController+SplashScreen.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
+		716325F6062043D0AA6938F1 /* CDVInAppBrowser.m */ = {isa = PBXFileReference; name = "CDVInAppBrowser.m"; path = "cordova-plugin-inappbrowser/CDVInAppBrowser.m"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; explicitFileType = undefined; includeInIndex = 0; };
+		8E634AD713464261AE8AFCF5 /* CDVInAppBrowserOptions.m */ = {isa = PBXFileReference; name = "CDVInAppBrowserOptions.m"; path = "cordova-plugin-inappbrowser/CDVInAppBrowserOptions.m"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; explicitFileType = undefined; includeInIndex = 0; };
+		02F439F32CD3496F85C2DA3F /* CDVInAppBrowserNavigationController.m */ = {isa = PBXFileReference; name = "CDVInAppBrowserNavigationController.m"; path = "cordova-plugin-inappbrowser/CDVInAppBrowserNavigationController.m"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; explicitFileType = undefined; includeInIndex = 0; };
+		7CDA2DBE154C48749322CC25 /* CDVUIInAppBrowser.m */ = {isa = PBXFileReference; name = "CDVUIInAppBrowser.m"; path = "cordova-plugin-inappbrowser/CDVUIInAppBrowser.m"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; explicitFileType = undefined; includeInIndex = 0; };
+		B6B6E1E6B0D4422FBB2B08E9 /* CDVWKInAppBrowser.m */ = {isa = PBXFileReference; name = "CDVWKInAppBrowser.m"; path = "cordova-plugin-inappbrowser/CDVWKInAppBrowser.m"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; explicitFileType = undefined; includeInIndex = 0; };
+		45588406C75A4934B9667C37 /* CDVWKInAppBrowserUIDelegate.m */ = {isa = PBXFileReference; name = "CDVWKInAppBrowserUIDelegate.m"; path = "cordova-plugin-inappbrowser/CDVWKInAppBrowserUIDelegate.m"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; explicitFileType = undefined; includeInIndex = 0; };
+		9B25DBDECB3547A3BD56E7ED /* CDVInAppBrowser.h */ = {isa = PBXFileReference; name = "CDVInAppBrowser.h"; path = "cordova-plugin-inappbrowser/CDVInAppBrowser.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
+		2872238B78164CD298818647 /* CDVInAppBrowserOptions.h */ = {isa = PBXFileReference; name = "CDVInAppBrowserOptions.h"; path = "cordova-plugin-inappbrowser/CDVInAppBrowserOptions.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
+		B2F6EA34056E4E44AC0C958A /* CDVInAppBrowserNavigationController.h */ = {isa = PBXFileReference; name = "CDVInAppBrowserNavigationController.h"; path = "cordova-plugin-inappbrowser/CDVInAppBrowserNavigationController.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
+		1A0B30C8D93D4AE585684F92 /* CDVUIInAppBrowser.h */ = {isa = PBXFileReference; name = "CDVUIInAppBrowser.h"; path = "cordova-plugin-inappbrowser/CDVUIInAppBrowser.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
+		425B2D479A794EC9AB3A16E1 /* CDVWKInAppBrowser.h */ = {isa = PBXFileReference; name = "CDVWKInAppBrowser.h"; path = "cordova-plugin-inappbrowser/CDVWKInAppBrowser.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
+		3B8EC1E9343B4D4A9609D7AA /* CDVWKInAppBrowserUIDelegate.h */ = {isa = PBXFileReference; name = "CDVWKInAppBrowserUIDelegate.h"; path = "cordova-plugin-inappbrowser/CDVWKInAppBrowserUIDelegate.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -261,10 +273,18 @@
 				8FEBF81328094E59BDB3CCCB /* SocialSharing.h */,
 				F68D2197ACD646659DBA7E82 /* CDVStatusBar.m */,
 				C3E05DB81B1345F2A61DDC0E /* CDVStatusBar.h */,
-				1B4D612A486C4111BDA232AB /* CDVSplashScreen.m */,
-				CBD563DABA954C99BA1DAB27 /* CDVViewController+SplashScreen.m */,
-				BFBBF714C9A5416D9F8D9B75 /* CDVSplashScreen.h */,
-				50A06CFC24054F17817A7FFA /* CDVViewController+SplashScreen.h */,
+				716325F6062043D0AA6938F1 /* CDVInAppBrowser.m */,
+				8E634AD713464261AE8AFCF5 /* CDVInAppBrowserOptions.m */,
+				02F439F32CD3496F85C2DA3F /* CDVInAppBrowserNavigationController.m */,
+				7CDA2DBE154C48749322CC25 /* CDVUIInAppBrowser.m */,
+				B6B6E1E6B0D4422FBB2B08E9 /* CDVWKInAppBrowser.m */,
+				45588406C75A4934B9667C37 /* CDVWKInAppBrowserUIDelegate.m */,
+				9B25DBDECB3547A3BD56E7ED /* CDVInAppBrowser.h */,
+				2872238B78164CD298818647 /* CDVInAppBrowserOptions.h */,
+				B2F6EA34056E4E44AC0C958A /* CDVInAppBrowserNavigationController.h */,
+				1A0B30C8D93D4AE585684F92 /* CDVUIInAppBrowser.h */,
+				425B2D479A794EC9AB3A16E1 /* CDVWKInAppBrowser.h */,
+				3B8EC1E9343B4D4A9609D7AA /* CDVWKInAppBrowserUIDelegate.h */,
 			);
 			name = Plugins;
 			path = "Dentacoin Wallet/Plugins";
@@ -414,8 +434,12 @@
 				1E24CE128B8C43A98E7C5AA4 /* NSString+SSURLEncoding.m in Sources */,
 				7CA935A382AC41E2B5B1D32D /* SocialSharing.m in Sources */,
 				E6573114599F472E87AE7B31 /* CDVStatusBar.m in Sources */,
-				D390CA2FD5764AD08E261A96 /* CDVSplashScreen.m in Sources */,
-				16C9D12FC496428F99714260 /* CDVViewController+SplashScreen.m in Sources */,
+				7E93EC8735E54DD0AF36509B /* CDVInAppBrowser.m in Sources */,
+				9A9C5D2289B34E628136B098 /* CDVInAppBrowserOptions.m in Sources */,
+				681DCB737FED45D494830E6C /* CDVInAppBrowserNavigationController.m in Sources */,
+				22654B0902D447C481A7376F /* CDVUIInAppBrowser.m in Sources */,
+				9CF25D9136B742C2BE6E45DA /* CDVWKInAppBrowser.m in Sources */,
+				9BD74423432546EC9472F942 /* CDVWKInAppBrowserUIDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
