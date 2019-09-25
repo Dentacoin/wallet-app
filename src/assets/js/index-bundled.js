@@ -80699,6 +80699,12 @@ function noop() {}
 },{"global/window":394,"is-function":414,"parse-headers":449,"xtend":582}],582:[function(require,module,exports){
 arguments[4][174][0].apply(exports,arguments)
 },{"dup":174}],583:[function(require,module,exports){
+var config_variable = {
+    cross_website_password: '8x7xSXkRTmCCeY6pyQLBmxmwvtM2RM6zBpbDUwtpacta6UZafTG4PjR6w4RpFvvQm5c63hZpQDU9QGWMZGKX8aGcDEaHkNCf4SLGC9BJejmwDL9haU7hmxf6esZ7cRJYCjm3tn5NB6jLAxFcVKEdrPnNjZrNSfesGvpErKQS9Snwr9VvccRnp2pPhZxwVcdtCMtFBZjVQeU3mdTEv24kprYS45ddvg7gFRYCazTvpZdcPe3r2dcr5TW9BGAjs4wK4pvrNbUYcjvGyrURYuDDHt6rnVUVAydKqzUMBHFMhJS3RCkm6K7jfszVdMZDEctGYhUXW7LdVpUXYRtDRutgrCEKhdZ232FMtC9bR9XgNTWKztXAr3GPvSgrp2B65BZJe4aEcYs68gpTPbTpdHRxZEACY85TGjR8ECqkjd9NE3CMmLNgWsWUh5mFsCyGMymaLhs6Brr37ZRacL8ukg5mqTtTgpqgRzBcQDbU5PNYV5jDL6jA3KXCnEV4bZFVqZLZ'
+};
+
+module.exports = {config_variable};
+},{}],584:[function(require,module,exports){
 (function (Buffer){
 const Web3 = require('../../../node_modules/web3'); // import web3 v1.0 constructor
 const keythereum = require('../../../node_modules/keythereum');
@@ -80721,9 +80727,7 @@ const getContractInstance = (web3) => (contractName, address) => {
 };
 
 function generateKeystoreFile(password, callback) {
-    console.log(password, 'generateKeystoreFile');
     var dk = keythereum.create({keyBytes: 32, ivBytes: 16});
-    console.log(dk, 'dk');
     keythereum.dump(password, dk.privateKey, dk.salt, dk.iv, {
         cipher: 'aes-128-ctr',
         kdfparams: {
@@ -80732,10 +80736,7 @@ function generateKeystoreFile(password, callback) {
             prf: 'hmac-sha256'
         }
     }, function(result) {
-        console.log(result, 'result');
-
         const public_key = EthCrypto.publicKeyByPrivateKey(dk.privateKey.toString('hex'));
-        console.log(public_key, 'public_key');
 
         callback(public_key, result);
     });
@@ -80817,9 +80818,10 @@ module.exports = {getWeb3, getContractInstance, generateKeystoreFile, importKeys
 
 
 }).call(this,require("buffer").Buffer)
-},{"../../../node_modules/eth-crypto":351,"../../../node_modules/ethereumjs-wallet":372,"../../../node_modules/keythereum":423,"../../../node_modules/web3":565,"buffer":52}],584:[function(require,module,exports){
+},{"../../../node_modules/eth-crypto":351,"../../../node_modules/ethereumjs-wallet":372,"../../../node_modules/keythereum":423,"../../../node_modules/web3":565,"buffer":52}],585:[function(require,module,exports){
 (function (Buffer){
 var {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey} = require('./helper');
+var {config_variable} = require('./config');
 
 console.log("( ͡° ͜ʖ ͡°) I see you.");
 
@@ -80989,9 +80991,8 @@ var dApp = {
                     filter: {_from: global_state.account},
                     fromBlock: block_number_of_dcn_creation,
                     toBlock: 'latest'
-                }, function(events_from_user_err, events_from_user){
+                }, function(events_from_user_err, events_from_user) {
                     if(!events_from_user_err) {
-
                         //getting blockchain events where the logged user was the receiver of the transaction
                         DCNContract.getPastEvents('Transfer', {
                             filter: {_to: global_state.account},
@@ -81058,51 +81059,9 @@ var dApp = {
                                                     var stop_intervals = false;
                                                     function recursiveLoop(custom_iterator) {
                                                         if(custom_iterator < 5 && custom_iterator < intervals_stopper) {
-                                                            console.log(custom_iterator, 'custom_iterator');
-                                                            var other_address = '';
-                                                            var class_name = '';
-                                                            var label = '';
                                                             if(basic.property_exists(merged_events_arr[custom_iterator], 'type') && merged_events_arr[custom_iterator].type == 'eth_transaction') {
                                                                 //eth transaction
-                                                                var eth_amount_symbol;
-                                                                if(checksumAddress(merged_events_arr[custom_iterator].to) == checksumAddress(global_state.account)) {
-                                                                    //IF THE CURRENT ACCOUNT IS RECEIVER
-                                                                    other_address = merged_events_arr[custom_iterator].from;
-                                                                    label = 'Received from';
-                                                                    class_name = 'received_from';
-                                                                    eth_amount_symbol = '+';
-                                                                } else if(checksumAddress(merged_events_arr[custom_iterator].from) == checksumAddress(global_state.account)) {
-                                                                    //IF THE CURRENT ACCOUNT IS SENDER
-                                                                    other_address = merged_events_arr[custom_iterator].to;
-                                                                    label = 'Sent to';
-                                                                    class_name = 'sent_to';
-                                                                    eth_amount_symbol = '-';
-                                                                }
-
-                                                                var eth_amount = dApp.web3_1_0.utils.fromWei(merged_events_arr[custom_iterator].value, 'ether');
-                                                                var usd_amount = (ethereum_data.market_data.current_price.usd * eth_amount).toFixed(2);
-                                                                var timestamp_javascript = merged_events_arr[custom_iterator].timeStamp*1000;
-                                                                var date_obj = new Date(timestamp_javascript);
-                                                                var minutes;
-                                                                var hours;
-
-                                                                if(new Date(timestamp_javascript).getMinutes() < 10) {
-                                                                    minutes = '0'+new Date(timestamp_javascript).getMinutes();
-                                                                }else {
-                                                                    minutes = new Date(timestamp_javascript).getMinutes();
-                                                                }
-
-                                                                if(new Date(timestamp_javascript).getHours() < 10) {
-                                                                    hours = '0'+new Date(timestamp_javascript).getHours();
-                                                                }else {
-                                                                    hours = new Date(timestamp_javascript).getHours();
-                                                                }
-
-                                                                if(basic.isMobile()) {
-                                                                    other_address = substr_replace(other_address, '...', -25);
-                                                                }
-
-                                                                transaction_history_html+='<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+merged_events_arr[custom_iterator].hash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+merged_events_arr[custom_iterator].hash+'" target="_blank" class="lato-bold color-white data-external-link">Transaction ID</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+eth_amount_symbol+eth_amount+' ETH</li><li>'+usd_amount+' USD</li></ul></td></tr>';
+                                                                transaction_history_html+=buildEthereumHistoryTransaction(ethereum_data, dApp.web3_1_0.utils.fromWei(merged_events_arr[custom_iterator].value, 'ether'), merged_events_arr[custom_iterator].to, merged_events_arr[custom_iterator].from, merged_events_arr[custom_iterator].timeStamp, merged_events_arr[custom_iterator].hash);
 
                                                                 if(custom_iterator < 5) {
                                                                     custom_iterator+=1;
@@ -81118,47 +81077,8 @@ var dApp = {
                                                                     if(!stop_intervals) {
                                                                         if (temporally_timestamps[custom_iterator] != 0 && temporally_timestamps[custom_iterator] != undefined) {
                                                                             clearInterval(request_interval);
-                                                                            merged_events_arr[custom_iterator].timestamp = temporally_timestamps[custom_iterator];
 
-                                                                            var dcn_amount_symbol;
-                                                                            var usd_amount = (parseInt(merged_events_arr[custom_iterator].returnValues._value) * dentacoin_data.market_data.current_price.usd).toFixed(2);
-                                                                            if(checksumAddress(merged_events_arr[custom_iterator].returnValues._to) == checksumAddress(global_state.account)) {
-                                                                                //IF THE CURRENT ACCOUNT IS RECEIVER
-                                                                                other_address = merged_events_arr[custom_iterator].returnValues._from;
-                                                                                label = 'Received from';
-                                                                                class_name = 'received_from';
-                                                                                dcn_amount_symbol = '+';
-                                                                            } else if(checksumAddress(merged_events_arr[custom_iterator].returnValues._from) == checksumAddress(global_state.account)) {
-                                                                                //IF THE CURRENT ACCOUNT IS SENDER
-                                                                                other_address = merged_events_arr[custom_iterator].returnValues._to;
-                                                                                label = 'Sent to';
-                                                                                class_name = 'sent_to';
-                                                                                dcn_amount_symbol = '-';
-                                                                            }
-
-                                                                            var dcn_amount = dcn_amount_symbol+merged_events_arr[custom_iterator].returnValues._value+' DCN';
-                                                                            var timestamp_javascript = merged_events_arr[custom_iterator].timestamp*1000;
-                                                                            var date_obj = new Date(timestamp_javascript);
-                                                                            var minutes;
-                                                                            var hours;
-
-                                                                            if(new Date(timestamp_javascript).getMinutes() < 10) {
-                                                                                minutes = '0'+new Date(timestamp_javascript).getMinutes();
-                                                                            }else {
-                                                                                minutes = new Date(timestamp_javascript).getMinutes();
-                                                                            }
-
-                                                                            if(new Date(timestamp_javascript).getHours() < 10) {
-                                                                                hours = '0'+new Date(timestamp_javascript).getHours();
-                                                                            }else {
-                                                                                hours = new Date(timestamp_javascript).getHours();
-                                                                            }
-
-                                                                            if(basic.isMobile()) {
-                                                                                other_address = substr_replace(other_address, '...', -25);
-                                                                            }
-
-                                                                            transaction_history_html+='<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+merged_events_arr[custom_iterator].transactionHash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+merged_events_arr[custom_iterator].transactionHash+'" target="_blank" class="lato-bold color-white data-external-link">Transaction ID</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+dcn_amount+'</li><li>'+usd_amount+' USD</li></ul></td></tr>';
+                                                                            transaction_history_html+=buildDentacoinHistoryTransaction(dentacoin_data, merged_events_arr[custom_iterator].returnValues._value, merged_events_arr[custom_iterator].returnValues._to, merged_events_arr[custom_iterator].returnValues._from, temporally_timestamps[custom_iterator], merged_events_arr[custom_iterator].transactionHash);
 
                                                                             if(custom_iterator < 5) {
                                                                                 custom_iterator+=1;
@@ -81189,50 +81109,9 @@ var dApp = {
                                                     var next_transaction_history_html = '';
                                                     function recursiveLoopForRestOfHistory(custom_iterator) {
                                                         if(custom_iterator < merged_events_arr.length) {
-                                                            var other_address = '';
-                                                            var class_name = '';
-                                                            var label = '';
                                                             if(basic.property_exists(merged_events_arr[custom_iterator], 'type') && merged_events_arr[custom_iterator].type == 'eth_transaction') {
                                                                 //eth transaction
-                                                                var eth_amount_symbol;
-                                                                if(checksumAddress(merged_events_arr[custom_iterator].to) == checksumAddress(global_state.account)) {
-                                                                    //IF THE CURRENT ACCOUNT IS RECEIVER
-                                                                    other_address = merged_events_arr[custom_iterator].from;
-                                                                    label = 'Received from';
-                                                                    class_name = 'received_from';
-                                                                    eth_amount_symbol = '+';
-                                                                } else if(checksumAddress(merged_events_arr[custom_iterator].from) == checksumAddress(global_state.account)) {
-                                                                    //IF THE CURRENT ACCOUNT IS SENDER
-                                                                    other_address = merged_events_arr[custom_iterator].to;
-                                                                    label = 'Sent to';
-                                                                    class_name = 'sent_to';
-                                                                    eth_amount_symbol = '-';
-                                                                }
-
-                                                                var eth_amount = dApp.web3_1_0.utils.fromWei(merged_events_arr[custom_iterator].value, 'ether');
-                                                                var usd_amount = (ethereum_data.market_data.current_price.usd * eth_amount).toFixed(2);
-                                                                var timestamp_javascript = merged_events_arr[custom_iterator].timeStamp*1000;
-                                                                var date_obj = new Date(timestamp_javascript);
-                                                                var minutes;
-                                                                var hours;
-
-                                                                if(new Date(timestamp_javascript).getMinutes() < 10) {
-                                                                    minutes = '0'+new Date(timestamp_javascript).getMinutes();
-                                                                }else {
-                                                                    minutes = new Date(timestamp_javascript).getMinutes();
-                                                                }
-
-                                                                if(new Date(timestamp_javascript).getHours() < 10) {
-                                                                    hours = '0'+new Date(timestamp_javascript).getHours();
-                                                                }else {
-                                                                    hours = new Date(timestamp_javascript).getHours();
-                                                                }
-
-                                                                if(basic.isMobile()) {
-                                                                    other_address = substr_replace(other_address, '...', -25);
-                                                                }
-
-                                                                next_transaction_history_html+='<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+merged_events_arr[custom_iterator].hash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+merged_events_arr[custom_iterator].hash+'" target="_blank" class="lato-bold color-white data-external-link">Transaction ID</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+eth_amount_symbol+eth_amount+' ETH</li><li>'+usd_amount+' USD</li></ul></td></tr>';
+                                                                next_transaction_history_html+=buildEthereumHistoryTransaction(ethereum_data, dApp.web3_1_0.utils.fromWei(merged_events_arr[custom_iterator].value, 'ether'), merged_events_arr[custom_iterator].to, merged_events_arr[custom_iterator].from, merged_events_arr[custom_iterator].timeStamp, merged_events_arr[custom_iterator].hash);
 
                                                                 if(custom_iterator < merged_events_arr.length) {
                                                                     custom_iterator+=1;
@@ -81248,50 +81127,9 @@ var dApp = {
                                                                     if(!stop_intervals) {
                                                                         if (temporally_timestamps[custom_iterator] != 0 && temporally_timestamps[custom_iterator] != undefined) {
                                                                             clearInterval(request_interval_for_rest_of_transaction_history);
-                                                                            merged_events_arr[custom_iterator].timestamp = temporally_timestamps[custom_iterator];
 
-                                                                            var other_address = '';
-                                                                            var class_name = '';
-                                                                            var label = '';
-                                                                            var dcn_amount_symbol;
-                                                                            var usd_amount = (parseInt(merged_events_arr[custom_iterator].returnValues._value) * dentacoin_data.market_data.current_price.usd).toFixed(2);
-                                                                            if(checksumAddress(merged_events_arr[custom_iterator].returnValues._to) == checksumAddress(global_state.account))    {
-                                                                                //IF THE CURRENT ACCOUNT IS RECEIVER
-                                                                                other_address = merged_events_arr[custom_iterator].returnValues._from;
-                                                                                label = 'Received from';
-                                                                                class_name = 'received_from';
-                                                                                dcn_amount_symbol = '+';
-                                                                            }else if(checksumAddress(merged_events_arr[custom_iterator].returnValues._from) == checksumAddress(global_state.account)) {
-                                                                                //IF THE CURRENT ACCOUNT IS SENDER
-                                                                                other_address = merged_events_arr[custom_iterator].returnValues._to;
-                                                                                label = 'Sent to';
-                                                                                class_name = 'sent_to';
-                                                                                dcn_amount_symbol = '-';
-                                                                            }
+                                                                            next_transaction_history_html+=buildDentacoinHistoryTransaction(dentacoin_data, merged_events_arr[custom_iterator].returnValues._value, merged_events_arr[custom_iterator].returnValues._to, merged_events_arr[custom_iterator].returnValues._from, temporally_timestamps[custom_iterator], merged_events_arr[custom_iterator].transactionHash);
 
-                                                                            var dcn_amount = dcn_amount_symbol+merged_events_arr[custom_iterator].returnValues._value+' DCN';
-                                                                            var timestamp_javascript = merged_events_arr[custom_iterator].timestamp*1000;
-                                                                            var date_obj = new Date(timestamp_javascript);
-                                                                            var minutes;
-                                                                            var hours;
-
-                                                                            if(new Date(timestamp_javascript).getMinutes() < 10) {
-                                                                                minutes = '0'+new Date(timestamp_javascript).getMinutes();
-                                                                            }else {
-                                                                                minutes = new Date(timestamp_javascript).getMinutes();
-                                                                            }
-
-                                                                            if(new Date(timestamp_javascript).getHours() < 10) {
-                                                                                hours = '0'+new Date(timestamp_javascript).getHours();
-                                                                            }else {
-                                                                                hours = new Date(timestamp_javascript).getHours();
-                                                                            }
-
-                                                                            if(basic.isMobile()) {
-                                                                                other_address = substr_replace(other_address, '...', -25);
-                                                                            }
-
-                                                                            next_transaction_history_html+='<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+merged_events_arr[custom_iterator].transactionHash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+merged_events_arr[custom_iterator].transactionHash+'" target="_blank" class="lato-bold color-white data-external-link">Transaction ID</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+dcn_amount+'</li><li>'+usd_amount+' USD</li></ul></td></tr>';
                                                                             if(custom_iterator < merged_events_arr.length) {
                                                                                 custom_iterator+=1;
                                                                                 recursiveLoopForRestOfHistory(custom_iterator);
@@ -81306,9 +81144,16 @@ var dApp = {
                                                             $('.camping-transaction-history table tbody tr.loading-tr').remove();
                                                             $('.camping-transaction-history table tbody').append(next_transaction_history_html);
                                                             updateExternalURLsForiOSDevice();
+
                                                             if($('.camping-transaction-history .show-more').attr('show-all-transactions') == 'true') {
                                                                 $('.camping-transaction-history table tr').addClass('show-this');
                                                             }
+
+                                                            //updating transaction history every 10 minutes, because the project is SPA and pages are not really refreshed on route change, routes are dynamicly loaded with AngularJS
+                                                            setTimeout(function() {
+                                                                console.log('=-------======= REFRESH TRANSACTION HISTORY ===0000000000000000000000000000');
+                                                                dApp.buildTransactionHistory();
+                                                            }, 600000);
                                                         }
                                                     }
                                                 }
@@ -81366,7 +81211,7 @@ var dApp = {
                 from: global_state.account,
                 gas: 60000
             }).on('transactionHash', function(hash){
-                displayMessageOnDCNTransactionSend('Dentacoin tokens', hash);
+                displayMessageOnTransactionSend('Dentacoin tokens', hash);
             }).catch(function(err) {
                 basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
             });
@@ -81515,6 +81360,19 @@ var pages_data = {
                             $('.mobile-copy-address').tooltip('hide');
                         }, 1000);
                     });
+
+
+
+                    var img = document.querySelector('#mobile-qrcode img');
+                    function loaded() {
+                        $('.mobile-dentacoin-address-and-qr .modal-dialog').css('margin-top', Math.max(20, ($(window).height() - $('.mobile-dentacoin-address-and-qr .modal-dialog').height()) / 2));
+                    }
+
+                    if (img.complete) {
+                        loaded()
+                    } else {
+                        img.addEventListener('load', loaded);
+                    }
                 });
             }
         }
@@ -82100,7 +81958,7 @@ var pages_data = {
                                                         dApp.web3_1_0.eth.sendTransaction({
                                                             from: global_state.account, to: sending_to_address, value: dApp.web3_1_0.utils.toWei(crypto_val, 'ether')
                                                         }).on('transactionHash', function(hash){
-                                                            displayMessageOnDCNTransactionSend('Ethers', hash);
+                                                            displayMessageOnTransactionSend('Ethers', hash);
                                                         }).catch(function(err) {
                                                             basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
                                                         });
@@ -82432,20 +82290,32 @@ function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver
             hideLoader();
             basic.closeDialog();
 
+            var pending_history_transaction;
+
             if(symbol == 'DCN') {
-                fireGoogleAnalyticsEvent('Pay', 'Next', 'DCN', token_val);
+                getDentacoinDataByCoingecko(function(request_response) {
+                    pending_history_transaction += buildDentacoinHistoryTransaction(request_response, token_val, receiver, global_state.account, Math.round((new Date()).getTime() / 1000), transactionHash, true);
+
+                    fireGoogleAnalyticsEvent('Pay', 'Next', 'DCN', token_val);
+                    displayMessageOnTransactionSend(token_label, transactionHash);
+
+                    $('.transaction-history tbody').prepend(pending_history_transaction);
+                });
             } else if(symbol == 'ETH') {
                 getEthereumDataByCoingecko(function(request_response) {
+                    pending_history_transaction += buildEthereumHistoryTransaction(request_response, token_val, receiver, global_state.account, Math.round((new Date()).getTime() / 1000), transactionHash, true);
+
                     fireGoogleAnalyticsEvent('Pay', 'Next', 'ETH in USD', Math.floor(parseFloat(token_val) * request_response.market_data.current_price.usd));
+                    displayMessageOnTransactionSend(token_label, transactionHash);
+
+                    $('.transaction-history tbody').prepend(pending_history_transaction);
                 });
             }
-
-            displayMessageOnDCNTransactionSend(token_label, transactionHash);
         });
     });
 }
 
-function displayMessageOnDCNTransactionSend(token_label, tx_hash)  {
+function displayMessageOnTransactionSend(token_label, tx_hash)  {
     $('.section-amount-to #crypto-amount').val('').trigger('change');
     $('.section-amount-to #usd-val').val('').trigger('change');
     $('.section-amount-to #verified-receiver-address').prop('checked', false);
@@ -82785,19 +82655,20 @@ function initAccountChecker()  {
                     if(validate_private_key.success) {
                         var internet = navigator.onLine;
                         if(internet) {
-                            console.log('===== make request for save public keys for assurance =====');
+                            savePublicKeyToAssurance(validate_private_key.success.address, validate_private_key.success.public_key);
                         }
+                        setTimeout(function() {
+                            window.localStorage.setItem('current_account', validate_private_key.success.address);
+                            fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
 
-                        window.localStorage.setItem('current_account', validate_private_key.success.address);
-                        fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
-
-                        if(is_hybrid) {
-                            $('footer').show();
-                            refreshApp();
-                            //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
-                        } else {
-                            window.location.reload();
-                        }
+                            if(is_hybrid) {
+                                $('footer').show();
+                                refreshApp();
+                                //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
+                            } else {
+                                window.location.reload();
+                            }
+                        }, 500);
                     } else if (validate_private_key.error) {
                         hideLoader();
 
@@ -82854,65 +82725,68 @@ function initAccountChecker()  {
                         //save the public key to assurance
                         var internet = navigator.onLine;
                         if(internet) {
-                            console.log('===== make request for save public keys for assurance =====');
+                            savePublicKeyToAssurance('0x' + keystore.address, public_key);
                         }
 
-                        if(is_hybrid) {
-                            //MOBILE APP
-                            if(basic.getMobileOperatingSystem() == 'Android') {
-                                androidFileDownload(keystore_file_name, JSON.stringify(keystore), function() {
-                                    fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
-                                    loginIntoWallet();
-                                });
-                            } else if(basic.getMobileOperatingSystem() == 'iOS') {
-                                //if iOS adding 2 more additional buttons. Downloads in iOS are not possible, because they have different file architecture. First button is for export (copy or share in socials) the keystore file and second one is to login in the Wallet
-                                $(this_btn).parent().html('<div class="padding-bottom-20 text-center"><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border ios-export-keystore min-width-200">Export Backup file</a></div><div><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border ios-login-into-wallet disabled min-width-200">Login into Wallet</a></div>');
-                                hideLoader();
+                        setTimeout(function() {
+                            if(is_hybrid) {
+                                //MOBILE APP
+                                if(basic.getMobileOperatingSystem() == 'Android') {
+                                    androidFileDownload(keystore_file_name, JSON.stringify(keystore), function() {
+                                        fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
+                                        loginIntoWallet();
+                                    });
+                                } else if(basic.getMobileOperatingSystem() == 'iOS') {
+                                    //if iOS adding 2 more additional buttons. Downloads in iOS are not possible, because they have different file architecture. First button is for export (copy or share in socials) the keystore file and second one is to login in the Wallet
+                                    $(this_btn).parent().html('<div class="padding-bottom-20 text-center"><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border ios-export-keystore min-width-200">Export Backup file</a></div><div><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border ios-login-into-wallet disabled min-width-200">Login into Wallet</a></div>');
+                                    hideLoader();
 
-                                $('.ios-export-keystore').click(function() {
-                                    window.plugins.socialsharing.share(JSON.stringify(keystore));
-                                    $('.ios-login-into-wallet').removeClass('disabled');
-                                });
+                                    $('.ios-export-keystore').click(function() {
+                                        //using export plugin, because in iOS there is no such thing as direct file download
+                                        window.plugins.socialsharing.share(JSON.stringify(keystore));
+                                        $('.ios-login-into-wallet').removeClass('disabled');
+                                    });
 
-                                //logging into wallet
-                                $('.ios-login-into-wallet').click(function() {
-                                    if($(this).hasClass('disabled')) {
-                                        basic.showAlert('Please make sure you copied and saved your Backup file and keep it in a safe place. Only you are responsible for it!', '', true);
-                                    } else {
-                                        window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
+                                    //logging into wallet
+                                    $('.ios-login-into-wallet').click(function() {
+                                        if($(this).hasClass('disabled')) {
+                                            basic.showAlert('Please make sure you copied and saved your Backup file and keep it in a safe place. Only you are responsible for it!', '', true);
+                                        } else {
+                                            window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
+                                            window.localStorage.setItem('current_account', '0x' + keystore.address);
+
+                                            fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
+
+                                            $('footer').show();
+                                            refreshApp();
+                                        }
+                                    });
+                                }
+                            } else {
+                                if(basic.getMobileOperatingSystem() == 'iOS' && basic.isMobile()) {
+                                    basic.showAlert('Backup File has been opened in new tab of your browser. Please make sure to share/ copy and keep it in a safe place. Only you are responsible for it!', 'mobile-safari-keystore-creation', true);
+
+                                    $('.mobile-safari-keystore-creation .modal-footer .btn.btn-primary, .mobile-safari-keystore-creation .bootbox-close-button.close').click(function() {
+                                        if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
+                                            window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
+                                        }
                                         window.localStorage.setItem('current_account', '0x' + keystore.address);
 
                                         fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
-
                                         $('footer').show();
                                         refreshApp();
-                                    }
-                                });
+                                    });
+
+                                    //mobile safari
+                                    downloadFile(keystore_file_name, JSON.stringify(keystore));
+                                } else {
+                                    //BROWSER
+                                    downloadFile(buildKeystoreFileName('0x' + keystore.address), JSON.stringify(keystore));
+                                    fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
+                                    loginIntoWallet();
+                                }
                             }
-                        } else {
-                            if(basic.getMobileOperatingSystem() == 'iOS' && basic.isMobile()) {
-                                basic.showAlert('Backup File has been opened in new tab of your browser. Please make sure to share/ copy and keep it in a safe place. Only you are responsible for it!', 'mobile-safari-keystore-creation', true);
-
-                                $('.mobile-safari-keystore-creation .modal-footer .btn.btn-primary, .mobile-safari-keystore-creation .bootbox-close-button.close').click(function() {
-                                    if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
-                                        window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
-                                    }
-                                    window.localStorage.setItem('current_account', '0x' + keystore.address);
-
-                                    fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
-                                    $('footer').show();
-                                    refreshApp();
-                                });
-
-                                //mobile safari
-                                downloadFile(keystore_file_name, JSON.stringify(keystore));
-                            } else {
-                                //BROWSER
-                                downloadFile(buildKeystoreFileName('0x' + keystore.address), JSON.stringify(keystore));
-                                fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
-                                loginIntoWallet();
-                            }
-                        }
+                        }, 500);
 
                         function loginIntoWallet() {
                             if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
@@ -83014,21 +82888,23 @@ function styleKeystoreUploadBtn()    {
                                                             if (imported_keystore.success) {
                                                                 var internet = navigator.onLine;
                                                                 if (internet) {
-                                                                    console.log('===== make request for save public keys for assurance =====');
+                                                                    savePublicKeyToAssurance(imported_keystore.address, imported_keystore.public_key);
                                                                 }
 
-                                                                fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
+                                                                setTimeout(function() {
+                                                                    fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
 
-                                                                if ($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
-                                                                    window.localStorage.setItem('keystore_file', keystore_string);
-                                                                    window.localStorage.setItem('current_account', '0x' + address);
+                                                                    if ($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
+                                                                        window.localStorage.setItem('keystore_file', keystore_string);
+                                                                        window.localStorage.setItem('current_account', '0x' + address);
 
-                                                                    refreshApp();
-                                                                } else {
-                                                                    window.localStorage.setItem('current_account', '0x' + address);
-                                                                    refreshApp();
-                                                                    //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog: "Wait,Loading App", loadUrlTimeoutValue: 60000});
-                                                                }
+                                                                        refreshApp();
+                                                                    } else {
+                                                                        window.localStorage.setItem('current_account', '0x' + address);
+                                                                        refreshApp();
+                                                                        //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog: "Wait,Loading App", loadUrlTimeoutValue: 60000});
+                                                                    }
+                                                                }, 500);
                                                             } else if (imported_keystore.error) {
                                                                 hideLoader();
                                                                 customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), imported_keystore.message);
@@ -83136,19 +83012,21 @@ function styleKeystoreUploadBtn()    {
                                         if(imported_keystore.success) {
                                             var internet = navigator.onLine;
                                             if(internet) {
-                                                console.log('===== make request for save public keys for assurance =====');
+                                                savePublicKeyToAssurance(imported_keystore.address, imported_keystore.public_key);
                                             }
 
-                                            fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
+                                            setTimeout(function() {
+                                                fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
 
-                                            if($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
-                                                window.localStorage.setItem('current_account', '0x' + address);
-                                                window.localStorage.setItem('keystore_file', JSON.stringify(imported_keystore.success));
-                                                window.location.reload();
-                                            } else {
-                                                window.localStorage.setItem('current_account', '0x' + address);
-                                                window.location.reload();
-                                            }
+                                                if($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
+                                                    window.localStorage.setItem('current_account', '0x' + address);
+                                                    window.localStorage.setItem('keystore_file', JSON.stringify(imported_keystore.success));
+                                                    window.location.reload();
+                                                } else {
+                                                    window.localStorage.setItem('current_account', '0x' + address);
+                                                    window.location.reload();
+                                                }
+                                            }, 500);
                                         } else if(imported_keystore.error) {
                                             hideLoader();
                                             customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), imported_keystore.message);
@@ -83400,6 +83278,7 @@ $(document).on('click', '.open-settings', function() {
                         });
                     }, 500);
                 } else if(basic.getMobileOperatingSystem() == 'iOS') {
+                    //using export plugin, because in iOS there is no such thing as direct file download
                     window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
                 }
             } else {
@@ -83634,12 +83513,17 @@ $(document).on('click', '.open-settings', function() {
                         var keystore_file_name = buildKeystoreFileName(generate_response.success.address);
                         if(is_hybrid) {
                             //MOBILE APP
-                            //downloading the file in mobile device file system
-                            androidFileDownload(keystore_file_name, generate_response.success.keystore_file, function() {
-                                basic.closeDialog();
-                                basic.showAlert('File ' + keystore_file_name + ' has been downloaded to the top-level directory of your device file system.', '', true);
-                                hideLoader();
-                            });
+                            if(basic.getMobileOperatingSystem() == 'Android') {
+                                //downloading the file in mobile device file system
+                                androidFileDownload(keystore_file_name, generate_response.success.keystore_file, function() {
+                                    basic.closeDialog();
+                                    basic.showAlert('File ' + keystore_file_name + ' has been downloaded to the top-level directory of your device file system.', '', true);
+                                    hideLoader();
+                                });
+                            } else if(basic.getMobileOperatingSystem() == 'iOS') {
+                                //using export plugin, because in iOS there is no such thing as direct file download
+                                window.plugins.socialsharing.share(generate_response.success.keystore_file);
+                            }
                         } else {
                             //BROWSER
                             hideLoader();
@@ -83857,5 +83741,121 @@ function transformToAssocArray( prmstr ) {
     }
     return params;
 }
+
+function savePublicKeyToAssurance(address, key) {
+    $.ajax({
+        type: 'POST',
+        url: 'https://assurance.dentacoin.com/save-public-key',
+        data: {
+            password: config_variable.cross_website_password,
+            address: address,
+            public_key: key
+        },
+        dataType: 'json',
+        success: function(response) {
+            console.log(address, key);
+            console.log(response, 'response');
+        }
+    });
+}
+
+function buildEthereumHistoryTransaction(ethereum_data, value, to, from, timestamp, hash, pending) {
+    var eth_amount_symbol;
+    var other_address = '';
+    var class_name = '';
+    var label = '';
+    if(checksumAddress(to) == checksumAddress(global_state.account)) {
+        //IF THE CURRENT ACCOUNT IS RECEIVER
+        other_address = from;
+        label = 'Received from';
+        class_name = 'received_from';
+        eth_amount_symbol = '+';
+    } else if(checksumAddress(from) == checksumAddress(global_state.account)) {
+        //IF THE CURRENT ACCOUNT IS SENDER
+        other_address = to;
+        label = 'Sent to';
+        class_name = 'sent_to';
+        eth_amount_symbol = '-';
+    }
+
+    var usd_amount = (ethereum_data.market_data.current_price.usd * value).toFixed(2);
+    var timestamp_javascript = timestamp * 1000;
+    var date_obj = new Date(timestamp_javascript);
+    var minutes;
+    var hours;
+
+    if(new Date(timestamp_javascript).getMinutes() < 10) {
+        minutes = '0'+new Date(timestamp_javascript).getMinutes();
+    }else {
+        minutes = new Date(timestamp_javascript).getMinutes();
+    }
+
+    if(new Date(timestamp_javascript).getHours() < 10) {
+        hours = '0'+new Date(timestamp_javascript).getHours();
+    }else {
+        hours = new Date(timestamp_javascript).getHours();
+    }
+
+    if(basic.isMobile()) {
+        other_address = substr_replace(other_address, '...', -25);
+    }
+
+    var transaction_id_label = 'Transaction ID';
+    if(pending != undefined) {
+        transaction_id_label += '<span class="pending-transaction">Pending</span>';
+    }
+
+    return '<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+hash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+hash+'" target="_blank" class="lato-bold color-white data-external-link">'+transaction_id_label+'</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+eth_amount_symbol+value+' ETH</li><li>'+usd_amount+' USD</li></ul></td></tr>';
+}
+
+function buildDentacoinHistoryTransaction(dentacoin_data, value, to, from, timestamp, transactionHash, pending) {
+    var dcn_amount_symbol;
+    var other_address = '';
+    var class_name = '';
+    var label = '';
+    var usd_amount = (parseInt(value) * dentacoin_data.market_data.current_price.usd).toFixed(2);
+    if(checksumAddress(to) == checksumAddress(global_state.account)) {
+        //IF THE CURRENT ACCOUNT IS RECEIVER
+        other_address = from;
+        label = 'Received from';
+        class_name = 'received_from';
+        dcn_amount_symbol = '+';
+    } else if(checksumAddress(from) == checksumAddress(global_state.account)) {
+        //IF THE CURRENT ACCOUNT IS SENDER
+        other_address = to;
+        label = 'Sent to';
+        class_name = 'sent_to';
+        dcn_amount_symbol = '-';
+    }
+
+    var dcn_amount = dcn_amount_symbol+value+' DCN';
+    var timestamp_javascript = timestamp*1000;
+    var date_obj = new Date(timestamp_javascript);
+    var minutes;
+    var hours;
+
+    if(new Date(timestamp_javascript).getMinutes() < 10) {
+        minutes = '0'+new Date(timestamp_javascript).getMinutes();
+    }else {
+        minutes = new Date(timestamp_javascript).getMinutes();
+    }
+
+    if(new Date(timestamp_javascript).getHours() < 10) {
+        hours = '0'+new Date(timestamp_javascript).getHours();
+    }else {
+        hours = new Date(timestamp_javascript).getHours();
+    }
+
+    if(basic.isMobile()) {
+        other_address = substr_replace(other_address, '...', -25);
+    }
+
+    var transaction_id_label = 'Transaction ID';
+    if(pending != undefined) {
+        transaction_id_label += '<span class="pending-transaction">Pending</span>';
+    }
+
+    return '<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+transactionHash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+transactionHash+'" target="_blank" class="lato-bold color-white data-external-link">'+transaction_id_label+'</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+dcn_amount+'</li><li>'+usd_amount+' USD</li></ul></td></tr>';
+}
 }).call(this,require("buffer").Buffer)
-},{"./helper":583,"buffer":52,"ethereumjs-tx":369}]},{},[584]);
+},{"./config":583,"./helper":584,"buffer":52,"ethereumjs-tx":369}]},{},[585]);

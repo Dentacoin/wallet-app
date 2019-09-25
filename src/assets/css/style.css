@@ -3872,6 +3872,9 @@ img {
       display: table-row; }
     .camping-transaction-history .transaction-history table tbody tr.show-this {
       display: table-row; }
+    .camping-transaction-history .transaction-history table tbody tr .pending-transaction {
+      padding-left: 5px;
+      color: #FFCC00; }
     .camping-transaction-history .transaction-history table tbody tr .icon {
       background-repeat: no-repeat;
       background-size: calc(100% - 20px);
