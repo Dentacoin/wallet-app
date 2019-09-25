@@ -1,7 +1,7 @@
 const Web3 = require('../../../node_modules/web3'); // import web3 v1.0 constructor
 const keythereum = require('../../../node_modules/keythereum');
 const EthCrypto = require('../../../node_modules/eth-crypto');
-var Wallet = require('../../../node_modules/ethereumjs-wallet');
+//var Wallet = require('../../../node_modules/ethereumjs-wallet');
 
 // use globally injected web3 to find the currentProvider and wrap with web3 v1.0
 const getWeb3 = (provider) => {
@@ -84,31 +84,24 @@ function validatePrivateKey(private_key) {
     }
 }
 
-function generateKeystoreFromPrivateKey(private_key, password) {
-    console.log(private_key, 'private_key');
-    console.log(password, 'password');
+function generateKeystoreFromPrivateKey(private_key, password, callback) {
     try {
-        const public_key = EthCrypto.publicKeyByPrivateKey(private_key);
-        console.log(public_key, 'public_key');
-        const address = EthCrypto.publicKey.toAddress(public_key);
-        console.log(address, 'address');
-        const wallet = Wallet.fromPrivateKey(Buffer.from(private_key, 'hex'));
-        console.log(wallet, 'wallet');
-        const keystore_file = wallet.toV3String(password);
-        console.log(keystore_file, 'keystore_file');
-
-        return {
-            success: {
-                keystore_file: keystore_file,
-                public_key: public_key,
-                address: address
+        var dk = keythereum.create({keyBytes: 32, ivBytes: 16});
+        keythereum.dump(password, private_key, dk.salt, dk.iv, {
+            cipher: 'aes-128-ctr',
+            kdfparams: {
+                c: 262144,
+                dklen: 32,
+                prf: 'hmac-sha256'
             }
-        };
+        }, function(keystore) {
+            const public_key = EthCrypto.publicKeyByPrivateKey(private_key);
+            const address = EthCrypto.publicKey.toAddress(public_key);
+
+            callback(true, address, JSON.stringify(keystore));
+        });
     } catch (e) {
-        return {
-            error: true,
-            message: 'Wrong secret private key.'
-        }
+        callback(false);
     }
 }
 

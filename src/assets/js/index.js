@@ -2685,36 +2685,35 @@ $(document).on('click', '.open-settings', function() {
                 showLoader('Hold on...<br>Your Backup File is being generated.');
 
                 setTimeout(function() {
-                    var generate_response = generateKeystoreFromPrivateKey($('#generate-keystore-private-key').val().trim(), $('#generate-keystore-password').val().trim());
-                    console.log(generate_response, 'generate_response');
+                    generateKeystoreFromPrivateKey($('#generate-keystore-private-key').val().trim(), $('#generate-keystore-password').val().trim(), function(generating_response, address, keystore_file) {
+                        if(generating_response) {
+                            var keystore_file_name = buildKeystoreFileName(address);
+                            if(is_hybrid) {
+                                //MOBILE APP
+                                if(basic.getMobileOperatingSystem() == 'Android') {
+                                    //downloading the file in mobile device file system
+                                    androidFileDownload(keystore_file_name, keystore_file, function() {
+                                        basic.closeDialog();
+                                        basic.showAlert('File ' + keystore_file_name + ' has been downloaded to the top-level directory of your device file system.', '', true);
+                                        hideLoader();
+                                    });
+                                } else if(basic.getMobileOperatingSystem() == 'iOS') {
+                                    //using export plugin, because in iOS there is no such thing as direct file download
+                                    window.plugins.socialsharing.share(keystore_file);
+                                }
+                            } else {
+                                //BROWSER
+                                hideLoader();
 
-                    if(generate_response.success) {
-                        var keystore_file_name = buildKeystoreFileName(generate_response.success.address);
-                        if(is_hybrid) {
-                            //MOBILE APP
-                            if(basic.getMobileOperatingSystem() == 'Android') {
-                                //downloading the file in mobile device file system
-                                androidFileDownload(keystore_file_name, generate_response.success.keystore_file, function() {
-                                    basic.closeDialog();
-                                    basic.showAlert('File ' + keystore_file_name + ' has been downloaded to the top-level directory of your device file system.', '', true);
-                                    hideLoader();
-                                });
-                            } else if(basic.getMobileOperatingSystem() == 'iOS') {
-                                //using export plugin, because in iOS there is no such thing as direct file download
-                                window.plugins.socialsharing.share(generate_response.success.keystore_file);
+                                downloadFile(buildKeystoreFileName(address), keystore_file);
+                                basic.closeDialog();
+                                basic.showAlert('File ' + buildKeystoreFileName(address) + ' has been downloaded to the top-level directory of your device file system.', '', true);
                             }
-                        } else {
-                            //BROWSER
+                        } else if(!generating_response) {
                             hideLoader();
-
-                            downloadFile(buildKeystoreFileName(generate_response.success.address), generate_response.success.keystore_file);
-                            basic.closeDialog();
-                            basic.showAlert('File ' + buildKeystoreFileName(generate_response.success.address) + ' has been downloaded to the top-level directory of your device file system.', '', true);
+                            basic.showAlert('Wrong secret private key.', '', true);
                         }
-                    } else if(generate_response.error) {
-                        hideLoader();
-                        basic.showAlert(generate_response.message, '', true);
-                    }
+                    });
                 }, 1000);
             }
         });
