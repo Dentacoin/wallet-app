@@ -80793,11 +80793,17 @@ function validatePrivateKey(private_key) {
 }
 
 function generateKeystoreFromPrivateKey(private_key, password) {
+    console.log(private_key, 'private_key');
+    console.log(password, 'password');
     try {
         const public_key = EthCrypto.publicKeyByPrivateKey(private_key);
+        console.log(public_key, 'public_key');
         const address = EthCrypto.publicKey.toAddress(public_key);
+        console.log(address, 'address');
         const wallet = Wallet.fromPrivateKey(Buffer.from(private_key, 'hex'));
+        console.log(wallet, 'wallet');
         const keystore_file = wallet.toV3String(password);
+        console.log(keystore_file, 'keystore_file');
 
         return {
             success: {
@@ -83508,6 +83514,7 @@ $(document).on('click', '.open-settings', function() {
 
                 setTimeout(function() {
                     var generate_response = generateKeystoreFromPrivateKey($('#generate-keystore-private-key').val().trim(), $('#generate-keystore-password').val().trim());
+                    console.log(generate_response, 'generate_response');
 
                     if(generate_response.success) {
                         var keystore_file_name = buildKeystoreFileName(generate_response.success.address);
@@ -83802,7 +83809,7 @@ function buildEthereumHistoryTransaction(ethereum_data, value, to, from, timesta
 
     var transaction_id_label = 'Transaction ID';
     if(pending != undefined) {
-        transaction_id_label += '<span class="pending-transaction">Pending</span>';
+        transaction_id_label += '<span class="pending-transaction">( Pending )</span>';
     }
 
     return '<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+hash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+hash+'" target="_blank" class="lato-bold color-white data-external-link">'+transaction_id_label+'</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+eth_amount_symbol+value+' ETH</li><li>'+usd_amount+' USD</li></ul></td></tr>';
@@ -83852,7 +83859,7 @@ function buildDentacoinHistoryTransaction(dentacoin_data, value, to, from, times
 
     var transaction_id_label = 'Transaction ID';
     if(pending != undefined) {
-        transaction_id_label += '<span class="pending-transaction">Pending</span>';
+        transaction_id_label += '<span class="pending-transaction">( Pending )</span>';
     }
 
     return '<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+transactionHash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+transactionHash+'" target="_blank" class="lato-bold color-white data-external-link">'+transaction_id_label+'</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+dcn_amount+'</li><li>'+usd_amount+' USD</li></ul></td></tr>';

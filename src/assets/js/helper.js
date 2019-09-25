@@ -85,11 +85,17 @@ function validatePrivateKey(private_key) {
 }
 
 function generateKeystoreFromPrivateKey(private_key, password) {
+    console.log(private_key, 'private_key');
+    console.log(password, 'password');
     try {
         const public_key = EthCrypto.publicKeyByPrivateKey(private_key);
+        console.log(public_key, 'public_key');
         const address = EthCrypto.publicKey.toAddress(public_key);
+        console.log(address, 'address');
         const wallet = Wallet.fromPrivateKey(Buffer.from(private_key, 'hex'));
+        console.log(wallet, 'wallet');
         const keystore_file = wallet.toV3String(password);
+        console.log(keystore_file, 'keystore_file');
 
         return {
             success: {
