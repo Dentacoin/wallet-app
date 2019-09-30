@@ -700,6 +700,28 @@ img {
                     }
                 }
                 .left-right-side-holder {
+                    position: relative;
+                    .auth-popup-faq-link {
+                        bottom: -30px;
+                        @include horizontal-align(absolute);
+                        a {
+                            width: 45px;
+                            height: 45px;
+                            line-height: 45px;
+                            font-size: 36px;
+                            font-family: "Calibri-Bold";
+                            text-align: center;
+                            display: inline-block;
+                            background-color: $light_blue;
+                            color: white;
+                            @include rounded(50%);
+                        }
+                        @include breakpoint($xs) {
+                            bottom: auto;
+                            position: static;
+                            @include clear_transform();
+                        }
+                    }
                     .popup-left, .popup-right {
                         width: 50%;
                         font-size: 16px;
@@ -1072,7 +1094,7 @@ img {
                     }
                     .private-key-holder {
                         border: 1.5px solid $warning_red;
-                        padding: 12px 10px;
+                        padding: 8px 10px;
                         text-align: center;
                         font-size: 14px;
                         overflow-x: auto;
@@ -1101,7 +1123,14 @@ img {
                             @include rounded(10px);
                         }
                         .scroll-content {
-                            width: 460px;
+                            width: 500px;
+                            .copy-private-key {
+                                max-width: 25px;
+                            }
+                            #copy-private-key {
+                                width: calc(100% - 25px);
+                                border: 0;
+                            }
                         }
                     }
                     .row-with-warning-red-background {
@@ -1283,21 +1312,6 @@ input[type=file].hide-input {
     a {
         min-width: 200px;
         @include box-shadow(0 6px 10px 0px rgba(0, 0, 0, 0.3));
-    }
-}
-
-.auth-popup-faq-link {
-    a {
-        width: 45px;
-        height: 45px;
-        line-height: 45px;
-        font-size: 36px;
-        font-family: "Calibri-Bold";
-        text-align: center;
-        display: inline-block;
-        background-color: $light_blue;
-        color: white;
-        @include rounded(50%);
     }
 }
 

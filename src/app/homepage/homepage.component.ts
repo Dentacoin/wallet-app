@@ -30,8 +30,4 @@ export class HomepageComponent implements AfterViewInit {
     ngAfterViewInit() {
         /*getHomepageData();*/
     }
-
-    toExternalLink() {
-        this.router.navigateByUrl(this.href);
-    }
 }

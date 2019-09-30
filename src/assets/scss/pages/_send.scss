@@ -57,15 +57,16 @@ app-send-page {
                                 }
                                 &.removeable-element {
                                     a {
-                                        width: calc(100% - 30px);
+                                        width: calc(100% - 40px);
                                         font-size: 16px;
                                     }
                                     button {
-                                        width: 30px;
+                                        width: 40px;
                                         border: 0;
+                                        padding: 0;
                                         background: transparent;
                                         color: red;
-                                        font-size: 24px;
+                                        font-size: 26px;
                                     }
                                 }
                             }
