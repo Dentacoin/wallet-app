@@ -2058,6 +2058,7 @@ function styleKeystoreUploadBtn()    {
 
                     setTimeout(function () {
                         var imported_keystore = importKeystoreFile(keystore_string, keystore_password);
+                        return false;
                         console.log(imported_keystore, 'imported_keystore');
                         if (imported_keystore.success) {
                             var internet = navigator.onLine;

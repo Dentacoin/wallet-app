@@ -35,26 +35,28 @@ function generateKeystoreFile(password, callback) {
 }
 
 function importKeystoreFile(keystore, password) {
-    console.log('importKeystoreFile');
-    try {
+    /*console.log('importKeystoreFile');
+    try {*/
         const keyObject = JSON.parse(keystore);
+        console.log(password, 'password');
         console.log(keyObject, 'keyObject');
         keythereum.recover(password, keyObject, function(private_key) {
             console.log(private_key, 'private_key');
-            const public_key = EthCrypto.publicKeyByPrivateKey(private_key.toString('hex'));
+            console.log(private_key.toString('hex'), 'private_key.toString(\'hex\')');
+            /*const public_key = EthCrypto.publicKeyByPrivateKey(private_key.toString('hex'));
             console.log(public_key, 'public_key');
             return {
                 success: keyObject,
                 public_key: public_key,
                 address: JSON.parse(keystore).address
-            }
+            }*/
         });
-    } catch (e) {
+    /*} catch (e) {
         return {
             error: true,
             message: 'Wrong secret password.'
         }
-    }
+    }*/
 }
 
 function decryptKeystore(keystore, password) {
