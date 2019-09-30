@@ -82344,29 +82344,45 @@ function styleKeystoreUploadBtn()    {
         }else if(basic.getMobileOperatingSystem() == 'iOS') {
             //iOS
             $('.custom-upload-button').click(function() {
+                console.log(cordova.file, 'cordova.file');
                 FilePicker.pickFile(function(path) {
                     console.log(path, 'path TEST IOS IMPORT');
-                    console.log(decodeURIComponent(path), 'decodeURIComponent(path)');
-                    window.resolveLocalFileSystemURL(decodeURIComponent(path), function (entry) {
-                        console.log(entry, 'entry');
-                        window.resolveLocalFileSystemURL(cordova.file.applicationStorageDirectory, function (rootEntry) {
-                            console.log(rootEntry, 'rootEntry');
-                            rootEntry.getFile(decodeURIComponent(entry.fullPath), {create: false}, function (fileEntry) {
-                                console.log(fileEntry, 'fileEntry');
-                                fileEntry.file(function (file) {
-                                    var reader = new FileReader();
+                    window.resolveLocalFileSystemURL(cordova.file.syncedDataDirectory , function (rootEntry) {
+                        console.log(rootEntry, 'rootEntry1');
+                        /*rootEntry.getFile(decodeURIComponent(entry.fullPath), {create: false}, function (fileEntry) {
+                            console.log(fileEntry, 'fileEntry1');
+                            fileEntry.file(function (file) {
+                                var reader = new FileReader();
 
-                                    reader.onloadend = function () {
-                                        var keystore_string = this.result;
-                                        console.log(keystore_string, 'keystore_string');
-                                    }
+                                reader.onloadend = function () {
+                                    var keystore_string = this.result;
+                                    console.log(keystore_string, 'keystore_string');
+                                }
 
-                                    reader.readAsText(file);
-                                });
-                            }, function (err) {
-                                alert('Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.');
+                                reader.readAsText(file);
                             });
-                        });
+                        }, function (err) {
+                            alert('Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.');
+                        });*/
+                    });
+
+                    window.resolveLocalFileSystemURL(cordova.file.applicationStorageDirectory , function (rootEntry) {
+                        console.log(rootEntry, 'rootEntry2');
+                        /*rootEntry.getFile(decodeURIComponent(entry.fullPath), {create: false}, function (fileEntry) {
+                            console.log(fileEntry, 'fileEntry');
+                            fileEntry.file(function (file) {
+                                var reader = new FileReader();
+
+                                reader.onloadend = function () {
+                                    var keystore_string = this.result;
+                                    console.log(keystore_string, 'keystore_string');
+                                }
+
+                                reader.readAsText(file);
+                            });
+                        }, function (err) {
+                            alert('Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.');
+                        });*/
                     });
                 }, function(err) {
                     alert('File importing failed. Please update to one of the latest iOS versions in order to have file importing working.');
