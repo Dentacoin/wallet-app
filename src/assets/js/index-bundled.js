@@ -80142,10 +80142,14 @@ function generateKeystoreFile(password, callback) {
 }
 
 function importKeystoreFile(keystore, password) {
+    console.log('importKeystoreFile');
     try {
         const keyObject = JSON.parse(keystore);
+        console.log(keyObject, 'keyObject');
         const private_key = keythereum.recover(password, keyObject);
+        console.log(private_key, 'private_key');
         const public_key = EthCrypto.publicKeyByPrivateKey(private_key.toString('hex'));
+        console.log(public_key, 'public_key');
         return {
             success: keyObject,
             public_key: public_key,
@@ -82277,6 +82281,7 @@ function styleKeystoreUploadBtn()    {
 
                     setTimeout(function () {
                         var imported_keystore = importKeystoreFile(keystore_string, keystore_password);
+                        console.log(imported_keystore, 'imported_keystore');
                         if (imported_keystore.success) {
                             var internet = navigator.onLine;
                             if (internet) {
@@ -82301,7 +82306,7 @@ function styleKeystoreUploadBtn()    {
                             hideLoader();
                             customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), imported_keystore.message);
                         }
-                    }, 500);
+                    }, 2000);
                 }
             });
         } else {

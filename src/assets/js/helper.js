@@ -35,10 +35,14 @@ function generateKeystoreFile(password, callback) {
 }
 
 function importKeystoreFile(keystore, password) {
+    console.log('importKeystoreFile');
     try {
         const keyObject = JSON.parse(keystore);
+        console.log(keyObject, 'keyObject');
         const private_key = keythereum.recover(password, keyObject);
+        console.log(private_key, 'private_key');
         const public_key = EthCrypto.publicKeyByPrivateKey(private_key.toString('hex'));
+        console.log(public_key, 'public_key');
         return {
             success: keyObject,
             public_key: public_key,

@@ -2058,6 +2058,7 @@ function styleKeystoreUploadBtn()    {
 
                     setTimeout(function () {
                         var imported_keystore = importKeystoreFile(keystore_string, keystore_password);
+                        console.log(imported_keystore, 'imported_keystore');
                         if (imported_keystore.success) {
                             var internet = navigator.onLine;
                             if (internet) {
@@ -2082,7 +2083,7 @@ function styleKeystoreUploadBtn()    {
                             hideLoader();
                             customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), imported_keystore.message);
                         }
-                    }, 500);
+                    }, 2000);
                 }
             });
         } else {
