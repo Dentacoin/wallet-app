@@ -2129,8 +2129,11 @@ function styleKeystoreUploadBtn()    {
                     console.log(path, 'path TEST IOS IMPORT');
                     console.log(decodeURIComponent(path), 'decodeURIComponent(path)');
                     window.resolveLocalFileSystemURL(decodeURIComponent(path), function (entry) {
+                        console.log(entry, 'entry');
                         window.resolveLocalFileSystemURL(cordova.file.applicationStorageDirectory, function (rootEntry) {
+                            console.log(rootEntry, 'rootEntry');
                             rootEntry.getFile(decodeURIComponent(entry.fullPath), {create: false}, function (fileEntry) {
+                                console.log(fileEntry, 'fileEntry');
                                 fileEntry.file(function (file) {
                                     var reader = new FileReader();
 
