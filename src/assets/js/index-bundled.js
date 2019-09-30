@@ -80141,29 +80141,16 @@ function generateKeystoreFile(password, callback) {
     });
 }
 
-function importKeystoreFile(keystore, password) {
-    /*console.log('importKeystoreFile');
-    try {*/
-        const keyObject = JSON.parse(keystore);
-        console.log(password, 'password');
-        console.log(keyObject, 'keyObject');
-        keythereum.recover(password, keyObject, function(private_key) {
-            console.log(private_key, 'private_key');
-            console.log(private_key.toString('hex'), 'private_key.toString(\'hex\')');
-            /*const public_key = EthCrypto.publicKeyByPrivateKey(private_key.toString('hex'));
-            console.log(public_key, 'public_key');
-            return {
-                success: keyObject,
-                public_key: public_key,
-                address: JSON.parse(keystore).address
-            }*/
-        });
-    /*} catch (e) {
-        return {
-            error: true,
-            message: 'Wrong secret password.'
+function importKeystoreFile(keystore, password, callback) {
+    const keyObject = JSON.parse(keystore);
+    keythereum.recover(password, keyObject, function(private_key) {
+        try {
+            const public_key = EthCrypto.publicKeyByPrivateKey(private_key.toString('hex'));
+            callback(keyObject, public_key, JSON.parse(keystore).address);
+        } catch (e) {
+            callback(null, null, null, true, 'Wrong secret password.');
         }
-    }*/
+    });
 }
 
 function decryptKeystore(keystore, password) {
@@ -82283,33 +82270,32 @@ function styleKeystoreUploadBtn()    {
                     showLoader('Hold on...<br>It may take up to 5 minutes to decrypt your Backup file.');
 
                     setTimeout(function () {
-                        var imported_keystore = importKeystoreFile(keystore_string, keystore_password);
-                        return false;
-                        console.log(imported_keystore, 'imported_keystore');
-                        if (imported_keystore.success) {
-                            var internet = navigator.onLine;
-                            if (internet) {
-                                savePublicKeyToAssurance(imported_keystore.address, imported_keystore.public_key);
-                            }
-
-                            setTimeout(function() {
-                                fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
-
-                                if ($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
-                                    window.localStorage.setItem('keystore_file', keystore_string);
-                                    window.localStorage.setItem('current_account', '0x' + address);
-
-                                    refreshApp();
-                                } else {
-                                    window.localStorage.setItem('current_account', '0x' + address);
-                                    refreshApp();
-                                    //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog: "Wait,Loading App", loadUrlTimeoutValue: 60000});
+                        importKeystoreFile(keystore_string, keystore_password, function(success, public_key, address, error, error_message) {
+                            if (success) {
+                                var internet = navigator.onLine;
+                                if (internet) {
+                                    savePublicKeyToAssurance(address, public_key);
                                 }
-                            }, 500);
-                        } else if (imported_keystore.error) {
-                            hideLoader();
-                            customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), imported_keystore.message);
-                        }
+
+                                setTimeout(function() {
+                                    fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
+
+                                    if ($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
+                                        window.localStorage.setItem('keystore_file', keystore_string);
+                                        window.localStorage.setItem('current_account', '0x' + address);
+
+                                        refreshApp();
+                                    } else {
+                                        window.localStorage.setItem('current_account', '0x' + address);
+                                        refreshApp();
+                                        //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog: "Wait,Loading App", loadUrlTimeoutValue: 60000});
+                                    }
+                                }, 500);
+                            } else if (error) {
+                                hideLoader();
+                                customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), error_message);
+                            }
+                        });
                     }, 2000);
                 }
             });
