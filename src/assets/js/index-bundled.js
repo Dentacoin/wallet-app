@@ -82253,6 +82253,64 @@ function customErrorHandle(el, string) {
 
 //styling input type file for importing keystore file
 function styleKeystoreUploadBtn()    {
+    function proceedWithImportingAfterKeystoreUploading(keystore_string) {
+        if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address')) {
+            var address = JSON.parse(keystore_string).address;
+
+            $('.or-label').hide();
+            $('.import-private-key-row').hide();
+
+            //show continue button next step button
+            $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('<div class="enter-pass-label"><label>Please enter password for the secret key file.</label></div><div class="field-parent margin-bottom-15 max-width-300 margin-left-right-auto"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="import-keystore-password">Enter password:</label><input type="password" id="import-keystore-password" class="full-rounded import-keystore-password"/></div></div><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-import" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-import"><span class="padding-left-5 padding-right-5 inline-block">Remember backup file</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block import-more-info-keystore-remember fs-0" data-content="Remembering your backup file allows for easier and faster transactions. It is stored only in local device storage and nobody else has access to it."><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="continue-btn padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border">CONTINUE</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block">Go back</span></a></div>');
+
+            $('.import-more-info-keystore-remember').popover({
+                trigger: 'click'
+            });
+
+            $('.custom-auth-popup .popup-right .popup-body .continue-btn > a').click(function () {
+                $('.custom-auth-popup .popup-right .error-handle').remove();
+                var keystore_password = $('.custom-auth-popup .popup-right .popup-body .import-keystore-password').val().trim();
+                if (keystore_password == '') {
+                    customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), 'Please enter your backup file password.');
+                } else {
+                    showLoader('Hold on...<br>It may take up to 5 minutes to decrypt your Backup file.');
+
+                    setTimeout(function () {
+                        var imported_keystore = importKeystoreFile(keystore_string, keystore_password);
+                        if (imported_keystore.success) {
+                            var internet = navigator.onLine;
+                            if (internet) {
+                                savePublicKeyToAssurance(imported_keystore.address, imported_keystore.public_key);
+                            }
+
+                            setTimeout(function() {
+                                fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
+
+                                if ($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
+                                    window.localStorage.setItem('keystore_file', keystore_string);
+                                    window.localStorage.setItem('current_account', '0x' + address);
+
+                                    refreshApp();
+                                } else {
+                                    window.localStorage.setItem('current_account', '0x' + address);
+                                    refreshApp();
+                                    //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog: "Wait,Loading App", loadUrlTimeoutValue: 60000});
+                                }
+                            }, 500);
+                        } else if (imported_keystore.error) {
+                            hideLoader();
+                            customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), imported_keystore.message);
+                        }
+                    }, 500);
+                }
+            });
+        } else {
+            $('.custom-auth-popup .popup-right .popup-body #upload-keystore').val('');
+            basic.showAlert('Please upload valid keystore file.', '', true);
+            $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('');
+        }
+    }
+
     if(is_hybrid) {
         //MOBILE APP
         if(basic.getMobileOperatingSystem() == 'Android') {
@@ -82272,61 +82330,7 @@ function styleKeystoreUploadBtn()    {
                                     reader.onloadend = function () {
                                         var keystore_string = this.result;
                                         setTimeout(function () {
-                                            if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address')) {
-                                                var address = JSON.parse(keystore_string).address;
-
-                                                $('.or-label').hide();
-                                                $('.import-private-key-row').hide();
-
-                                                //show continue button next step button
-                                                $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('<div class="enter-pass-label"><label>Please enter password for the secret key file.</label></div><div class="field-parent margin-bottom-15 max-width-300 margin-left-right-auto"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="import-keystore-password">Enter password:</label><input type="password" id="import-keystore-password" class="full-rounded import-keystore-password"/></div></div><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-import" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-import"><span class="padding-left-5 padding-right-5 inline-block">Remember backup file</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block import-more-info-keystore-remember fs-0" data-content="Remembering your backup file allows for easier and faster transactions. It is stored only in local device storage and nobody else has access to it."><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="continue-btn padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border">CONTINUE</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block">Go back</span></a></div>');
-
-                                                $('.import-more-info-keystore-remember').popover({
-                                                    trigger: 'click'
-                                                });
-
-                                                $('.custom-auth-popup .popup-right .popup-body .continue-btn > a').click(function () {
-                                                    $('.custom-auth-popup .popup-right .error-handle').remove();
-                                                    var keystore_password = $('.custom-auth-popup .popup-right .popup-body .import-keystore-password').val().trim();
-                                                    if (keystore_password == '') {
-                                                        customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), 'Please enter your backup file password.');
-                                                    } else {
-                                                        showLoader('Hold on...<br>It may take up to 5 minutes to decrypt your Backup file.');
-
-                                                        setTimeout(function () {
-                                                            var imported_keystore = importKeystoreFile(keystore_string, keystore_password);
-                                                            if (imported_keystore.success) {
-                                                                var internet = navigator.onLine;
-                                                                if (internet) {
-                                                                    savePublicKeyToAssurance(imported_keystore.address, imported_keystore.public_key);
-                                                                }
-
-                                                                setTimeout(function() {
-                                                                    fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
-
-                                                                    if ($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
-                                                                        window.localStorage.setItem('keystore_file', keystore_string);
-                                                                        window.localStorage.setItem('current_account', '0x' + address);
-
-                                                                        refreshApp();
-                                                                    } else {
-                                                                        window.localStorage.setItem('current_account', '0x' + address);
-                                                                        refreshApp();
-                                                                        //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog: "Wait,Loading App", loadUrlTimeoutValue: 60000});
-                                                                    }
-                                                                }, 500);
-                                                            } else if (imported_keystore.error) {
-                                                                hideLoader();
-                                                                customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), imported_keystore.message);
-                                                            }
-                                                        }, 500);
-                                                    }
-                                                });
-                                            } else {
-                                                $('.custom-auth-popup .popup-right .popup-body #upload-keystore').val('');
-                                                basic.showAlert('Please upload valid keystore file.', '', true);
-                                                $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('');
-                                            }
+                                            proceedWithImportingAfterKeystoreUploading(keystore_string);
                                         }, 500);
                                     };
 
@@ -82344,23 +82348,20 @@ function styleKeystoreUploadBtn()    {
         }else if(basic.getMobileOperatingSystem() == 'iOS') {
             //iOS
             $('.custom-upload-button').click(function() {
-                console.log(cordova.file, 'cordova.file');
                 FilePicker.pickFile(function(path) {
                     var fileDir = cordova.file.tempDirectory.replace('file://', '');
-                    console.log(fileDir, 'fileDir');
                     var fileName = path.replace(fileDir, '');
-                    console.log(fileName, 'fileName');
 
                     window.resolveLocalFileSystemURL(cordova.file.tempDirectory , function (rootEntry) {
-                        console.log(rootEntry, 'rootEntry1');
                         rootEntry.getFile(fileName, {create: false}, function (fileEntry) {
-                            console.log(fileEntry, 'fileEntry1');
                             fileEntry.file(function (file) {
                                 var reader = new FileReader();
 
                                 reader.onloadend = function () {
                                     var keystore_string = this.result;
-                                    console.log(keystore_string, 'keystore_string1');
+                                    setTimeout(function () {
+                                        proceedWithImportingAfterKeystoreUploading(keystore_string);
+                                    }, 500);
                                 }
 
                                 reader.readAsText(file);
@@ -82368,29 +82369,7 @@ function styleKeystoreUploadBtn()    {
                         }, function (err) {
                             alert('Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.');
                         });
-                    })
-
-
-                    /*console.log(path, 'path TEST IOS IMPORT');
-
-                    window.resolveLocalFileSystemURL(cordova.file.tempDirectory , function (rootEntry) {
-                        console.log(rootEntry, 'rootEntry1');
-                        rootEntry.getFile(path, {create: false}, function (fileEntry) {
-                            console.log(fileEntry, 'fileEntry1');
-                            fileEntry.file(function (file) {
-                                var reader = new FileReader();
-
-                                reader.onloadend = function () {
-                                    var keystore_string = this.result;
-                                    console.log(keystore_string, 'keystore_string1');
-                                }
-
-                                reader.readAsText(file);
-                            });
-                        }, function (err) {
-                            alert('Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.');
-                        });
-                    });*/
+                    });
                 }, function(err) {
                     alert('File importing failed. Please update to one of the latest iOS versions in order to have file importing working.');
                 });
