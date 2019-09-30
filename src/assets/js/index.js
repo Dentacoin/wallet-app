@@ -219,7 +219,7 @@ var dApp = {
                                                 success: function(response) {
                                                     var dentacoin_data = response;
 
-                                                    $('.camping-transaction-history').html('<h2 class="lato-bold fs-25 text-center white-crossed-label color-white"><span>Transaction history</span></h2><div class="transaction-history container padding-bottom-125"><div class="row"><div class="col-xs-12 no-gutter-xs col-md-10 col-md-offset-1 padding-top-20"><table class="color-white"><tbody></tbody></table></div></div><div class="row camping-show-more"></div></div>');
+                                                    $('.camping-transaction-history').html('<h2 class="lato-bold fs-25 text-center white-crossed-label color-white"><span>Transaction history</span></h2><div class="transaction-history container"><div class="row"><div class="col-xs-12 no-gutter-xs col-md-10 col-md-offset-1 padding-top-20"><table class="color-white"><tbody></tbody></table></div></div><div class="row camping-show-more"></div></div>');
 
                                                     $(document).on('click', '.camping-transaction-history .show-more', function() {
                                                         $(this).fadeOut();
@@ -2083,7 +2083,7 @@ function styleKeystoreUploadBtn()    {
                                 customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), error_message);
                             }
                         });
-                    }, 2000);
+                    }, 3000);
                 }
             });
         } else {
@@ -2195,30 +2195,31 @@ function styleKeystoreUploadBtn()    {
                                     showLoader('Hold on...<br>It may take up to 5 minutes to decrypt your Backup file.');
 
                                     setTimeout(function() {
-                                        var imported_keystore = importKeystoreFile(keystore_string, keystore_password);
-                                        if(imported_keystore.success) {
-                                            var internet = navigator.onLine;
-                                            if(internet) {
-                                                savePublicKeyToAssurance(imported_keystore.address, imported_keystore.public_key);
-                                            }
-
-                                            setTimeout(function() {
-                                                fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
-
-                                                if($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
-                                                    window.localStorage.setItem('current_account', '0x' + address);
-                                                    window.localStorage.setItem('keystore_file', JSON.stringify(imported_keystore.success));
-                                                    window.location.reload();
-                                                } else {
-                                                    window.localStorage.setItem('current_account', '0x' + address);
-                                                    window.location.reload();
+                                        importKeystoreFile(keystore_string, keystore_password, function(success, public_key, address, error, error_message) {
+                                            if(success) {
+                                                var internet = navigator.onLine;
+                                                if(internet) {
+                                                    savePublicKeyToAssurance(address, public_key);
                                                 }
-                                            }, 500);
-                                        } else if(imported_keystore.error) {
-                                            hideLoader();
-                                            customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), imported_keystore.message);
-                                        }
-                                    }, 500);
+
+                                                setTimeout(function() {
+                                                    fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
+
+                                                    if($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
+                                                        window.localStorage.setItem('current_account', '0x' + address);
+                                                        window.localStorage.setItem('keystore_file', JSON.stringify(success));
+                                                        window.location.reload();
+                                                    } else {
+                                                        window.localStorage.setItem('current_account', '0x' + address);
+                                                        window.location.reload();
+                                                    }
+                                                }, 500);
+                                            } else if(error) {
+                                                hideLoader();
+                                                customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), error_message);
+                                            }
+                                        });
+                                    }, 3000);
                                 }
                             });
                         }, 500);
@@ -2421,17 +2422,16 @@ $(document).on('click', '.open-settings', function() {
                 } else {
                     showLoader('Hold on...<br>Caching your Backup File.');
                     setTimeout(function() {
-                        var import_keystore_response = importKeystoreFile(keystore_string, $('.settings-popup #cache-keystore-password').val().trim());
-                        console.log(import_keystore_response, 'import_keystore_response');
-                        if(import_keystore_response.success) {
-                            window.localStorage.setItem('keystore_file', keystore_string);
+                        importKeystoreFile(keystore_string, $('.settings-popup #cache-keystore-password').val().trim(), function(success, public_key, address, error, error_message) {
+                            if(success) {
+                                window.localStorage.setItem('keystore_file', keystore_string);
 
-                            basic.closeDialog();
-                            basic.showAlert('Your backup file has been cached successfully.', '', true);
-                        } else if(import_keystore_response.error) {
-                            basic.showAlert(import_keystore_response.message, '', true);
-                        }
-
+                                basic.closeDialog();
+                                basic.showAlert('Your backup file has been cached successfully.', '', true);
+                            } else if(error) {
+                                basic.showAlert(error_message, '', true);
+                            }
+                        });
                         hideLoader();
                     }, 500);
                 }
@@ -2511,18 +2511,15 @@ $(document).on('click', '.open-settings', function() {
 
     //shop Help center menu element (FAQ) only on mobile
     if($(window).width() < 768) {
-        var target = '_blank';
-        if(is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
-            target = '_system';
-        }
+        settings_html+='<div class="option-row"><a href="https://dentacoin.com/how-to-create-wallet" target="_blank" class="display-block-important"><svg class="margin-right-5 inline-block max-width-30" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 73.9 73.9" style="enable-background:new 0 0 73.9 73.9;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="74" width="74" x="0" y="-0.1"></sliceSourceBounds></sfw></metadata><circle style="fill:none;stroke:#00B7E2;stroke-width:3;stroke-miterlimit:10;" cx="37" cy="37" r="35.5"/><path d="M46,38.6"/><path style="fill:#00B7E2;" d="M36.8,17.1c-5.8,0-11.4,3.8-11.4,11c0,1.9,1.6,3.4,3.4,3.4c1.9,0,3.4-1.6,3.4-3.4c0-3.8,4.1-3.9,4.5-3.9s4.5,0.2,4.5,3.9v0.8c0,1.6-0.8,2.8-2.2,3.6l-3,1.7c-1.7,0.9-2.7,2.7-2.7,4.5v2.8c0,1.9,1.6,3.4,3.4,3.4s3.4-1.6,3.4-3.4v-1.7l2.2-1.1c3.6-1.9,5.8-5.6,5.8-9.7v-0.9C48.2,20.9,42.4,17.1,36.8,17.1z"/><path style="fill:#00B7E2;" d="M36.8,48.9c-5.6,0-5.6,8.8,0,8.8S42.4,48.9,36.8,48.9z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold">Help Center</span></a><div class="fs-14 option-description">Having difficulties? Check frequently asked questions or contact us at <a href="mailto:admin@dentacoin.com" class="color-light-blue">admin@dentacoin.com</a>.</div></div>';
 
-        settings_html+='<div class="option-row"><a href="https://dentacoin.com/how-to-create-wallet" target="'+target+'" class="display-block-important"><svg class="margin-right-5 inline-block max-width-30" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 73.9 73.9" style="enable-background:new 0 0 73.9 73.9;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="74" width="74" x="0" y="-0.1"></sliceSourceBounds></sfw></metadata><circle style="fill:none;stroke:#00B7E2;stroke-width:3;stroke-miterlimit:10;" cx="37" cy="37" r="35.5"/><path d="M46,38.6"/><path style="fill:#00B7E2;" d="M36.8,17.1c-5.8,0-11.4,3.8-11.4,11c0,1.9,1.6,3.4,3.4,3.4c1.9,0,3.4-1.6,3.4-3.4c0-3.8,4.1-3.9,4.5-3.9s4.5,0.2,4.5,3.9v0.8c0,1.6-0.8,2.8-2.2,3.6l-3,1.7c-1.7,0.9-2.7,2.7-2.7,4.5v2.8c0,1.9,1.6,3.4,3.4,3.4s3.4-1.6,3.4-3.4v-1.7l2.2-1.1c3.6-1.9,5.8-5.6,5.8-9.7v-0.9C48.2,20.9,42.4,17.1,36.8,17.1z"/><path style="fill:#00B7E2;" d="M36.8,48.9c-5.6,0-5.6,8.8,0,8.8S42.4,48.9,36.8,48.9z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold">Help Center</span></a><div class="fs-14 option-description">Having difficulties? Check frequently asked questions or contact us at <a href="mailto:admin@dentacoin.com" class="color-light-blue">admin@dentacoin.com</a>.</div></div>';
-
-        settings_bottom_html = '<div class="padding-top-10 fs-14">Don\'t forget to download and save your Backup File - there is no other way to log in next time.</div><div class="text-center padding-top-20 fs-14"><a class="color-light-blue" href="https://dentacoin.com/assets/uploads/dentacoin-foundation.pdf" class="data-external-link" target="'+target+'">2019 Dentacoin Foundation.</a> All rights reserved.</div><div class="text-center fs-14"><a class="color-light-blue" href="https://dentacoin.com/privacy-policy" target="'+target+'">Privacy Policy</a></div>';
+        settings_bottom_html = '<div class="padding-top-10 fs-14">Don\'t forget to download and save your Backup File - there is no other way to log in next time.</div><div class="text-center padding-top-20 fs-14"><a class="color-light-blue" href="https://dentacoin.com/assets/uploads/dentacoin-foundation.pdf" class="data-external-link" target="_blank">2019 Dentacoin Foundation.</a> All rights reserved.</div><div class="text-center fs-14"><a class="color-light-blue" href="https://dentacoin.com/privacy-policy" target="_blank">Privacy Policy</a></div>';
     }
 
     settings_html+='</div><div class="popup-footer text-center"><div><a href="javascript:void(0)" class="log-out light-blue-white-btn min-width-220"><svg xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 18.4" style="enable-background:new 0 0 16 18.4;" xml:space="preserve" class="margin-right-5 inline-block max-width-20"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="18.4" width="16" x="1" y="8.4"/></sfw></metadata><g><path class="st0" d="M2.5,0h10.6c1.4,0,2.5,1.1,2.5,2.5v3.2h-1.5V2.5c0-0.5-0.4-1-1-1H2.5c-0.5,0-1,0.4-1,1v13.4c0,0.5,0.4,1,1,1 h10.6c0.5,0,1-0.4,1-1v-3.2h1.5v3.2c0,1.4-1.1,2.5-2.5,2.5H2.5c-1.4,0-2.5-1.1-2.5-2.5V2.5C0,1.1,1.1,0,2.5,0z M11,7.5H6.2v3.4H11 v1.9l5-3.5l-5-3.5V7.5L11,7.5z"/></g></svg><span class="inline-block">Log out</span></a></div>'+settings_bottom_html+'</div>';
     basic.showDialog(settings_html, 'settings-popup', null, true);
+
+    updateExternalURLsForiOSDevice();
 
     $('.settings-popup .custom-close-bootbox').click(function() {
         basic.closeDialog();
