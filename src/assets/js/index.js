@@ -2130,40 +2130,40 @@ function styleKeystoreUploadBtn()    {
                     console.log(path, 'path TEST IOS IMPORT');
                     window.resolveLocalFileSystemURL(cordova.file.syncedDataDirectory , function (rootEntry) {
                         console.log(rootEntry, 'rootEntry1');
-                        /*rootEntry.getFile(decodeURIComponent(entry.fullPath), {create: false}, function (fileEntry) {
+                        rootEntry.getFile(path, {create: false}, function (fileEntry) {
                             console.log(fileEntry, 'fileEntry1');
                             fileEntry.file(function (file) {
                                 var reader = new FileReader();
 
                                 reader.onloadend = function () {
                                     var keystore_string = this.result;
-                                    console.log(keystore_string, 'keystore_string');
+                                    console.log(keystore_string, 'keystore_string1');
                                 }
 
                                 reader.readAsText(file);
                             });
                         }, function (err) {
                             alert('Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.');
-                        });*/
+                        });
                     });
 
                     window.resolveLocalFileSystemURL(cordova.file.applicationStorageDirectory , function (rootEntry) {
                         console.log(rootEntry, 'rootEntry2');
-                        /*rootEntry.getFile(decodeURIComponent(entry.fullPath), {create: false}, function (fileEntry) {
-                            console.log(fileEntry, 'fileEntry');
+                        rootEntry.getFile(path, {create: false}, function (fileEntry) {
+                            console.log(fileEntry, 'fileEntry2');
                             fileEntry.file(function (file) {
                                 var reader = new FileReader();
 
                                 reader.onloadend = function () {
                                     var keystore_string = this.result;
-                                    console.log(keystore_string, 'keystore_string');
+                                    console.log(keystore_string, 'keystore_string2');
                                 }
 
                                 reader.readAsText(file);
                             });
                         }, function (err) {
                             alert('Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.');
-                        });*/
+                        });
                     });
                 }, function(err) {
                     alert('File importing failed. Please update to one of the latest iOS versions in order to have file importing working.');
