@@ -82346,10 +82346,10 @@ function styleKeystoreUploadBtn()    {
             $('.custom-upload-button').click(function() {
                 console.log(cordova.file, 'cordova.file');
                 FilePicker.pickFile(function(path) {
-                    var fileName = path.substr(path.lastIndexOf('/') + 1);
+                    var fileDir = cordova.file.tempDirectory.replace('file://', '');
+                    console.log(fileDir, 'fileDir');
+                    var fileName = path.replace(fileDir, '');
                     console.log(fileName, 'fileName');
-
-                    console.log(path, 'path');
 
                     window.resolveLocalFileSystemURL(cordova.file.tempDirectory , function (rootEntry) {
                         console.log(rootEntry, 'rootEntry1');
