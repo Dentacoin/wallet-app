@@ -1,3 +1,4 @@
+//importing methods for keystore import, export, decrypt
 var {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey} = require('./helper');
 var {config_variable} = require('./config');
 
@@ -81,6 +82,7 @@ checkIfInternetConnection();
 var custom_popover_interval;
 var request_response = {};
 var request_interval_for_rest_of_transaction_history;
+//by this variable we recognize is project is loaded from web browser or like hybrid app
 var is_hybrid;
 var meta_mask_installed = false;
 var meta_mask_logged = false;
@@ -93,6 +95,8 @@ var core_db_clinics_time_to_request;
 var block_number_of_dcn_creation = 3170000;
 var load_qr_code_lib = true;
 var indacoin_data = {};
+
+//dApp init
 var dApp = {
     loaded: false,
     contract_address: '0x08d32b0da63e2C3bcF8019c9c5d849d7a9d791e6',
@@ -455,6 +459,7 @@ var dApp = {
     }
 };
 
+//logic splitted by pages
 var bidali_lib_loaded = false;
 var pages_data = {
     homepage: function() {
@@ -557,8 +562,6 @@ var pages_data = {
                             $('.mobile-copy-address').tooltip('hide');
                         }, 1000);
                     });
-
-
 
                     var img = document.querySelector('#mobile-qrcode img');
                     function loaded() {
@@ -1234,7 +1237,6 @@ var pages_data = {
 
                                                                             setTimeout(function() {
                                                                                 var validating_private_key = validatePrivateKey($('.proof-of-address #your-private-key').val().trim());
-                                                                                console.log(validating_private_key, 'validating_private_key');
                                                                                 if(validating_private_key.success) {
                                                                                     if(checksumAddress(validating_private_key.success.address) == checksumAddress(global_state.account)) {
                                                                                         submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, new Buffer($('.proof-of-address #your-private-key').val().trim(), 'hex'));
@@ -1271,6 +1273,7 @@ var pages_data = {
     },
     spend_page_gift_cards: function() {
         if(!bidali_lib_loaded) {
+            //loading bidali lib for buying tickets with DCN api
             showLoader();
             $.getScript('https://wallet.dentacoin.com/assets/libs/bidali/bidali-commerce.js', function() {
                 bidali_lib_loaded = true;
@@ -1288,7 +1291,7 @@ var pages_data = {
                     return false;
                 } else {
                     bidaliSdk.Commerce.render({
-                        apiKey: 'pk_n6mvpompwzm83egzrz2vnh',
+                        apiKey: config_variable.bidali_api_key,
                         paymentCurrencies: ['DCN']
                     });
                 }
@@ -1336,66 +1339,71 @@ function styleKeystoreUploadBtnForTx(function_abi, token_symbol, crypto_val, sen
         if(is_hybrid) {
             // MOBILE APP
             $('.custom-upload-keystore-file-label').removeAttr('for');
-
             $('.custom-upload-keystore-file-label').click(function() {
-                fileChooser.open(function(file_uri) {
-                    window.resolveLocalFileSystemURL(decodeURIComponent(file_uri), function (entry) {
-                        window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function (rootEntry) {
-                            console.log(rootEntry, 'rootEntry');
-                            rootEntry.getFile(decodeURIComponent(entry.fullPath), { create: false }, function (fileEntry) {
-                                console.log(fileEntry, 'fileEntry');
-                                fileEntry.file(function (file) {
-                                    var reader = new FileReader();
+                if(basic.getMobileOperatingSystem() == 'Android') {
+                    fileChooser.open(function(file_uri) {
+                        window.resolveLocalFileSystemURL(decodeURIComponent(file_uri), function (entry) {
+                            window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function (rootEntry) {
+                                rootEntry.getFile(decodeURIComponent(entry.fullPath), { create: false }, function (fileEntry) {
+                                    fileEntry.file(function (file) {
+                                        var reader = new FileReader();
 
-                                    reader.onloadend = function () {
-                                        var keystore_string = this.result;
-                                        setTimeout(function () {
-                                            if(basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && checksumAddress('0x' + JSON.parse(keystore_string).address) == checksumAddress(global_state.account)) {
-                                                $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="fs-14 light-gray-color text-center padding-bottom-10 padding-top-15 file-name">' + fileEntry.name + '</div><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">Secret password:</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"/></div></div><div class="col-xs-12"><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-tx-sign" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-tx-sign"><span class="padding-left-5 padding-right-5 inline-block">Remember backup file</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block tx-sign-more-info-keystore-remember fs-0" data-content="Remembering your backup file allows for easier and faster transactions. It is stored only in local device storage and nobody else has access to it."><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div></div><div class="btn-container col-xs-12 padding-top-25"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">Confirm</a></div>');
+                                        reader.onloadend = function () {
+                                            var keystore_string = this.result;
+                                            proceedWithTransactionFiringAfterHavingTheKeystoreFile(keystore_string);
+                                        };
 
-                                                $('.tx-sign-more-info-keystore-remember').popover({
-                                                    trigger: 'click'
-                                                });
-
-                                                $('.confirm-transaction.keystore-file').click(function () {
-                                                    if ($('.proof-of-address #your-secret-key-password').val().trim() == '') {
-                                                        basic.showAlert('Please enter valid secret file password.', '', true);
-                                                    } else {
-                                                        showLoader('Hold on...<br>Your transaction is being processed.');
-
-                                                        setTimeout(function () {
-                                                            decryptKeystore(keystore_string, $('.proof-of-address #your-secret-key-password').val().trim(), function(success, to_string, error, error_message) {
-                                                                if (success) {
-                                                                    if ($('.proof-of-address #agree-to-cache-tx-sign').is(':checked')) {
-                                                                        window.localStorage.setItem('keystore_file', keystore_string);
-                                                                    }
-
-                                                                    submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, success);
-                                                                } else if (error) {
-                                                                    basic.showAlert(error_message, '', true);
-                                                                    hideLoader();
-                                                                }
-                                                            });
-                                                        }, 2000);
-                                                    }
-                                                });
-                                            } else {
-                                                basic.showAlert('Please upload valid keystore file.', '', true);
-                                            }
-                                        }, 500);
-                                    };
-
-                                    reader.readAsText(file);
-                                }, function (err) {
-                                    alert('Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.');
+                                        reader.readAsText(file);
+                                    }, function (err) {
+                                        alert('Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.');
+                                    });
                                 });
                             });
                         });
+                    }, function(err) {
+                        alert('File upload failed, please try again with file inside your internal storage.');
                     });
-                }, function(err) {
-                    alert('File upload failed, please try again with file inside your internal storage.');
-                });
+                } else if(basic.getMobileOperatingSystem() == 'iOS') {
+                    iOSFileUpload(function(keystore_string) {
+                        proceedWithTransactionFiringAfterHavingTheKeystoreFile(keystore_string);
+                    });
+                }
             });
+
+            function proceedWithTransactionFiringAfterHavingTheKeystoreFile(keystore_string) {
+                if(basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && checksumAddress('0x' + JSON.parse(keystore_string).address) == checksumAddress(global_state.account)) {
+                    $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="fs-14 light-gray-color text-center padding-bottom-10 padding-top-15 file-name">' + fileEntry.name + '</div><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">Secret password:</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"/></div></div><div class="col-xs-12"><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-tx-sign" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-tx-sign"><span class="padding-left-5 padding-right-5 inline-block">Remember backup file</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block tx-sign-more-info-keystore-remember fs-0" data-content="Remembering your backup file allows for easier and faster transactions. It is stored only in local device storage and nobody else has access to it."><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div></div><div class="btn-container col-xs-12 padding-top-25"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">Confirm</a></div>');
+
+                    $('.tx-sign-more-info-keystore-remember').popover({
+                        trigger: 'click'
+                    });
+
+                    $('.confirm-transaction.keystore-file').click(function () {
+                        if ($('.proof-of-address #your-secret-key-password').val().trim() == '') {
+                            basic.showAlert('Please enter valid secret file password.', '', true);
+                        } else {
+                            showLoader('Hold on...<br>Your transaction is being processed.');
+
+                            setTimeout(function () {
+                                decryptKeystore(keystore_string, $('.proof-of-address #your-secret-key-password').val().trim(), function(success, to_string, error, error_message) {
+                                    if (success) {
+                                        if ($('.proof-of-address #agree-to-cache-tx-sign').is(':checked')) {
+                                            window.localStorage.setItem('keystore_file', keystore_string);
+                                        }
+
+                                        submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, success);
+                                    } else if (error) {
+                                        basic.showAlert(error_message, '', true);
+                                        hideLoader();
+                                    }
+                                });
+                            }, 2000);
+                        }
+                    });
+                } else {
+                    basic.showAlert('Please upload valid keystore file.', '', true);
+                }
+            }
         } else {
             // BROWSER
             this_btn_vanilla.addEventListener('change', function(e) {
@@ -1709,6 +1717,10 @@ function loadMobileBottomFixedNav() {
     var window_width = $(window).width();
     $('body').removeClass('overflow-hidden');
     if(window_width < 768) {
+        //if iOS adding space to bottom fixed mobile nav, because iPhones X, XS and so on have their home button inside the screen
+        if(basic.getMobileOperatingSystem() == 'iOS') {
+            $('.camp-for-fixed-mobile-nav').addClass('padding-bottom-20');
+        }
         $('.camp-for-fixed-mobile-nav').fadeIn(1000);
     }
 }
@@ -2026,7 +2038,7 @@ function initAccountChecker()  {
     }
 }
 
-//INIT LOGIC FOR ALL STEPS
+//method that appends front end errors
 function customErrorHandle(el, string) {
     el.append('<div class="error-handle">'+string+'</div>');
 }
@@ -2269,6 +2281,7 @@ function initCustomInputFileAnimation(this_btn) {
     });
 }
 
+//showing front end loader
 function showLoader(message) {
     if(message === undefined) {
         message = 'Loading ...';
@@ -2277,6 +2290,7 @@ function showLoader(message) {
     $('.response-layer').show();
 }
 
+//hiding front end loader
 function hideLoader() {
     $('.camping-loader').html('');
 }
@@ -2328,13 +2342,11 @@ $(document).on('click', '.open-settings', function() {
                     $('.remember-keystore-upload').click(function() {
                         var this_btn = $(this);
                         fileChooser.open(function(file_uri) {
-                            console.log(file_uri, 'file_uri');
                             window.resolveLocalFileSystemURL(decodeURIComponent(file_uri), function (entry) {
                                 window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function (rootEntry) {
                                     rootEntry.getFile(decodeURIComponent(entry.fullPath), {create: false}, function (fileEntry) {
                                         fileEntry.file(function (file) {
                                             var reader = new FileReader();
-
                                             initCustomInputFileAnimation(this_btn);
 
                                             reader.onloadend = function () {
@@ -2360,12 +2372,17 @@ $(document).on('click', '.open-settings', function() {
                     });
                 }else if(basic.getMobileOperatingSystem() == 'iOS') {
                     //iOS
-                    iOSFileUpload(function(keystore_string) {
-                        if(basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && checksumAddress('0x' + JSON.parse(keystore_string).address) == checksumAddress(global_state.account)) {
-                            validateKeystoreFileAndPasswordForCachingKeystoreFile(this_camping_row, keystore_string);
-                        } else {
-                            basic.showAlert('Please upload valid keystore file which is related to your Dentacoin Wallet address.', '', true);
-                        }
+                    $('.remember-keystore-upload').click(function() {
+                        var this_btn = $(this);
+                        iOSFileUpload(function(keystore_string) {
+                            initCustomInputFileAnimation(this_btn);
+
+                            if(basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && checksumAddress('0x' + JSON.parse(keystore_string).address) == checksumAddress(global_state.account)) {
+                                validateKeystoreFileAndPasswordForCachingKeystoreFile(this_camping_row, keystore_string);
+                            } else {
+                                basic.showAlert('Please upload valid keystore file which is related to your Dentacoin Wallet address.', '', true);
+                            }
+                        });
                     });
                 }
             } else {
@@ -2827,6 +2844,7 @@ function checkIfLoadingFromMobileBrowser() {
     }
 }
 
+//method to fire google analytics event
 function fireGoogleAnalyticsEvent(category, action, label, value) {
     var event_obj = {
         'event_action' : action,
@@ -2946,6 +2964,7 @@ function router() {
 }
 router();
 
+//Method that check if the device and mobile app and if the project is hybrid and then overwrite all _blank targets to _system. _blank is not working in iOS in WebView
 function updateExternalURLsForiOSDevice() {
     if($('.data-external-link').length && is_hybrid) {
         for(var i = 0, len = $('.data-external-link').length; i < len; i+=1) {
@@ -2964,6 +2983,7 @@ function updateExternalURLsForiOSDevice() {
     }
 }
 
+//fetching all get parameters from the URL into object
 function getGETParameters() {
     var prmstr = window.location.search.substr(1);
     return prmstr != null && prmstr != "" ? transformToAssocArray(prmstr) : {};
@@ -2996,6 +3016,7 @@ function savePublicKeyToAssurance(address, key) {
     });
 }
 
+//template to append ethereum transactions while build the transactions history
 function buildEthereumHistoryTransaction(ethereum_data, value, to, from, timestamp, hash, pending) {
     var eth_amount_symbol;
     var other_address = '';
@@ -3049,6 +3070,7 @@ function buildEthereumHistoryTransaction(ethereum_data, value, to, from, timesta
     return '<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+hash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+hash+'" target="_blank" class="lato-bold color-white data-external-link">'+transaction_id_label+'</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+eth_amount_symbol+value+' ETH</li><li>'+usd_amount+' USD</li></ul></td></tr>';
 }
 
+//template to append dentacoin transactions while build the transactions history
 function buildDentacoinHistoryTransaction(dentacoin_data, value, to, from, timestamp, transactionHash, pending) {
     var dcn_amount_symbol;
     var other_address = '';
