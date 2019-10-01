@@ -61,10 +61,11 @@ function validatePrivateKey(private_key) {
     try {
         const public_key = EthCrypto.publicKeyByPrivateKey(private_key);
         const address = EthCrypto.publicKey.toAddress(public_key);
+        console.log(public_key, 'public_key');
+        console.log(address, 'address');
 
         return {
             success: {
-                private_key: private_key,
                 public_key: public_key,
                 address: address
             }

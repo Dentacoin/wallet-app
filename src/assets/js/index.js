@@ -1237,11 +1237,8 @@ var pages_data = {
 
                                                                             setTimeout(function() {
                                                                                 var validating_private_key = validatePrivateKey($('.proof-of-address #your-private-key').val().trim());
-                                                                                var private_key = $('.proof-of-address #your-private-key').val().trim();
                                                                                 if(validating_private_key.success) {
-                                                                                    console.log(private_key, 'private_key');
-                                                                                    console.log(checksumAddress(validating_private_key.success.address), 'checksumAddress(validating_private_key.success.address');
-                                                                                    console.log(checksumAddress(global_state.account), 'checksumAddress(global_state.account)');
+                                                                                    console.log(checksumAddress(validating_private_key.success.address) == checksumAddress(global_state.account), 'checksumAddress(validating_private_key.success.address) == checksumAddress(global_state.account)');
                                                                                     if(checksumAddress(validating_private_key.success.address) == checksumAddress(global_state.account)) {
                                                                                         submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, new Buffer($('.proof-of-address #your-private-key').val().trim(), 'hex'));
                                                                                     } else {
