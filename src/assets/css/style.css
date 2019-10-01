@@ -4390,6 +4390,10 @@ img {
         .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .btn-container a {
           display: inline-block;
           min-width: 180px; }
+    @media screen and (max-width: 767px) {
+      .bootbox.transaction-confirmation-popup .modal-dialog {
+        width: 100%;
+        margin: 0 !important; } }
   .bootbox.settings-popup .bootbox-close-button {
     display: none; }
   .bootbox.settings-popup .custom-close-bootbox {
