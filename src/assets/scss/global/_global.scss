@@ -1191,6 +1191,10 @@ img {
                     }
                 }
             }
+            @include breakpoint($xs) {
+                margin: 0 !important;
+                width: 100%;
+            }
         }
     }
     @include breakpoint($sm-down) {

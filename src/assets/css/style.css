@@ -4474,6 +4474,10 @@ img {
             .bootbox.settings-popup .modal-dialog .modal-content .modal-body .popup-footer {
               padding-left: 10px;
               padding-right: 10px; } }
+    @media screen and (max-width: 767px) {
+      .bootbox.settings-popup .modal-dialog {
+        margin: 0 !important;
+        width: 100%; } }
   @media screen and (max-width: 991px) {
     .bootbox .modal-content {
       background-clip: border-box;

@@ -24,6 +24,13 @@
     <feature name="SocialSharing">
         <param name="android-package" value="nl.xservices.plugins.SocialSharing" />
     </feature>
+    <feature name="StatusBar">
+        <param name="android-package" value="org.apache.cordova.statusbar.StatusBar" />
+        <param name="onload" value="true" />
+    </feature>
+    <feature name="InAppBrowser">
+        <param name="android-package" value="org.apache.cordova.inappbrowser.InAppBrowser" />
+    </feature>
     <feature name="FileChooser">
         <param name="android-package" value="com.megster.cordova.FileChooser" />
     </feature>
@@ -35,24 +42,23 @@
         Apache Cordova Team
     </author>
     <content src="index.html" />
-    <access origin="*" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
     <allow-intent href="tel:*" />
     <allow-intent href="sms:*" />
     <allow-intent href="mailto:*" />
     <allow-intent href="geo:*" />
+    <access origin="*" />
+    <allow-navigation href="https://dentacoin.com/*" />
     <allow-intent href="market:*" />
     <icon density="hdpi" height="48" src="/app-resources/images/wallet-app-icon-48x48px.png" width="48" />
     <icon density="xhdpi" height="72" src="/app-resources/images/wallet-app-icon-72x72px.png" width="72" />
     <icon density="xxhdpi" height="144" src="/app-resources/images/wallet-app-icon-144x144px.png" width="144" />
     <preference name="loglevel" value="DEBUG" />
     <preference name="orientation" value="portrait" />
-    <feature name="StatusBar">
-        <param name="android-package" value="org.apache.cordova.statusbar.StatusBar" />
-        <param name="onload" value="true" />
-    </feature>
-    <feature name="InAppBrowser">
-        <param name="android-package" value="org.apache.cordova.inappbrowser.InAppBrowser" />
-    </feature>
+    <preference name="SplashScreen" value="none" />
+    <preference name="SplashScreenDelay" value="0" />
+    <preference name="StatusBarOverlaysWebView" value="false" />
+    <preference name="StatusBarBackgroundColor" value="#000000" />
+    <preference name="StatusBarStyle" value="lightcontent" />
 </widget>

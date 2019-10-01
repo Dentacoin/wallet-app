@@ -26269,33 +26269,33 @@ function loadImplementation(){
 
 },{"./loader":176}],178:[function(require,module,exports){
 arguments[4][2][0].apply(exports,arguments)
-},{"./asn1/api":179,"./asn1/base":181,"./asn1/constants":185,"./asn1/decoders":187,"./asn1/encoders":190,"bn.js":248,"dup":2}],179:[function(require,module,exports){
+},{"./asn1/api":179,"./asn1/base":181,"./asn1/constants":185,"./asn1/decoders":187,"./asn1/encoders":190,"bn.js":247,"dup":2}],179:[function(require,module,exports){
 arguments[4][3][0].apply(exports,arguments)
-},{"../asn1":178,"dup":3,"inherits":412,"vm":173}],180:[function(require,module,exports){
+},{"../asn1":178,"dup":3,"inherits":406,"vm":173}],180:[function(require,module,exports){
 arguments[4][4][0].apply(exports,arguments)
-},{"../base":181,"buffer":52,"dup":4,"inherits":412}],181:[function(require,module,exports){
+},{"../base":181,"buffer":52,"dup":4,"inherits":406}],181:[function(require,module,exports){
 arguments[4][5][0].apply(exports,arguments)
 },{"./buffer":180,"./node":182,"./reporter":183,"dup":5}],182:[function(require,module,exports){
 arguments[4][6][0].apply(exports,arguments)
-},{"../base":181,"dup":6,"minimalistic-assert":435}],183:[function(require,module,exports){
+},{"../base":181,"dup":6,"minimalistic-assert":429}],183:[function(require,module,exports){
 arguments[4][7][0].apply(exports,arguments)
-},{"dup":7,"inherits":412}],184:[function(require,module,exports){
+},{"dup":7,"inherits":406}],184:[function(require,module,exports){
 arguments[4][8][0].apply(exports,arguments)
 },{"../constants":185,"dup":8}],185:[function(require,module,exports){
 arguments[4][9][0].apply(exports,arguments)
 },{"./der":184,"dup":9}],186:[function(require,module,exports){
 arguments[4][10][0].apply(exports,arguments)
-},{"../../asn1":178,"dup":10,"inherits":412}],187:[function(require,module,exports){
+},{"../../asn1":178,"dup":10,"inherits":406}],187:[function(require,module,exports){
 arguments[4][11][0].apply(exports,arguments)
 },{"./der":186,"./pem":188,"dup":11}],188:[function(require,module,exports){
 arguments[4][12][0].apply(exports,arguments)
-},{"./der":186,"buffer":52,"dup":12,"inherits":412}],189:[function(require,module,exports){
+},{"./der":186,"buffer":52,"dup":12,"inherits":406}],189:[function(require,module,exports){
 arguments[4][13][0].apply(exports,arguments)
-},{"../../asn1":178,"buffer":52,"dup":13,"inherits":412}],190:[function(require,module,exports){
+},{"../../asn1":178,"buffer":52,"dup":13,"inherits":406}],190:[function(require,module,exports){
 arguments[4][14][0].apply(exports,arguments)
 },{"./der":189,"./pem":191,"dup":14}],191:[function(require,module,exports){
 arguments[4][15][0].apply(exports,arguments)
-},{"./der":189,"dup":15,"inherits":412}],192:[function(require,module,exports){
+},{"./der":189,"dup":15,"inherits":406}],192:[function(require,module,exports){
 module.exports = { "default": require("core-js/library/fn/array/from"), __esModule: true };
 },{"core-js/library/fn/array/from":194}],193:[function(require,module,exports){
 "use strict";
@@ -27041,128 +27041,6 @@ require('./_iter-define')(String, 'String', function (iterated) {
 });
 
 },{"./_iter-define":219,"./_string-at":234}],246:[function(require,module,exports){
-'use strict'
-// base-x encoding / decoding
-// Copyright (c) 2018 base-x contributors
-// Copyright (c) 2014-2018 The Bitcoin Core developers (base58.cpp)
-// Distributed under the MIT software license, see the accompanying
-// file LICENSE or http://www.opensource.org/licenses/mit-license.php.
-// @ts-ignore
-var _Buffer = require('safe-buffer').Buffer
-function base (ALPHABET) {
-  if (ALPHABET.length >= 255) { throw new TypeError('Alphabet too long') }
-  var BASE_MAP = new Uint8Array(256)
-  BASE_MAP.fill(255)
-  for (var i = 0; i < ALPHABET.length; i++) {
-    var x = ALPHABET.charAt(i)
-    var xc = x.charCodeAt(0)
-    if (BASE_MAP[xc] !== 255) { throw new TypeError(x + ' is ambiguous') }
-    BASE_MAP[xc] = i
-  }
-  var BASE = ALPHABET.length
-  var LEADER = ALPHABET.charAt(0)
-  var FACTOR = Math.log(BASE) / Math.log(256) // log(BASE) / log(256), rounded up
-  var iFACTOR = Math.log(256) / Math.log(BASE) // log(256) / log(BASE), rounded up
-  function encode (source) {
-    if (!_Buffer.isBuffer(source)) { throw new TypeError('Expected Buffer') }
-    if (source.length === 0) { return '' }
-        // Skip & count leading zeroes.
-    var zeroes = 0
-    var length = 0
-    var pbegin = 0
-    var pend = source.length
-    while (pbegin !== pend && source[pbegin] === 0) {
-      pbegin++
-      zeroes++
-    }
-        // Allocate enough space in big-endian base58 representation.
-    var size = ((pend - pbegin) * iFACTOR + 1) >>> 0
-    var b58 = new Uint8Array(size)
-        // Process the bytes.
-    while (pbegin !== pend) {
-      var carry = source[pbegin]
-            // Apply "b58 = b58 * 256 + ch".
-      var i = 0
-      for (var it1 = size - 1; (carry !== 0 || i < length) && (it1 !== -1); it1--, i++) {
-        carry += (256 * b58[it1]) >>> 0
-        b58[it1] = (carry % BASE) >>> 0
-        carry = (carry / BASE) >>> 0
-      }
-      if (carry !== 0) { throw new Error('Non-zero carry') }
-      length = i
-      pbegin++
-    }
-        // Skip leading zeroes in base58 result.
-    var it2 = size - length
-    while (it2 !== size && b58[it2] === 0) {
-      it2++
-    }
-        // Translate the result into a string.
-    var str = LEADER.repeat(zeroes)
-    for (; it2 < size; ++it2) { str += ALPHABET.charAt(b58[it2]) }
-    return str
-  }
-  function decodeUnsafe (source) {
-    if (typeof source !== 'string') { throw new TypeError('Expected String') }
-    if (source.length === 0) { return _Buffer.alloc(0) }
-    var psz = 0
-        // Skip leading spaces.
-    if (source[psz] === ' ') { return }
-        // Skip and count leading '1's.
-    var zeroes = 0
-    var length = 0
-    while (source[psz] === LEADER) {
-      zeroes++
-      psz++
-    }
-        // Allocate enough space in big-endian base256 representation.
-    var size = (((source.length - psz) * FACTOR) + 1) >>> 0 // log(58) / log(256), rounded up.
-    var b256 = new Uint8Array(size)
-        // Process the characters.
-    while (source[psz]) {
-            // Decode character
-      var carry = BASE_MAP[source.charCodeAt(psz)]
-            // Invalid character
-      if (carry === 255) { return }
-      var i = 0
-      for (var it3 = size - 1; (carry !== 0 || i < length) && (it3 !== -1); it3--, i++) {
-        carry += (BASE * b256[it3]) >>> 0
-        b256[it3] = (carry % 256) >>> 0
-        carry = (carry / 256) >>> 0
-      }
-      if (carry !== 0) { throw new Error('Non-zero carry') }
-      length = i
-      psz++
-    }
-        // Skip trailing spaces.
-    if (source[psz] === ' ') { return }
-        // Skip leading zeroes in b256.
-    var it4 = size - length
-    while (it4 !== size && b256[it4] === 0) {
-      it4++
-    }
-    var vch = _Buffer.allocUnsafe(zeroes + (size - it4))
-    vch.fill(0x00, 0, zeroes)
-    var j = zeroes
-    while (it4 !== size) {
-      vch[j++] = b256[it4++]
-    }
-    return vch
-  }
-  function decode (string) {
-    var buffer = decodeUnsafe(string)
-    if (buffer) { return buffer }
-    throw new Error('Non-base' + BASE + ' character')
-  }
-  return {
-    encode: encode,
-    decodeUnsafe: decodeUnsafe,
-    decode: decode
-  }
-}
-module.exports = base
-
-},{"safe-buffer":468}],247:[function(require,module,exports){
 // Reference https://github.com/bitcoin/bips/blob/master/bip-0066.mediawiki
 // Format: 0x30 [total-length] 0x02 [R-length] [R] 0x02 [S-length] [S]
 // NOTE: SIGHASH byte ignored AND restricted, truncate before use
@@ -27277,141 +27155,69 @@ module.exports = {
   encode: encode
 }
 
-},{"safe-buffer":468}],248:[function(require,module,exports){
+},{"safe-buffer":462}],247:[function(require,module,exports){
 arguments[4][21][0].apply(exports,arguments)
-},{"buffer":23,"dup":21}],249:[function(require,module,exports){
+},{"buffer":23,"dup":21}],248:[function(require,module,exports){
 arguments[4][22][0].apply(exports,arguments)
-},{"crypto":23,"dup":22}],250:[function(require,module,exports){
+},{"crypto":23,"dup":22}],249:[function(require,module,exports){
 arguments[4][24][0].apply(exports,arguments)
-},{"dup":24,"safe-buffer":468}],251:[function(require,module,exports){
+},{"dup":24,"safe-buffer":462}],250:[function(require,module,exports){
 arguments[4][25][0].apply(exports,arguments)
-},{"./aes":250,"./ghash":255,"./incr32":256,"buffer-xor":280,"cipher-base":281,"dup":25,"inherits":412,"safe-buffer":468}],252:[function(require,module,exports){
+},{"./aes":249,"./ghash":254,"./incr32":255,"buffer-xor":276,"cipher-base":277,"dup":25,"inherits":406,"safe-buffer":462}],251:[function(require,module,exports){
 arguments[4][26][0].apply(exports,arguments)
-},{"./decrypter":253,"./encrypter":254,"./modes/list.json":264,"dup":26}],253:[function(require,module,exports){
+},{"./decrypter":252,"./encrypter":253,"./modes/list.json":263,"dup":26}],252:[function(require,module,exports){
 arguments[4][27][0].apply(exports,arguments)
-},{"./aes":250,"./authCipher":251,"./modes":263,"./streamCipher":266,"cipher-base":281,"dup":27,"evp_bytestokey":390,"inherits":412,"safe-buffer":468}],254:[function(require,module,exports){
+},{"./aes":249,"./authCipher":250,"./modes":262,"./streamCipher":265,"cipher-base":277,"dup":27,"evp_bytestokey":384,"inherits":406,"safe-buffer":462}],253:[function(require,module,exports){
 arguments[4][28][0].apply(exports,arguments)
-},{"./aes":250,"./authCipher":251,"./modes":263,"./streamCipher":266,"cipher-base":281,"dup":28,"evp_bytestokey":390,"inherits":412,"safe-buffer":468}],255:[function(require,module,exports){
+},{"./aes":249,"./authCipher":250,"./modes":262,"./streamCipher":265,"cipher-base":277,"dup":28,"evp_bytestokey":384,"inherits":406,"safe-buffer":462}],254:[function(require,module,exports){
 arguments[4][29][0].apply(exports,arguments)
-},{"dup":29,"safe-buffer":468}],256:[function(require,module,exports){
+},{"dup":29,"safe-buffer":462}],255:[function(require,module,exports){
 arguments[4][30][0].apply(exports,arguments)
-},{"dup":30}],257:[function(require,module,exports){
+},{"dup":30}],256:[function(require,module,exports){
 arguments[4][31][0].apply(exports,arguments)
-},{"buffer-xor":280,"dup":31}],258:[function(require,module,exports){
+},{"buffer-xor":276,"dup":31}],257:[function(require,module,exports){
 arguments[4][32][0].apply(exports,arguments)
-},{"buffer-xor":280,"dup":32,"safe-buffer":468}],259:[function(require,module,exports){
+},{"buffer-xor":276,"dup":32,"safe-buffer":462}],258:[function(require,module,exports){
 arguments[4][33][0].apply(exports,arguments)
-},{"dup":33,"safe-buffer":468}],260:[function(require,module,exports){
+},{"dup":33,"safe-buffer":462}],259:[function(require,module,exports){
 arguments[4][34][0].apply(exports,arguments)
-},{"dup":34,"safe-buffer":468}],261:[function(require,module,exports){
+},{"dup":34,"safe-buffer":462}],260:[function(require,module,exports){
 arguments[4][35][0].apply(exports,arguments)
-},{"../incr32":256,"buffer-xor":280,"dup":35,"safe-buffer":468}],262:[function(require,module,exports){
+},{"../incr32":255,"buffer-xor":276,"dup":35,"safe-buffer":462}],261:[function(require,module,exports){
 arguments[4][36][0].apply(exports,arguments)
-},{"dup":36}],263:[function(require,module,exports){
+},{"dup":36}],262:[function(require,module,exports){
 arguments[4][37][0].apply(exports,arguments)
-},{"./cbc":257,"./cfb":258,"./cfb1":259,"./cfb8":260,"./ctr":261,"./ecb":262,"./list.json":264,"./ofb":265,"dup":37}],264:[function(require,module,exports){
+},{"./cbc":256,"./cfb":257,"./cfb1":258,"./cfb8":259,"./ctr":260,"./ecb":261,"./list.json":263,"./ofb":264,"dup":37}],263:[function(require,module,exports){
 arguments[4][38][0].apply(exports,arguments)
-},{"dup":38}],265:[function(require,module,exports){
+},{"dup":38}],264:[function(require,module,exports){
 arguments[4][39][0].apply(exports,arguments)
-},{"buffer":52,"buffer-xor":280,"dup":39}],266:[function(require,module,exports){
+},{"buffer":52,"buffer-xor":276,"dup":39}],265:[function(require,module,exports){
 arguments[4][40][0].apply(exports,arguments)
-},{"./aes":250,"cipher-base":281,"dup":40,"inherits":412,"safe-buffer":468}],267:[function(require,module,exports){
+},{"./aes":249,"cipher-base":277,"dup":40,"inherits":406,"safe-buffer":462}],266:[function(require,module,exports){
 arguments[4][41][0].apply(exports,arguments)
-},{"browserify-aes/browser":252,"browserify-aes/modes":263,"browserify-des":268,"browserify-des/modes":269,"dup":41,"evp_bytestokey":390}],268:[function(require,module,exports){
+},{"browserify-aes/browser":251,"browserify-aes/modes":262,"browserify-des":267,"browserify-des/modes":268,"dup":41,"evp_bytestokey":384}],267:[function(require,module,exports){
 arguments[4][42][0].apply(exports,arguments)
-},{"cipher-base":281,"des.js":291,"dup":42,"inherits":412,"safe-buffer":468}],269:[function(require,module,exports){
+},{"cipher-base":277,"des.js":287,"dup":42,"inherits":406,"safe-buffer":462}],268:[function(require,module,exports){
 arguments[4][43][0].apply(exports,arguments)
-},{"dup":43}],270:[function(require,module,exports){
+},{"dup":43}],269:[function(require,module,exports){
 arguments[4][44][0].apply(exports,arguments)
-},{"bn.js":248,"buffer":52,"dup":44,"randombytes":461}],271:[function(require,module,exports){
+},{"bn.js":247,"buffer":52,"dup":44,"randombytes":455}],270:[function(require,module,exports){
 arguments[4][45][0].apply(exports,arguments)
-},{"./browser/algorithms.json":272,"dup":45}],272:[function(require,module,exports){
+},{"./browser/algorithms.json":271,"dup":45}],271:[function(require,module,exports){
 arguments[4][46][0].apply(exports,arguments)
-},{"dup":46}],273:[function(require,module,exports){
+},{"dup":46}],272:[function(require,module,exports){
 arguments[4][47][0].apply(exports,arguments)
-},{"dup":47}],274:[function(require,module,exports){
+},{"dup":47}],273:[function(require,module,exports){
 arguments[4][48][0].apply(exports,arguments)
-},{"./algorithms.json":272,"./sign":275,"./verify":276,"buffer":52,"create-hash":284,"dup":48,"inherits":412,"stream":162}],275:[function(require,module,exports){
+},{"./algorithms.json":271,"./sign":274,"./verify":275,"buffer":52,"create-hash":280,"dup":48,"inherits":406,"stream":162}],274:[function(require,module,exports){
 arguments[4][49][0].apply(exports,arguments)
-},{"./curves.json":273,"bn.js":248,"browserify-rsa":270,"buffer":52,"create-hmac":286,"dup":49,"elliptic":319,"parse-asn1":448}],276:[function(require,module,exports){
+},{"./curves.json":272,"bn.js":247,"browserify-rsa":269,"buffer":52,"create-hmac":282,"dup":49,"elliptic":315,"parse-asn1":442}],275:[function(require,module,exports){
 arguments[4][50][0].apply(exports,arguments)
-},{"./curves.json":273,"bn.js":248,"buffer":52,"dup":50,"elliptic":319,"parse-asn1":448}],277:[function(require,module,exports){
-var basex = require('base-x')
-var ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
-
-module.exports = basex(ALPHABET)
-
-},{"base-x":246}],278:[function(require,module,exports){
-'use strict'
-
-var base58 = require('bs58')
-var Buffer = require('safe-buffer').Buffer
-
-module.exports = function (checksumFn) {
-  // Encode a buffer as a base58-check encoded string
-  function encode (payload) {
-    var checksum = checksumFn(payload)
-
-    return base58.encode(Buffer.concat([
-      payload,
-      checksum
-    ], payload.length + 4))
-  }
-
-  function decodeRaw (buffer) {
-    var payload = buffer.slice(0, -4)
-    var checksum = buffer.slice(-4)
-    var newChecksum = checksumFn(payload)
-
-    if (checksum[0] ^ newChecksum[0] |
-        checksum[1] ^ newChecksum[1] |
-        checksum[2] ^ newChecksum[2] |
-        checksum[3] ^ newChecksum[3]) return
-
-    return payload
-  }
-
-  // Decode a base58-check encoded string to a buffer, no result if checksum is wrong
-  function decodeUnsafe (string) {
-    var buffer = base58.decodeUnsafe(string)
-    if (!buffer) return
-
-    return decodeRaw(buffer)
-  }
-
-  function decode (string) {
-    var buffer = base58.decode(string)
-    var payload = decodeRaw(buffer, checksumFn)
-    if (!payload) throw new Error('Invalid checksum')
-    return payload
-  }
-
-  return {
-    encode: encode,
-    decode: decode,
-    decodeUnsafe: decodeUnsafe
-  }
-}
-
-},{"bs58":277,"safe-buffer":468}],279:[function(require,module,exports){
-'use strict'
-
-var createHash = require('create-hash')
-var bs58checkBase = require('./base')
-
-// SHA256(SHA256(buffer))
-function sha256x2 (buffer) {
-  var tmp = createHash('sha256').update(buffer).digest()
-  return createHash('sha256').update(tmp).digest()
-}
-
-module.exports = bs58checkBase(sha256x2)
-
-},{"./base":278,"create-hash":284}],280:[function(require,module,exports){
+},{"./curves.json":272,"bn.js":247,"buffer":52,"dup":50,"elliptic":315,"parse-asn1":442}],276:[function(require,module,exports){
 arguments[4][51][0].apply(exports,arguments)
-},{"buffer":52,"dup":51}],281:[function(require,module,exports){
+},{"buffer":52,"dup":51}],277:[function(require,module,exports){
 arguments[4][54][0].apply(exports,arguments)
-},{"dup":54,"inherits":412,"safe-buffer":468,"stream":162,"string_decoder":167}],282:[function(require,module,exports){
+},{"dup":54,"inherits":406,"safe-buffer":462,"stream":162,"string_decoder":167}],278:[function(require,module,exports){
 /* jshint node: true */
 (function () {
     "use strict";
@@ -27689,19 +27495,19 @@ arguments[4][54][0].apply(exports,arguments)
     };
 }());
 
-},{}],283:[function(require,module,exports){
+},{}],279:[function(require,module,exports){
 arguments[4][56][0].apply(exports,arguments)
-},{"bn.js":248,"buffer":52,"dup":56,"elliptic":319}],284:[function(require,module,exports){
+},{"bn.js":247,"buffer":52,"dup":56,"elliptic":315}],280:[function(require,module,exports){
 arguments[4][57][0].apply(exports,arguments)
-},{"cipher-base":281,"dup":57,"inherits":412,"md5.js":433,"ripemd160":466,"sha.js":478}],285:[function(require,module,exports){
+},{"cipher-base":277,"dup":57,"inherits":406,"md5.js":427,"ripemd160":460,"sha.js":472}],281:[function(require,module,exports){
 arguments[4][58][0].apply(exports,arguments)
-},{"dup":58,"md5.js":433}],286:[function(require,module,exports){
+},{"dup":58,"md5.js":427}],282:[function(require,module,exports){
 arguments[4][59][0].apply(exports,arguments)
-},{"./legacy":287,"cipher-base":281,"create-hash/md5":285,"dup":59,"inherits":412,"ripemd160":466,"safe-buffer":468,"sha.js":478}],287:[function(require,module,exports){
+},{"./legacy":283,"cipher-base":277,"create-hash/md5":281,"dup":59,"inherits":406,"ripemd160":460,"safe-buffer":462,"sha.js":472}],283:[function(require,module,exports){
 arguments[4][60][0].apply(exports,arguments)
-},{"cipher-base":281,"dup":60,"inherits":412,"safe-buffer":468}],288:[function(require,module,exports){
+},{"cipher-base":277,"dup":60,"inherits":406,"safe-buffer":462}],284:[function(require,module,exports){
 arguments[4][61][0].apply(exports,arguments)
-},{"browserify-cipher":267,"browserify-sign":274,"browserify-sign/algos":271,"create-ecdh":283,"create-hash":284,"create-hmac":286,"diffie-hellman":297,"dup":61,"pbkdf2":450,"public-encrypt":455,"randombytes":461,"randomfill":462}],289:[function(require,module,exports){
+},{"browserify-cipher":266,"browserify-sign":273,"browserify-sign/algos":270,"create-ecdh":279,"create-hash":280,"create-hmac":282,"diffie-hellman":293,"dup":61,"pbkdf2":444,"public-encrypt":449,"randombytes":455,"randomfill":456}],285:[function(require,module,exports){
 'use strict';
 var token = '%[a-f0-9]{2}';
 var singleMatcher = new RegExp(token, 'gi');
@@ -27797,7 +27603,7 @@ module.exports = function (encodedURI) {
 	}
 };
 
-},{}],290:[function(require,module,exports){
+},{}],286:[function(require,module,exports){
 'use strict';
 
 var keys = require('object-keys');
@@ -27857,27 +27663,27 @@ defineProperties.supportsDescriptors = !!supportsDescriptors;
 
 module.exports = defineProperties;
 
-},{"object-keys":441}],291:[function(require,module,exports){
+},{"object-keys":435}],287:[function(require,module,exports){
 arguments[4][62][0].apply(exports,arguments)
-},{"./des/cbc":292,"./des/cipher":293,"./des/des":294,"./des/ede":295,"./des/utils":296,"dup":62}],292:[function(require,module,exports){
+},{"./des/cbc":288,"./des/cipher":289,"./des/des":290,"./des/ede":291,"./des/utils":292,"dup":62}],288:[function(require,module,exports){
 arguments[4][63][0].apply(exports,arguments)
-},{"dup":63,"inherits":412,"minimalistic-assert":435}],293:[function(require,module,exports){
+},{"dup":63,"inherits":406,"minimalistic-assert":429}],289:[function(require,module,exports){
 arguments[4][64][0].apply(exports,arguments)
-},{"dup":64,"minimalistic-assert":435}],294:[function(require,module,exports){
+},{"dup":64,"minimalistic-assert":429}],290:[function(require,module,exports){
 arguments[4][65][0].apply(exports,arguments)
-},{"../des":291,"dup":65,"inherits":412,"minimalistic-assert":435}],295:[function(require,module,exports){
+},{"../des":287,"dup":65,"inherits":406,"minimalistic-assert":429}],291:[function(require,module,exports){
 arguments[4][66][0].apply(exports,arguments)
-},{"../des":291,"dup":66,"inherits":412,"minimalistic-assert":435}],296:[function(require,module,exports){
+},{"../des":287,"dup":66,"inherits":406,"minimalistic-assert":429}],292:[function(require,module,exports){
 arguments[4][67][0].apply(exports,arguments)
-},{"dup":67}],297:[function(require,module,exports){
+},{"dup":67}],293:[function(require,module,exports){
 arguments[4][68][0].apply(exports,arguments)
-},{"./lib/dh":298,"./lib/generatePrime":299,"./lib/primes.json":300,"buffer":52,"dup":68}],298:[function(require,module,exports){
+},{"./lib/dh":294,"./lib/generatePrime":295,"./lib/primes.json":296,"buffer":52,"dup":68}],294:[function(require,module,exports){
 arguments[4][69][0].apply(exports,arguments)
-},{"./generatePrime":299,"bn.js":248,"buffer":52,"dup":69,"miller-rabin":434,"randombytes":461}],299:[function(require,module,exports){
+},{"./generatePrime":295,"bn.js":247,"buffer":52,"dup":69,"miller-rabin":428,"randombytes":455}],295:[function(require,module,exports){
 arguments[4][70][0].apply(exports,arguments)
-},{"bn.js":248,"dup":70,"miller-rabin":434,"randombytes":461}],300:[function(require,module,exports){
+},{"bn.js":247,"dup":70,"miller-rabin":428,"randombytes":455}],296:[function(require,module,exports){
 arguments[4][71][0].apply(exports,arguments)
-},{"dup":71}],301:[function(require,module,exports){
+},{"dup":71}],297:[function(require,module,exports){
 (function (global,Buffer){
 "use strict";
 
@@ -28143,7 +27949,7 @@ exports.decrypt = function(privateKey, opts) {
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
-},{"buffer":52,"crypto":61,"elliptic":302}],302:[function(require,module,exports){
+},{"buffer":52,"crypto":61,"elliptic":298}],298:[function(require,module,exports){
 'use strict';
 
 var elliptic = exports;
@@ -28159,7 +27965,7 @@ elliptic.curves = require('./elliptic/curves');
 elliptic.ec = require('./elliptic/ec');
 elliptic.eddsa = require('./elliptic/eddsa');
 
-},{"../package.json":318,"./elliptic/curve":305,"./elliptic/curves":308,"./elliptic/ec":309,"./elliptic/eddsa":312,"./elliptic/hmac-drbg":315,"./elliptic/utils":317,"brorand":249}],303:[function(require,module,exports){
+},{"../package.json":314,"./elliptic/curve":301,"./elliptic/curves":304,"./elliptic/ec":305,"./elliptic/eddsa":308,"./elliptic/hmac-drbg":311,"./elliptic/utils":313,"brorand":248}],299:[function(require,module,exports){
 'use strict';
 
 var bn = require('bn.js');
@@ -28512,7 +28318,7 @@ BasePoint.prototype.dblp = function dblp(k) {
   return r;
 };
 
-},{"../../elliptic":302,"bn.js":248}],304:[function(require,module,exports){
+},{"../../elliptic":298,"bn.js":247}],300:[function(require,module,exports){
 'use strict';
 
 var curve = require('../curve');
@@ -28920,9 +28726,9 @@ Point.prototype.eq = function eq(other) {
 Point.prototype.toP = Point.prototype.normalize;
 Point.prototype.mixedAdd = Point.prototype.add;
 
-},{"../../elliptic":302,"../curve":305,"bn.js":248,"inherits":412}],305:[function(require,module,exports){
+},{"../../elliptic":298,"../curve":301,"bn.js":247,"inherits":406}],301:[function(require,module,exports){
 arguments[4][75][0].apply(exports,arguments)
-},{"./base":303,"./edwards":304,"./mont":306,"./short":307,"dup":75}],306:[function(require,module,exports){
+},{"./base":299,"./edwards":300,"./mont":302,"./short":303,"dup":75}],302:[function(require,module,exports){
 'use strict';
 
 var curve = require('../curve');
@@ -29100,7 +28906,7 @@ Point.prototype.getX = function getX() {
   return this.x.fromRed();
 };
 
-},{"../../elliptic":302,"../curve":305,"bn.js":248,"inherits":412}],307:[function(require,module,exports){
+},{"../../elliptic":298,"../curve":301,"bn.js":247,"inherits":406}],303:[function(require,module,exports){
 'use strict';
 
 var curve = require('../curve');
@@ -30009,7 +29815,7 @@ JPoint.prototype.isInfinity = function isInfinity() {
   return this.z.cmpn(0) === 0;
 };
 
-},{"../../elliptic":302,"../curve":305,"bn.js":248,"inherits":412}],308:[function(require,module,exports){
+},{"../../elliptic":298,"../curve":301,"bn.js":247,"inherits":406}],304:[function(require,module,exports){
 'use strict';
 
 var curves = exports;
@@ -30216,7 +30022,7 @@ defineCurve('secp256k1', {
   ]
 });
 
-},{"../elliptic":302,"./precomputed/secp256k1":316,"hash.js":397}],309:[function(require,module,exports){
+},{"../elliptic":298,"./precomputed/secp256k1":312,"hash.js":391}],305:[function(require,module,exports){
 'use strict';
 
 var bn = require('bn.js');
@@ -30434,7 +30240,7 @@ EC.prototype.getKeyRecoveryParam = function(e, signature, Q, enc) {
   throw new Error('Unable to find valid recovery factor');
 };
 
-},{"../../elliptic":302,"./key":310,"./signature":311,"bn.js":248}],310:[function(require,module,exports){
+},{"../../elliptic":298,"./key":306,"./signature":307,"bn.js":247}],306:[function(require,module,exports){
 'use strict';
 
 var bn = require('bn.js');
@@ -30543,7 +30349,7 @@ KeyPair.prototype.inspect = function inspect() {
          ' pub: ' + (this.pub && this.pub.inspect()) + ' >';
 };
 
-},{"bn.js":248}],311:[function(require,module,exports){
+},{"bn.js":247}],307:[function(require,module,exports){
 'use strict';
 
 var bn = require('bn.js');
@@ -30680,9 +30486,9 @@ Signature.prototype.toDER = function toDER(enc) {
   return utils.encode(res, enc);
 };
 
-},{"../../elliptic":302,"bn.js":248}],312:[function(require,module,exports){
+},{"../../elliptic":298,"bn.js":247}],308:[function(require,module,exports){
 arguments[4][82][0].apply(exports,arguments)
-},{"../../elliptic":302,"./key":313,"./signature":314,"dup":82,"hash.js":397}],313:[function(require,module,exports){
+},{"../../elliptic":298,"./key":309,"./signature":310,"dup":82,"hash.js":391}],309:[function(require,module,exports){
 'use strict';
 
 var elliptic = require('../../elliptic');
@@ -30780,7 +30586,7 @@ KeyPair.prototype.getPublic = function getPublic(enc) {
 
 module.exports = KeyPair;
 
-},{"../../elliptic":302}],314:[function(require,module,exports){
+},{"../../elliptic":298}],310:[function(require,module,exports){
 'use strict';
 
 var bn = require('bn.js');
@@ -30848,7 +30654,7 @@ Signature.prototype.toHex = function toHex() {
 
 module.exports = Signature;
 
-},{"../../elliptic":302,"bn.js":248}],315:[function(require,module,exports){
+},{"../../elliptic":298,"bn.js":247}],311:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -30964,9 +30770,9 @@ HmacDRBG.prototype.generate = function generate(len, enc, add, addEnc) {
   return utils.encode(res, enc);
 };
 
-},{"../elliptic":302,"hash.js":397}],316:[function(require,module,exports){
+},{"../elliptic":298,"hash.js":391}],312:[function(require,module,exports){
 arguments[4][85][0].apply(exports,arguments)
-},{"dup":85}],317:[function(require,module,exports){
+},{"dup":85}],313:[function(require,module,exports){
 'use strict';
 
 var utils = exports;
@@ -31141,7 +30947,7 @@ function intFromLE(bytes) {
 utils.intFromLE = intFromLE;
 
 
-},{"bn.js":248}],318:[function(require,module,exports){
+},{"bn.js":247}],314:[function(require,module,exports){
 module.exports={
   "_args": [
     [
@@ -31220,9 +31026,9 @@ module.exports={
   "version": "6.0.2"
 }
 
-},{}],319:[function(require,module,exports){
+},{}],315:[function(require,module,exports){
 arguments[4][72][0].apply(exports,arguments)
-},{"../package.json":334,"./elliptic/curve":322,"./elliptic/curves":325,"./elliptic/ec":326,"./elliptic/eddsa":329,"./elliptic/utils":333,"brorand":249,"dup":72}],320:[function(require,module,exports){
+},{"../package.json":330,"./elliptic/curve":318,"./elliptic/curves":321,"./elliptic/ec":322,"./elliptic/eddsa":325,"./elliptic/utils":329,"brorand":248,"dup":72}],316:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -31598,7 +31404,7 @@ BasePoint.prototype.dblp = function dblp(k) {
   return r;
 };
 
-},{"../utils":333,"bn.js":248}],321:[function(require,module,exports){
+},{"../utils":329,"bn.js":247}],317:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -32032,9 +31838,9 @@ Point.prototype.eqXToP = function eqXToP(x) {
 Point.prototype.toP = Point.prototype.normalize;
 Point.prototype.mixedAdd = Point.prototype.add;
 
-},{"../utils":333,"./base":320,"bn.js":248,"inherits":412}],322:[function(require,module,exports){
+},{"../utils":329,"./base":316,"bn.js":247,"inherits":406}],318:[function(require,module,exports){
 arguments[4][75][0].apply(exports,arguments)
-},{"./base":320,"./edwards":321,"./mont":323,"./short":324,"dup":75}],323:[function(require,module,exports){
+},{"./base":316,"./edwards":317,"./mont":319,"./short":320,"dup":75}],319:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -32214,7 +32020,7 @@ Point.prototype.getX = function getX() {
   return this.x.fromRed();
 };
 
-},{"../utils":333,"./base":320,"bn.js":248,"inherits":412}],324:[function(require,module,exports){
+},{"../utils":329,"./base":316,"bn.js":247,"inherits":406}],320:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -33152,7 +32958,7 @@ JPoint.prototype.isInfinity = function isInfinity() {
   return this.z.cmpn(0) === 0;
 };
 
-},{"../utils":333,"./base":320,"bn.js":248,"inherits":412}],325:[function(require,module,exports){
+},{"../utils":329,"./base":316,"bn.js":247,"inherits":406}],321:[function(require,module,exports){
 'use strict';
 
 var curves = exports;
@@ -33360,7 +33166,7 @@ defineCurve('secp256k1', {
   ]
 });
 
-},{"./curve":322,"./precomputed/secp256k1":332,"./utils":333,"hash.js":397}],326:[function(require,module,exports){
+},{"./curve":318,"./precomputed/secp256k1":328,"./utils":329,"hash.js":391}],322:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -33603,7 +33409,7 @@ EC.prototype.getKeyRecoveryParam = function(e, signature, Q, enc) {
   throw new Error('Unable to find valid recovery factor');
 };
 
-},{"../curves":325,"../utils":333,"./key":327,"./signature":328,"bn.js":248,"brorand":249,"hmac-drbg":409}],327:[function(require,module,exports){
+},{"../curves":321,"../utils":329,"./key":323,"./signature":324,"bn.js":247,"brorand":248,"hmac-drbg":403}],323:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -33723,7 +33529,7 @@ KeyPair.prototype.inspect = function inspect() {
          ' pub: ' + (this.pub && this.pub.inspect()) + ' >';
 };
 
-},{"../utils":333,"bn.js":248}],328:[function(require,module,exports){
+},{"../utils":329,"bn.js":247}],324:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -33859,7 +33665,7 @@ Signature.prototype.toDER = function toDER(enc) {
   return utils.encode(res, enc);
 };
 
-},{"../utils":333,"bn.js":248}],329:[function(require,module,exports){
+},{"../utils":329,"bn.js":247}],325:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -33979,7 +33785,7 @@ EDDSA.prototype.isPoint = function isPoint(val) {
   return val instanceof this.pointClass;
 };
 
-},{"../curves":325,"../utils":333,"./key":330,"./signature":331,"hash.js":397}],330:[function(require,module,exports){
+},{"../curves":321,"../utils":329,"./key":326,"./signature":327,"hash.js":391}],326:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -34076,7 +33882,7 @@ KeyPair.prototype.getPublic = function getPublic(enc) {
 
 module.exports = KeyPair;
 
-},{"../utils":333}],331:[function(require,module,exports){
+},{"../utils":329}],327:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -34143,11 +33949,11 @@ Signature.prototype.toHex = function toHex() {
 
 module.exports = Signature;
 
-},{"../utils":333,"bn.js":248}],332:[function(require,module,exports){
+},{"../utils":329,"bn.js":247}],328:[function(require,module,exports){
 arguments[4][85][0].apply(exports,arguments)
-},{"dup":85}],333:[function(require,module,exports){
+},{"dup":85}],329:[function(require,module,exports){
 arguments[4][86][0].apply(exports,arguments)
-},{"bn.js":248,"dup":86,"minimalistic-assert":435,"minimalistic-crypto-utils":436}],334:[function(require,module,exports){
+},{"bn.js":247,"dup":86,"minimalistic-assert":429,"minimalistic-crypto-utils":430}],330:[function(require,module,exports){
 module.exports={
   "_args": [
     [
@@ -34245,7 +34051,7 @@ module.exports={
   "version": "6.5.0"
 }
 
-},{}],335:[function(require,module,exports){
+},{}],331:[function(require,module,exports){
 'use strict';
 
 /* globals
@@ -34424,7 +34230,7 @@ module.exports = function GetIntrinsic(name, allowMissing) {
 	return INTRINSICS[key];
 };
 
-},{}],336:[function(require,module,exports){
+},{}],332:[function(require,module,exports){
 'use strict';
 
 var GetIntrinsic = require('./GetIntrinsic');
@@ -34661,7 +34467,7 @@ var ES5 = {
 
 module.exports = ES5;
 
-},{"./GetIntrinsic":335,"./helpers/assertRecord":337,"./helpers/isFinite":338,"./helpers/isNaN":339,"./helpers/mod":340,"./helpers/sign":341,"es-to-primitive/es5":342,"has":395,"is-callable":413}],337:[function(require,module,exports){
+},{"./GetIntrinsic":331,"./helpers/assertRecord":333,"./helpers/isFinite":334,"./helpers/isNaN":335,"./helpers/mod":336,"./helpers/sign":337,"es-to-primitive/es5":338,"has":389,"is-callable":407}],333:[function(require,module,exports){
 'use strict';
 
 var GetIntrinsic = require('../GetIntrinsic');
@@ -34712,28 +34518,28 @@ module.exports = function assertRecord(ES, recordType, argumentName, value) {
   console.log(predicate(ES, value), value);
 };
 
-},{"../GetIntrinsic":335,"has":395}],338:[function(require,module,exports){
+},{"../GetIntrinsic":331,"has":389}],334:[function(require,module,exports){
 var $isNaN = Number.isNaN || function (a) { return a !== a; };
 
 module.exports = Number.isFinite || function (x) { return typeof x === 'number' && !$isNaN(x) && x !== Infinity && x !== -Infinity; };
 
-},{}],339:[function(require,module,exports){
+},{}],335:[function(require,module,exports){
 module.exports = Number.isNaN || function isNaN(a) {
 	return a !== a;
 };
 
-},{}],340:[function(require,module,exports){
+},{}],336:[function(require,module,exports){
 module.exports = function mod(number, modulo) {
 	var remain = number % modulo;
 	return Math.floor(remain >= 0 ? remain : remain + modulo);
 };
 
-},{}],341:[function(require,module,exports){
+},{}],337:[function(require,module,exports){
 module.exports = function sign(number) {
 	return number >= 0 ? 1 : -1;
 };
 
-},{}],342:[function(require,module,exports){
+},{}],338:[function(require,module,exports){
 'use strict';
 
 var toStr = Object.prototype.toString;
@@ -34780,12 +34586,12 @@ module.exports = function ToPrimitive(input) {
 	return ES5internalSlots['[[DefaultValue]]'](input);
 };
 
-},{"./helpers/isPrimitive":343,"is-callable":413}],343:[function(require,module,exports){
+},{"./helpers/isPrimitive":339,"is-callable":407}],339:[function(require,module,exports){
 module.exports = function isPrimitive(value) {
 	return value === null || (typeof value !== 'function' && typeof value !== 'object');
 };
 
-},{}],344:[function(require,module,exports){
+},{}],340:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -34800,7 +34606,7 @@ function calculateContractAddress(creatorAddress, nonce) {
     var address = addressBuffer.toString('hex');
     return (0, _ethereumjsUtil.toChecksumAddress)(address);
 }
-},{"ethereumjs-util":371}],345:[function(require,module,exports){
+},{"ethereumjs-util":367}],341:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -34845,7 +34651,7 @@ function parse(str) {
     return ret;
 }
 }).call(this,require("buffer").Buffer)
-},{"./public-key":353,"buffer":52}],346:[function(require,module,exports){
+},{"./public-key":349,"buffer":52}],342:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -34904,7 +34710,7 @@ function createIdentity(entropy) {
     return identity;
 }
 }).call(this,require("buffer").Buffer)
-},{"./public-key-by-private-key":352,"buffer":52,"eth-lib/lib/account":362,"eth-lib/lib/bytes":364,"eth-lib/lib/hash":365}],347:[function(require,module,exports){
+},{"./public-key-by-private-key":348,"buffer":52,"eth-lib/lib/account":358,"eth-lib/lib/bytes":360,"eth-lib/lib/hash":361}],343:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -34938,7 +34744,7 @@ function decryptWithPrivateKey(privateKey, encrypted) {
     });
 }
 }).call(this,require("buffer").Buffer)
-},{"./cipher":345,"./util":359,"buffer":52,"eccrypto":301}],348:[function(require,module,exports){
+},{"./cipher":341,"./util":355,"buffer":52,"eccrypto":297}],344:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -34970,7 +34776,7 @@ function encryptWithPublicKey(publicKey, message) {
     });
 }
 }).call(this,require("buffer").Buffer)
-},{"./public-key":353,"buffer":52,"eccrypto":301}],349:[function(require,module,exports){
+},{"./public-key":349,"buffer":52,"eccrypto":297}],345:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -34997,7 +34803,7 @@ function keccak256(params) {
 }
 
 var SIGN_PREFIX = exports.SIGN_PREFIX = '\x19Ethereum Signed Message:\n32';
-},{"ethers/utils/solidity.js":384}],350:[function(require,module,exports){
+},{"ethers/utils/solidity.js":378}],346:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -35052,7 +34858,7 @@ function decompress(compressedString) {
     return (0, _util.addTrailing0x)(hex);
 }
 }).call(this,require("buffer").Buffer)
-},{"./util":359,"buffer":52}],351:[function(require,module,exports){
+},{"./util":355,"buffer":52}],347:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -35162,7 +34968,7 @@ exports['default'] = {
     vrs: vrs,
     util: util
 };
-},{"./calculate-contract-address":344,"./cipher":345,"./create-identity":346,"./decrypt-with-private-key":347,"./encrypt-with-public-key":348,"./hash":349,"./hex":350,"./public-key":353,"./public-key-by-private-key":352,"./recover":355,"./recover-public-key":354,"./sign":357,"./sign-transaction":356,"./tx-data-by-compiled":358,"./util":359,"./vrs":360}],352:[function(require,module,exports){
+},{"./calculate-contract-address":340,"./cipher":341,"./create-identity":342,"./decrypt-with-private-key":343,"./encrypt-with-public-key":344,"./hash":345,"./hex":346,"./public-key":349,"./public-key-by-private-key":348,"./recover":351,"./recover-public-key":350,"./sign":353,"./sign-transaction":352,"./tx-data-by-compiled":354,"./util":355,"./vrs":356}],348:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -35185,7 +34991,7 @@ function publicKeyOfPrivateKey(privateKey) {
     var publicKeyBuffer = (0, _ethereumjsUtil.privateToPublic)(privateKey);
     return publicKeyBuffer.toString('hex');
 }
-},{"./util":359,"ethereumjs-util":371}],353:[function(require,module,exports){
+},{"./util":355,"ethereumjs-util":367}],349:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -35237,7 +35043,7 @@ function toAddress(publicKey) {
     return checkSumAdress;
 }
 }).call(this,require("buffer").Buffer)
-},{"buffer":52,"ethereumjs-util":371,"secp256k1":471}],354:[function(require,module,exports){
+},{"buffer":52,"ethereumjs-util":367,"secp256k1":465}],350:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -35273,7 +35079,7 @@ function recoverPublicKey(signature, hash) {
     return pubKey;
 }
 }).call(this,require("buffer").Buffer)
-},{"./util":359,"buffer":52,"secp256k1":471}],355:[function(require,module,exports){
+},{"./util":355,"buffer":52,"secp256k1":465}],351:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -35300,7 +35106,7 @@ function recover(sigString, hash) {
     var address = (0, _publicKey.toAddress)(pubkey);
     return address;
 }
-},{"./public-key":353,"./recover-public-key":354}],356:[function(require,module,exports){
+},{"./public-key":349,"./recover-public-key":350}],352:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -35335,7 +35141,7 @@ function signTransaction(rawTx, privateKey) {
     return serializedTx;
 }
 }).call(this,require("buffer").Buffer)
-},{"./public-key":353,"./public-key-by-private-key":352,"buffer":52,"ethereumjs-tx":369}],357:[function(require,module,exports){
+},{"./public-key":349,"./public-key-by-private-key":348,"buffer":52,"ethereumjs-tx":365}],353:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -35367,7 +35173,7 @@ function sign(privateKey, hash) {
     return newSignature;
 }
 }).call(this,require("buffer").Buffer)
-},{"./util":359,"buffer":52,"secp256k1":471}],358:[function(require,module,exports){
+},{"./util":355,"buffer":52,"secp256k1":465}],354:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -35394,7 +35200,7 @@ function txDataByCompiled(abi, bytecode, args) {
 
     return deployTransaction.data;
 }
-},{"babel-runtime/helpers/toConsumableArray":193,"ethers/contracts/contract.js":374}],359:[function(require,module,exports){
+},{"babel-runtime/helpers/toConsumableArray":193,"ethers/contracts/contract.js":368}],355:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -35409,7 +35215,7 @@ function removeTrailing0x(str) {
 function addTrailing0x(str) {
     if (!str.startsWith('0x')) return '0x' + str;else return str;
 }
-},{}],360:[function(require,module,exports){
+},{}],356:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -35443,7 +35249,7 @@ function toString(sig) {
     var partsArray = [sig.v, sig.r, sig.s];
     return (0, _account.encodeSignature)(partsArray);
 }
-},{"eth-lib/lib/account":362}],361:[function(require,module,exports){
+},{"eth-lib/lib/account":358}],357:[function(require,module,exports){
 (function (Buffer){
 var sha3 = require('js-sha3').keccak_256
 var uts46 = require('idna-uts46-hx')
@@ -35477,7 +35283,7 @@ exports.hash = namehash
 exports.normalize = normalize
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":52,"idna-uts46-hx":411,"js-sha3":416}],362:[function(require,module,exports){
+},{"buffer":52,"idna-uts46-hx":405,"js-sha3":410}],358:[function(require,module,exports){
 (function (Buffer){
 const Bytes = require("./bytes");
 const Nat = require("./nat");
@@ -35544,7 +35350,7 @@ module.exports = {
   decodeSignature
 };
 }).call(this,require("buffer").Buffer)
-},{"./bytes":364,"./hash":365,"./nat":366,"./rlp":367,"buffer":52,"elliptic":319}],363:[function(require,module,exports){
+},{"./bytes":360,"./hash":361,"./nat":362,"./rlp":363,"buffer":52,"elliptic":315}],359:[function(require,module,exports){
 const generate = (num, fn) => {
   let a = [];
   for (var i = 0; i < num; ++i) a.push(fn(i));
@@ -35574,7 +35380,7 @@ module.exports = {
   flatten,
   chunksOf
 };
-},{}],364:[function(require,module,exports){
+},{}],360:[function(require,module,exports){
 const A = require("./array.js");
 
 const at = (bytes, index) => parseInt(bytes.slice(index * 2 + 2, index * 2 + 4), 16);
@@ -35733,7 +35539,7 @@ module.exports = {
   fromUint8Array,
   toUint8Array
 };
-},{"./array.js":363}],365:[function(require,module,exports){
+},{"./array.js":359}],361:[function(require,module,exports){
 // This was ported from https://github.com/emn178/js-sha3, with some minor
 // modifications and pruning. It is licensed under MIT:
 //
@@ -36065,7 +35871,7 @@ module.exports = {
   keccak256s: keccak(256),
   keccak512s: keccak(512)
 };
-},{}],366:[function(require,module,exports){
+},{}],362:[function(require,module,exports){
 const BN = require("bn.js");
 const Bytes = require("./bytes");
 
@@ -36110,7 +35916,7 @@ module.exports = {
   div,
   sub
 };
-},{"./bytes":364,"bn.js":248}],367:[function(require,module,exports){
+},{"./bytes":360,"bn.js":247}],363:[function(require,module,exports){
 // The RLP format
 // Serialization and deserialization for the BytesTree type, under the following grammar:
 // | First byte | Meaning                                                                    |
@@ -36177,7 +35983,7 @@ const decode = hex => {
 };
 
 module.exports = { encode, decode };
-},{}],368:[function(require,module,exports){
+},{}],364:[function(require,module,exports){
 module.exports={
   "genesisGasLimit": {
     "v": 5000,
@@ -36414,7 +36220,7 @@ module.exports={
   }
 }
 
-},{}],369:[function(require,module,exports){
+},{}],365:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -36742,7 +36548,7 @@ var Transaction = function () {
 
 module.exports = Transaction;
 }).call(this,require("buffer").Buffer)
-},{"buffer":52,"ethereum-common/params.json":368,"ethereumjs-util":370}],370:[function(require,module,exports){
+},{"buffer":52,"ethereum-common/params.json":364,"ethereumjs-util":366}],366:[function(require,module,exports){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -37458,7 +37264,7 @@ exports.defineProperties = function (self, fields, data) {
     }
   }
 };
-},{"assert":16,"bn.js":248,"create-hash":284,"ethjs-util":389,"keccak":417,"rlp":467,"safe-buffer":468,"secp256k1":471}],371:[function(require,module,exports){
+},{"assert":16,"bn.js":247,"create-hash":280,"ethjs-util":383,"keccak":411,"rlp":461,"safe-buffer":462,"secp256k1":465}],367:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var BN = require("bn.js");
@@ -38057,321 +37863,7 @@ function isValidSigRecovery(recovery) {
     return recovery === 0 || recovery === 1;
 }
 
-},{"assert":16,"bn.js":248,"create-hash":284,"ethjs-util":389,"keccak":417,"rlp":467,"safe-buffer":468,"secp256k1":471}],372:[function(require,module,exports){
-'use strict';
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-var Buffer = require('safe-buffer').Buffer;
-var ethUtil = require('ethereumjs-util');
-var crypto = require('crypto');
-var randomBytes = require('randombytes');
-var scryptsy = require('scrypt.js');
-var uuidv4 = require('uuid/v4');
-var bs58check = require('bs58check');
-
-function assert(val, msg) {
-  if (!val) {
-    throw new Error(msg || 'Assertion failed');
-  }
-}
-
-function decipherBuffer(decipher, data) {
-  return Buffer.concat([decipher.update(data), decipher.final()]);
-}
-
-var Wallet = function Wallet(priv, pub) {
-  if (priv && pub) {
-    throw new Error('Cannot supply both a private and a public key to the constructor');
-  }
-
-  if (priv && !ethUtil.isValidPrivate(priv)) {
-    throw new Error('Private key does not satisfy the curve requirements (ie. it is invalid)');
-  }
-
-  if (pub && !ethUtil.isValidPublic(pub)) {
-    throw new Error('Invalid public key');
-  }
-
-  this._privKey = priv;
-  this._pubKey = pub;
-};
-
-Object.defineProperty(Wallet.prototype, 'privKey', {
-  get: function get() {
-    assert(this._privKey, 'This is a public key only wallet');
-    return this._privKey;
-  }
-});
-
-Object.defineProperty(Wallet.prototype, 'pubKey', {
-  get: function get() {
-    if (!this._pubKey) {
-      this._pubKey = ethUtil.privateToPublic(this.privKey);
-    }
-    return this._pubKey;
-  }
-});
-
-Wallet.generate = function (icapDirect) {
-  if (icapDirect) {
-    var max = new ethUtil.BN('088f924eeceeda7fe92e1f5b0fffffffffffffff', 16);
-    while (true) {
-      var privKey = randomBytes(32);
-      if (new ethUtil.BN(ethUtil.privateToAddress(privKey)).lte(max)) {
-        return new Wallet(privKey);
-      }
-    }
-  } else {
-    return new Wallet(randomBytes(32));
-  }
-};
-
-Wallet.generateVanityAddress = function (pattern) {
-  if ((typeof pattern === 'undefined' ? 'undefined' : _typeof(pattern)) !== 'object') {
-    pattern = new RegExp(pattern);
-  }
-
-  while (true) {
-    var privKey = randomBytes(32);
-    var address = ethUtil.privateToAddress(privKey);
-
-    if (pattern.test(address.toString('hex'))) {
-      return new Wallet(privKey);
-    }
-  }
-};
-
-Wallet.prototype.getPrivateKey = function () {
-  return this.privKey;
-};
-
-Wallet.prototype.getPrivateKeyString = function () {
-  return ethUtil.bufferToHex(this.getPrivateKey());
-};
-
-Wallet.prototype.getPublicKey = function () {
-  return this.pubKey;
-};
-
-Wallet.prototype.getPublicKeyString = function () {
-  return ethUtil.bufferToHex(this.getPublicKey());
-};
-
-Wallet.prototype.getAddress = function () {
-  return ethUtil.publicToAddress(this.pubKey);
-};
-
-Wallet.prototype.getAddressString = function () {
-  return ethUtil.bufferToHex(this.getAddress());
-};
-
-Wallet.prototype.getChecksumAddressString = function () {
-  return ethUtil.toChecksumAddress(this.getAddressString());
-};
-
-// https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
-Wallet.prototype.toV3 = function (password, opts) {
-  assert(this._privKey, 'This is a public key only wallet');
-
-  opts = opts || {};
-  var salt = opts.salt || randomBytes(32);
-  var iv = opts.iv || randomBytes(16);
-
-  var derivedKey;
-  var kdf = opts.kdf || 'scrypt';
-  var kdfparams = {
-    dklen: opts.dklen || 32,
-    salt: salt.toString('hex')
-  };
-
-  if (kdf === 'pbkdf2') {
-    kdfparams.c = opts.c || 262144;
-    kdfparams.prf = 'hmac-sha256';
-    derivedKey = crypto.pbkdf2Sync(Buffer.from(password), salt, kdfparams.c, kdfparams.dklen, 'sha256');
-  } else if (kdf === 'scrypt') {
-    // FIXME: support progress reporting callback
-    kdfparams.n = opts.n || 262144;
-    kdfparams.r = opts.r || 8;
-    kdfparams.p = opts.p || 1;
-    derivedKey = scryptsy(Buffer.from(password), salt, kdfparams.n, kdfparams.r, kdfparams.p, kdfparams.dklen);
-  } else {
-    throw new Error('Unsupported kdf');
-  }
-
-  var cipher = crypto.createCipheriv(opts.cipher || 'aes-128-ctr', derivedKey.slice(0, 16), iv);
-  if (!cipher) {
-    throw new Error('Unsupported cipher');
-  }
-
-  var ciphertext = Buffer.concat([cipher.update(this.privKey), cipher.final()]);
-
-  var mac = ethUtil.keccak256(Buffer.concat([derivedKey.slice(16, 32), Buffer.from(ciphertext, 'hex')]));
-
-  return {
-    version: 3,
-    id: uuidv4({ random: opts.uuid || randomBytes(16) }),
-    address: this.getAddress().toString('hex'),
-    crypto: {
-      ciphertext: ciphertext.toString('hex'),
-      cipherparams: {
-        iv: iv.toString('hex')
-      },
-      cipher: opts.cipher || 'aes-128-ctr',
-      kdf: kdf,
-      kdfparams: kdfparams,
-      mac: mac.toString('hex')
-    }
-  };
-};
-
-Wallet.prototype.getV3Filename = function (timestamp) {
-  /*
-   * We want a timestamp like 2016-03-15T17-11-33.007598288Z. Date formatting
-   * is a pain in Javascript, everbody knows that. We could use moment.js,
-   * but decide to do it manually in order to save space.
-   *
-   * toJSON() returns a pretty close version, so let's use it. It is not UTC though,
-   * but does it really matter?
-   *
-   * Alternative manual way with padding and Date fields: http://stackoverflow.com/a/7244288/4964819
-   *
-   */
-  var ts = timestamp ? new Date(timestamp) : new Date();
-
-  return ['UTC--', ts.toJSON().replace(/:/g, '-'), '--', this.getAddress().toString('hex')].join('');
-};
-
-Wallet.prototype.toV3String = function (password, opts) {
-  return JSON.stringify(this.toV3(password, opts));
-};
-
-Wallet.fromPublicKey = function (pub, nonStrict) {
-  if (nonStrict) {
-    pub = ethUtil.importPublic(pub);
-  }
-  return new Wallet(null, pub);
-};
-
-Wallet.fromExtendedPublicKey = function (pub) {
-  assert(pub.slice(0, 4) === 'xpub', 'Not an extended public key');
-  pub = bs58check.decode(pub).slice(45);
-  // Convert to an Ethereum public key
-  return Wallet.fromPublicKey(pub, true);
-};
-
-Wallet.fromPrivateKey = function (priv) {
-  return new Wallet(priv);
-};
-
-Wallet.fromExtendedPrivateKey = function (priv) {
-  assert(priv.slice(0, 4) === 'xprv', 'Not an extended private key');
-  var tmp = bs58check.decode(priv);
-  assert(tmp[45] === 0, 'Invalid extended private key');
-  return Wallet.fromPrivateKey(tmp.slice(46));
-};
-
-// https://github.com/ethereum/go-ethereum/wiki/Passphrase-protected-key-store-spec
-Wallet.fromV1 = function (input, password) {
-  assert(typeof password === 'string');
-  var json = (typeof input === 'undefined' ? 'undefined' : _typeof(input)) === 'object' ? input : JSON.parse(input);
-
-  if (json.Version !== '1') {
-    throw new Error('Not a V1 wallet');
-  }
-
-  if (json.Crypto.KeyHeader.Kdf !== 'scrypt') {
-    throw new Error('Unsupported key derivation scheme');
-  }
-
-  var kdfparams = json.Crypto.KeyHeader.KdfParams;
-  var derivedKey = scryptsy(Buffer.from(password), Buffer.from(json.Crypto.Salt, 'hex'), kdfparams.N, kdfparams.R, kdfparams.P, kdfparams.DkLen);
-
-  var ciphertext = Buffer.from(json.Crypto.CipherText, 'hex');
-
-  var mac = ethUtil.keccak256(Buffer.concat([derivedKey.slice(16, 32), ciphertext]));
-
-  if (mac.toString('hex') !== json.Crypto.MAC) {
-    throw new Error('Key derivation failed - possibly wrong passphrase');
-  }
-
-  var decipher = crypto.createDecipheriv('aes-128-cbc', ethUtil.keccak256(derivedKey.slice(0, 16)).slice(0, 16), Buffer.from(json.Crypto.IV, 'hex'));
-  var seed = decipherBuffer(decipher, ciphertext);
-
-  return new Wallet(seed);
-};
-
-Wallet.fromV3 = function (input, password, nonStrict) {
-  assert(typeof password === 'string');
-  var json = (typeof input === 'undefined' ? 'undefined' : _typeof(input)) === 'object' ? input : JSON.parse(nonStrict ? input.toLowerCase() : input);
-
-  if (json.version !== 3) {
-    throw new Error('Not a V3 wallet');
-  }
-
-  var derivedKey;
-  var kdfparams;
-  if (json.crypto.kdf === 'scrypt') {
-    kdfparams = json.crypto.kdfparams;
-
-    // FIXME: support progress reporting callback
-    derivedKey = scryptsy(Buffer.from(password), Buffer.from(kdfparams.salt, 'hex'), kdfparams.n, kdfparams.r, kdfparams.p, kdfparams.dklen);
-  } else if (json.crypto.kdf === 'pbkdf2') {
-    kdfparams = json.crypto.kdfparams;
-
-    if (kdfparams.prf !== 'hmac-sha256') {
-      throw new Error('Unsupported parameters to PBKDF2');
-    }
-
-    derivedKey = crypto.pbkdf2Sync(Buffer.from(password), Buffer.from(kdfparams.salt, 'hex'), kdfparams.c, kdfparams.dklen, 'sha256');
-  } else {
-    throw new Error('Unsupported key derivation scheme');
-  }
-
-  var ciphertext = Buffer.from(json.crypto.ciphertext, 'hex');
-
-  var mac = ethUtil.keccak256(Buffer.concat([derivedKey.slice(16, 32), ciphertext]));
-  if (mac.toString('hex') !== json.crypto.mac) {
-    throw new Error('Key derivation failed - possibly wrong passphrase');
-  }
-
-  var decipher = crypto.createDecipheriv(json.crypto.cipher, derivedKey.slice(0, 16), Buffer.from(json.crypto.cipherparams.iv, 'hex'));
-  var seed = decipherBuffer(decipher, ciphertext);
-
-  return new Wallet(seed);
-};
-
-/*
- * Based on https://github.com/ethereum/pyethsaletool/blob/master/pyethsaletool.py
- * JSON fields: encseed, ethaddr, btcaddr, email
- */
-Wallet.fromEthSale = function (input, password) {
-  assert(typeof password === 'string');
-  var json = (typeof input === 'undefined' ? 'undefined' : _typeof(input)) === 'object' ? input : JSON.parse(input);
-
-  var encseed = Buffer.from(json.encseed, 'hex');
-
-  // key derivation
-  var derivedKey = crypto.pbkdf2Sync(password, password, 2000, 32, 'sha256').slice(0, 16);
-
-  // seed decoding (IV is first 16 bytes)
-  // NOTE: crypto (derived from openssl) when used with aes-*-cbc will handle PKCS#7 padding internally
-  //       see also http://stackoverflow.com/a/31614770/4964819
-  var decipher = crypto.createDecipheriv('aes-128-cbc', derivedKey, encseed.slice(0, 16));
-  var seed = decipherBuffer(decipher, encseed.slice(16));
-
-  var wallet = new Wallet(ethUtil.keccak256(seed));
-  if (wallet.getAddress().toString('hex') !== json.ethaddr) {
-    throw new Error('Decoded key mismatch - possibly wrong passphrase');
-  }
-  return wallet;
-};
-
-module.exports = Wallet;
-},{"bs58check":279,"crypto":61,"ethereumjs-util":371,"randombytes":461,"safe-buffer":468,"scrypt.js":373,"uuid/v4":504}],373:[function(require,module,exports){
-module.exports = require('scryptsy')
-
-},{"scryptsy":470}],374:[function(require,module,exports){
+},{"assert":16,"bn.js":247,"create-hash":280,"ethjs-util":383,"keccak":411,"rlp":461,"safe-buffer":462,"secp256k1":465}],368:[function(require,module,exports){
 'use strict';
 
 var Interface = require('./interface.js');
@@ -38704,7 +38196,7 @@ utils.defineProperty(Contract, 'getDeployTransaction', function(bytecode, contra
 
 module.exports = Contract;
 
-},{"../utils/address.js":377,"../utils/bignumber.js":378,"../utils/convert.js":379,"../utils/errors":380,"../utils/properties.js":382,"./interface.js":375}],375:[function(require,module,exports){
+},{"../utils/address.js":371,"../utils/bignumber.js":372,"../utils/convert.js":373,"../utils/errors":374,"../utils/properties.js":376,"./interface.js":369}],369:[function(require,module,exports){
 'use strict';
 
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
@@ -39117,7 +38609,7 @@ utils.defineProperty(Interface.prototype, 'parseTransaction', function(tx) {
 
 module.exports = Interface;
 
-},{"../utils/abi-coder":376,"../utils/convert":379,"../utils/errors":380,"../utils/keccak256":381,"../utils/properties":382,"../utils/utf8":386}],376:[function(require,module,exports){
+},{"../utils/abi-coder":370,"../utils/convert":373,"../utils/errors":374,"../utils/keccak256":375,"../utils/properties":376,"../utils/utf8":380}],370:[function(require,module,exports){
 'use strict';
 
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
@@ -40137,7 +39629,7 @@ utils.defineProperty(Coder, 'parseSignature', parseSignature);
 
 module.exports = Coder
 
-},{"../utils/address":377,"../utils/bignumber.js":378,"../utils/convert.js":379,"../utils/properties.js":382,"../utils/utf8.js":386,"./errors":380}],377:[function(require,module,exports){
+},{"../utils/address":371,"../utils/bignumber.js":372,"../utils/convert.js":373,"../utils/properties.js":376,"../utils/utf8.js":380,"./errors":374}],371:[function(require,module,exports){
 
 var BN = require('bn.js');
 
@@ -40263,7 +39755,7 @@ module.exports = {
     getAddress: getAddress,
 }
 
-},{"./convert":379,"./keccak256":381,"./throw-error":385,"bn.js":248}],378:[function(require,module,exports){
+},{"./convert":373,"./keccak256":375,"./throw-error":379,"bn.js":247}],372:[function(require,module,exports){
 /**
  *  BigNumber
  *
@@ -40414,7 +39906,7 @@ module.exports = {
     BigNumber: BigNumber
 };
 
-},{"./convert":379,"./properties":382,"./throw-error":385,"bn.js":248}],379:[function(require,module,exports){
+},{"./convert":373,"./properties":376,"./throw-error":379,"bn.js":247}],373:[function(require,module,exports){
 /**
  *  Conversion Utilities
  *
@@ -40640,7 +40132,7 @@ module.exports = {
     hexZeroPad: hexZeroPad,
 };
 
-},{"./errors":380,"./properties.js":382}],380:[function(require,module,exports){
+},{"./errors":374,"./properties.js":376}],374:[function(require,module,exports){
 'use strict';
 
 var defineProperty = require('./properties').defineProperty;
@@ -40733,7 +40225,7 @@ defineProperty(codes, 'checkNew', function(self, kind) {
 
 module.exports = codes;
 
-},{"./properties":382}],381:[function(require,module,exports){
+},{"./properties":376}],375:[function(require,module,exports){
 'use strict';
 
 var sha3 = require('js-sha3');
@@ -40747,7 +40239,7 @@ function keccak256(data) {
 
 module.exports = keccak256;
 
-},{"./convert.js":379,"js-sha3":416}],382:[function(require,module,exports){
+},{"./convert.js":373,"js-sha3":410}],376:[function(require,module,exports){
 'use strict';
 
 function defineProperty(object, name, value) {
@@ -40771,7 +40263,7 @@ module.exports = {
     defineProperty: defineProperty,
 };
 
-},{}],383:[function(require,module,exports){
+},{}],377:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -40796,7 +40288,7 @@ module.exports = {
     createSha512: hash.sha512,
 }
 
-},{"./convert.js":379,"hash.js":397}],384:[function(require,module,exports){
+},{"./convert.js":373,"hash.js":391}],378:[function(require,module,exports){
 'use strict';
 
 var bigNumberify = require('./bignumber').bigNumberify;
@@ -40895,7 +40387,7 @@ module.exports = {
     sha256: sha256,
 }
 
-},{"./address":377,"./bignumber":378,"./convert":379,"./keccak256":381,"./sha2":383,"./utf8":386}],385:[function(require,module,exports){
+},{"./address":371,"./bignumber":372,"./convert":373,"./keccak256":375,"./sha2":377,"./utf8":380}],379:[function(require,module,exports){
 'use strict';
 
 function throwError(message, params) {
@@ -40908,7 +40400,7 @@ function throwError(message, params) {
 
 module.exports = throwError;
 
-},{}],386:[function(require,module,exports){
+},{}],380:[function(require,module,exports){
 
 var convert = require('./convert.js');
 
@@ -41023,7 +40515,7 @@ module.exports = {
     toUtf8String: bytesToUtf8,
 };
 
-},{"./convert.js":379}],387:[function(require,module,exports){
+},{"./convert.js":373}],381:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -41192,7 +40684,7 @@ module.exports = {
   fromWei: fromWei,
   toWei: toWei
 };
-},{"bn.js":388,"number-to-bn":438}],388:[function(require,module,exports){
+},{"bn.js":382,"number-to-bn":432}],382:[function(require,module,exports){
 (function (module, exports) {
   'use strict';
 
@@ -44621,7 +44113,7 @@ module.exports = {
   };
 })(typeof module === 'undefined' || module, this);
 
-},{}],389:[function(require,module,exports){
+},{}],383:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -44844,9 +44336,9 @@ module.exports = {
   isHexString: isHexString
 };
 }).call(this,require("buffer").Buffer)
-},{"buffer":52,"is-hex-prefixed":415,"strip-hex-prefix":491}],390:[function(require,module,exports){
+},{"buffer":52,"is-hex-prefixed":409,"strip-hex-prefix":485}],384:[function(require,module,exports){
 arguments[4][89][0].apply(exports,arguments)
-},{"dup":89,"md5.js":433,"safe-buffer":468}],391:[function(require,module,exports){
+},{"dup":89,"md5.js":427,"safe-buffer":462}],385:[function(require,module,exports){
 'use strict';
 
 var isCallable = require('is-callable');
@@ -44910,7 +44402,7 @@ var forEach = function forEach(list, iterator, thisArg) {
 
 module.exports = forEach;
 
-},{"is-callable":413}],392:[function(require,module,exports){
+},{"is-callable":407}],386:[function(require,module,exports){
 'use strict';
 
 /* eslint no-invalid-this: 1 */
@@ -44964,14 +44456,14 @@ module.exports = function bind(that) {
     return bound;
 };
 
-},{}],393:[function(require,module,exports){
+},{}],387:[function(require,module,exports){
 'use strict';
 
 var implementation = require('./implementation');
 
 module.exports = Function.prototype.bind || implementation;
 
-},{"./implementation":392}],394:[function(require,module,exports){
+},{"./implementation":386}],388:[function(require,module,exports){
 (function (global){
 var win;
 
@@ -44988,38 +44480,38 @@ if (typeof window !== "undefined") {
 module.exports = win;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],395:[function(require,module,exports){
+},{}],389:[function(require,module,exports){
 'use strict';
 
 var bind = require('function-bind');
 
 module.exports = bind.call(Function.call, Object.prototype.hasOwnProperty);
 
-},{"function-bind":393}],396:[function(require,module,exports){
+},{"function-bind":387}],390:[function(require,module,exports){
 arguments[4][90][0].apply(exports,arguments)
-},{"dup":90,"inherits":412,"safe-buffer":468,"stream":162}],397:[function(require,module,exports){
+},{"dup":90,"inherits":406,"safe-buffer":462,"stream":162}],391:[function(require,module,exports){
 arguments[4][91][0].apply(exports,arguments)
-},{"./hash/common":398,"./hash/hmac":399,"./hash/ripemd":400,"./hash/sha":401,"./hash/utils":408,"dup":91}],398:[function(require,module,exports){
+},{"./hash/common":392,"./hash/hmac":393,"./hash/ripemd":394,"./hash/sha":395,"./hash/utils":402,"dup":91}],392:[function(require,module,exports){
 arguments[4][92][0].apply(exports,arguments)
-},{"./utils":408,"dup":92,"minimalistic-assert":435}],399:[function(require,module,exports){
+},{"./utils":402,"dup":92,"minimalistic-assert":429}],393:[function(require,module,exports){
 arguments[4][93][0].apply(exports,arguments)
-},{"./utils":408,"dup":93,"minimalistic-assert":435}],400:[function(require,module,exports){
+},{"./utils":402,"dup":93,"minimalistic-assert":429}],394:[function(require,module,exports){
 arguments[4][94][0].apply(exports,arguments)
-},{"./common":398,"./utils":408,"dup":94}],401:[function(require,module,exports){
+},{"./common":392,"./utils":402,"dup":94}],395:[function(require,module,exports){
 arguments[4][95][0].apply(exports,arguments)
-},{"./sha/1":402,"./sha/224":403,"./sha/256":404,"./sha/384":405,"./sha/512":406,"dup":95}],402:[function(require,module,exports){
+},{"./sha/1":396,"./sha/224":397,"./sha/256":398,"./sha/384":399,"./sha/512":400,"dup":95}],396:[function(require,module,exports){
 arguments[4][96][0].apply(exports,arguments)
-},{"../common":398,"../utils":408,"./common":407,"dup":96}],403:[function(require,module,exports){
+},{"../common":392,"../utils":402,"./common":401,"dup":96}],397:[function(require,module,exports){
 arguments[4][97][0].apply(exports,arguments)
-},{"../utils":408,"./256":404,"dup":97}],404:[function(require,module,exports){
+},{"../utils":402,"./256":398,"dup":97}],398:[function(require,module,exports){
 arguments[4][98][0].apply(exports,arguments)
-},{"../common":398,"../utils":408,"./common":407,"dup":98,"minimalistic-assert":435}],405:[function(require,module,exports){
+},{"../common":392,"../utils":402,"./common":401,"dup":98,"minimalistic-assert":429}],399:[function(require,module,exports){
 arguments[4][99][0].apply(exports,arguments)
-},{"../utils":408,"./512":406,"dup":99}],406:[function(require,module,exports){
+},{"../utils":402,"./512":400,"dup":99}],400:[function(require,module,exports){
 arguments[4][100][0].apply(exports,arguments)
-},{"../common":398,"../utils":408,"dup":100,"minimalistic-assert":435}],407:[function(require,module,exports){
+},{"../common":392,"../utils":402,"dup":100,"minimalistic-assert":429}],401:[function(require,module,exports){
 arguments[4][101][0].apply(exports,arguments)
-},{"../utils":408,"dup":101}],408:[function(require,module,exports){
+},{"../utils":402,"dup":101}],402:[function(require,module,exports){
 'use strict';
 
 var assert = require('minimalistic-assert');
@@ -45299,9 +44791,9 @@ function shr64_lo(ah, al, num) {
 }
 exports.shr64_lo = shr64_lo;
 
-},{"inherits":412,"minimalistic-assert":435}],409:[function(require,module,exports){
+},{"inherits":406,"minimalistic-assert":429}],403:[function(require,module,exports){
 arguments[4][103][0].apply(exports,arguments)
-},{"dup":103,"hash.js":397,"minimalistic-assert":435,"minimalistic-crypto-utils":436}],410:[function(require,module,exports){
+},{"dup":103,"hash.js":391,"minimalistic-assert":429,"minimalistic-crypto-utils":430}],404:[function(require,module,exports){
 /* This file is generated from the Unicode IDNA table, using
    the build-unicode-tables.py script. Please edit that
    script instead of this file. */
@@ -46060,7 +45552,7 @@ return {
 };
 }));
 
-},{}],411:[function(require,module,exports){
+},{}],405:[function(require,module,exports){
 (function(root, factory) {
   /* istanbul ignore next */
   if (typeof define === 'function' && define.amd) {
@@ -46194,7 +45686,7 @@ return {
   };
 }));
 
-},{"./idna-map":410,"punycode":133}],412:[function(require,module,exports){
+},{"./idna-map":404,"punycode":133}],406:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -46223,7 +45715,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],413:[function(require,module,exports){
+},{}],407:[function(require,module,exports){
 'use strict';
 
 var fnToStr = Function.prototype.toString;
@@ -46262,7 +45754,7 @@ module.exports = function isCallable(value) {
 	return strClass === fnClass || strClass === genClass;
 };
 
-},{}],414:[function(require,module,exports){
+},{}],408:[function(require,module,exports){
 module.exports = isFunction
 
 var toString = Object.prototype.toString
@@ -46279,7 +45771,7 @@ function isFunction (fn) {
       fn === window.prompt))
 };
 
-},{}],415:[function(require,module,exports){
+},{}],409:[function(require,module,exports){
 /**
  * Returns a `Boolean` on whether or not the a `String` starts with '0x'
  * @param {String} str the string input value
@@ -46294,7 +45786,7 @@ module.exports = function isHexPrefixed(str) {
   return str.slice(0, 2) === '0x';
 }
 
-},{}],416:[function(require,module,exports){
+},{}],410:[function(require,module,exports){
 (function (process,global){
 /**
  * [js-sha3]{@link https://github.com/emn178/js-sha3}
@@ -46773,11 +46265,11 @@ module.exports = function isHexPrefixed(str) {
 })();
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":126}],417:[function(require,module,exports){
+},{"_process":126}],411:[function(require,module,exports){
 'use strict'
 module.exports = require('./lib/api')(require('./lib/keccak'))
 
-},{"./lib/api":418,"./lib/keccak":422}],418:[function(require,module,exports){
+},{"./lib/api":412,"./lib/keccak":416}],412:[function(require,module,exports){
 'use strict'
 var createKeccak = require('./keccak')
 var createShake = require('./shake')
@@ -46807,7 +46299,7 @@ module.exports = function (KeccakState) {
   }
 }
 
-},{"./keccak":419,"./shake":420}],419:[function(require,module,exports){
+},{"./keccak":413,"./shake":414}],413:[function(require,module,exports){
 'use strict'
 var Buffer = require('safe-buffer').Buffer
 var Transform = require('stream').Transform
@@ -46893,7 +46385,7 @@ module.exports = function (KeccakState) {
   return Keccak
 }
 
-},{"inherits":412,"safe-buffer":468,"stream":162}],420:[function(require,module,exports){
+},{"inherits":406,"safe-buffer":462,"stream":162}],414:[function(require,module,exports){
 'use strict'
 var Buffer = require('safe-buffer').Buffer
 var Transform = require('stream').Transform
@@ -46970,7 +46462,7 @@ module.exports = function (KeccakState) {
   return Shake
 }
 
-},{"inherits":412,"safe-buffer":468,"stream":162}],421:[function(require,module,exports){
+},{"inherits":406,"safe-buffer":462,"stream":162}],415:[function(require,module,exports){
 'use strict'
 var P1600_ROUND_CONSTANTS = [1, 0, 32898, 0, 32906, 2147483648, 2147516416, 2147483648, 32907, 0, 2147483649, 0, 2147516545, 2147483648, 32777, 2147483648, 138, 0, 136, 0, 2147516425, 0, 2147483658, 0, 2147516555, 0, 139, 2147483648, 32905, 2147483648, 32771, 2147483648, 32770, 2147483648, 128, 2147483648, 32778, 0, 2147483658, 2147483648, 2147516545, 2147483648, 32896, 2147483648, 2147483649, 0, 2147516424, 2147483648]
 
@@ -47159,7 +46651,7 @@ exports.p1600 = function (s) {
   }
 }
 
-},{}],422:[function(require,module,exports){
+},{}],416:[function(require,module,exports){
 'use strict'
 var Buffer = require('safe-buffer').Buffer
 var keccakState = require('./keccak-state-unroll')
@@ -47231,7 +46723,7 @@ Keccak.prototype.copy = function (dest) {
 
 module.exports = Keccak
 
-},{"./keccak-state-unroll":421,"safe-buffer":468}],423:[function(require,module,exports){
+},{"./keccak-state-unroll":415,"safe-buffer":462}],417:[function(require,module,exports){
 (function (process,Buffer){
 /**
  * Create, import, and export ethereum keys.
@@ -47788,7 +47280,7 @@ module.exports = {
 };
 
 }).call(this,require('_process'),require("buffer").Buffer)
-},{"./lib/scrypt":424,"_process":126,"buffer":52,"crypto":61,"crypto-browserify":288,"fs":1,"keccak/js":417,"path":119,"scrypt":23,"secp256k1/elliptic":425,"sjcl":485,"uuid":432}],424:[function(require,module,exports){
+},{"./lib/scrypt":418,"_process":126,"buffer":52,"crypto":61,"crypto-browserify":284,"fs":1,"keccak/js":411,"path":119,"scrypt":23,"secp256k1/elliptic":419,"sjcl":479,"uuid":426}],418:[function(require,module,exports){
 (function (process,__dirname){
 // https://github.com/tonyg/js-scrypt
 module.exports = function (requested_total_memory) {
@@ -59509,11 +59001,11 @@ module.exports = function (requested_total_memory) {
 };
 
 }).call(this,require('_process'),"/node_modules/keythereum/lib")
-},{"_process":126,"fs":1,"path":119}],425:[function(require,module,exports){
+},{"_process":126,"fs":1,"path":119}],419:[function(require,module,exports){
 'use strict'
 module.exports = require('./lib')(require('./lib/elliptic'))
 
-},{"./lib":429,"./lib/elliptic":428}],426:[function(require,module,exports){
+},{"./lib":423,"./lib/elliptic":422}],420:[function(require,module,exports){
 (function (Buffer){
 'use strict'
 var toString = Object.prototype.toString
@@ -59561,7 +59053,7 @@ exports.isNumberInInterval = function (number, x, y, message) {
 }
 
 }).call(this,{"isBuffer":require("C:/Program Files/nodejs/node_modules/browserify/node_modules/is-buffer/index.js")})
-},{"C:/Program Files/nodejs/node_modules/browserify/node_modules/is-buffer/index.js":107}],427:[function(require,module,exports){
+},{"C:/Program Files/nodejs/node_modules/browserify/node_modules/is-buffer/index.js":107}],421:[function(require,module,exports){
 'use strict'
 var Buffer = require('safe-buffer').Buffer
 var bip66 = require('bip66')
@@ -59756,7 +59248,7 @@ exports.signatureImportLax = function (sig) {
   return { r: r, s: s }
 }
 
-},{"bip66":247,"safe-buffer":468}],428:[function(require,module,exports){
+},{"bip66":246,"safe-buffer":462}],422:[function(require,module,exports){
 'use strict'
 var Buffer = require('safe-buffer').Buffer
 var createHash = require('create-hash')
@@ -60018,7 +59510,7 @@ exports.ecdhUnsafe = function (publicKey, privateKey, compressed) {
   return Buffer.from(pair.pub.mul(scalar).encode(true, compressed))
 }
 
-},{"../messages.json":430,"bn.js":248,"create-hash":284,"elliptic":319,"safe-buffer":468}],429:[function(require,module,exports){
+},{"../messages.json":424,"bn.js":247,"create-hash":280,"elliptic":315,"safe-buffer":462}],423:[function(require,module,exports){
 'use strict'
 var assert = require('./assert')
 var der = require('./der')
@@ -60265,7 +59757,7 @@ module.exports = function (secp256k1) {
   }
 }
 
-},{"./assert":426,"./der":427,"./messages.json":430}],430:[function(require,module,exports){
+},{"./assert":420,"./der":421,"./messages.json":424}],424:[function(require,module,exports){
 module.exports={
   "COMPRESSED_TYPE_INVALID": "compressed should be a boolean",
   "EC_PRIVATE_KEY_TYPE_INVALID": "private key should be a Buffer",
@@ -60304,7 +59796,7 @@ module.exports={
   "TWEAK_LENGTH_INVALID": "tweak length is invalid"
 }
 
-},{}],431:[function(require,module,exports){
+},{}],425:[function(require,module,exports){
 (function (global){
 
 var rng;
@@ -60340,7 +59832,7 @@ module.exports = rng;
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],432:[function(require,module,exports){
+},{}],426:[function(require,module,exports){
 // Unique ID creation requires a high quality random # generator.  We feature
 // detect to determine the best RNG source, normalizing to a function that
 // returns 128-bits of randomness, since that's what's usually required
@@ -60499,17 +59991,17 @@ uuid.v4 = v4;
 
 module.exports = uuid;
 
-},{"./lib/rng":431}],433:[function(require,module,exports){
+},{"./lib/rng":425}],427:[function(require,module,exports){
 arguments[4][109][0].apply(exports,arguments)
-},{"dup":109,"hash-base":396,"inherits":412,"safe-buffer":468}],434:[function(require,module,exports){
+},{"dup":109,"hash-base":390,"inherits":406,"safe-buffer":462}],428:[function(require,module,exports){
 arguments[4][110][0].apply(exports,arguments)
-},{"bn.js":248,"brorand":249,"dup":110}],435:[function(require,module,exports){
+},{"bn.js":247,"brorand":248,"dup":110}],429:[function(require,module,exports){
 arguments[4][111][0].apply(exports,arguments)
-},{"dup":111}],436:[function(require,module,exports){
+},{"dup":111}],430:[function(require,module,exports){
 arguments[4][112][0].apply(exports,arguments)
-},{"dup":112}],437:[function(require,module,exports){
-arguments[4][388][0].apply(exports,arguments)
-},{"dup":388}],438:[function(require,module,exports){
+},{"dup":112}],431:[function(require,module,exports){
+arguments[4][382][0].apply(exports,arguments)
+},{"dup":382}],432:[function(require,module,exports){
 var BN = require('bn.js');
 var stripHexPrefix = require('strip-hex-prefix');
 
@@ -60549,7 +60041,7 @@ module.exports = function numberToBN(arg) {
   throw new Error('[number-to-bn] while converting number ' + JSON.stringify(arg) + ' to BN.js instance, error: invalid number value. Value must be an integer, hex string, BN or BigNumber instance. Note, decimals are not supported.');
 }
 
-},{"bn.js":437,"strip-hex-prefix":491}],439:[function(require,module,exports){
+},{"bn.js":431,"strip-hex-prefix":485}],433:[function(require,module,exports){
 /*
 object-assign
 (c) Sindre Sorhus
@@ -60641,7 +60133,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 	return to;
 };
 
-},{}],440:[function(require,module,exports){
+},{}],434:[function(require,module,exports){
 'use strict';
 
 var keysShim;
@@ -60765,7 +60257,7 @@ if (!Object.keys) {
 }
 module.exports = keysShim;
 
-},{"./isArguments":442}],441:[function(require,module,exports){
+},{"./isArguments":436}],435:[function(require,module,exports){
 'use strict';
 
 var slice = Array.prototype.slice;
@@ -60799,7 +60291,7 @@ keysShim.shim = function shimObjectKeys() {
 
 module.exports = keysShim;
 
-},{"./implementation":440,"./isArguments":442}],442:[function(require,module,exports){
+},{"./implementation":434,"./isArguments":436}],436:[function(require,module,exports){
 'use strict';
 
 var toStr = Object.prototype.toString;
@@ -60818,7 +60310,7 @@ module.exports = function isArguments(value) {
 	return isArgs;
 };
 
-},{}],443:[function(require,module,exports){
+},{}],437:[function(require,module,exports){
 // This file is the concatenation of many js files.
 // See http://github.com/jimhigson/oboe.js for the raw source
 
@@ -63522,11 +63014,11 @@ oboe.drop = function() {
       }
    }()), Object, Array, Error, JSON);
 
-},{}],444:[function(require,module,exports){
+},{}],438:[function(require,module,exports){
 arguments[4][114][0].apply(exports,arguments)
-},{"dup":114}],445:[function(require,module,exports){
+},{"dup":114}],439:[function(require,module,exports){
 arguments[4][115][0].apply(exports,arguments)
-},{"./certificate":446,"asn1.js":178,"dup":115}],446:[function(require,module,exports){
+},{"./certificate":440,"asn1.js":178,"dup":115}],440:[function(require,module,exports){
 // from https://github.com/Rantanen/node-dtls/blob/25a7dc861bda38cfeac93a723500eea4f0ac2e86/Certificate.js
 // thanks to @Rantanen
 
@@ -63617,7 +63109,7 @@ var X509Certificate = asn.define('X509Certificate', function () {
 
 module.exports = X509Certificate
 
-},{"asn1.js":178}],447:[function(require,module,exports){
+},{"asn1.js":178}],441:[function(require,module,exports){
 // adapted from https://github.com/apatil/pemstrip
 var findProc = /Proc-Type: 4,ENCRYPTED[\n\r]+DEK-Info: AES-((?:128)|(?:192)|(?:256))-CBC,([0-9A-H]+)[\n\r]+([0-9A-z\n\r\+\/\=]+)[\n\r]+/m
 var startRegex = /^-----BEGIN ((?:.*? KEY)|CERTIFICATE)-----/m
@@ -63650,7 +63142,7 @@ module.exports = function (okey, password) {
   }
 }
 
-},{"browserify-aes":252,"evp_bytestokey":390,"safe-buffer":468}],448:[function(require,module,exports){
+},{"browserify-aes":251,"evp_bytestokey":384,"safe-buffer":462}],442:[function(require,module,exports){
 var asn1 = require('./asn1')
 var aesid = require('./aesid.json')
 var fixProc = require('./fixProc')
@@ -63759,7 +63251,7 @@ function decrypt (data, password) {
   return Buffer.concat(out)
 }
 
-},{"./aesid.json":444,"./asn1":445,"./fixProc":447,"browserify-aes":252,"pbkdf2":450,"safe-buffer":468}],449:[function(require,module,exports){
+},{"./aesid.json":438,"./asn1":439,"./fixProc":441,"browserify-aes":251,"pbkdf2":444,"safe-buffer":462}],443:[function(require,module,exports){
 var trim = require('string.prototype.trim')
   , forEach = require('for-each')
   , isArray = function(arg) {
@@ -63792,13 +63284,13 @@ module.exports = function (headers) {
   return result
 }
 
-},{"for-each":391,"string.prototype.trim":488}],450:[function(require,module,exports){
+},{"for-each":385,"string.prototype.trim":482}],444:[function(require,module,exports){
 arguments[4][120][0].apply(exports,arguments)
-},{"./lib/async":451,"./lib/sync":454,"dup":120}],451:[function(require,module,exports){
+},{"./lib/async":445,"./lib/sync":448,"dup":120}],445:[function(require,module,exports){
 arguments[4][121][0].apply(exports,arguments)
-},{"./default-encoding":452,"./precondition":453,"./sync":454,"_process":126,"dup":121,"safe-buffer":468}],452:[function(require,module,exports){
+},{"./default-encoding":446,"./precondition":447,"./sync":448,"_process":126,"dup":121,"safe-buffer":462}],446:[function(require,module,exports){
 arguments[4][122][0].apply(exports,arguments)
-},{"_process":126,"dup":122}],453:[function(require,module,exports){
+},{"_process":126,"dup":122}],447:[function(require,module,exports){
 (function (Buffer){
 var MAX_ALLOC = Math.pow(2, 30) - 1 // default in iojs
 
@@ -63830,21 +63322,21 @@ module.exports = function (password, salt, iterations, keylen) {
 }
 
 }).call(this,{"isBuffer":require("C:/Program Files/nodejs/node_modules/browserify/node_modules/is-buffer/index.js")})
-},{"C:/Program Files/nodejs/node_modules/browserify/node_modules/is-buffer/index.js":107}],454:[function(require,module,exports){
+},{"C:/Program Files/nodejs/node_modules/browserify/node_modules/is-buffer/index.js":107}],448:[function(require,module,exports){
 arguments[4][124][0].apply(exports,arguments)
-},{"./default-encoding":452,"./precondition":453,"create-hash/md5":285,"dup":124,"ripemd160":466,"safe-buffer":468,"sha.js":478}],455:[function(require,module,exports){
+},{"./default-encoding":446,"./precondition":447,"create-hash/md5":281,"dup":124,"ripemd160":460,"safe-buffer":462,"sha.js":472}],449:[function(require,module,exports){
 arguments[4][127][0].apply(exports,arguments)
-},{"./privateDecrypt":457,"./publicEncrypt":458,"dup":127}],456:[function(require,module,exports){
+},{"./privateDecrypt":451,"./publicEncrypt":452,"dup":127}],450:[function(require,module,exports){
 arguments[4][128][0].apply(exports,arguments)
-},{"create-hash":284,"dup":128,"safe-buffer":468}],457:[function(require,module,exports){
+},{"create-hash":280,"dup":128,"safe-buffer":462}],451:[function(require,module,exports){
 arguments[4][129][0].apply(exports,arguments)
-},{"./mgf":456,"./withPublic":459,"./xor":460,"bn.js":248,"browserify-rsa":270,"create-hash":284,"dup":129,"parse-asn1":448,"safe-buffer":468}],458:[function(require,module,exports){
+},{"./mgf":450,"./withPublic":453,"./xor":454,"bn.js":247,"browserify-rsa":269,"create-hash":280,"dup":129,"parse-asn1":442,"safe-buffer":462}],452:[function(require,module,exports){
 arguments[4][130][0].apply(exports,arguments)
-},{"./mgf":456,"./withPublic":459,"./xor":460,"bn.js":248,"browserify-rsa":270,"create-hash":284,"dup":130,"parse-asn1":448,"randombytes":461,"safe-buffer":468}],459:[function(require,module,exports){
+},{"./mgf":450,"./withPublic":453,"./xor":454,"bn.js":247,"browserify-rsa":269,"create-hash":280,"dup":130,"parse-asn1":442,"randombytes":455,"safe-buffer":462}],453:[function(require,module,exports){
 arguments[4][131][0].apply(exports,arguments)
-},{"bn.js":248,"dup":131,"safe-buffer":468}],460:[function(require,module,exports){
+},{"bn.js":247,"dup":131,"safe-buffer":462}],454:[function(require,module,exports){
 arguments[4][132][0].apply(exports,arguments)
-},{"dup":132}],461:[function(require,module,exports){
+},{"dup":132}],455:[function(require,module,exports){
 (function (process,global){
 'use strict'
 
@@ -63898,13 +63390,13 @@ function randomBytes (size, cb) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":126,"safe-buffer":468}],462:[function(require,module,exports){
+},{"_process":126,"safe-buffer":462}],456:[function(require,module,exports){
 arguments[4][138][0].apply(exports,arguments)
-},{"_process":126,"dup":138,"randombytes":461,"safe-buffer":468}],463:[function(require,module,exports){
+},{"_process":126,"dup":138,"randombytes":455,"safe-buffer":462}],457:[function(require,module,exports){
 module.exports = window.crypto;
-},{}],464:[function(require,module,exports){
+},{}],458:[function(require,module,exports){
 module.exports = require('crypto');
-},{"crypto":463}],465:[function(require,module,exports){
+},{"crypto":457}],459:[function(require,module,exports){
 var randomHex = function(size, callback) {
     var crypto = require('./crypto.js');
     var isCallback = (typeof callback === 'function');
@@ -63970,9 +63462,9 @@ var randomHex = function(size, callback) {
 
 module.exports = randomHex;
 
-},{"./crypto.js":464}],466:[function(require,module,exports){
+},{"./crypto.js":458}],460:[function(require,module,exports){
 arguments[4][152][0].apply(exports,arguments)
-},{"buffer":52,"dup":152,"hash-base":396,"inherits":412}],467:[function(require,module,exports){
+},{"buffer":52,"dup":152,"hash-base":390,"inherits":406}],461:[function(require,module,exports){
 (function (Buffer){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -64215,11 +63707,12 @@ function toBuffer(v) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"bn.js":248,"buffer":52}],468:[function(require,module,exports){
+},{"bn.js":247,"buffer":52}],462:[function(require,module,exports){
 arguments[4][153][0].apply(exports,arguments)
-},{"buffer":52,"dup":153}],469:[function(require,module,exports){
-arguments[4][373][0].apply(exports,arguments)
-},{"dup":373,"scryptsy":470}],470:[function(require,module,exports){
+},{"buffer":52,"dup":153}],463:[function(require,module,exports){
+module.exports = require('scryptsy')
+
+},{"scryptsy":464}],464:[function(require,module,exports){
 (function (Buffer){
 var pbkdf2Sync = require('pbkdf2').pbkdf2Sync
 
@@ -64402,13 +63895,13 @@ function arraycopy (src, srcPos, dest, destPos, length) {
 module.exports = scrypt
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":52,"pbkdf2":450}],471:[function(require,module,exports){
-arguments[4][425][0].apply(exports,arguments)
-},{"./lib":475,"./lib/elliptic":474,"dup":425}],472:[function(require,module,exports){
-arguments[4][426][0].apply(exports,arguments)
-},{"C:/Program Files/nodejs/node_modules/browserify/node_modules/is-buffer/index.js":107,"dup":426}],473:[function(require,module,exports){
-arguments[4][427][0].apply(exports,arguments)
-},{"bip66":247,"dup":427,"safe-buffer":468}],474:[function(require,module,exports){
+},{"buffer":52,"pbkdf2":444}],465:[function(require,module,exports){
+arguments[4][419][0].apply(exports,arguments)
+},{"./lib":469,"./lib/elliptic":468,"dup":419}],466:[function(require,module,exports){
+arguments[4][420][0].apply(exports,arguments)
+},{"C:/Program Files/nodejs/node_modules/browserify/node_modules/is-buffer/index.js":107,"dup":420}],467:[function(require,module,exports){
+arguments[4][421][0].apply(exports,arguments)
+},{"bip66":246,"dup":421,"safe-buffer":462}],468:[function(require,module,exports){
 'use strict'
 var Buffer = require('safe-buffer').Buffer
 var createHash = require('create-hash')
@@ -64673,27 +64166,27 @@ exports.ecdhUnsafe = function (publicKey, privateKey, compressed) {
   return Buffer.from(pair.pub.mul(scalar).encode(true, compressed))
 }
 
-},{"../messages.json":476,"bn.js":248,"create-hash":284,"elliptic":319,"safe-buffer":468}],475:[function(require,module,exports){
-arguments[4][429][0].apply(exports,arguments)
-},{"./assert":472,"./der":473,"./messages.json":476,"dup":429}],476:[function(require,module,exports){
-arguments[4][430][0].apply(exports,arguments)
-},{"dup":430}],477:[function(require,module,exports){
+},{"../messages.json":470,"bn.js":247,"create-hash":280,"elliptic":315,"safe-buffer":462}],469:[function(require,module,exports){
+arguments[4][423][0].apply(exports,arguments)
+},{"./assert":466,"./der":467,"./messages.json":470,"dup":423}],470:[function(require,module,exports){
+arguments[4][424][0].apply(exports,arguments)
+},{"dup":424}],471:[function(require,module,exports){
 arguments[4][154][0].apply(exports,arguments)
-},{"dup":154,"safe-buffer":468}],478:[function(require,module,exports){
+},{"dup":154,"safe-buffer":462}],472:[function(require,module,exports){
 arguments[4][155][0].apply(exports,arguments)
-},{"./sha":479,"./sha1":480,"./sha224":481,"./sha256":482,"./sha384":483,"./sha512":484,"dup":155}],479:[function(require,module,exports){
+},{"./sha":473,"./sha1":474,"./sha224":475,"./sha256":476,"./sha384":477,"./sha512":478,"dup":155}],473:[function(require,module,exports){
 arguments[4][156][0].apply(exports,arguments)
-},{"./hash":477,"dup":156,"inherits":412,"safe-buffer":468}],480:[function(require,module,exports){
+},{"./hash":471,"dup":156,"inherits":406,"safe-buffer":462}],474:[function(require,module,exports){
 arguments[4][157][0].apply(exports,arguments)
-},{"./hash":477,"dup":157,"inherits":412,"safe-buffer":468}],481:[function(require,module,exports){
+},{"./hash":471,"dup":157,"inherits":406,"safe-buffer":462}],475:[function(require,module,exports){
 arguments[4][158][0].apply(exports,arguments)
-},{"./hash":477,"./sha256":482,"dup":158,"inherits":412,"safe-buffer":468}],482:[function(require,module,exports){
+},{"./hash":471,"./sha256":476,"dup":158,"inherits":406,"safe-buffer":462}],476:[function(require,module,exports){
 arguments[4][159][0].apply(exports,arguments)
-},{"./hash":477,"dup":159,"inherits":412,"safe-buffer":468}],483:[function(require,module,exports){
+},{"./hash":471,"dup":159,"inherits":406,"safe-buffer":462}],477:[function(require,module,exports){
 arguments[4][160][0].apply(exports,arguments)
-},{"./hash":477,"./sha512":484,"dup":160,"inherits":412,"safe-buffer":468}],484:[function(require,module,exports){
+},{"./hash":471,"./sha512":478,"dup":160,"inherits":406,"safe-buffer":462}],478:[function(require,module,exports){
 arguments[4][161][0].apply(exports,arguments)
-},{"./hash":477,"dup":161,"inherits":412,"safe-buffer":468}],485:[function(require,module,exports){
+},{"./hash":471,"dup":161,"inherits":406,"safe-buffer":462}],479:[function(require,module,exports){
 "use strict";var sjcl={cipher:{},hash:{},keyexchange:{},mode:{},misc:{},codec:{},exception:{corrupt:function(a){this.toString=function(){return"CORRUPT: "+this.message};this.message=a},invalid:function(a){this.toString=function(){return"INVALID: "+this.message};this.message=a},bug:function(a){this.toString=function(){return"BUG: "+this.message};this.message=a},notReady:function(a){this.toString=function(){return"NOT READY: "+this.message};this.message=a}}};
 sjcl.cipher.aes=function(a){this.s[0][0][0]||this.O();var b,c,d,e,f=this.s[0][4],g=this.s[1];b=a.length;var h=1;if(4!==b&&6!==b&&8!==b)throw new sjcl.exception.invalid("invalid aes key size");this.b=[d=a.slice(0),e=[]];for(a=b;a<4*b+28;a++){c=d[a-1];if(0===a%b||8===b&&4===a%b)c=f[c>>>24]<<24^f[c>>16&255]<<16^f[c>>8&255]<<8^f[c&255],0===a%b&&(c=c<<8^c>>>24^h<<24,h=h<<1^283*(h>>7));d[a]=d[a-b]^c}for(b=0;a;b++,a--)c=d[b&3?a:a-4],e[b]=4>=a||4>b?c:g[0][f[c>>>24]]^g[1][f[c>>16&255]]^g[2][f[c>>8&255]]^g[3][f[c&
 255]]};
@@ -64755,7 +64248,7 @@ null!=d[3]?b[d[2]]=parseInt(d[3],10):null!=d[4]?b[d[2]]=d[2].match(/^(ct|adata|s
 b){var c={},d;for(d=0;d<b.length;d++)void 0!==a[b[d]]&&(c[b[d]]=a[b[d]]);return c}};sjcl.encrypt=sjcl.json.encrypt;sjcl.decrypt=sjcl.json.decrypt;sjcl.misc.pa={};sjcl.misc.cachedPbkdf2=function(a,b){var c=sjcl.misc.pa,d;b=b||{};d=b.iter||1E3;c=c[a]=c[a]||{};d=c[d]=c[d]||{firstSalt:b.salt&&b.salt.length?b.salt.slice(0):sjcl.random.randomWords(2,0)};c=void 0===b.salt?d.firstSalt:b.salt;d[c]=d[c]||sjcl.misc.pbkdf2(a,c,b.iter);return{key:d[c].slice(0),salt:c.slice(0)}};
 "undefined"!==typeof module&&module.exports&&(module.exports=sjcl);"function"===typeof define&&define([],function(){return sjcl});
 
-},{"crypto":61}],486:[function(require,module,exports){
+},{"crypto":61}],480:[function(require,module,exports){
 'use strict';
 module.exports = function (str) {
 	return encodeURIComponent(str).replace(/[!'()*]/g, function (c) {
@@ -64763,7 +64256,7 @@ module.exports = function (str) {
 	});
 };
 
-},{}],487:[function(require,module,exports){
+},{}],481:[function(require,module,exports){
 'use strict';
 
 var bind = require('function-bind');
@@ -64778,7 +64271,7 @@ module.exports = function trim() {
 	return replace(replace(S, leftWhitespace, ''), rightWhitespace, '');
 };
 
-},{"es-abstract/es5":336,"function-bind":393}],488:[function(require,module,exports){
+},{"es-abstract/es5":332,"function-bind":387}],482:[function(require,module,exports){
 'use strict';
 
 var bind = require('function-bind');
@@ -64798,7 +64291,7 @@ define(boundTrim, {
 
 module.exports = boundTrim;
 
-},{"./implementation":487,"./polyfill":489,"./shim":490,"define-properties":290,"function-bind":393}],489:[function(require,module,exports){
+},{"./implementation":481,"./polyfill":483,"./shim":484,"define-properties":286,"function-bind":387}],483:[function(require,module,exports){
 'use strict';
 
 var implementation = require('./implementation');
@@ -64812,7 +64305,7 @@ module.exports = function getPolyfill() {
 	return implementation;
 };
 
-},{"./implementation":487}],490:[function(require,module,exports){
+},{"./implementation":481}],484:[function(require,module,exports){
 'use strict';
 
 var define = require('define-properties');
@@ -64824,7 +64317,7 @@ module.exports = function shimStringTrim() {
 	return polyfill;
 };
 
-},{"./polyfill":489,"define-properties":290}],491:[function(require,module,exports){
+},{"./polyfill":483,"define-properties":286}],485:[function(require,module,exports){
 var isHexPrefixed = require('is-hex-prefixed');
 
 /**
@@ -64840,7 +64333,7 @@ module.exports = function stripHexPrefix(str) {
   return isHexPrefixed(str) ? str.slice(2) : str;
 }
 
-},{"is-hex-prefixed":415}],492:[function(require,module,exports){
+},{"is-hex-prefixed":409}],486:[function(require,module,exports){
 var unavailable = function unavailable() {
   throw "This swarm.js function isn't available on the browser.";
 };
@@ -64873,7 +64366,7 @@ module.exports = swarm({
   hash: hash,
   pick: pick
 });
-},{"./pick.js":493,"./swarm":495,"./swarm-hash.js":494,"eth-lib/lib/bytes":497,"xhr-request-promise":569}],493:[function(require,module,exports){
+},{"./pick.js":487,"./swarm":489,"./swarm-hash.js":488,"eth-lib/lib/bytes":491,"xhr-request-promise":560}],487:[function(require,module,exports){
 var picker = function picker(type) {
   return function () {
     return new Promise(function (resolve, reject) {
@@ -64931,7 +64424,7 @@ module.exports = {
   file: picker("file"),
   directory: picker("directory")
 };
-},{}],494:[function(require,module,exports){
+},{}],488:[function(require,module,exports){
 // Thanks https://github.com/axic/swarmhash
 
 var keccak = require("eth-lib/lib/hash").keccak256;
@@ -64972,7 +64465,7 @@ var swarmHash = function swarmHash(data) {
 };
 
 module.exports = swarmHash;
-},{"eth-lib/lib/bytes":497,"eth-lib/lib/hash":498}],495:[function(require,module,exports){
+},{"eth-lib/lib/bytes":491,"eth-lib/lib/hash":492}],489:[function(require,module,exports){
 // TODO: this is a temporary fix to hide those libraries from the browser. A
 // slightly better long-term solution would be to split this file into two,
 // separating the functions that are used on Node.js from the functions that
@@ -65599,7 +65092,7 @@ module.exports = function (_ref) {
   };
 };
 
-},{}],496:[function(require,module,exports){
+},{}],490:[function(require,module,exports){
 var generate = function generate(num, fn) {
   var a = [];
   for (var i = 0; i < num; ++i) {
@@ -65640,7 +65133,7 @@ module.exports = {
   flatten: flatten,
   chunksOf: chunksOf
 };
-},{}],497:[function(require,module,exports){
+},{}],491:[function(require,module,exports){
 var A = require("./array.js");
 
 var at = function at(bytes, index) {
@@ -65829,7 +65322,7 @@ module.exports = {
   fromUint8Array: fromUint8Array,
   toUint8Array: toUint8Array
 };
-},{"./array.js":496}],498:[function(require,module,exports){
+},{"./array.js":490}],492:[function(require,module,exports){
 // This was ported from https://github.com/emn178/js-sha3, with some minor
 // modifications and pruning. It is licensed under MIT:
 //
@@ -66169,7 +65662,7 @@ module.exports = {
   keccak256s: keccak(256),
   keccak512s: keccak(512)
 };
-},{}],499:[function(require,module,exports){
+},{}],493:[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
 //     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -67719,7 +67212,7 @@ module.exports = {
   }
 }.call(this));
 
-},{}],500:[function(require,module,exports){
+},{}],494:[function(require,module,exports){
 module.exports = urlSetQuery
 function urlSetQuery (url, query) {
   if (query) {
@@ -67744,7 +67237,7 @@ function urlSetQuery (url, query) {
   return url
 }
 
-},{}],501:[function(require,module,exports){
+},{}],495:[function(require,module,exports){
 (function (global){
 /*! https://mths.be/utf8js v2.0.0 by @mathias */
 ;(function(root) {
@@ -67992,100 +67485,7 @@ function urlSetQuery (url, query) {
 }(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],502:[function(require,module,exports){
-/**
- * Convert array of 16 byte values to UUID string format of the form:
- * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
- */
-var byteToHex = [];
-for (var i = 0; i < 256; ++i) {
-  byteToHex[i] = (i + 0x100).toString(16).substr(1);
-}
-
-function bytesToUuid(buf, offset) {
-  var i = offset || 0;
-  var bth = byteToHex;
-  // join used to fix memory issue caused by concatenation: https://bugs.chromium.org/p/v8/issues/detail?id=3175#c4
-  return ([bth[buf[i++]], bth[buf[i++]], 
-	bth[buf[i++]], bth[buf[i++]], '-',
-	bth[buf[i++]], bth[buf[i++]], '-',
-	bth[buf[i++]], bth[buf[i++]], '-',
-	bth[buf[i++]], bth[buf[i++]], '-',
-	bth[buf[i++]], bth[buf[i++]],
-	bth[buf[i++]], bth[buf[i++]],
-	bth[buf[i++]], bth[buf[i++]]]).join('');
-}
-
-module.exports = bytesToUuid;
-
-},{}],503:[function(require,module,exports){
-// Unique ID creation requires a high quality random # generator.  In the
-// browser this is a little complicated due to unknown quality of Math.random()
-// and inconsistent support for the `crypto` API.  We do the best we can via
-// feature-detection
-
-// getRandomValues needs to be invoked in a context where "this" is a Crypto
-// implementation. Also, find the complete implementation of crypto on IE11.
-var getRandomValues = (typeof(crypto) != 'undefined' && crypto.getRandomValues && crypto.getRandomValues.bind(crypto)) ||
-                      (typeof(msCrypto) != 'undefined' && typeof window.msCrypto.getRandomValues == 'function' && msCrypto.getRandomValues.bind(msCrypto));
-
-if (getRandomValues) {
-  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
-  var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
-
-  module.exports = function whatwgRNG() {
-    getRandomValues(rnds8);
-    return rnds8;
-  };
-} else {
-  // Math.random()-based (RNG)
-  //
-  // If all else fails, use Math.random().  It's fast, but is of unspecified
-  // quality.
-  var rnds = new Array(16);
-
-  module.exports = function mathRNG() {
-    for (var i = 0, r; i < 16; i++) {
-      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
-      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
-    }
-
-    return rnds;
-  };
-}
-
-},{}],504:[function(require,module,exports){
-var rng = require('./lib/rng');
-var bytesToUuid = require('./lib/bytesToUuid');
-
-function v4(options, buf, offset) {
-  var i = buf && offset || 0;
-
-  if (typeof(options) == 'string') {
-    buf = options === 'binary' ? new Array(16) : null;
-    options = null;
-  }
-  options = options || {};
-
-  var rnds = options.random || (options.rng || rng)();
-
-  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
-  rnds[6] = (rnds[6] & 0x0f) | 0x40;
-  rnds[8] = (rnds[8] & 0x3f) | 0x80;
-
-  // Copy bytes to buffer, if provided
-  if (buf) {
-    for (var ii = 0; ii < 16; ++ii) {
-      buf[i + ii] = rnds[ii];
-    }
-  }
-
-  return buf || bytesToUuid(rnds);
-}
-
-module.exports = v4;
-
-},{"./lib/bytesToUuid":502,"./lib/rng":503}],505:[function(require,module,exports){
+},{}],496:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -68175,7 +67575,7 @@ Bzz.prototype.setProvider = function(provider) {
 module.exports = Bzz;
 
 
-},{"swarm-js":492,"underscore":499}],506:[function(require,module,exports){
+},{"swarm-js":486,"underscore":493}],497:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -68224,7 +67624,7 @@ module.exports = {
     }
 };
 
-},{}],507:[function(require,module,exports){
+},{}],498:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -68669,7 +68069,7 @@ module.exports = {
 };
 
 
-},{"underscore":499,"web3-eth-iban":550,"web3-utils":561}],508:[function(require,module,exports){
+},{"underscore":493,"web3-eth-iban":541,"web3-utils":552}],499:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -68703,7 +68103,7 @@ module.exports = {
 };
 
 
-},{"./errors":506,"./formatters":507}],509:[function(require,module,exports){
+},{"./errors":497,"./formatters":498}],500:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -69312,7 +68712,7 @@ Method.prototype.request = function () {
 
 module.exports = Method;
 
-},{"underscore":499,"web3-core-helpers":508,"web3-core-promievent":511,"web3-core-subscriptions":517,"web3-utils":561}],510:[function(require,module,exports){
+},{"underscore":493,"web3-core-helpers":499,"web3-core-promievent":502,"web3-core-subscriptions":508,"web3-utils":552}],501:[function(require,module,exports){
 'use strict';
 
 //
@@ -69576,7 +68976,7 @@ if ('undefined' !== typeof module) {
   module.exports = EventEmitter;
 }
 
-},{}],511:[function(require,module,exports){
+},{}],502:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -69653,7 +69053,7 @@ PromiEvent.resolve = function(value) {
 
 module.exports = PromiEvent;
 
-},{"any-promise":175,"eventemitter3":510}],512:[function(require,module,exports){
+},{"any-promise":175,"eventemitter3":501}],503:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -69730,7 +69130,7 @@ Batch.prototype.execute = function () {
 module.exports = Batch;
 
 
-},{"./jsonrpc":515,"web3-core-helpers":508}],513:[function(require,module,exports){
+},{"./jsonrpc":506,"web3-core-helpers":499}],504:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -69818,7 +69218,7 @@ if(typeof global.ethereumProvider !== 'undefined') {
 
 module.exports = givenProvider;
 
-},{}],514:[function(require,module,exports){
+},{}],505:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -70066,7 +69466,7 @@ module.exports = {
     BatchManager: BatchManager
 };
 
-},{"./batch.js":512,"./givenProvider.js":513,"./jsonrpc.js":515,"underscore":499,"web3-core-helpers":508,"web3-providers-http":555,"web3-providers-ipc":556,"web3-providers-ws":557}],515:[function(require,module,exports){
+},{"./batch.js":503,"./givenProvider.js":504,"./jsonrpc.js":506,"underscore":493,"web3-core-helpers":499,"web3-providers-http":546,"web3-providers-ipc":547,"web3-providers-ws":548}],506:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -70157,9 +69557,9 @@ Jsonrpc.toBatchPayload = function (messages) {
 module.exports = Jsonrpc;
 
 
-},{}],516:[function(require,module,exports){
-arguments[4][510][0].apply(exports,arguments)
-},{"dup":510}],517:[function(require,module,exports){
+},{}],507:[function(require,module,exports){
+arguments[4][501][0].apply(exports,arguments)
+},{"dup":501}],508:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -70236,7 +69636,7 @@ module.exports = {
     subscription: Subscription
 };
 
-},{"./subscription.js":518}],518:[function(require,module,exports){
+},{"./subscription.js":509}],509:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -70545,7 +69945,7 @@ Subscription.prototype.subscribe = function() {
 
 module.exports = Subscription;
 
-},{"eventemitter3":516,"underscore":499,"web3-core-helpers":508}],519:[function(require,module,exports){
+},{"eventemitter3":507,"underscore":493,"web3-core-helpers":499}],510:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -70616,7 +70016,7 @@ var extend = function (pckg) {
 module.exports = extend;
 
 
-},{"web3-core-helpers":508,"web3-core-method":509,"web3-utils":561}],520:[function(require,module,exports){
+},{"web3-core-helpers":499,"web3-core-method":500,"web3-utils":552}],511:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -70704,7 +70104,7 @@ module.exports = {
 };
 
 
-},{"./extend.js":519,"web3-core-requestmanager":514}],521:[function(require,module,exports){
+},{"./extend.js":510,"web3-core-requestmanager":505}],512:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -71623,7 +71023,7 @@ var AbiCoder = /** @class */ (function () {
 exports.AbiCoder = AbiCoder;
 exports.defaultAbiCoder = new AbiCoder();
 
-},{"./address":522,"./bignumber":523,"./bytes":524,"./errors":525,"./properties":527,"./utf8":530}],522:[function(require,module,exports){
+},{"./address":513,"./bignumber":514,"./bytes":515,"./errors":516,"./properties":518,"./utf8":521}],513:[function(require,module,exports){
 'use strict';
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -71749,7 +71149,7 @@ function getContractAddress(transaction) {
 }
 exports.getContractAddress = getContractAddress;
 
-},{"./bytes":524,"./errors":525,"./keccak256":526,"./rlp":528,"bn.js":248}],523:[function(require,module,exports){
+},{"./bytes":515,"./errors":516,"./keccak256":517,"./rlp":519,"bn.js":247}],514:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -71943,7 +71343,7 @@ exports.ConstantOne = bigNumberify(1);
 exports.ConstantTwo = bigNumberify(2);
 exports.ConstantWeiPerEther = bigNumberify('1000000000000000000');
 
-},{"./bytes":524,"./errors":525,"./properties":527,"./types":529,"bn.js":248}],524:[function(require,module,exports){
+},{"./bytes":515,"./errors":516,"./properties":518,"./types":520,"bn.js":247}],515:[function(require,module,exports){
 "use strict";
 /**
  *  Conversion Utilities
@@ -72207,7 +71607,7 @@ function joinSignature(signature) {
 }
 exports.joinSignature = joinSignature;
 
-},{"./errors":525}],525:[function(require,module,exports){
+},{"./errors":516}],516:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 // Unknown Error
@@ -72311,7 +71711,7 @@ function setCensorship(censorship, permanent) {
 }
 exports.setCensorship = setCensorship;
 
-},{}],526:[function(require,module,exports){
+},{}],517:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var sha3 = require("js-sha3");
@@ -72321,7 +71721,7 @@ function keccak256(data) {
 }
 exports.keccak256 = keccak256;
 
-},{"./bytes":524,"js-sha3":416}],527:[function(require,module,exports){
+},{"./bytes":515,"js-sha3":410}],518:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 function defineReadOnly(object, name, value) {
@@ -72373,7 +71773,7 @@ function jsonCopy(object) {
 }
 exports.jsonCopy = jsonCopy;
 
-},{}],528:[function(require,module,exports){
+},{}],519:[function(require,module,exports){
 "use strict";
 //See: https://github.com/ethereum/wiki/wiki/RLP
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -72491,7 +71891,7 @@ function decode(data) {
 }
 exports.decode = decode;
 
-},{"./bytes":524}],529:[function(require,module,exports){
+},{"./bytes":515}],520:[function(require,module,exports){
 "use strict";
 ///////////////////////////////
 // Bytes
@@ -72548,7 +71948,7 @@ var HDNode = /** @class */ (function () {
 }());
 exports.HDNode = HDNode;
 
-},{}],530:[function(require,module,exports){
+},{}],521:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("./bytes");
@@ -72673,7 +72073,7 @@ function toUtf8String(bytes) {
 }
 exports.toUtf8String = toUtf8String;
 
-},{"./bytes":524}],531:[function(require,module,exports){
+},{"./bytes":515}],522:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -72986,7 +72386,7 @@ var coder = new ABICoder();
 
 module.exports = coder;
 
-},{"ethers/utils/abi-coder":521,"underscore":499,"web3-utils":561}],532:[function(require,module,exports){
+},{"ethers/utils/abi-coder":512,"underscore":493,"web3-utils":552}],523:[function(require,module,exports){
 (function (Buffer){
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
@@ -73070,13 +72470,13 @@ module.exports = {
   decodeSignature: decodeSignature
 };
 }).call(this,require("buffer").Buffer)
-},{"./bytes":534,"./hash":535,"./nat":536,"./rlp":537,"buffer":52,"elliptic":319}],533:[function(require,module,exports){
-arguments[4][496][0].apply(exports,arguments)
-},{"dup":496}],534:[function(require,module,exports){
-arguments[4][497][0].apply(exports,arguments)
-},{"./array.js":533,"dup":497}],535:[function(require,module,exports){
-arguments[4][498][0].apply(exports,arguments)
-},{"dup":498}],536:[function(require,module,exports){
+},{"./bytes":525,"./hash":526,"./nat":527,"./rlp":528,"buffer":52,"elliptic":315}],524:[function(require,module,exports){
+arguments[4][490][0].apply(exports,arguments)
+},{"dup":490}],525:[function(require,module,exports){
+arguments[4][491][0].apply(exports,arguments)
+},{"./array.js":524,"dup":491}],526:[function(require,module,exports){
+arguments[4][492][0].apply(exports,arguments)
+},{"dup":492}],527:[function(require,module,exports){
 var BN = require("bn.js");
 var Bytes = require("./bytes");
 
@@ -73141,7 +72541,7 @@ module.exports = {
   div: div,
   sub: sub
 };
-},{"./bytes":534,"bn.js":248}],537:[function(require,module,exports){
+},{"./bytes":525,"bn.js":247}],528:[function(require,module,exports){
 // The RLP format
 // Serialization and deserialization for the BytesTree type, under the following grammar:
 // | First byte | Meaning                                                                    |
@@ -73215,7 +72615,7 @@ var decode = function decode(hex) {
 };
 
 module.exports = { encode: encode, decode: decode };
-},{}],538:[function(require,module,exports){
+},{}],529:[function(require,module,exports){
 (function (global){
 
 var rng;
@@ -73250,7 +72650,7 @@ module.exports = rng;
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],539:[function(require,module,exports){
+},{}],530:[function(require,module,exports){
 //     uuid.js
 //
 //     Copyright (c) 2010-2012 Robert Kieffer
@@ -73435,7 +72835,7 @@ uuid.unparse = unparse;
 
 module.exports = uuid;
 
-},{"./rng":538}],540:[function(require,module,exports){
+},{"./rng":529}],531:[function(require,module,exports){
 (function (global,Buffer){
 /*
  This file is part of web3.js.
@@ -73973,7 +73373,7 @@ if (typeof localStorage === 'undefined') {
 module.exports = Accounts;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
-},{"any-promise":175,"buffer":52,"crypto":61,"crypto-browserify":288,"eth-lib/lib/account":532,"eth-lib/lib/bytes":534,"eth-lib/lib/hash":535,"eth-lib/lib/nat":536,"eth-lib/lib/rlp":537,"scrypt.js":469,"underscore":499,"uuid":539,"web3-core":520,"web3-core-helpers":508,"web3-core-method":509,"web3-utils":561}],541:[function(require,module,exports){
+},{"any-promise":175,"buffer":52,"crypto":61,"crypto-browserify":284,"eth-lib/lib/account":523,"eth-lib/lib/bytes":525,"eth-lib/lib/hash":526,"eth-lib/lib/nat":527,"eth-lib/lib/rlp":528,"scrypt.js":463,"underscore":493,"uuid":530,"web3-core":511,"web3-core-helpers":499,"web3-core-method":500,"web3-utils":552}],532:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -74880,7 +74280,7 @@ Contract.prototype._executeMethod = function _executeMethod(){
 
 module.exports = Contract;
 
-},{"underscore":499,"web3-core":520,"web3-core-helpers":508,"web3-core-method":509,"web3-core-promievent":511,"web3-core-subscriptions":517,"web3-eth-abi":531,"web3-utils":561}],542:[function(require,module,exports){
+},{"underscore":493,"web3-core":511,"web3-core-helpers":499,"web3-core-method":500,"web3-core-promievent":502,"web3-core-subscriptions":508,"web3-eth-abi":522,"web3-utils":552}],533:[function(require,module,exports){
 /*
     This file is part of web3.js.
     web3.js is free software: you can redistribute it and/or modify
@@ -75071,7 +74471,7 @@ ENS.prototype.checkNetwork = function () {
 
 module.exports = ENS;
 
-},{"./config":543,"./contracts/Registry":544,"./lib/ResolverMethodHandler":546}],543:[function(require,module,exports){
+},{"./config":534,"./contracts/Registry":535,"./lib/ResolverMethodHandler":537}],534:[function(require,module,exports){
 "use strict";
 
 var config = {
@@ -75084,7 +74484,7 @@ var config = {
 
 module.exports = config;
 
-},{}],544:[function(require,module,exports){
+},{}],535:[function(require,module,exports){
 /*
     This file is part of web3.js.
     web3.js is free software: you can redistribute it and/or modify
@@ -75186,7 +74586,7 @@ Registry.prototype.resolver = function (name) {
 
 module.exports = Registry;
 
-},{"../ressources/ABI/Registry":547,"../ressources/ABI/Resolver":548,"eth-ens-namehash":361,"underscore":499,"web3-core-promievent":511,"web3-eth-contract":541}],545:[function(require,module,exports){
+},{"../ressources/ABI/Registry":538,"../ressources/ABI/Resolver":539,"eth-ens-namehash":357,"underscore":493,"web3-core-promievent":502,"web3-eth-contract":532}],536:[function(require,module,exports){
 /*
     This file is part of web3.js.
     web3.js is free software: you can redistribute it and/or modify
@@ -75213,7 +74613,7 @@ var ENS = require('./ENS');
 
 module.exports = ENS;
 
-},{"./ENS":542}],546:[function(require,module,exports){
+},{"./ENS":533}],537:[function(require,module,exports){
 /*
     This file is part of web3.js.
     web3.js is free software: you can redistribute it and/or modify
@@ -75404,7 +74804,7 @@ ResolverMethodHandler.prototype.prepareArguments = function (name, methodArgumen
 
 module.exports = ResolverMethodHandler;
 
-},{"eth-ens-namehash":361,"underscore":499,"web3-core-promievent":511}],547:[function(require,module,exports){
+},{"eth-ens-namehash":357,"underscore":493,"web3-core-promievent":502}],538:[function(require,module,exports){
 "use strict";
 
 var REGISTRY = [
@@ -75611,7 +75011,7 @@ var REGISTRY = [
 
 module.exports = REGISTRY;
 
-},{}],548:[function(require,module,exports){
+},{}],539:[function(require,module,exports){
 "use strict";
 
 var RESOLVER = [
@@ -75969,9 +75369,9 @@ var RESOLVER = [
 
 module.exports = RESOLVER;
 
-},{}],549:[function(require,module,exports){
-arguments[4][388][0].apply(exports,arguments)
-},{"dup":388}],550:[function(require,module,exports){
+},{}],540:[function(require,module,exports){
+arguments[4][382][0].apply(exports,arguments)
+},{"dup":382}],541:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -76240,7 +75640,7 @@ Iban.prototype.toString = function () {
 
 module.exports = Iban;
 
-},{"bn.js":549,"web3-utils":561}],551:[function(require,module,exports){
+},{"bn.js":540,"web3-utils":552}],542:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -76392,7 +75792,7 @@ module.exports = Personal;
 
 
 
-},{"web3-core":520,"web3-core-helpers":508,"web3-core-method":509,"web3-net":554,"web3-utils":561}],552:[function(require,module,exports){
+},{"web3-core":511,"web3-core-helpers":499,"web3-core-method":500,"web3-net":545,"web3-utils":552}],543:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -76472,7 +75872,7 @@ var getNetworkType = function (callback) {
 
 module.exports = getNetworkType;
 
-},{"underscore":499}],553:[function(require,module,exports){
+},{"underscore":493}],544:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -76940,7 +76340,7 @@ core.addProviders(Eth);
 module.exports = Eth;
 
 
-},{"./getNetworkType.js":552,"underscore":499,"web3-core":520,"web3-core-helpers":508,"web3-core-method":509,"web3-core-subscriptions":517,"web3-eth-abi":531,"web3-eth-accounts":540,"web3-eth-contract":541,"web3-eth-ens":545,"web3-eth-iban":550,"web3-eth-personal":551,"web3-net":554,"web3-utils":561}],554:[function(require,module,exports){
+},{"./getNetworkType.js":543,"underscore":493,"web3-core":511,"web3-core-helpers":499,"web3-core-method":500,"web3-core-subscriptions":508,"web3-eth-abi":522,"web3-eth-accounts":531,"web3-eth-contract":532,"web3-eth-ens":536,"web3-eth-iban":541,"web3-eth-personal":542,"web3-net":545,"web3-utils":552}],545:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -77009,7 +76409,7 @@ module.exports = Net;
 
 
 
-},{"web3-core":520,"web3-core-method":509,"web3-utils":561}],555:[function(require,module,exports){
+},{"web3-core":511,"web3-core-method":500,"web3-utils":552}],546:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -77124,7 +76524,7 @@ HttpProvider.prototype.disconnect = function () {
 
 module.exports = HttpProvider;
 
-},{"http":163,"https":104,"web3-core-helpers":508,"xhr2-cookies":576}],556:[function(require,module,exports){
+},{"http":163,"https":104,"web3-core-helpers":499,"xhr2-cookies":567}],547:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -77441,7 +76841,7 @@ IpcProvider.prototype.reset = function () {
 module.exports = IpcProvider;
 
 
-},{"oboe":443,"underscore":499,"web3-core-helpers":508}],557:[function(require,module,exports){
+},{"oboe":437,"underscore":493,"web3-core-helpers":499}],548:[function(require,module,exports){
 (function (Buffer){
 /*
  This file is part of web3.js.
@@ -77846,7 +77246,7 @@ WebsocketProvider.prototype.disconnect = function () {
 module.exports = WebsocketProvider;
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":52,"underscore":499,"url":170,"web3-core-helpers":508,"websocket":566}],558:[function(require,module,exports){
+},{"buffer":52,"underscore":493,"url":170,"web3-core-helpers":499,"websocket":557}],549:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -78037,11 +77437,11 @@ module.exports = Shh;
 
 
 
-},{"web3-core":520,"web3-core-method":509,"web3-core-subscriptions":517,"web3-net":554}],559:[function(require,module,exports){
-arguments[4][388][0].apply(exports,arguments)
-},{"dup":388}],560:[function(require,module,exports){
-arguments[4][498][0].apply(exports,arguments)
-},{"dup":498}],561:[function(require,module,exports){
+},{"web3-core":511,"web3-core-method":500,"web3-core-subscriptions":508,"web3-net":545}],550:[function(require,module,exports){
+arguments[4][382][0].apply(exports,arguments)
+},{"dup":382}],551:[function(require,module,exports){
+arguments[4][492][0].apply(exports,arguments)
+},{"dup":492}],552:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -78407,7 +77807,7 @@ module.exports = {
 };
 
 
-},{"./soliditySha3.js":562,"./utils.js":563,"ethjs-unit":387,"randomhex":465,"underscore":499}],562:[function(require,module,exports){
+},{"./soliditySha3.js":553,"./utils.js":554,"ethjs-unit":381,"randomhex":459,"underscore":493}],553:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -78654,7 +78054,7 @@ var soliditySha3 = function () {
 
 module.exports = soliditySha3;
 
-},{"./utils.js":563,"bn.js":559,"underscore":499}],563:[function(require,module,exports){
+},{"./utils.js":554,"bn.js":550,"underscore":493}],554:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -79123,7 +78523,7 @@ module.exports = {
     sha3: sha3
 };
 
-},{"bn.js":559,"eth-lib/lib/hash":560,"number-to-bn":438,"underscore":499,"utf8":501}],564:[function(require,module,exports){
+},{"bn.js":550,"eth-lib/lib/hash":551,"number-to-bn":432,"underscore":493,"utf8":495}],555:[function(require,module,exports){
 module.exports={
   "_args": [
     [
@@ -79211,7 +78611,7 @@ module.exports={
   "version": "1.0.0-beta.36"
 }
 
-},{}],565:[function(require,module,exports){
+},{}],556:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -79292,7 +78692,7 @@ core.addProviders(Web3);
 module.exports = Web3;
 
 
-},{"../package.json":564,"web3-bzz":505,"web3-core":520,"web3-eth":553,"web3-eth-personal":551,"web3-net":554,"web3-shh":558,"web3-utils":561}],566:[function(require,module,exports){
+},{"../package.json":555,"web3-bzz":496,"web3-core":511,"web3-eth":544,"web3-eth-personal":542,"web3-net":545,"web3-shh":549,"web3-utils":552}],557:[function(require,module,exports){
 var _global = (function() { return this || {}; })();
 var NativeWebSocket = _global.WebSocket || _global.MozWebSocket;
 var websocket_version = require('./version');
@@ -79336,10 +78736,10 @@ module.exports = {
     'version'      : websocket_version
 };
 
-},{"./version":567}],567:[function(require,module,exports){
+},{"./version":558}],558:[function(require,module,exports){
 module.exports = require('../package.json').version;
 
-},{"../package.json":568}],568:[function(require,module,exports){
+},{"../package.json":559}],559:[function(require,module,exports){
 module.exports={
   "_args": [
     [
@@ -79436,7 +78836,7 @@ module.exports={
   "version": "1.0.26"
 }
 
-},{}],569:[function(require,module,exports){
+},{}],560:[function(require,module,exports){
 var request = require('xhr-request')
 
 module.exports = function (url, options) {
@@ -79448,7 +78848,7 @@ module.exports = function (url, options) {
   });
 };
 
-},{"xhr-request":570}],570:[function(require,module,exports){
+},{"xhr-request":561}],561:[function(require,module,exports){
 var queryString = require('query-string')
 var setQuery = require('url-set-query')
 var assign = require('object-assign')
@@ -79509,7 +78909,7 @@ function xhrRequest (url, opt, cb) {
   return request(opt, cb)
 }
 
-},{"./lib/ensure-header.js":571,"./lib/request.js":573,"object-assign":439,"query-string":574,"url-set-query":500}],571:[function(require,module,exports){
+},{"./lib/ensure-header.js":562,"./lib/request.js":564,"object-assign":433,"query-string":565,"url-set-query":494}],562:[function(require,module,exports){
 module.exports = ensureHeader
 function ensureHeader (headers, key, value) {
   var lower = key.toLowerCase()
@@ -79518,7 +78918,7 @@ function ensureHeader (headers, key, value) {
   }
 }
 
-},{}],572:[function(require,module,exports){
+},{}],563:[function(require,module,exports){
 module.exports = getResponse
 function getResponse (opt, resp) {
   if (!resp) return null
@@ -79532,7 +78932,7 @@ function getResponse (opt, resp) {
   }
 }
 
-},{}],573:[function(require,module,exports){
+},{}],564:[function(require,module,exports){
 var xhr = require('xhr')
 var normalize = require('./normalize-response')
 var noop = function () {}
@@ -79576,7 +78976,7 @@ function xhrRequest (opt, cb) {
   return req
 }
 
-},{"./normalize-response":572,"xhr":581}],574:[function(require,module,exports){
+},{"./normalize-response":563,"xhr":572}],565:[function(require,module,exports){
 'use strict';
 var strictUriEncode = require('strict-uri-encode');
 var objectAssign = require('object-assign');
@@ -79802,7 +79202,7 @@ exports.parseUrl = function (str, opts) {
 	};
 };
 
-},{"decode-uri-component":289,"object-assign":439,"strict-uri-encode":486}],575:[function(require,module,exports){
+},{"decode-uri-component":285,"object-assign":433,"strict-uri-encode":480}],566:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -79848,7 +79248,7 @@ var SyntaxError = /** @class */ (function (_super) {
 }(Error));
 exports.SyntaxError = SyntaxError;
 
-},{}],576:[function(require,module,exports){
+},{}],567:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -79858,7 +79258,7 @@ __export(require("./xml-http-request"));
 var xml_http_request_event_target_1 = require("./xml-http-request-event-target");
 exports.XMLHttpRequestEventTarget = xml_http_request_event_target_1.XMLHttpRequestEventTarget;
 
-},{"./xml-http-request":580,"./xml-http-request-event-target":578}],577:[function(require,module,exports){
+},{"./xml-http-request":571,"./xml-http-request-event-target":569}],568:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ProgressEvent = /** @class */ (function () {
@@ -79874,7 +79274,7 @@ var ProgressEvent = /** @class */ (function () {
 }());
 exports.ProgressEvent = ProgressEvent;
 
-},{}],578:[function(require,module,exports){
+},{}],569:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var XMLHttpRequestEventTarget = /** @class */ (function () {
@@ -79916,7 +79316,7 @@ var XMLHttpRequestEventTarget = /** @class */ (function () {
 }());
 exports.XMLHttpRequestEventTarget = XMLHttpRequestEventTarget;
 
-},{}],579:[function(require,module,exports){
+},{}],570:[function(require,module,exports){
 (function (Buffer){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
@@ -79997,7 +79397,7 @@ var XMLHttpRequestUpload = /** @class */ (function (_super) {
 exports.XMLHttpRequestUpload = XMLHttpRequestUpload;
 
 }).call(this,require("buffer").Buffer)
-},{"./xml-http-request-event-target":578,"buffer":52}],580:[function(require,module,exports){
+},{"./xml-http-request-event-target":569,"buffer":52}],571:[function(require,module,exports){
 (function (process,Buffer){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
@@ -80447,7 +79847,7 @@ XMLHttpRequest.prototype.nodejsHttpsAgent = https.globalAgent;
 XMLHttpRequest.prototype.nodejsBaseUrl = null;
 
 }).call(this,require('_process'),require("buffer").Buffer)
-},{"./errors":575,"./progress-event":577,"./xml-http-request-event-target":578,"./xml-http-request-upload":579,"_process":126,"buffer":52,"cookiejar":282,"http":163,"https":104,"os":113,"url":170}],581:[function(require,module,exports){
+},{"./errors":566,"./progress-event":568,"./xml-http-request-event-target":569,"./xml-http-request-upload":570,"_process":126,"buffer":52,"cookiejar":278,"http":163,"https":104,"os":113,"url":170}],572:[function(require,module,exports){
 "use strict";
 var window = require("global/window")
 var isFunction = require("is-function")
@@ -80696,14 +80096,19 @@ function getXml(xhr) {
 
 function noop() {}
 
-},{"global/window":394,"is-function":414,"parse-headers":449,"xtend":582}],582:[function(require,module,exports){
+},{"global/window":388,"is-function":408,"parse-headers":443,"xtend":573}],573:[function(require,module,exports){
 arguments[4][174][0].apply(exports,arguments)
-},{"dup":174}],583:[function(require,module,exports){
-(function (Buffer){
+},{"dup":174}],574:[function(require,module,exports){
+var config_variable = {
+    cross_website_password: '8x7xSXkRTmCCeY6pyQLBmxmwvtM2RM6zBpbDUwtpacta6UZafTG4PjR6w4RpFvvQm5c63hZpQDU9QGWMZGKX8aGcDEaHkNCf4SLGC9BJejmwDL9haU7hmxf6esZ7cRJYCjm3tn5NB6jLAxFcVKEdrPnNjZrNSfesGvpErKQS9Snwr9VvccRnp2pPhZxwVcdtCMtFBZjVQeU3mdTEv24kprYS45ddvg7gFRYCazTvpZdcPe3r2dcr5TW9BGAjs4wK4pvrNbUYcjvGyrURYuDDHt6rnVUVAydKqzUMBHFMhJS3RCkm6K7jfszVdMZDEctGYhUXW7LdVpUXYRtDRutgrCEKhdZ232FMtC9bR9XgNTWKztXAr3GPvSgrp2B65BZJe4aEcYs68gpTPbTpdHRxZEACY85TGjR8ECqkjd9NE3CMmLNgWsWUh5mFsCyGMymaLhs6Brr37ZRacL8ukg5mqTtTgpqgRzBcQDbU5PNYV5jDL6jA3KXCnEV4bZFVqZLZ'
+};
+
+module.exports = {config_variable};
+},{}],575:[function(require,module,exports){
 const Web3 = require('../../../node_modules/web3'); // import web3 v1.0 constructor
 const keythereum = require('../../../node_modules/keythereum');
 const EthCrypto = require('../../../node_modules/eth-crypto');
-var Wallet = require('../../../node_modules/ethereumjs-wallet');
+//var Wallet = require('../../../node_modules/ethereumjs-wallet');
 
 // use globally injected web3 to find the currentProvider and wrap with web3 v1.0
 const getWeb3 = (provider) => {
@@ -80721,9 +80126,7 @@ const getContractInstance = (web3) => (contractName, address) => {
 };
 
 function generateKeystoreFile(password, callback) {
-    console.log(password, 'generateKeystoreFile');
     var dk = keythereum.create({keyBytes: 32, ivBytes: 16});
-    console.log(dk, 'dk');
     keythereum.dump(password, dk.privateKey, dk.salt, dk.iv, {
         cipher: 'aes-128-ctr',
         kdfparams: {
@@ -80732,44 +80135,32 @@ function generateKeystoreFile(password, callback) {
             prf: 'hmac-sha256'
         }
     }, function(result) {
-        console.log(result, 'result');
-
         const public_key = EthCrypto.publicKeyByPrivateKey(dk.privateKey.toString('hex'));
-        console.log(public_key, 'public_key');
 
         callback(public_key, result);
     });
 }
 
-function importKeystoreFile(keystore, password) {
-    try {
-        const keyObject = JSON.parse(keystore);
-        const private_key = keythereum.recover(password, keyObject);
-        const public_key = EthCrypto.publicKeyByPrivateKey(private_key.toString('hex'));
-        return {
-            success: keyObject,
-            public_key: public_key,
-            address: JSON.parse(keystore).address
+function importKeystoreFile(keystore, password, callback) {
+    const keyObject = JSON.parse(keystore);
+    keythereum.recover(password, keyObject, function(private_key) {
+        try {
+            const public_key = EthCrypto.publicKeyByPrivateKey(private_key.toString('hex'));
+            callback(keyObject, public_key, JSON.parse(keystore).address);
+        } catch (e) {
+            callback(null, null, null, true, 'Wrong secret password.');
         }
-    } catch (e) {
-        return {
-            error: true,
-            message: 'Wrong secret password.'
-        }
-    }
+    });
 }
 
-function decryptKeystore(keystore, password) {
-    try {
-        return {
-            success: keythereum.recover(password, JSON.parse(keystore)), to_string: keythereum.recover(password, JSON.parse(keystore)).toString('hex')
+function decryptKeystore(keystore, password, callback) {
+    keythereum.recover(password, JSON.parse(keystore), function(private_key) {
+        try {
+            callback(private_key, private_key.toString('hex'));
+        } catch (e) {
+            callback(null, null, true, 'Wrong secret password.');
         }
-    } catch (e) {
-        return {
-            error: true,
-            message: 'Wrong secret password.'
-        }
-    }
+    });
 }
 
 function validatePrivateKey(private_key) {
@@ -80791,35 +80182,34 @@ function validatePrivateKey(private_key) {
     }
 }
 
-function generateKeystoreFromPrivateKey(private_key, password) {
+function generateKeystoreFromPrivateKey(private_key, password, callback) {
     try {
-        const public_key = EthCrypto.publicKeyByPrivateKey(private_key);
-        const address = EthCrypto.publicKey.toAddress(public_key);
-        const wallet = Wallet.fromPrivateKey(Buffer.from(private_key, 'hex'));
-        const keystore_file = wallet.toV3String(password);
-
-        return {
-            success: {
-                keystore_file: keystore_file,
-                public_key: public_key,
-                address: address
+        var dk = keythereum.create({keyBytes: 32, ivBytes: 16});
+        keythereum.dump(password, private_key, dk.salt, dk.iv, {
+            cipher: 'aes-128-ctr',
+            kdfparams: {
+                c: 262144,
+                dklen: 32,
+                prf: 'hmac-sha256'
             }
-        };
+        }, function(keystore) {
+            const public_key = EthCrypto.publicKeyByPrivateKey(private_key);
+            const address = EthCrypto.publicKey.toAddress(public_key);
+
+            callback(true, address, JSON.stringify(keystore));
+        });
     } catch (e) {
-        return {
-            error: true,
-            message: 'Wrong secret private key.'
-        }
+        callback(false);
     }
 }
 
 module.exports = {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey};
 
 
-}).call(this,require("buffer").Buffer)
-},{"../../../node_modules/eth-crypto":351,"../../../node_modules/ethereumjs-wallet":372,"../../../node_modules/keythereum":423,"../../../node_modules/web3":565,"buffer":52}],584:[function(require,module,exports){
+},{"../../../node_modules/eth-crypto":347,"../../../node_modules/keythereum":417,"../../../node_modules/web3":556}],576:[function(require,module,exports){
 (function (Buffer){
 var {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey} = require('./helper');
+var {config_variable} = require('./config');
 
 console.log("( ͡° ͜ʖ ͡°) I see you.");
 
@@ -80929,40 +80319,59 @@ var dApp = {
             //METAMASK INSTALLED
             global_state.account = web3.eth.defaultAccount;
 
-            //overwrite web3 0.2 with web 1.0
-            web3 = getWeb3(web3.currentProvider);
-            dApp.web3_1_0 = web3;
+            web3.eth.getAccounts(function(error, accounts) {
+                console.log(error, 'accountsChanged');
+                console.log(accounts, 'accountsChanged');
+                if(error) {
+                    console.log(error);
+                } else {
+                    if(accounts.length) {
+                        global_state.account = accounts[0];
+
+                        console.log(global_state.account, 'global_state.account');
+
+                        //overwrite web3 0.2 with web 1.0
+                        web3 = getWeb3(web3.currentProvider);
+                        dApp.web3_1_0 = web3;
+
+                        continueWithContractInstanceInit();
+                    }
+                }
+            });
         } else {
-            console.log('NO METAMASK INSTALLED');
             //NO METAMASK INSTALLED
             if (window.localStorage.getItem('current_account') != null && typeof(web3) === 'undefined') {
                 global_state.account = window.localStorage.getItem('current_account');
             }
 
             dApp.web3_1_0 = getWeb3(new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/c6ab28412b494716bc5315550c0d4071'));
+
+            continueWithContractInstanceInit();
         }
 
-        if(typeof(global_state.account) != 'undefined' && typeof(web3) == 'undefined') {
-            if(!$('.logo-and-settings-row .open-settings-col').length) {
-                $('.logo-and-settings-row').append('<div class="col-xs-6 inline-block open-settings-col"><figure itemscope="" itemtype="http://schema.org/Organization" class="text-right"><a href="javascript:void(0)" itemprop="url" class="open-settings"><img src="assets/images/settings-icon.svg" class="max-width-30" itemprop="logo" alt="Settings icon"/></a></figure></div>');
-            }
-        } else {
-            $('.logo-and-settings-row .open-settings-col').remove();
-        }
-
-        //init contract
-        if(typeof(global_state.account) != 'undefined') {
-            $.getJSON('assets/jsons/DentacoinToken.json', function (DCNArtifact) {
-                // get the contract artifact file and use it to instantiate a truffle contract abstraction
-                getInstance = getContractInstance(dApp.web3_1_0);
-                DCNContract = getInstance(DCNArtifact, dApp.contract_address);
-
-                if(callback != undefined) {
-                    callback();
+        function continueWithContractInstanceInit() {
+            if(typeof(global_state.account) != 'undefined' && typeof(web3) == 'undefined') {
+                if(!$('.logo-and-settings-row .open-settings-col').length) {
+                    $('.logo-and-settings-row').append('<div class="col-xs-6 inline-block open-settings-col"><figure itemscope="" itemtype="http://schema.org/Organization" class="text-right"><a href="javascript:void(0)" itemprop="url" class="open-settings"><img src="assets/images/settings-icon.svg" class="max-width-30" itemprop="logo" alt="Settings icon"/></a></figure></div>');
                 }
+            } else {
+                $('.logo-and-settings-row .open-settings-col').remove();
+            }
 
-                dApp.buildTransactionHistory();
-            });
+            //init contract
+            if(typeof(global_state.account) != 'undefined') {
+                $.getJSON('assets/jsons/DentacoinToken.json', function (DCNArtifact) {
+                    // get the contract artifact file and use it to instantiate a truffle contract abstraction
+                    getInstance = getContractInstance(dApp.web3_1_0);
+                    DCNContract = getInstance(DCNArtifact, dApp.contract_address);
+
+                    if(callback != undefined) {
+                        callback();
+                    }
+
+                    dApp.buildTransactionHistory();
+                });
+            }
         }
     },
     buildTransactionHistory: function() {
@@ -80989,9 +80398,8 @@ var dApp = {
                     filter: {_from: global_state.account},
                     fromBlock: block_number_of_dcn_creation,
                     toBlock: 'latest'
-                }, function(events_from_user_err, events_from_user){
+                }, function(events_from_user_err, events_from_user) {
                     if(!events_from_user_err) {
-
                         //getting blockchain events where the logged user was the receiver of the transaction
                         DCNContract.getPastEvents('Transfer', {
                             filter: {_to: global_state.account},
@@ -81058,51 +80466,9 @@ var dApp = {
                                                     var stop_intervals = false;
                                                     function recursiveLoop(custom_iterator) {
                                                         if(custom_iterator < 5 && custom_iterator < intervals_stopper) {
-                                                            console.log(custom_iterator, 'custom_iterator');
-                                                            var other_address = '';
-                                                            var class_name = '';
-                                                            var label = '';
                                                             if(basic.property_exists(merged_events_arr[custom_iterator], 'type') && merged_events_arr[custom_iterator].type == 'eth_transaction') {
                                                                 //eth transaction
-                                                                var eth_amount_symbol;
-                                                                if(checksumAddress(merged_events_arr[custom_iterator].to) == checksumAddress(global_state.account)) {
-                                                                    //IF THE CURRENT ACCOUNT IS RECEIVER
-                                                                    other_address = merged_events_arr[custom_iterator].from;
-                                                                    label = 'Received from';
-                                                                    class_name = 'received_from';
-                                                                    eth_amount_symbol = '+';
-                                                                } else if(checksumAddress(merged_events_arr[custom_iterator].from) == checksumAddress(global_state.account)) {
-                                                                    //IF THE CURRENT ACCOUNT IS SENDER
-                                                                    other_address = merged_events_arr[custom_iterator].to;
-                                                                    label = 'Sent to';
-                                                                    class_name = 'sent_to';
-                                                                    eth_amount_symbol = '-';
-                                                                }
-
-                                                                var eth_amount = dApp.web3_1_0.utils.fromWei(merged_events_arr[custom_iterator].value, 'ether');
-                                                                var usd_amount = (ethereum_data.market_data.current_price.usd * eth_amount).toFixed(2);
-                                                                var timestamp_javascript = merged_events_arr[custom_iterator].timeStamp*1000;
-                                                                var date_obj = new Date(timestamp_javascript);
-                                                                var minutes;
-                                                                var hours;
-
-                                                                if(new Date(timestamp_javascript).getMinutes() < 10) {
-                                                                    minutes = '0'+new Date(timestamp_javascript).getMinutes();
-                                                                }else {
-                                                                    minutes = new Date(timestamp_javascript).getMinutes();
-                                                                }
-
-                                                                if(new Date(timestamp_javascript).getHours() < 10) {
-                                                                    hours = '0'+new Date(timestamp_javascript).getHours();
-                                                                }else {
-                                                                    hours = new Date(timestamp_javascript).getHours();
-                                                                }
-
-                                                                if(basic.isMobile()) {
-                                                                    other_address = substr_replace(other_address, '...', -25);
-                                                                }
-
-                                                                transaction_history_html+='<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+merged_events_arr[custom_iterator].hash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+merged_events_arr[custom_iterator].hash+'" target="_blank" class="lato-bold color-white">Transaction ID</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+eth_amount_symbol+eth_amount+' ETH</li><li>'+usd_amount+' USD</li></ul></td></tr>';
+                                                                transaction_history_html+=buildEthereumHistoryTransaction(ethereum_data, dApp.web3_1_0.utils.fromWei(merged_events_arr[custom_iterator].value, 'ether'), merged_events_arr[custom_iterator].to, merged_events_arr[custom_iterator].from, merged_events_arr[custom_iterator].timeStamp, merged_events_arr[custom_iterator].hash);
 
                                                                 if(custom_iterator < 5) {
                                                                     custom_iterator+=1;
@@ -81118,47 +80484,8 @@ var dApp = {
                                                                     if(!stop_intervals) {
                                                                         if (temporally_timestamps[custom_iterator] != 0 && temporally_timestamps[custom_iterator] != undefined) {
                                                                             clearInterval(request_interval);
-                                                                            merged_events_arr[custom_iterator].timestamp = temporally_timestamps[custom_iterator];
 
-                                                                            var dcn_amount_symbol;
-                                                                            var usd_amount = (parseInt(merged_events_arr[custom_iterator].returnValues._value) * dentacoin_data.market_data.current_price.usd).toFixed(2);
-                                                                            if(checksumAddress(merged_events_arr[custom_iterator].returnValues._to) == checksumAddress(global_state.account)) {
-                                                                                //IF THE CURRENT ACCOUNT IS RECEIVER
-                                                                                other_address = merged_events_arr[custom_iterator].returnValues._from;
-                                                                                label = 'Received from';
-                                                                                class_name = 'received_from';
-                                                                                dcn_amount_symbol = '+';
-                                                                            } else if(checksumAddress(merged_events_arr[custom_iterator].returnValues._from) == checksumAddress(global_state.account)) {
-                                                                                //IF THE CURRENT ACCOUNT IS SENDER
-                                                                                other_address = merged_events_arr[custom_iterator].returnValues._to;
-                                                                                label = 'Sent to';
-                                                                                class_name = 'sent_to';
-                                                                                dcn_amount_symbol = '-';
-                                                                            }
-
-                                                                            var dcn_amount = dcn_amount_symbol+merged_events_arr[custom_iterator].returnValues._value+' DCN';
-                                                                            var timestamp_javascript = merged_events_arr[custom_iterator].timestamp*1000;
-                                                                            var date_obj = new Date(timestamp_javascript);
-                                                                            var minutes;
-                                                                            var hours;
-
-                                                                            if(new Date(timestamp_javascript).getMinutes() < 10) {
-                                                                                minutes = '0'+new Date(timestamp_javascript).getMinutes();
-                                                                            }else {
-                                                                                minutes = new Date(timestamp_javascript).getMinutes();
-                                                                            }
-
-                                                                            if(new Date(timestamp_javascript).getHours() < 10) {
-                                                                                hours = '0'+new Date(timestamp_javascript).getHours();
-                                                                            }else {
-                                                                                hours = new Date(timestamp_javascript).getHours();
-                                                                            }
-
-                                                                            if(basic.isMobile()) {
-                                                                                other_address = substr_replace(other_address, '...', -25);
-                                                                            }
-
-                                                                            transaction_history_html+='<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+merged_events_arr[custom_iterator].transactionHash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+merged_events_arr[custom_iterator].transactionHash+'" target="_blank" class="lato-bold color-white">Transaction ID</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+dcn_amount+'</li><li>'+usd_amount+' USD</li></ul></td></tr>';
+                                                                            transaction_history_html+=buildDentacoinHistoryTransaction(dentacoin_data, merged_events_arr[custom_iterator].returnValues._value, merged_events_arr[custom_iterator].returnValues._to, merged_events_arr[custom_iterator].returnValues._from, temporally_timestamps[custom_iterator], merged_events_arr[custom_iterator].transactionHash);
 
                                                                             if(custom_iterator < 5) {
                                                                                 custom_iterator+=1;
@@ -81180,6 +80507,7 @@ var dApp = {
                                                             }
 
                                                             $('.camping-transaction-history table tbody').html(transaction_history_html);
+                                                            updateExternalURLsForiOSDevice();
                                                         }
                                                     }
                                                     recursiveLoop(0);
@@ -81188,50 +80516,9 @@ var dApp = {
                                                     var next_transaction_history_html = '';
                                                     function recursiveLoopForRestOfHistory(custom_iterator) {
                                                         if(custom_iterator < merged_events_arr.length) {
-                                                            var other_address = '';
-                                                            var class_name = '';
-                                                            var label = '';
                                                             if(basic.property_exists(merged_events_arr[custom_iterator], 'type') && merged_events_arr[custom_iterator].type == 'eth_transaction') {
                                                                 //eth transaction
-                                                                var eth_amount_symbol;
-                                                                if(checksumAddress(merged_events_arr[custom_iterator].to) == checksumAddress(global_state.account)) {
-                                                                    //IF THE CURRENT ACCOUNT IS RECEIVER
-                                                                    other_address = merged_events_arr[custom_iterator].from;
-                                                                    label = 'Received from';
-                                                                    class_name = 'received_from';
-                                                                    eth_amount_symbol = '+';
-                                                                } else if(checksumAddress(merged_events_arr[custom_iterator].from) == checksumAddress(global_state.account)) {
-                                                                    //IF THE CURRENT ACCOUNT IS SENDER
-                                                                    other_address = merged_events_arr[custom_iterator].to;
-                                                                    label = 'Sent to';
-                                                                    class_name = 'sent_to';
-                                                                    eth_amount_symbol = '-';
-                                                                }
-
-                                                                var eth_amount = dApp.web3_1_0.utils.fromWei(merged_events_arr[custom_iterator].value, 'ether');
-                                                                var usd_amount = (ethereum_data.market_data.current_price.usd * eth_amount).toFixed(2);
-                                                                var timestamp_javascript = merged_events_arr[custom_iterator].timeStamp*1000;
-                                                                var date_obj = new Date(timestamp_javascript);
-                                                                var minutes;
-                                                                var hours;
-
-                                                                if(new Date(timestamp_javascript).getMinutes() < 10) {
-                                                                    minutes = '0'+new Date(timestamp_javascript).getMinutes();
-                                                                }else {
-                                                                    minutes = new Date(timestamp_javascript).getMinutes();
-                                                                }
-
-                                                                if(new Date(timestamp_javascript).getHours() < 10) {
-                                                                    hours = '0'+new Date(timestamp_javascript).getHours();
-                                                                }else {
-                                                                    hours = new Date(timestamp_javascript).getHours();
-                                                                }
-
-                                                                if(basic.isMobile()) {
-                                                                    other_address = substr_replace(other_address, '...', -25);
-                                                                }
-
-                                                                next_transaction_history_html+='<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+merged_events_arr[custom_iterator].hash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+merged_events_arr[custom_iterator].hash+'" target="_blank" class="lato-bold color-white">Transaction ID</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+eth_amount_symbol+eth_amount+' ETH</li><li>'+usd_amount+' USD</li></ul></td></tr>';
+                                                                next_transaction_history_html+=buildEthereumHistoryTransaction(ethereum_data, dApp.web3_1_0.utils.fromWei(merged_events_arr[custom_iterator].value, 'ether'), merged_events_arr[custom_iterator].to, merged_events_arr[custom_iterator].from, merged_events_arr[custom_iterator].timeStamp, merged_events_arr[custom_iterator].hash);
 
                                                                 if(custom_iterator < merged_events_arr.length) {
                                                                     custom_iterator+=1;
@@ -81247,50 +80534,9 @@ var dApp = {
                                                                     if(!stop_intervals) {
                                                                         if (temporally_timestamps[custom_iterator] != 0 && temporally_timestamps[custom_iterator] != undefined) {
                                                                             clearInterval(request_interval_for_rest_of_transaction_history);
-                                                                            merged_events_arr[custom_iterator].timestamp = temporally_timestamps[custom_iterator];
 
-                                                                            var other_address = '';
-                                                                            var class_name = '';
-                                                                            var label = '';
-                                                                            var dcn_amount_symbol;
-                                                                            var usd_amount = (parseInt(merged_events_arr[custom_iterator].returnValues._value) * dentacoin_data.market_data.current_price.usd).toFixed(2);
-                                                                            if(checksumAddress(merged_events_arr[custom_iterator].returnValues._to) == checksumAddress(global_state.account))    {
-                                                                                //IF THE CURRENT ACCOUNT IS RECEIVER
-                                                                                other_address = merged_events_arr[custom_iterator].returnValues._from;
-                                                                                label = 'Received from';
-                                                                                class_name = 'received_from';
-                                                                                dcn_amount_symbol = '+';
-                                                                            }else if(checksumAddress(merged_events_arr[custom_iterator].returnValues._from) == checksumAddress(global_state.account)) {
-                                                                                //IF THE CURRENT ACCOUNT IS SENDER
-                                                                                other_address = merged_events_arr[custom_iterator].returnValues._to;
-                                                                                label = 'Sent to';
-                                                                                class_name = 'sent_to';
-                                                                                dcn_amount_symbol = '-';
-                                                                            }
+                                                                            next_transaction_history_html+=buildDentacoinHistoryTransaction(dentacoin_data, merged_events_arr[custom_iterator].returnValues._value, merged_events_arr[custom_iterator].returnValues._to, merged_events_arr[custom_iterator].returnValues._from, temporally_timestamps[custom_iterator], merged_events_arr[custom_iterator].transactionHash);
 
-                                                                            var dcn_amount = dcn_amount_symbol+merged_events_arr[custom_iterator].returnValues._value+' DCN';
-                                                                            var timestamp_javascript = merged_events_arr[custom_iterator].timestamp*1000;
-                                                                            var date_obj = new Date(timestamp_javascript);
-                                                                            var minutes;
-                                                                            var hours;
-
-                                                                            if(new Date(timestamp_javascript).getMinutes() < 10) {
-                                                                                minutes = '0'+new Date(timestamp_javascript).getMinutes();
-                                                                            }else {
-                                                                                minutes = new Date(timestamp_javascript).getMinutes();
-                                                                            }
-
-                                                                            if(new Date(timestamp_javascript).getHours() < 10) {
-                                                                                hours = '0'+new Date(timestamp_javascript).getHours();
-                                                                            }else {
-                                                                                hours = new Date(timestamp_javascript).getHours();
-                                                                            }
-
-                                                                            if(basic.isMobile()) {
-                                                                                other_address = substr_replace(other_address, '...', -25);
-                                                                            }
-
-                                                                            next_transaction_history_html+='<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+merged_events_arr[custom_iterator].transactionHash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+merged_events_arr[custom_iterator].transactionHash+'" target="_blank" class="lato-bold color-white">Transaction ID</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+dcn_amount+'</li><li>'+usd_amount+' USD</li></ul></td></tr>';
                                                                             if(custom_iterator < merged_events_arr.length) {
                                                                                 custom_iterator+=1;
                                                                                 recursiveLoopForRestOfHistory(custom_iterator);
@@ -81304,9 +80550,17 @@ var dApp = {
                                                         } else {
                                                             $('.camping-transaction-history table tbody tr.loading-tr').remove();
                                                             $('.camping-transaction-history table tbody').append(next_transaction_history_html);
+                                                            updateExternalURLsForiOSDevice();
+
                                                             if($('.camping-transaction-history .show-more').attr('show-all-transactions') == 'true') {
                                                                 $('.camping-transaction-history table tr').addClass('show-this');
                                                             }
+
+                                                            //updating transaction history every 10 minutes, because the project is SPA and pages are not really refreshed on route change, routes are dynamicly loaded with AngularJS
+                                                            setTimeout(function() {
+                                                                console.log('=-------======= REFRESH TRANSACTION HISTORY ===0000000000000000000000000000');
+                                                                dApp.buildTransactionHistory();
+                                                            }, 600000);
                                                         }
                                                     }
                                                 }
@@ -81364,7 +80618,7 @@ var dApp = {
                 from: global_state.account,
                 gas: 60000
             }).on('transactionHash', function(hash){
-                displayMessageOnDCNTransactionSend('Dentacoin tokens', hash);
+                displayMessageOnTransactionSend('Dentacoin tokens', hash);
             }).catch(function(err) {
                 basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
             });
@@ -81513,6 +80767,19 @@ var pages_data = {
                             $('.mobile-copy-address').tooltip('hide');
                         }, 1000);
                     });
+
+
+
+                    var img = document.querySelector('#mobile-qrcode img');
+                    function loaded() {
+                        $('.mobile-dentacoin-address-and-qr .modal-dialog').css('margin-top', Math.max(20, ($(window).height() - $('.mobile-dentacoin-address-and-qr .modal-dialog').height()) / 2));
+                    }
+
+                    if (img.complete) {
+                        loaded()
+                    } else {
+                        img.addEventListener('load', loaded);
+                    }
                 });
             }
         }
@@ -81548,6 +80815,7 @@ var pages_data = {
 
         //getting DCN data from Indacoin every 10 minutes
         if(!basic.property_exists(indacoin_data, 'dcn') || (basic.property_exists(indacoin_data, 'dcn') && indacoin_data.dcn.timestamp < Date.now())) {
+            showLoader();
             getCryptoDataByIndacoin('DCN', function(indacoin_dcn_data) {
                 passedGetDCNDataRequest(indacoin_dcn_data);
             });
@@ -81560,6 +80828,7 @@ var pages_data = {
 
             //getting ETH data from Indacoin every 10 minutes
             if(!basic.property_exists(indacoin_data, 'eth') || (basic.property_exists(indacoin_data, 'eth') && indacoin_data.eth.timestamp < Date.now())) {
+                showLoader();
                 getCryptoDataByIndacoin('ETH', function(indacoin_eth_data) {
                     passedGetETHDataRequest(indacoin_eth_data);
                 });
@@ -81571,6 +80840,8 @@ var pages_data = {
                 var eth_for_one_usd = parseFloat(indacoin_eth_data.eth.value) / 100;
 
                 $('section.ready-to-purchase-with-external-api #crypto-amount').val(Math.floor(dcn_for_one_usd * parseFloat($('section.ready-to-purchase-with-external-api #usd-value').val().trim())));
+
+                hideLoader();
 
                 $('section.ready-to-purchase-with-external-api #usd-value').on('input', function() {
                     if($(this).val().trim() < 30)   {
@@ -82098,7 +81369,7 @@ var pages_data = {
                                                         dApp.web3_1_0.eth.sendTransaction({
                                                             from: global_state.account, to: sending_to_address, value: dApp.web3_1_0.utils.toWei(crypto_val, 'ether')
                                                         }).on('transactionHash', function(hash){
-                                                            displayMessageOnDCNTransactionSend('Ethers', hash);
+                                                            displayMessageOnTransactionSend('Ethers', hash);
                                                         }).catch(function(err) {
                                                             basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
                                                         });
@@ -82141,21 +81412,18 @@ var pages_data = {
                                                                     if($('.cached-keystore-file #your-secret-key-password').val().trim() == '') {
                                                                         basic.showAlert('Please enter valid secret file password.', '', true);
                                                                     } else {
-                                                                        showLoader();
+                                                                        showLoader('Hold on...<br>Your transaction is being processed.');
 
-                                                                        setTimeout(function() {
-                                                                            showLoader('Hold on...<br>Your transaction is being processed.');
-
-                                                                            setTimeout(function () {
-                                                                                var decrypting_keystore = decryptKeystore(window.localStorage.getItem('keystore_file'), $('.cached-keystore-file #your-secret-key-password').val().trim());
-                                                                                if(decrypting_keystore.success) {
-                                                                                    submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, decrypting_keystore.success);
-                                                                                } else if(decrypting_keystore.error) {
-                                                                                    basic.showAlert(decrypting_keystore.message, '', true);
+                                                                        setTimeout(function () {
+                                                                            decryptKeystore(window.localStorage.getItem('keystore_file'), $('.cached-keystore-file #your-secret-key-password').val().trim(), function(success, to_string, error, error_message) {
+                                                                                if(success) {
+                                                                                    submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, success);
+                                                                                } else if(error) {
+                                                                                    basic.showAlert(error_message, '', true);
                                                                                     hideLoader();
                                                                                 }
-                                                                            }, 500);
-                                                                        }, 500);
+                                                                            });
+                                                                        }, 2000);
                                                                     }
                                                                 });
                                                             } else {
@@ -82188,7 +81456,7 @@ var pages_data = {
                                                                                     basic.showAlert(validating_private_key.message, '', true);
                                                                                     hideLoader();
                                                                                 }
-                                                                            }, 500);
+                                                                            }, 2000);
                                                                         }
                                                                     });
                                                                 });
@@ -82214,7 +81482,7 @@ var pages_data = {
     spend_page_gift_cards: function() {
         if(!bidali_lib_loaded) {
             showLoader();
-            $.getScript('assets/libs/bidali/bidali-commerce.js', function() {
+            $.getScript('https://wallet.dentacoin.com/assets/libs/bidali/bidali-commerce.js', function() {
                 bidali_lib_loaded = true;
                 hideLoader();
                 bidaliWidgetInit();
@@ -82225,11 +81493,21 @@ var pages_data = {
 
         function bidaliWidgetInit() {
             $('.buy-gift-cards').click(function() {
-                bidaliSdk.Commerce.render({
-                    apiKey: 'pk_n6mvpompwzm83egzrz2vnh',
-                    paymentCurrencies: ['DCN']
-                });
+                if(is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
+                    window.open('https://wallet.dentacoin.com/spend-gift-cards?show-vouchers=true', '_system');
+                    return false;
+                } else {
+                    bidaliSdk.Commerce.render({
+                        apiKey: 'pk_n6mvpompwzm83egzrz2vnh',
+                        paymentCurrencies: ['DCN']
+                    });
+                }
             });
+
+            var get_params = getGETParameters();
+            if(basic.property_exists(get_params, 'show-vouchers')) {
+                $('.buy-gift-cards').click();
+            }
         }
     },
     spend_page_exchanges: function() {
@@ -82245,10 +81523,11 @@ var pages_data = {
 
                 var exchanges_html = '';
                 for(var i = 0, len = exchanges.length; i < len; i+=1) {
-                    exchanges_html+='<li><a href="'+exchanges[i].link+'" target="_blank">• '+exchanges[i].title+'</a></li>';
+                    exchanges_html+='<li><a href="'+exchanges[i].link+'" target="_blank" class="data-external-link">• '+exchanges[i].title+'</a></li>';
                 }
 
                 $('.camping-for-exchanges').html(exchanges_html);
+                updateExternalURLsForiOSDevice();
 
                 hideLoader();
             }
@@ -82295,18 +81574,19 @@ function styleKeystoreUploadBtnForTx(function_abi, token_symbol, crypto_val, sen
                                                         showLoader('Hold on...<br>Your transaction is being processed.');
 
                                                         setTimeout(function () {
-                                                            var decrypting_keystore = decryptKeystore(keystore_string, $('.proof-of-address #your-secret-key-password').val().trim());
-                                                            if (decrypting_keystore.success) {
-                                                                if ($('.proof-of-address #agree-to-cache-tx-sign').is(':checked')) {
-                                                                    window.localStorage.setItem('keystore_file', keystore_string);
-                                                                }
+                                                            decryptKeystore(keystore_string, $('.proof-of-address #your-secret-key-password').val().trim(), function(success, to_string, error, error_message) {
+                                                                if (success) {
+                                                                    if ($('.proof-of-address #agree-to-cache-tx-sign').is(':checked')) {
+                                                                        window.localStorage.setItem('keystore_file', keystore_string);
+                                                                    }
 
-                                                                submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, decrypting_keystore.success);
-                                                            } else if (decrypting_keystore.error) {
-                                                                basic.showAlert(decrypting_keystore.message, '', true);
-                                                                hideLoader();
-                                                            }
-                                                        }, 500);
+                                                                    submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, success);
+                                                                } else if (error) {
+                                                                    basic.showAlert(error_message, '', true);
+                                                                    hideLoader();
+                                                                }
+                                                            });
+                                                        }, 2000);
                                                     }
                                                 });
                                             } else {
@@ -82355,18 +81635,19 @@ function styleKeystoreUploadBtnForTx(function_abi, token_symbol, crypto_val, sen
                                     showLoader('Hold on...<br>Your transaction is being processed.');
 
                                     setTimeout(function() {
-                                        var decrypting_keystore = decryptKeystore(keystore_string, $('.proof-of-address #your-secret-key-password').val().trim());
-                                        if(decrypting_keystore.success) {
-                                            if($('.proof-of-address #agree-to-cache-tx-sign').is(':checked')) {
-                                                window.localStorage.setItem('keystore_file', keystore_string);
-                                            }
+                                        decryptKeystore(keystore_string, $('.proof-of-address #your-secret-key-password').val().trim(), function(success, to_string, error, error_message) {
+                                            if(success) {
+                                                if($('.proof-of-address #agree-to-cache-tx-sign').is(':checked')) {
+                                                    window.localStorage.setItem('keystore_file', keystore_string);
+                                                }
 
-                                            submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, decrypting_keystore.success);
-                                        } else if(decrypting_keystore.error) {
-                                            basic.showAlert(decrypting_keystore.message, '', true);
-                                            hideLoader();
-                                        }
-                                    }, 500);
+                                                submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, success);
+                                            } else if(error) {
+                                                basic.showAlert(error_message, '', true);
+                                                hideLoader();
+                                            }
+                                        });
+                                    }, 2000);
                                 }
                             });
                         } else {
@@ -82419,25 +81700,38 @@ function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver
             hideLoader();
             basic.closeDialog();
 
+            var pending_history_transaction;
+
             if(symbol == 'DCN') {
-                fireGoogleAnalyticsEvent('Pay', 'Next', 'DCN', token_val);
+                getDentacoinDataByCoingecko(function(request_response) {
+                    pending_history_transaction += buildDentacoinHistoryTransaction(request_response, token_val, receiver, global_state.account, Math.round((new Date()).getTime() / 1000), transactionHash, true);
+
+                    fireGoogleAnalyticsEvent('Pay', 'Next', 'DCN', token_val);
+                    displayMessageOnTransactionSend(token_label, transactionHash);
+
+                    $('.transaction-history tbody').prepend(pending_history_transaction);
+                });
             } else if(symbol == 'ETH') {
                 getEthereumDataByCoingecko(function(request_response) {
+                    pending_history_transaction += buildEthereumHistoryTransaction(request_response, token_val, receiver, global_state.account, Math.round((new Date()).getTime() / 1000), transactionHash, true);
+
                     fireGoogleAnalyticsEvent('Pay', 'Next', 'ETH in USD', Math.floor(parseFloat(token_val) * request_response.market_data.current_price.usd));
+                    displayMessageOnTransactionSend(token_label, transactionHash);
+
+                    $('.transaction-history tbody').prepend(pending_history_transaction);
                 });
             }
-
-            displayMessageOnDCNTransactionSend(token_label, transactionHash);
         });
     });
 }
 
-function displayMessageOnDCNTransactionSend(token_label, tx_hash)  {
+function displayMessageOnTransactionSend(token_label, tx_hash)  {
     $('.section-amount-to #crypto-amount').val('').trigger('change');
     $('.section-amount-to #usd-val').val('').trigger('change');
     $('.section-amount-to #verified-receiver-address').prop('checked', false);
 
-    basic.showAlert('<div class="padding-top-15 padding-bottom-10 fs-16">Your '+token_label+' are on their way to the Receiver\'s wallet. Check transaction status <a href="https://etherscan.io/tx/'+tx_hash+'" target="_blank" class="lato-bold color-light-blue">Etherscan</a>.</div>', '', true);
+    basic.showAlert('<div class="padding-top-15 padding-bottom-10 fs-16">Your '+token_label+' are on their way to the Receiver\'s wallet. Check transaction status <a href="https://etherscan.io/tx/'+tx_hash+'" target="_blank" class="lato-bold color-light-blue data-external-link">Etherscan</a>.</div>', '', true);
+    updateExternalURLsForiOSDevice();
 }
 
 //custom fix for parent menu active class
@@ -82484,7 +81778,6 @@ window.refreshApp = function() {
     }
 };
 
-var DCNContract_instance_interval = false;
 window.getHomepageData = function() {
     initAccountChecker();
 
@@ -82669,6 +81962,7 @@ function initAccountChecker()  {
 
     //checking if metamask
     if(typeof(web3) !== 'undefined' && web3.currentProvider.isMetaMask === true) {
+        console.log('METAMASK');
         meta_mask_installed = true;
 
         //on metamask account change refresh the website
@@ -82713,14 +82007,21 @@ function initAccountChecker()  {
         }
     } else if(window.localStorage.getItem('current_account') == null && typeof(web3) === 'undefined') {
         //show custom authentication popup
-        var popup_html = '<div class="popup-header padding-bottom-5 text-center"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/wallet-loading.png" class="max-width-80 width-100" alt="Dentacoin wallet logo"></figure></div><div class="left-right-side-holder fs-0"><div class="popup-left inline-block-top" data-step="first"><div class="navigation-link"><a href="javascript:void(0)" data-slug="first" class="active">CREATE</a></div><div class="navigation-link mobile"><a href="javascript:void(0)" data-slug="second">IMPORT</a></div><div class="popup-body first"><div class="creation-text max-width-400 padding-top-20 padding-bottom-20"><svg class="inline-block-top" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 63.3 64.1" style="enable-background:new 0 0 63.3 64.1;" xml:space="preserve"><style type="text/css">.keyholder-st0{fill:url(#SVGID_1_);}.keyholder-st1{fill:url(#SVGID_2_);}.keyholder-st2{fill:url(#SVGID_3_);}.keyholder-st3{fill:url(#SVGID_4_);}.keyholder-st4{fill:url(#SVGID_5_);}.keyholder-st5{fill:url(#SVGID_6_);}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="64.1" width="63.3" x="1.3" y="17.4"></sliceSourceBounds></sfw></metadata><g><g><linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="23.7" y1="8.35" x2="38.6" y2="8.35"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st0" d="M31.2,16.7c4.2,0,7.4-5.2,7.4-9.3S35.3,0,31.2,0s-7.5,3.3-7.5,7.4S27,16.7,31.2,16.7z"/></g><g><linearGradient id="SVGID_2_" gradientUnits="userSpaceOnUse" x1="15.6" y1="20.5" x2="46.8" y2="20.5"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st1" d="M19.1,27.9h3.4c0.3-1.4,0.3-1.5,0.3-1.7c0-0.3,0.5-0.3,0.5,0v1.7h15.8v-1.7c0-0.1,0.3-0.7,0.8,1.5c0,0.1,0,0.1,0.1,0.2h1.9v-2.3c0-1.7,1.3-3,3-3h1.9c-0.5-3.6-1.5-9.3-7.7-9.5c-1.7,3.1-4.5,5.6-7.9,5.6s-6.3-2.5-7.9-5.6c-6.4,0.2-7.3,6.2-7.7,10.7C17,24.9,18.3,26.3,19.1,27.9z"/></g><g><linearGradient id="SVGID_3_" gradientUnits="userSpaceOnUse" x1="17.6" y1="39.35" x2="20.5" y2="39.35"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st2" d="M17.6,40.5c0.3,0,0.5-0.1,0.7-0.2c1-0.4,1.8-1.1,2.2-2.1h-1.4C18.7,39.1,18.2,39.8,17.6,40.5z"/></g><g><linearGradient id="SVGID_4_" gradientUnits="userSpaceOnUse" x1="23.3" y1="51.2" x2="39.1" y2="51.2"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st3" d="M23.3,60.5c0,1.9,1.5,3.5,3.4,3.5c1.9,0,3.5-1.6,3.5-3.5V44.7c0-0.5,0.5-1,1-1s1,0.5,1,1v15.9c0,1.9,1.5,3.5,3.5,3.5c1.9,0,3.4-1.6,3.4-3.5V38.3H23.3V60.5z"/></g><g><linearGradient id="SVGID_5_" gradientUnits="userSpaceOnUse" x1="43" y1="39.4" x2="49.5" y2="39.4"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st4" d="M46.2,40.5c1.4,0,2.8-0.8,3.3-2.2H43C43.4,39.7,44.8,40.5,46.2,40.5z"/></g><g><linearGradient id="SVGID_6_" gradientUnits="userSpaceOnUse" x1="0" y1="32" x2="63.3129" y2="32"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><path class="keyholder-st5" d="M62.4,29.9h-2.7v-7.2c0-0.6-0.5-1-1-1h-4.4c-0.6,0-1,0.4-1,1v7.2h-3.1v-4.3c0-0.6-0.5-1-1-1h-4.4c-0.5,0-1,0.4-1,1v4.3h-26c-1.3-3.6-4.8-6-8.6-6C4.1,23.9,0,28,0,33.1s4.1,9.2,9.2,9.2c3.9,0,7.3-2.4,8.6-6h44.5c0.5,0,1-0.5,1-1v-4.4C63.4,30.3,62.9,29.9,62.4,29.9z M9.2,36.8c-2.1,0-3.7-1.7-3.7-3.7s1.7-3.7,3.7-3.7c2.1,0,3.7,1.7,3.7,3.7S11.3,36.8,9.2,36.8z"/></g></g></svg><div class="inline-block-top text padding-left-10 fs-xs-14 fs-16"><div class="lato-bold fs-18">Let\'s create a new wallet!</div>Please set a secure password, download your Backup File and keep it safe! If lost, there is no way to access your tokens. </div></div><div class="field-parent margin-bottom-15 max-width-300 margin-left-right-auto"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="keystore-file-pass">Enter password:</label><input type="password" maxlength="30" id="keystore-file-pass" class="full-rounded keystore-file-pass required-field"/></div></div><div class="field-parent max-width-300 margin-left-right-auto"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="second-pass">Repeat password:</label><input type="password" maxlength="30" id="second-pass" class="full-rounded second-pass required-field"/></div></div><div class="text-center padding-top-15"><input type="checkbox" checked id="agree-to-cache-create" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-create"><span class="padding-left-5 padding-right-5 inline-block">Remember backup file</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block more-info-keystore-remember fs-0" data-content="Remembering your backup file allows for easier and faster transactions. It is stored only in local device storage and nobody else has access to it."><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="btn-container text-center padding-top-15"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border login-into-wallet min-width-180">CREATE</a></div><div class="auth-popup-faq-link padding-top-20 text-center"><a href="//dentacoin.com/how-to-create-wallet" target="_blank">?</a></div></div></div><div class="popup-right inline-block-top"><div class="navigation-link"><a href="javascript:void(0)" data-slug="second">IMPORT</a></div><div class="popup-body second custom-hide"><div class="padding-top-20 padding-bottom-30 fs-0 row-with-image-and-text max-width-400 max-width-xs-300"><svg class="max-width-80 inline-block" version="1.1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 70.1 86" style="enable-background:new 0 0 70.1 86;" xml:space="preserve"><style type="text/css">.st0-import{fill:url(#SVGID_1_import);}.st1-import{fill:url(#SVGID_2_import);}.st2-import{fill:#FFFFFF;}.st3-import{fill:url(#SVGID_3_import);stroke:#FFFFFF;stroke-width:0.75;stroke-miterlimit:10;}.st4-import{fill:#FFFFFF;stroke:#FFFFFF;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="86" width="70.1" x="16" y="29"></sliceSourceBounds></sfw></metadata><linearGradient id="SVGID_1_import" gradientUnits="userSpaceOnUse" x1="0" y1="43" x2="64" y2="43"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="st0-import" d="M44.7,0H3.1C1.4,0,0,1.3,0,3v80c0,1.6,1.4,3,3.1,3h57.9c1.7,0,3.1-1.3,3.1-3V18.8c0-0.9-0.4-1.8-1-2.5L47.2,1C46.5,0.4,45.6,0,44.7,0z"/><linearGradient id="SVGID_2_import" gradientUnits="userSpaceOnUse" x1="35.9571" y1="23.008" x2="69.6066" y2="23.008"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><circle class="st1-import" cx="52.8" cy="23" r="16.8"/><rect x="28" y="49" class="st2-import" width="8" height="37"/><path class="st2-import" d="M18.2,58.8l13.4-14.6c0.3-0.3,0.7-0.3,1,0l13.4,14.7c0.4,0.4,0.1,1.2-0.5,1.2H18.6C18.1,60,17.8,59.2,18.2,58.8z"/><g><linearGradient id="SVGID_3_import" gradientUnits="userSpaceOnUse" x1="34.8246" y1="23.1469" x2="69.7484" y2="23.1469"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><path class="st3-import" d="M52.3,6.5C61.5,6.5,69,14,69,23.1s-7.5,16.7-16.7,16.7s-16.7-7.5-16.7-16.7S43.1,6.5,52.3,6.5 M52.3,5.7c-9.7,0-17.5,7.8-17.5,17.5s7.8,17.5,17.5,17.5s17.5-7.8,17.5-17.5S61.9,5.7,52.3,5.7L52.3,5.7z"/></g><g><rect x="59" y="28.4" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -2.9698 50.8809)" class="st4-import" width="1.9" height="1.2"/><rect x="58.2" y="27.7" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -2.6509 50.155)" class="st4-import" width="1.9" height="1.2"/><g><polygon class="st4-import" points="60.7,30.7 59.7,31.8 50.9,22.9 51.9,21.9 "/><path class="st4-import" d="M45,16c-1.9,1.9-1.9,4.9,0,6.8c1.9,1.9,4.9,1.9,6.8,0c1.9-1.9,1.9-4.9,0-6.8C49.8,14.1,46.8,14.1,45,16z M50.9,21.9c-1.4,1.4-3.7,1.4-5.1,0c-1.4-1.4-1.4-3.7,0-5.1c1.4-1.4,3.7-1.4,5.1,0C52.3,18.2,52.3,20.5,50.9,21.9z"/></g></g></svg><div class="inline-block padding-left-10 fs-16 fs-xs-14 text"><div class="lato-bold fs-18">Welcome back!</div>To import an existing wallet, please upload your Backup File.</div></div><div class="text-center import-keystore-file-row">';
+        var popup_html = '<div class="popup-header padding-bottom-10 text-center"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/wallet-loading.png" class="max-width-80 width-100" alt="Dentacoin wallet logo"></figure></div><div class="left-right-side-holder fs-0"><div class="popup-left inline-block-top" data-step="first"><div class="navigation-link"><a href="javascript:void(0)" data-slug="first" class="active">CREATE</a></div><div class="navigation-link mobile"><a href="javascript:void(0)" data-slug="second">IMPORT</a></div><div class="popup-body first"><div class="creation-text max-width-400 padding-top-20 padding-bottom-20"><svg class="inline-block-top" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 63.3 64.1" style="enable-background:new 0 0 63.3 64.1;" xml:space="preserve"><style type="text/css">.keyholder-st0{fill:url(#SVGID_1_);}.keyholder-st1{fill:url(#SVGID_2_);}.keyholder-st2{fill:url(#SVGID_3_);}.keyholder-st3{fill:url(#SVGID_4_);}.keyholder-st4{fill:url(#SVGID_5_);}.keyholder-st5{fill:url(#SVGID_6_);}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="64.1" width="63.3" x="1.3" y="17.4"></sliceSourceBounds></sfw></metadata><g><g><linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="23.7" y1="8.35" x2="38.6" y2="8.35"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st0" d="M31.2,16.7c4.2,0,7.4-5.2,7.4-9.3S35.3,0,31.2,0s-7.5,3.3-7.5,7.4S27,16.7,31.2,16.7z"/></g><g><linearGradient id="SVGID_2_" gradientUnits="userSpaceOnUse" x1="15.6" y1="20.5" x2="46.8" y2="20.5"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st1" d="M19.1,27.9h3.4c0.3-1.4,0.3-1.5,0.3-1.7c0-0.3,0.5-0.3,0.5,0v1.7h15.8v-1.7c0-0.1,0.3-0.7,0.8,1.5c0,0.1,0,0.1,0.1,0.2h1.9v-2.3c0-1.7,1.3-3,3-3h1.9c-0.5-3.6-1.5-9.3-7.7-9.5c-1.7,3.1-4.5,5.6-7.9,5.6s-6.3-2.5-7.9-5.6c-6.4,0.2-7.3,6.2-7.7,10.7C17,24.9,18.3,26.3,19.1,27.9z"/></g><g><linearGradient id="SVGID_3_" gradientUnits="userSpaceOnUse" x1="17.6" y1="39.35" x2="20.5" y2="39.35"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st2" d="M17.6,40.5c0.3,0,0.5-0.1,0.7-0.2c1-0.4,1.8-1.1,2.2-2.1h-1.4C18.7,39.1,18.2,39.8,17.6,40.5z"/></g><g><linearGradient id="SVGID_4_" gradientUnits="userSpaceOnUse" x1="23.3" y1="51.2" x2="39.1" y2="51.2"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st3" d="M23.3,60.5c0,1.9,1.5,3.5,3.4,3.5c1.9,0,3.5-1.6,3.5-3.5V44.7c0-0.5,0.5-1,1-1s1,0.5,1,1v15.9c0,1.9,1.5,3.5,3.5,3.5c1.9,0,3.4-1.6,3.4-3.5V38.3H23.3V60.5z"/></g><g><linearGradient id="SVGID_5_" gradientUnits="userSpaceOnUse" x1="43" y1="39.4" x2="49.5" y2="39.4"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st4" d="M46.2,40.5c1.4,0,2.8-0.8,3.3-2.2H43C43.4,39.7,44.8,40.5,46.2,40.5z"/></g><g><linearGradient id="SVGID_6_" gradientUnits="userSpaceOnUse" x1="0" y1="32" x2="63.3129" y2="32"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><path class="keyholder-st5" d="M62.4,29.9h-2.7v-7.2c0-0.6-0.5-1-1-1h-4.4c-0.6,0-1,0.4-1,1v7.2h-3.1v-4.3c0-0.6-0.5-1-1-1h-4.4c-0.5,0-1,0.4-1,1v4.3h-26c-1.3-3.6-4.8-6-8.6-6C4.1,23.9,0,28,0,33.1s4.1,9.2,9.2,9.2c3.9,0,7.3-2.4,8.6-6h44.5c0.5,0,1-0.5,1-1v-4.4C63.4,30.3,62.9,29.9,62.4,29.9z M9.2,36.8c-2.1,0-3.7-1.7-3.7-3.7s1.7-3.7,3.7-3.7c2.1,0,3.7,1.7,3.7,3.7S11.3,36.8,9.2,36.8z"/></g></g></svg><div class="inline-block-top text padding-left-10 fs-xs-14 fs-16"><div class="lato-bold fs-18">Let\'s create a new wallet!</div>Please set a secure password, download your Backup File and keep it safe! If lost, there is no way to access your tokens. </div></div><div class="field-parent margin-bottom-15 max-width-300 margin-left-right-auto"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="keystore-file-pass">Enter password:</label><input type="password" maxlength="30" id="keystore-file-pass" class="full-rounded keystore-file-pass required-field"/></div></div><div class="field-parent max-width-300 margin-left-right-auto"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="second-pass">Repeat password:</label><input type="password" maxlength="30" id="second-pass" class="full-rounded second-pass required-field"/></div></div><div class="text-center padding-top-15"><input type="checkbox" checked id="agree-to-cache-create" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-create"><span class="padding-left-5 padding-right-5 inline-block">Remember backup file</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block more-info-keystore-remember fs-0" data-content="Remembering your backup file allows for easier and faster transactions. It is stored only in local device storage and nobody else has access to it."><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="btn-container text-center padding-top-15 padding-bottom-15"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border login-into-wallet min-width-180">CREATE</a></div></div></div><div class="popup-right inline-block-top"><div class="navigation-link"><a href="javascript:void(0)" data-slug="second">IMPORT</a></div><div class="popup-body second custom-hide"><div class="padding-top-20 padding-bottom-30 fs-0 row-with-image-and-text max-width-400 max-width-xs-300"><svg class="max-width-80 inline-block" version="1.1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 70.1 86" style="enable-background:new 0 0 70.1 86;" xml:space="preserve"><style type="text/css">.st0-import{fill:url(#SVGID_1_import);}.st1-import{fill:url(#SVGID_2_import);}.st2-import{fill:#FFFFFF;}.st3-import{fill:url(#SVGID_3_import);stroke:#FFFFFF;stroke-width:0.75;stroke-miterlimit:10;}.st4-import{fill:#FFFFFF;stroke:#FFFFFF;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="86" width="70.1" x="16" y="29"></sliceSourceBounds></sfw></metadata><linearGradient id="SVGID_1_import" gradientUnits="userSpaceOnUse" x1="0" y1="43" x2="64" y2="43"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="st0-import" d="M44.7,0H3.1C1.4,0,0,1.3,0,3v80c0,1.6,1.4,3,3.1,3h57.9c1.7,0,3.1-1.3,3.1-3V18.8c0-0.9-0.4-1.8-1-2.5L47.2,1C46.5,0.4,45.6,0,44.7,0z"/><linearGradient id="SVGID_2_import" gradientUnits="userSpaceOnUse" x1="35.9571" y1="23.008" x2="69.6066" y2="23.008"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><circle class="st1-import" cx="52.8" cy="23" r="16.8"/><rect x="28" y="49" class="st2-import" width="8" height="37"/><path class="st2-import" d="M18.2,58.8l13.4-14.6c0.3-0.3,0.7-0.3,1,0l13.4,14.7c0.4,0.4,0.1,1.2-0.5,1.2H18.6C18.1,60,17.8,59.2,18.2,58.8z"/><g><linearGradient id="SVGID_3_import" gradientUnits="userSpaceOnUse" x1="34.8246" y1="23.1469" x2="69.7484" y2="23.1469"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><path class="st3-import" d="M52.3,6.5C61.5,6.5,69,14,69,23.1s-7.5,16.7-16.7,16.7s-16.7-7.5-16.7-16.7S43.1,6.5,52.3,6.5 M52.3,5.7c-9.7,0-17.5,7.8-17.5,17.5s7.8,17.5,17.5,17.5s17.5-7.8,17.5-17.5S61.9,5.7,52.3,5.7L52.3,5.7z"/></g><g><rect x="59" y="28.4" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -2.9698 50.8809)" class="st4-import" width="1.9" height="1.2"/><rect x="58.2" y="27.7" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -2.6509 50.155)" class="st4-import" width="1.9" height="1.2"/><g><polygon class="st4-import" points="60.7,30.7 59.7,31.8 50.9,22.9 51.9,21.9 "/><path class="st4-import" d="M45,16c-1.9,1.9-1.9,4.9,0,6.8c1.9,1.9,4.9,1.9,6.8,0c1.9-1.9,1.9-4.9,0-6.8C49.8,14.1,46.8,14.1,45,16z M50.9,21.9c-1.4,1.4-3.7,1.4-5.1,0c-1.4-1.4-1.4-3.7,0-5.1c1.4-1.4,3.7-1.4,5.1,0C52.3,18.2,52.3,20.5,50.9,21.9z"/></g></g></svg><div class="inline-block padding-left-10 fs-16 fs-xs-14 text"><div class="lato-bold fs-18">Welcome back!</div>To import an existing wallet, please upload your Backup File.</div></div><div class="text-center import-keystore-file-row">';
         if(is_hybrid) {
             popup_html+='<label class="button custom-upload-button">';
         } else {
             popup_html+='<input type="file" id="upload-keystore" class="hide-input upload-keystore"/><label for="upload-keystore" class="button custom-upload-button">';
         }
-        popup_html+='<a><span>Upload your Backup File (recommended)</span><svg class="load" version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0 0 40 40" enable-background="new 0 0 40 40"><path opacity="0.3" fill="#fff" d="M20.201,5.169c-8.254,0-14.946,6.692-14.946,14.946c0,8.255,6.692,14.946,14.946,14.946s14.946-6.691,14.946-14.946C35.146,11.861,28.455,5.169,20.201,5.169z M20.201,31.749c-6.425,0-11.634-5.208-11.634-11.634c0-6.425,5.209-11.634,11.634-11.634c6.425,0,11.633,5.209,11.633,11.634C31.834,26.541,26.626,31.749,20.201,31.749z"/><path fill="#fff" d="M26.013,10.047l1.654-2.866c-2.198-1.272-4.743-2.012-7.466-2.012h0v3.312h0C22.32,8.481,24.301,9.057,26.013,10.047z"><animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 20 20" to="360 20 20" dur="0.5s" repeatCount="indefinite"/></path></svg><svg class="check" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></a><div><span></span></div></label></div><div class="camping-for-action"></div><div class="padding-top-10 text-center fs-14 lato-bold or-label">OR</div><div class="padding-top-10 text-center import-private-key-row"><a href="javascript:void(0);" class="import-private-key light-blue-white-btn fs-16 fs-xs-14">Import Private Key (not recommended)</a></div></div></div>';
+        popup_html+='<a><span>Upload your Backup File (recommended)</span><svg class="load" version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0 0 40 40" enable-background="new 0 0 40 40"><path opacity="0.3" fill="#fff" d="M20.201,5.169c-8.254,0-14.946,6.692-14.946,14.946c0,8.255,6.692,14.946,14.946,14.946s14.946-6.691,14.946-14.946C35.146,11.861,28.455,5.169,20.201,5.169z M20.201,31.749c-6.425,0-11.634-5.208-11.634-11.634c0-6.425,5.209-11.634,11.634-11.634c6.425,0,11.633,5.209,11.633,11.634C31.834,26.541,26.626,31.749,20.201,31.749z"/><path fill="#fff" d="M26.013,10.047l1.654-2.866c-2.198-1.272-4.743-2.012-7.466-2.012h0v3.312h0C22.32,8.481,24.301,9.057,26.013,10.047z"><animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 20 20" to="360 20 20" dur="0.5s" repeatCount="indefinite"/></path></svg><svg class="check" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></a><div><span></span></div></label></div><div class="camping-for-action"></div><div class="padding-top-10 text-center fs-14 lato-bold or-label">OR</div><div class="padding-top-10 text-center import-private-key-row"><a href="javascript:void(0);" class="import-private-key light-blue-white-btn fs-16 fs-xs-14">Import Private Key (not recommended)</a></div></div><div class="auth-popup-faq-link padding-top-20 text-center"><a href="https://dentacoin.com/how-to-create-wallet" target="_blank" class="data-external-link">?</a></div></div>';
         basic.showDialog(popup_html, 'custom-auth-popup', null, true);
+        updateExternalURLsForiOSDevice();
+
+        $(window).on('load', function() {
+            if($('.custom-auth-popup .modal-content').height() > $('.custom-auth-popup .modal-dialog').height()) {
+                $('.custom-auth-popup .modal-content').addClass('clear-center-position');
+            }
+        });
 
         $('.custom-auth-popup .navigation-link > a').click(function()  {
             $('.custom-auth-popup .navigation-link a').removeClass('active');
@@ -82760,18 +82061,19 @@ function initAccountChecker()  {
                     if(validate_private_key.success) {
                         var internet = navigator.onLine;
                         if(internet) {
-                            console.log('===== make request for save public keys for assurance =====');
+                            savePublicKeyToAssurance(validate_private_key.success.address, validate_private_key.success.public_key);
                         }
+                        setTimeout(function() {
+                            window.localStorage.setItem('current_account', validate_private_key.success.address);
+                            fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
 
-                        window.localStorage.setItem('current_account', validate_private_key.success.address);
-                        fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
-
-                        if(is_hybrid) {
-                            refreshApp();
-                            //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
-                        } else {
-                            window.location.reload();
-                        }
+                            if(is_hybrid) {
+                                refreshApp();
+                                //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
+                            } else {
+                                window.location.reload();
+                            }
+                        }, 500);
                     } else if (validate_private_key.error) {
                         hideLoader();
 
@@ -82789,7 +82091,6 @@ function initAccountChecker()  {
         // ================================= CREATING ==========================================
 
         $('.custom-auth-popup .popup-left .login-into-wallet').click(function() {
-            console.log('CLICK CREATION');
             var this_btn = this;
             var login_errors = false;
             $('.popup-left .error-handle').remove();
@@ -82823,69 +82124,71 @@ function initAccountChecker()  {
                 }
 
                 setTimeout(function() {
-                    var generated_keystore = generateKeystoreFile($('.custom-auth-popup .keystore-file-pass').val().trim(), function(public_key, keystore) {
+                    generateKeystoreFile($('.custom-auth-popup .keystore-file-pass').val().trim(), function(public_key, keystore) {
                         var keystore_file_name = buildKeystoreFileName('0x' + keystore.address);
 
                         //save the public key to assurance
                         var internet = navigator.onLine;
                         if(internet) {
-                            console.log('===== make request for save public keys for assurance =====');
+                            savePublicKeyToAssurance('0x' + keystore.address, public_key);
                         }
 
-                        if(is_hybrid) {
-                            //MOBILE APP
-                            if(basic.getMobileOperatingSystem() == 'Android') {
-                                androidFileDownload(keystore_file_name, JSON.stringify(keystore), function() {
-                                    fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
-                                    loginIntoWallet();
-                                });
-                            } else if(basic.getMobileOperatingSystem() == 'iOS') {
-                                //if iOS adding 2 more additional buttons. Downloads in iOS are not possible, because they have different file architecture. First button is for export (copy or share in socials) the keystore file and second one is to login in the Wallet
-                                $(this_btn).parent().html('<div class="padding-bottom-20 text-center"><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border ios-export-keystore min-width-200">Export Backup file</a></div><div><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border ios-login-into-wallet disabled min-width-200">Login into Wallet</a></div>');
-                                hideLoader();
+                        setTimeout(function() {
+                            if(is_hybrid) {
+                                //MOBILE APP
+                                if(basic.getMobileOperatingSystem() == 'Android') {
+                                    androidFileDownload(keystore_file_name, JSON.stringify(keystore), function() {
+                                        fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
+                                        loginIntoWallet();
+                                    });
+                                } else if(basic.getMobileOperatingSystem() == 'iOS') {
+                                    //if iOS adding 2 more additional buttons. Downloads in iOS are not possible, because they have different file architecture. First button is for export (copy or share in socials) the keystore file and second one is to login in the Wallet
+                                    $(this_btn).parent().html('<div class="padding-bottom-20 text-center"><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border ios-export-keystore min-width-200">Export Backup file</a></div><div><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border ios-login-into-wallet disabled min-width-200">Login into Wallet</a></div>');
+                                    hideLoader();
 
-                                $('.ios-export-keystore').click(function() {
-                                    window.plugins.socialsharing.share(JSON.stringify(keystore));
-                                    $('.ios-login-into-wallet').removeClass('disabled');
-                                });
+                                    $('.ios-export-keystore').click(function() {
+                                        //using export plugin, because in iOS there is no such thing as direct file download
+                                        window.plugins.socialsharing.share(JSON.stringify(keystore));
+                                        $('.ios-login-into-wallet').removeClass('disabled');
+                                    });
 
-                                //logging into wallet
-                                $('.ios-login-into-wallet').click(function() {
-                                    if($(this).hasClass('disabled')) {
-                                        basic.showAlert('Please make sure you copied and saved your Backup file and keep it in a safe place. Only you are responsible for it!', '', true);
-                                    } else {
-                                        window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
+                                    //logging into wallet
+                                    $('.ios-login-into-wallet').click(function() {
+                                        if($(this).hasClass('disabled')) {
+                                            basic.showAlert('Please make sure you copied and saved your Backup file and keep it in a safe place. Only you are responsible for it!', '', true);
+                                        } else {
+                                            window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
+                                            window.localStorage.setItem('current_account', '0x' + keystore.address);
+
+                                            fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
+                                            refreshApp();
+                                        }
+                                    });
+                                }
+                            } else {
+                                if(basic.getMobileOperatingSystem() == 'iOS' && basic.isMobile()) {
+                                    basic.showAlert('Backup File has been opened in new tab of your browser. Please make sure to share/ copy and keep it in a safe place. Only you are responsible for it!', 'mobile-safari-keystore-creation', true);
+
+                                    $('.mobile-safari-keystore-creation .modal-footer .btn.btn-primary, .mobile-safari-keystore-creation .bootbox-close-button.close').click(function() {
+                                        if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
+                                            window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
+                                        }
                                         window.localStorage.setItem('current_account', '0x' + keystore.address);
 
                                         fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
-
                                         refreshApp();
-                                    }
-                                });
+                                    });
+
+                                    //mobile safari
+                                    downloadFile(keystore_file_name, JSON.stringify(keystore));
+                                } else {
+                                    //BROWSER
+                                    downloadFile(buildKeystoreFileName('0x' + keystore.address), JSON.stringify(keystore));
+                                    fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
+                                    loginIntoWallet();
+                                }
                             }
-                        } else {
-                            if(basic.getMobileOperatingSystem() == 'iOS' && basic.isMobile()) {
-                                basic.showAlert('Backup File has been opened in new tab of your browser. Please make sure to share/ copy and keep it in a safe place. Only you are responsible for it!', 'mobile-safari-keystore-creation', true);
-
-                                $('.mobile-safari-keystore-creation .modal-footer .btn.btn-primary, .mobile-safari-keystore-creation .bootbox-close-button.close').click(function() {
-                                    if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
-                                        window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
-                                    }
-                                    window.localStorage.setItem('current_account', '0x' + keystore.address);
-
-                                    fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
-                                    refreshApp();
-                                });
-
-                                //mobile safari
-                                downloadFile(keystore_file_name, JSON.stringify(keystore));
-                            } else {
-                                //BROWSER
-                                downloadFile(buildKeystoreFileName('0x' + keystore.address), JSON.stringify(keystore));
-                                fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
-                                loginIntoWallet();
-                            }
-                        }
+                        }, 500);
 
                         function loginIntoWallet() {
                             if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
@@ -82899,7 +82202,6 @@ function initAccountChecker()  {
                                         window.localStorage.setItem('current_account', '0x' + keystore.address);
 
                                         fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
-
                                         refreshApp();
                                         //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
                                     } else {
@@ -82941,6 +82243,65 @@ function customErrorHandle(el, string) {
 
 //styling input type file for importing keystore file
 function styleKeystoreUploadBtn()    {
+    function proceedWithImportingAfterKeystoreUploading(keystore_string) {
+        if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address')) {
+            var address = JSON.parse(keystore_string).address;
+
+            $('.or-label').hide();
+            $('.import-private-key-row').hide();
+
+            //show continue button next step button
+            $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('<div class="enter-pass-label"><label>Please enter password for the secret key file.</label></div><div class="field-parent margin-bottom-15 max-width-300 margin-left-right-auto"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="import-keystore-password">Enter password:</label><input type="password" id="import-keystore-password" class="full-rounded import-keystore-password"/></div></div><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-import" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-import"><span class="padding-left-5 padding-right-5 inline-block">Remember backup file</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block import-more-info-keystore-remember fs-0" data-content="Remembering your backup file allows for easier and faster transactions. It is stored only in local device storage and nobody else has access to it."><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="continue-btn padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border">CONTINUE</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block">Go back</span></a></div>');
+
+            $('.import-more-info-keystore-remember').popover({
+                trigger: 'click'
+            });
+
+            $('.custom-auth-popup .popup-right .popup-body .continue-btn > a').click(function () {
+                $('.custom-auth-popup .popup-right .error-handle').remove();
+                var keystore_password = $('.custom-auth-popup .popup-right .popup-body .import-keystore-password').val().trim();
+                if (keystore_password == '') {
+                    customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), 'Please enter your backup file password.');
+                } else {
+                    showLoader('Hold on...<br>It may take up to 5 minutes to decrypt your Backup file.');
+
+                    setTimeout(function () {
+                        importKeystoreFile(keystore_string, keystore_password, function(success, public_key, address, error, error_message) {
+                            if (success) {
+                                var internet = navigator.onLine;
+                                if (internet) {
+                                    savePublicKeyToAssurance(address, public_key);
+                                }
+
+                                setTimeout(function() {
+                                    fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
+
+                                    if ($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
+                                        window.localStorage.setItem('keystore_file', keystore_string);
+                                        window.localStorage.setItem('current_account', '0x' + address);
+
+                                        refreshApp();
+                                    } else {
+                                        window.localStorage.setItem('current_account', '0x' + address);
+                                        refreshApp();
+                                        //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog: "Wait,Loading App", loadUrlTimeoutValue: 60000});
+                                    }
+                                }, 500);
+                            } else if (error) {
+                                hideLoader();
+                                customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), error_message);
+                            }
+                        });
+                    }, 2000);
+                }
+            });
+        } else {
+            $('.custom-auth-popup .popup-right .popup-body #upload-keystore').val('');
+            basic.showAlert('Please upload valid keystore file.', '', true);
+            $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('');
+        }
+    }
+
     if(is_hybrid) {
         //MOBILE APP
         if(basic.getMobileOperatingSystem() == 'Android') {
@@ -82960,59 +82321,7 @@ function styleKeystoreUploadBtn()    {
                                     reader.onloadend = function () {
                                         var keystore_string = this.result;
                                         setTimeout(function () {
-                                            if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address')) {
-                                                var address = JSON.parse(keystore_string).address;
-
-                                                $('.or-label').hide();
-                                                $('.import-private-key-row').hide();
-
-                                                //show continue button next step button
-                                                $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('<div class="enter-pass-label"><label>Please enter password for the secret key file.</label></div><div class="field-parent margin-bottom-15 max-width-300 margin-left-right-auto"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="import-keystore-password">Enter password:</label><input type="password" id="import-keystore-password" class="full-rounded import-keystore-password"/></div></div><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-import" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-import"><span class="padding-left-5 padding-right-5 inline-block">Remember backup file</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block import-more-info-keystore-remember fs-0" data-content="Remembering your backup file allows for easier and faster transactions. It is stored only in local device storage and nobody else has access to it."><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="continue-btn padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border">CONTINUE</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block">Go back</span></a></div>');
-
-                                                $('.import-more-info-keystore-remember').popover({
-                                                    trigger: 'click'
-                                                });
-
-                                                $('.custom-auth-popup .popup-right .popup-body .continue-btn > a').click(function () {
-                                                    $('.custom-auth-popup .popup-right .error-handle').remove();
-                                                    var keystore_password = $('.custom-auth-popup .popup-right .popup-body .import-keystore-password').val().trim();
-                                                    if (keystore_password == '') {
-                                                        customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), 'Please enter your backup file password.');
-                                                    } else {
-                                                        showLoader('Hold on...<br>Importing your Backup File.');
-
-                                                        setTimeout(function () {
-                                                            var imported_keystore = importKeystoreFile(keystore_string, keystore_password);
-                                                            if (imported_keystore.success) {
-                                                                var internet = navigator.onLine;
-                                                                if (internet) {
-                                                                    console.log('===== make request for save public keys for assurance =====');
-                                                                }
-
-                                                                fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
-
-                                                                if ($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
-                                                                    window.localStorage.setItem('keystore_file', keystore_string);
-                                                                    window.localStorage.setItem('current_account', '0x' + address);
-
-                                                                    refreshApp();
-                                                                } else {
-                                                                    window.localStorage.setItem('current_account', '0x' + address);
-                                                                    refreshApp();
-                                                                    //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog: "Wait,Loading App", loadUrlTimeoutValue: 60000});
-                                                                }
-                                                            } else if (imported_keystore.error) {
-                                                                hideLoader();
-                                                                customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), imported_keystore.message);
-                                                            }
-                                                        }, 500);
-                                                    }
-                                                });
-                                            } else {
-                                                $('.custom-auth-popup .popup-right .popup-body #upload-keystore').val('');
-                                                basic.showAlert('Please upload valid keystore file.', '', true);
-                                                $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('');
-                                            }
+                                            proceedWithImportingAfterKeystoreUploading(keystore_string);
                                         }, 500);
                                     };
 
@@ -83030,40 +82339,11 @@ function styleKeystoreUploadBtn()    {
         }else if(basic.getMobileOperatingSystem() == 'iOS') {
             //iOS
             $('.custom-upload-button').click(function() {
-                console.log('CLIKCEDDDD ==========================');
-                console.log(cordova.file, 'cordova.file');
-
-                FilePicker.pickFile(function(path) {
-                    alert("You picked this file: " + path);
-                }, function(err) {
-                    alert('File importing failed. Please update to one of the latest iOS versions in order to have file importing working.');
+                iOSFileUpload(function(keystore_string) {
+                    setTimeout(function () {
+                        proceedWithImportingAfterKeystoreUploading(keystore_string);
+                    }, 500);
                 });
-
-                /*var this_btn = $(this);
-                fileChooser.open(function (file_uri) {
-                    console.log(file_uri, 'file_uri');
-
-                    window.resolveLocalFileSystemURL(decodeURIComponent(file_uri), function (entry) {
-                        window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function (rootEntry) {
-                            rootEntry.getFile(decodeURIComponent(entry.fullPath), {create: false}, function (fileEntry) {
-                                fileEntry.file(function (file) {
-                                    var reader = new FileReader();
-
-                                    initCustomInputFileAnimation(this_btn);
-
-                                    reader.onloadend = function () {
-                                        var keystore_string = this.result;
-                                        console.log(keystore_string, 'keystore_string');
-                                    }
-
-                                    reader.readAsText(file);
-                                });
-                            }, function (err) {
-                                alert('Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.');
-                            });
-                        });
-                    });
-                });*/
             });
         }
     } else {
@@ -83101,31 +82381,34 @@ function styleKeystoreUploadBtn()    {
                                 if(keystore_password == '')  {
                                     customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), 'Please enter your backup file password.');
                                 } else {
-                                    showLoader('Hold on...<br>Importing your Backup File.');
+                                    showLoader('Hold on...<br>It may take up to 5 minutes to decrypt your Backup file.');
 
                                     setTimeout(function() {
-                                        var imported_keystore = importKeystoreFile(keystore_string, keystore_password);
-                                        if(imported_keystore.success) {
-                                            var internet = navigator.onLine;
-                                            if(internet) {
-                                                console.log('===== make request for save public keys for assurance =====');
-                                            }
+                                        importKeystoreFile(keystore_string, keystore_password, function(success, public_key, address, error, error_message) {
+                                            if(success) {
+                                                var internet = navigator.onLine;
+                                                if(internet) {
+                                                    savePublicKeyToAssurance(address, public_key);
+                                                }
 
-                                            fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
+                                                setTimeout(function() {
+                                                    fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
 
-                                            if($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
-                                                window.localStorage.setItem('current_account', '0x' + address);
-                                                window.localStorage.setItem('keystore_file', JSON.stringify(imported_keystore.success));
-                                                window.location.reload();
-                                            } else {
-                                                window.localStorage.setItem('current_account', '0x' + address);
-                                                window.location.reload();
+                                                    if($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
+                                                        window.localStorage.setItem('current_account', '0x' + address);
+                                                        window.localStorage.setItem('keystore_file', JSON.stringify(success));
+                                                        window.location.reload();
+                                                    } else {
+                                                        window.localStorage.setItem('current_account', '0x' + address);
+                                                        window.location.reload();
+                                                    }
+                                                }, 500);
+                                            } else if(error) {
+                                                hideLoader();
+                                                customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), error_message);
                                             }
-                                        } else if(imported_keystore.error) {
-                                            hideLoader();
-                                            customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), imported_keystore.message);
-                                        }
-                                    }, 500);
+                                        });
+                                    }, 2000);
                                 }
                             });
                         }, 500);
@@ -83229,7 +82512,7 @@ function downloadFile(filename, text) {
 //opening WALLET SETTINGS
 $(document).on('click', '.open-settings', function() {
     basic.closeDialog();
-    var settings_html = '<div class="text-center fs-0 color-white lato-bold popup-header"><a href="javascript:void(0)" class="custom-close-bootbox max-width-20 inline-block margin-right-10"><svg class="width-100" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 62 52.3" style="enable-background:new 0 0 62 52.3;" xml:space="preserve"><style type="text/css">.st1{fill:#FFFFFF;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="52.3" width="62" x="19" y="48.9"/></sfw></metadata><path class="st1" d="M62,26.2c0-2.2-1.8-4-4-4H14.2L30.4,7c1.7-1.4,1.8-4,0.4-5.6c-1.4-1.7-4-1.8-5.6-0.4C25.1,1,25,1.1,25,1.2 L1.3,23.2c-1.6,1.5-1.7,4-0.2,5.7C1.1,29,1.2,29,1.3,29.1L25,51.2c1.6,1.5,4.1,1.4,5.7-0.2c1.5-1.6,1.4-4.1-0.2-5.7L14.2,30.2H58 C60.2,30.2,62,28.4,62,26.2z"/></svg></a><span class="inline-block text-center fs-28 fs-xs-16">DENTACOIN WALLET SETTINGS</span></div><div class="popup-body">';
+    var settings_html = '<div class="text-center fs-0 color-white lato-bold popup-header"><a href="javascript:void(0)" class="custom-close-bootbox inline-block margin-right-5"><svg class="width-100" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 62 52.3" style="enable-background:new 0 0 62 52.3;" xml:space="preserve"><style type="text/css">.st1{fill:#FFFFFF;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="52.3" width="62" x="19" y="48.9"/></sfw></metadata><path class="st1" d="M62,26.2c0-2.2-1.8-4-4-4H14.2L30.4,7c1.7-1.4,1.8-4,0.4-5.6c-1.4-1.7-4-1.8-5.6-0.4C25.1,1,25,1.1,25,1.2 L1.3,23.2c-1.6,1.5-1.7,4-0.2,5.7C1.1,29,1.2,29,1.3,29.1L25,51.2c1.6,1.5,4.1,1.4,5.7-0.2c1.5-1.6,1.4-4.1-0.2-5.7L14.2,30.2H58 C60.2,30.2,62,28.4,62,26.2z"/></svg></a><span class="inline-block text-center fs-28 fs-xs-16">DENTACOIN WALLET SETTINGS</span></div><div class="popup-body">';
 
     if((window.localStorage.getItem('keystore_file') == null)) {
         //if not cached keystore file show the option for caching it
@@ -83254,8 +82537,6 @@ $(document).on('click', '.open-settings', function() {
                     //ANDROID
                     $('.remember-keystore-upload').click(function() {
                         var this_btn = $(this);
-
-                        // =================================== TEST THIS ON GALAXY s7 ===========================================
                         fileChooser.open(function(file_uri) {
                             console.log(file_uri, 'file_uri');
                             window.resolveLocalFileSystemURL(decodeURIComponent(file_uri), function (entry) {
@@ -83289,14 +82570,19 @@ $(document).on('click', '.open-settings', function() {
                     });
                 }else if(basic.getMobileOperatingSystem() == 'iOS') {
                     //iOS
-                    alert('iOS not supported yet');
+                    iOSFileUpload(function(keystore_string) {
+                        if(basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && checksumAddress('0x' + JSON.parse(keystore_string).address) == checksumAddress(global_state.account)) {
+                            validateKeystoreFileAndPasswordForCachingKeystoreFile(this_camping_row, keystore_string);
+                        } else {
+                            basic.showAlert('Please upload valid keystore file which is related to your Dentacoin Wallet address.', '', true);
+                        }
+                    });
                 }
             } else {
                 //BROWSER
                 Array.prototype.forEach.call(document.querySelectorAll('.remember-keystore-upload'), function(input) {
                     var label = input.nextElementSibling;
                     input.addEventListener('change', function(e) {
-                        console.log('change');
                         var myFile = this.files[0];
                         var reader = new FileReader();
 
@@ -83328,25 +82614,31 @@ $(document).on('click', '.open-settings', function() {
                 } else {
                     showLoader('Hold on...<br>Caching your Backup File.');
                     setTimeout(function() {
-                        var import_keystore_response = importKeystoreFile(keystore_string, $('.settings-popup #cache-keystore-password').val().trim());
-                        console.log(import_keystore_response, 'import_keystore_response');
-                        if(import_keystore_response.success) {
-                            window.localStorage.setItem('keystore_file', keystore_string);
+                        importKeystoreFile(keystore_string, $('.settings-popup #cache-keystore-password').val().trim(), function(success, public_key, address, error, error_message) {
+                            if(success) {
+                                window.localStorage.setItem('keystore_file', keystore_string);
 
-                            basic.closeDialog();
-                            basic.showAlert('Your backup file has been cached successfully.', '', true);
-                        } else if(import_keystore_response.error) {
-                            basic.showAlert(import_keystore_response.message, '', true);
-                        }
-
+                                basic.closeDialog();
+                                basic.showAlert('Your backup file has been cached successfully.', '', true);
+                            } else if(error) {
+                                basic.showAlert(error_message, '', true);
+                            }
+                        });
                         hideLoader();
-                    }, 500);
+                    }, 2000);
                 }
             });
         }
     } else if(window.localStorage.getItem('keystore_file') != null) {
+        var download_btn_label = 'Download';
+        if(is_hybrid) {
+            if (basic.getMobileOperatingSystem() == 'iOS') {
+                download_btn_label = 'Export';
+            }
+        }
+
         //if cached keystore file show the option for downloading it
-        settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important download-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M14.4,10.4v3.2c0,0.1,0,0.2-0.1,0.3c0,0.1-0.1,0.2-0.2,0.3c-0.1,0.1-0.2,0.1-0.3,0.2c-0.1,0-0.2,0.1-0.3,0.1 H2.4c-0.1,0-0.2,0-0.3-0.1c-0.1,0-0.2-0.1-0.3-0.2S1.7,14,1.7,13.9c0-0.1-0.1-0.2-0.1-0.3v-3.2c0-0.4-0.4-0.8-0.8-0.8S0,10,0,10.4 v3.2c0,0.3,0.1,0.6,0.2,0.9c0.1,0.3,0.3,0.6,0.5,0.8c0.2,0.2,0.5,0.4,0.8,0.5C1.8,15.9,2.1,16,2.4,16h11.2c0.3,0,0.6-0.1,0.9-0.2 c0.3-0.1,0.6-0.3,0.8-0.5c0.2-0.2,0.4-0.5,0.5-0.8c0.1-0.3,0.2-0.6,0.2-0.9v-3.2c0-0.4-0.4-0.8-0.8-0.8S14.4,10,14.4,10.4z M8.8,8.5 V0.8C8.8,0.4,8.4,0,8,0C7.6,0,7.2,0.4,7.2,0.8v7.7L4.6,5.8c-0.3-0.3-0.8-0.3-1.1,0C3.1,6.1,3.1,6.7,3.4,7l4,4c0,0,0,0,0,0 c0.1,0.1,0.2,0.1,0.3,0.2c0.1,0,0.2,0.1,0.3,0.1c0,0,0,0,0,0c0.1,0,0.2,0,0.3-0.1c0.1,0,0.2-0.1,0.3-0.2l4-4c0.3-0.3,0.3-0.8,0-1.1 s-0.8-0.3-1.1,0L8.8,8.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold">Download Backup File</span></a><div class="fs-14 option-description">Forgot where you’ve stored your wallet access file? Make sure you save it again.</div></div>';
+        settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important download-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M14.4,10.4v3.2c0,0.1,0,0.2-0.1,0.3c0,0.1-0.1,0.2-0.2,0.3c-0.1,0.1-0.2,0.1-0.3,0.2c-0.1,0-0.2,0.1-0.3,0.1 H2.4c-0.1,0-0.2,0-0.3-0.1c-0.1,0-0.2-0.1-0.3-0.2S1.7,14,1.7,13.9c0-0.1-0.1-0.2-0.1-0.3v-3.2c0-0.4-0.4-0.8-0.8-0.8S0,10,0,10.4 v3.2c0,0.3,0.1,0.6,0.2,0.9c0.1,0.3,0.3,0.6,0.5,0.8c0.2,0.2,0.5,0.4,0.8,0.5C1.8,15.9,2.1,16,2.4,16h11.2c0.3,0,0.6-0.1,0.9-0.2 c0.3-0.1,0.6-0.3,0.8-0.5c0.2-0.2,0.4-0.5,0.5-0.8c0.1-0.3,0.2-0.6,0.2-0.9v-3.2c0-0.4-0.4-0.8-0.8-0.8S14.4,10,14.4,10.4z M8.8,8.5 V0.8C8.8,0.4,8.4,0,8,0C7.6,0,7.2,0.4,7.2,0.8v7.7L4.6,5.8c-0.3-0.3-0.8-0.3-1.1,0C3.1,6.1,3.1,6.7,3.4,7l4,4c0,0,0,0,0,0 c0.1,0.1,0.2,0.1,0.3,0.2c0.1,0,0.2,0.1,0.3,0.1c0,0,0,0,0,0c0.1,0,0.2,0,0.3-0.1c0.1,0,0.2-0.1,0.3-0.2l4-4c0.3-0.3,0.3-0.8,0-1.1 s-0.8-0.3-1.1,0L8.8,8.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold">'+download_btn_label+' Backup File</span></a><div class="fs-14 option-description">Forgot where you’ve stored your wallet access file? Make sure you save it again.</div></div>';
 
         $(document).on('click', '.settings-popup .download-keystore', function() {
             if(is_hybrid) {
@@ -83365,7 +82657,8 @@ $(document).on('click', '.open-settings', function() {
                         });
                     }, 500);
                 } else if(basic.getMobileOperatingSystem() == 'iOS') {
-                    alert('Downloading still not tested in iOS');
+                    //using export plugin, because in iOS there is no such thing as direct file download
+                    window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
                 }
             } else {
                 if(basic.getMobileOperatingSystem() == 'iOS' && basic.isMobile()) {
@@ -83406,8 +82699,19 @@ $(document).on('click', '.open-settings', function() {
         });
     }
 
-    settings_html+='</div><div class="popup-footer text-center"><div><a href="javascript:void(0)" class="log-out light-blue-white-btn min-width-220"><svg xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 18.4" style="enable-background:new 0 0 16 18.4;" xml:space="preserve" class="margin-right-5 inline-block max-width-20"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="18.4" width="16" x="1" y="8.4"/></sfw></metadata><g><path class="st0" d="M2.5,0h10.6c1.4,0,2.5,1.1,2.5,2.5v3.2h-1.5V2.5c0-0.5-0.4-1-1-1H2.5c-0.5,0-1,0.4-1,1v13.4c0,0.5,0.4,1,1,1 h10.6c0.5,0,1-0.4,1-1v-3.2h1.5v3.2c0,1.4-1.1,2.5-2.5,2.5H2.5c-1.4,0-2.5-1.1-2.5-2.5V2.5C0,1.1,1.1,0,2.5,0z M11,7.5H6.2v3.4H11 v1.9l5-3.5l-5-3.5V7.5L11,7.5z"/></g></svg><span class="inline-block">Log out</span></a></div><div class="padding-top-10 fs-14">Don\'t forget to download and save your Backup File - there is no other way to log in next time.</div></div>';
+    var settings_bottom_html = '<div class="padding-top-10 fs-14">Don\'t forget to download and save your Backup File - there is no other way to log in next time.</div>';
+
+    //shop Help center menu element (FAQ) only on mobile
+    if($(window).width() < 768) {
+        settings_html+='<div class="option-row"><a href="https://dentacoin.com/how-to-create-wallet" target="_blank" class="display-block-important data-external-link"><svg class="margin-right-5 inline-block max-width-30" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 73.9 73.9" style="enable-background:new 0 0 73.9 73.9;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="74" width="74" x="0" y="-0.1"></sliceSourceBounds></sfw></metadata><circle style="fill:none;stroke:#00B7E2;stroke-width:3;stroke-miterlimit:10;" cx="37" cy="37" r="35.5"/><path d="M46,38.6"/><path style="fill:#00B7E2;" d="M36.8,17.1c-5.8,0-11.4,3.8-11.4,11c0,1.9,1.6,3.4,3.4,3.4c1.9,0,3.4-1.6,3.4-3.4c0-3.8,4.1-3.9,4.5-3.9s4.5,0.2,4.5,3.9v0.8c0,1.6-0.8,2.8-2.2,3.6l-3,1.7c-1.7,0.9-2.7,2.7-2.7,4.5v2.8c0,1.9,1.6,3.4,3.4,3.4s3.4-1.6,3.4-3.4v-1.7l2.2-1.1c3.6-1.9,5.8-5.6,5.8-9.7v-0.9C48.2,20.9,42.4,17.1,36.8,17.1z"/><path style="fill:#00B7E2;" d="M36.8,48.9c-5.6,0-5.6,8.8,0,8.8S42.4,48.9,36.8,48.9z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold">Help Center</span></a><div class="fs-14 option-description">Having difficulties? Check frequently asked questions or contact us at <a href="mailto:admin@dentacoin.com" class="color-light-blue">admin@dentacoin.com</a>.</div></div>';
+
+        settings_bottom_html = '<div class="padding-top-10 fs-14">Don\'t forget to download and save your Backup File - there is no other way to log in next time.</div><div class="text-center padding-top-20 fs-14"><a class="color-light-blue data-external-link" href="https://dentacoin.com/assets/uploads/dentacoin-foundation.pdf" target="_blank">2019 Dentacoin Foundation.</a> All rights reserved.</div><div class="text-center fs-14"><a class="color-light-blue data-external-link" href="https://dentacoin.com/privacy-policy" target="_blank">Privacy Policy</a></div>';
+    }
+
+    settings_html+='</div><div class="popup-footer text-center"><div><a href="javascript:void(0)" class="log-out light-blue-white-btn min-width-220"><svg xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 18.4" style="enable-background:new 0 0 16 18.4;" xml:space="preserve" class="margin-right-5 inline-block max-width-20"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="18.4" width="16" x="1" y="8.4"/></sfw></metadata><g><path class="st0" d="M2.5,0h10.6c1.4,0,2.5,1.1,2.5,2.5v3.2h-1.5V2.5c0-0.5-0.4-1-1-1H2.5c-0.5,0-1,0.4-1,1v13.4c0,0.5,0.4,1,1,1 h10.6c0.5,0,1-0.4,1-1v-3.2h1.5v3.2c0,1.4-1.1,2.5-2.5,2.5H2.5c-1.4,0-2.5-1.1-2.5-2.5V2.5C0,1.1,1.1,0,2.5,0z M11,7.5H6.2v3.4H11 v1.9l5-3.5l-5-3.5V7.5L11,7.5z"/></g></svg><span class="inline-block">Log out</span></a></div>'+settings_bottom_html+'</div>';
     basic.showDialog(settings_html, 'settings-popup', null, true);
+
+    updateExternalURLsForiOSDevice();
 
     $('.settings-popup .custom-close-bootbox').click(function() {
         basic.closeDialog();
@@ -83448,19 +82752,26 @@ $(document).on('click', '.open-settings', function() {
                     showLoader('Hold on...<br>Decrypting your Backup File.');
 
                     setTimeout(function() {
-                        var decrypt_keystore_response = decryptKeystore(window.localStorage.getItem('keystore_file'), $('#show-private-key-password').val().trim());
-                        console.log(window.localStorage.getItem('keystore_file'), 'window.localStorage.getItem(\'keystore_file\')');
-                        console.log($('#show-private-key-password').val().trim(), '$(\'#show-private-key-password\').val().trim()');
-                        console.log(decrypt_keystore_response, 'decrypt_keystore_response');
-                        if(decrypt_keystore_response.success) {
-                            this_camping_row.html('<div class="private-key-holder"><div class="scroll-content">'+decrypt_keystore_response.to_string+'</div></div><div class="padding-top-10 padding-bottom-15 fs-14 color-warning-red">This is NOT a recommended way of accessing your wallet. The information is highly sensitive and should therefore be used in offline settings by experienced crypto users.</div><div class="padding-top-10 padding-bottom-10 padding-left-70 padding-right-70 padding-left-xs-10 padding-right-xs-10 text-left fs-14 color-white row-with-warning-red-background"><div>*Do not lose it! It cannot be recovered if you lose it.</div><div>*Do not share it! Your funds will be stolen if you use this file on a malicious/phishing site.</div><div>*Make a backup! Secure it like the millions of dollars it may one day be worth.</div></div>');
-                        } else if (decrypt_keystore_response.error) {
-                            basic.showAlert(decrypt_keystore_response.message, '', true);
-                            $('#show-private-key-password').val('');
-                        }
+                        decryptKeystore(window.localStorage.getItem('keystore_file'), $('#show-private-key-password').val().trim(), function(success, to_string, error, error_message) {
+                            if(success) {
+                                this_camping_row.html('<div class="private-key-holder"><div class="scroll-content"><a href="javascript:void(0);" class="copy-private-key inline-block padding-right-5" data-toggle="tooltip" title="Copied." data-placement="right" data-clipboard-target="#copy-private-key"><svg class="width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 19.8 24" style="enable-background:new 0 0 19.8 24;" xml:space="preserve"><style type="text/css">.st0{fill:#303030;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="24" width="19.8" x="1.2" y="0"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M19.8,2.9c0,4.9,0,9.9,0,14.8c0,0.1,0,0.1,0,0.2c-0.2,1.4-1.2,2.4-2.6,2.7c-0.2,0-0.2,0.1-0.2,0.3c0,1.3-0.6,2.2-1.8,2.8c-0.3,0.2-0.7,0.2-1,0.3c-3.8,0-7.5,0-11.3,0c0,0-0.1,0-0.1,0c-1.3-0.3-2.2-1-2.6-2.3C0.1,21.4,0,21.3,0,21.1c0-4.9,0-9.9,0-14.8c0,0,0-0.1,0-0.1c0.3-1.6,1.6-2.7,3.2-2.7c2.5,0,5.1,0,7.6,0c0.7,0,1.3,0.3,1.9,0.8c1.1,1.1,2.3,2.3,3.4,3.4c0.5,0.5,0.8,1.1,0.8,1.9c0,3,0,6.1,0,9.1c0,0.1,0,0.2,0,0.3c0.2-0.1,0.3-0.1,0.4-0.2c0.6-0.3,0.8-0.9,0.8-1.6c0-4.2,0-8.4,0-12.6c0-0.4,0-0.9,0-1.3c0-1-0.7-1.7-1.7-1.7c-3.7,0-7.3,0-11,0c-0.5,0-1,0.2-1.3,0.6c0,0.1-0.1,0.1-0.2,0.1c-0.5,0-1.1,0-1.6,0c0,0,0-0.1,0-0.1c0-0.1,0-0.1,0.1-0.2c0.3-0.9,0.9-1.5,1.8-1.8C4.5,0.1,4.7,0.1,5,0c4,0,8,0,11.9,0c0,0,0.1,0,0.1,0c1.4,0.2,2.3,1.2,2.6,2.5C19.7,2.7,19.7,2.8,19.8,2.9z M1.6,13.7c0,2.3,0,4.6,0,6.9c0,1.1,0.7,1.7,1.7,1.7c3.4,0,6.8,0,10.2,0c1.1,0,1.8-0.7,1.8-1.8c0-3.7,0-7.3,0-11c0-0.1,0-0.1,0-0.2c0-0.2-0.1-0.2-0.3-0.2c-0.6,0-1.1,0-1.7,0c-1.4,0-2.3-1-2.3-2.4c0-0.5,0-1,0-1.5C11,5.1,11,5,10.8,5c-2.5,0-5,0-7.5,0C3,5,2.8,5.1,2.5,5.2C1.9,5.5,1.6,6.1,1.6,6.8C1.6,9.1,1.6,11.4,1.6,13.7z"/><path class="st0" d="M8.5,17.5c1.4,0,2.8,0,4.1,0c0.6,0,0.9,0.3,1,0.8c0.1,0.5-0.2,1-0.7,1.1c-0.1,0-0.2,0-0.3,0c-2.8,0-5.5,0-8.3,0c-0.6,0-1.1-0.4-1.1-0.9c0-0.5,0.4-0.9,1-0.9c0.6,0,1.3,0,1.9,0C6.9,17.5,7.7,17.5,8.5,17.5z"/><path class="st0" d="M8.4,15.3c-1.4,0-2.8,0-4.2,0c-0.4,0-0.8-0.2-0.9-0.6c-0.1-0.4,0-0.8,0.3-1c0.2-0.1,0.4-0.2,0.6-0.2c2.8,0,5.7,0,8.5,0c0.5,0,0.9,0.4,0.9,0.9c0,0.5-0.4,0.9-0.9,1c-0.6,0-1.2,0-1.8,0C10.1,15.3,9.3,15.3,8.4,15.3z"/><path class="st0" d="M6.7,11.2c-0.8,0-1.6,0-2.4,0c-0.4,0-0.7-0.2-0.9-0.6c-0.2-0.3-0.1-0.7,0.1-1c0.2-0.2,0.4-0.3,0.7-0.3c1.6,0,3.2,0,4.9,0c0.6,0,1,0.4,1,1c0,0.5-0.4,0.9-1,0.9C8.3,11.2,7.5,11.2,6.7,11.2z"/></g></svg></a><input type="text" class="inline-block" id="copy-private-key" value="'+to_string+'"></div></div><div class="padding-top-10 padding-bottom-15 fs-14 color-warning-red">This is NOT a recommended way of accessing your wallet. The information is highly sensitive and should therefore be used in offline settings by experienced crypto users.</div><div class="padding-top-10 padding-bottom-10 padding-left-70 padding-right-70 padding-left-xs-10 padding-right-xs-10 text-left fs-14 color-white row-with-warning-red-background"><div>*Do not lose it! It cannot be recovered if you lose it.</div><div>*Do not share it! Your funds will be stolen if you use this file on a malicious/phishing site.</div><div>*Make a backup! Secure it like the millions of dollars it may one day be worth.</div></div>');
 
-                        hideLoader();
-                    }, 500);
+                                //init copy button event
+                                var clipboard = new ClipboardJS('.copy-private-key');
+                                clipboard.on('success', function(e) {
+                                    $('.copy-private-key').tooltip('show');
+                                    setTimeout(function() {
+                                        $('.copy-private-key').tooltip('hide');
+                                    }, 1000);
+                                });
+                            } else if (error) {
+                                basic.showAlert(error_message, '', true);
+                                $('#show-private-key-password').val('');
+                            }
+
+                            hideLoader();
+                        });
+                    }, 2000);
                 }
             });
         } else {
@@ -83480,19 +82791,26 @@ $(document).on('click', '.open-settings', function() {
                     } else {
                         showLoader('Hold on...<br>Decrypting your Backup File.');
                         setTimeout(function() {
-                            var decrypt_keystore_response = decryptKeystore(keystore_string, $('.settings-popup #show-private-key-password').val().trim());
-                            console.log(window.localStorage.getItem('keystore_file'), 'window.localStorage.getItem(\'keystore_file\')');
-                            console.log($('.settings-popup #show-private-key-password').val().trim(), '$(\'.settings-popup #show-private-key-password\').val().trim()');
-                            console.log(decrypt_keystore_response, 'decrypt_keystore_response');
-                            if(decrypt_keystore_response.success) {
-                                this_camping_row.html('<div class="private-key-holder"><div class="scroll-content">'+decrypt_keystore_response.to_string+'</div></div><div class="padding-top-10 padding-bottom-15 fs-14 color-warning-red">This is NOT a recommended way of accessing your wallet. The information is highly sensitive and should therefore be used in offline settings by experienced crypto users.</div><div class="padding-top-10 padding-bottom-10 padding-left-70 padding-right-70 padding-left-xs-10 padding-right-xs-10 text-left fs-14 color-white row-with-warning-red-background"><div>*Do not lose it! It cannot be recovered if you lose it.</div><div>*Do not share it! Your funds will be stolen if you use this file on a malicious/phishing site.</div><div>*Make a backup! Secure it like the millions of dollars it may one day be worth.</div></div>');
-                            } else if (decrypt_keystore_response.error) {
-                                basic.showAlert(decrypt_keystore_response.message, '', true);
-                                $('.settings-popup #show-private-key-password').val('');
-                            }
+                            decryptKeystore(keystore_string, $('.settings-popup #show-private-key-password').val().trim(), function(success, to_string, error, error_message) {
+                                if(success) {
+                                    this_camping_row.html('<div class="private-key-holder"><div class="scroll-content"><a href="javascript:void(0);" class="copy-private-key inline-block padding-right-5" data-toggle="tooltip" title="Copied." data-placement="right" data-clipboard-target="#copy-private-key"><svg class="width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 19.8 24" style="enable-background:new 0 0 19.8 24;" xml:space="preserve"><style type="text/css">.st0{fill:#303030;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="24" width="19.8" x="1.2" y="0"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M19.8,2.9c0,4.9,0,9.9,0,14.8c0,0.1,0,0.1,0,0.2c-0.2,1.4-1.2,2.4-2.6,2.7c-0.2,0-0.2,0.1-0.2,0.3c0,1.3-0.6,2.2-1.8,2.8c-0.3,0.2-0.7,0.2-1,0.3c-3.8,0-7.5,0-11.3,0c0,0-0.1,0-0.1,0c-1.3-0.3-2.2-1-2.6-2.3C0.1,21.4,0,21.3,0,21.1c0-4.9,0-9.9,0-14.8c0,0,0-0.1,0-0.1c0.3-1.6,1.6-2.7,3.2-2.7c2.5,0,5.1,0,7.6,0c0.7,0,1.3,0.3,1.9,0.8c1.1,1.1,2.3,2.3,3.4,3.4c0.5,0.5,0.8,1.1,0.8,1.9c0,3,0,6.1,0,9.1c0,0.1,0,0.2,0,0.3c0.2-0.1,0.3-0.1,0.4-0.2c0.6-0.3,0.8-0.9,0.8-1.6c0-4.2,0-8.4,0-12.6c0-0.4,0-0.9,0-1.3c0-1-0.7-1.7-1.7-1.7c-3.7,0-7.3,0-11,0c-0.5,0-1,0.2-1.3,0.6c0,0.1-0.1,0.1-0.2,0.1c-0.5,0-1.1,0-1.6,0c0,0,0-0.1,0-0.1c0-0.1,0-0.1,0.1-0.2c0.3-0.9,0.9-1.5,1.8-1.8C4.5,0.1,4.7,0.1,5,0c4,0,8,0,11.9,0c0,0,0.1,0,0.1,0c1.4,0.2,2.3,1.2,2.6,2.5C19.7,2.7,19.7,2.8,19.8,2.9z M1.6,13.7c0,2.3,0,4.6,0,6.9c0,1.1,0.7,1.7,1.7,1.7c3.4,0,6.8,0,10.2,0c1.1,0,1.8-0.7,1.8-1.8c0-3.7,0-7.3,0-11c0-0.1,0-0.1,0-0.2c0-0.2-0.1-0.2-0.3-0.2c-0.6,0-1.1,0-1.7,0c-1.4,0-2.3-1-2.3-2.4c0-0.5,0-1,0-1.5C11,5.1,11,5,10.8,5c-2.5,0-5,0-7.5,0C3,5,2.8,5.1,2.5,5.2C1.9,5.5,1.6,6.1,1.6,6.8C1.6,9.1,1.6,11.4,1.6,13.7z"/><path class="st0" d="M8.5,17.5c1.4,0,2.8,0,4.1,0c0.6,0,0.9,0.3,1,0.8c0.1,0.5-0.2,1-0.7,1.1c-0.1,0-0.2,0-0.3,0c-2.8,0-5.5,0-8.3,0c-0.6,0-1.1-0.4-1.1-0.9c0-0.5,0.4-0.9,1-0.9c0.6,0,1.3,0,1.9,0C6.9,17.5,7.7,17.5,8.5,17.5z"/><path class="st0" d="M8.4,15.3c-1.4,0-2.8,0-4.2,0c-0.4,0-0.8-0.2-0.9-0.6c-0.1-0.4,0-0.8,0.3-1c0.2-0.1,0.4-0.2,0.6-0.2c2.8,0,5.7,0,8.5,0c0.5,0,0.9,0.4,0.9,0.9c0,0.5-0.4,0.9-0.9,1c-0.6,0-1.2,0-1.8,0C10.1,15.3,9.3,15.3,8.4,15.3z"/><path class="st0" d="M6.7,11.2c-0.8,0-1.6,0-2.4,0c-0.4,0-0.7-0.2-0.9-0.6c-0.2-0.3-0.1-0.7,0.1-1c0.2-0.2,0.4-0.3,0.7-0.3c1.6,0,3.2,0,4.9,0c0.6,0,1,0.4,1,1c0,0.5-0.4,0.9-1,0.9C8.3,11.2,7.5,11.2,6.7,11.2z"/></g></svg></a><input type="text" class="inline-block" id="copy-private-key" value="'+to_string+'"></div></div><div class="padding-top-10 padding-bottom-15 fs-14 color-warning-red">This is NOT a recommended way of accessing your wallet. The information is highly sensitive and should therefore be used in offline settings by experienced crypto users.</div><div class="padding-top-10 padding-bottom-10 padding-left-70 padding-right-70 padding-left-xs-10 padding-right-xs-10 text-left fs-14 color-white row-with-warning-red-background"><div>*Do not lose it! It cannot be recovered if you lose it.</div><div>*Do not share it! Your funds will be stolen if you use this file on a malicious/phishing site.</div><div>*Make a backup! Secure it like the millions of dollars it may one day be worth.</div></div>');
 
-                            hideLoader();
-                        }, 500);
+                                    //init copy button event
+                                    var clipboard = new ClipboardJS('.copy-private-key');
+                                    clipboard.on('success', function(e) {
+                                        $('.copy-private-key').tooltip('show');
+                                        setTimeout(function() {
+                                            $('.copy-private-key').tooltip('hide');
+                                        }, 1000);
+                                    });
+                                } else if (error) {
+                                    basic.showAlert(error_message, '', true);
+                                    $('.settings-popup #show-private-key-password').val('');
+                                }
+
+                                hideLoader();
+                            });
+                        }, 2000);
                     }
                 });
             }
@@ -83539,7 +82857,18 @@ $(document).on('click', '.open-settings', function() {
                     });
                 }else if(basic.getMobileOperatingSystem() == 'iOS') {
                     //iOS
-                    alert('iOS not supported yet');
+                    $('.show-private-key-keystore-upload').click(function() {
+                        var this_btn = $(this);
+                        iOSFileUpload(function(keystore_string) {
+                            initCustomInputFileAnimation(this_btn);
+
+                            if(basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && checksumAddress('0x' + JSON.parse(keystore_string).address) == checksumAddress(global_state.account)) {
+                                decryptKeystoreFileAndShowPrivateKey(this_camping_row, keystore_string);
+                            } else {
+                                basic.showAlert('Please upload valid keystore file which is related to your Dentacoin Wallet address.', '', true);
+                            }
+                        });
+                    });
                 }
             } else {
                 //BROWSER
@@ -83593,31 +82922,37 @@ $(document).on('click', '.open-settings', function() {
                 showLoader('Hold on...<br>Your Backup File is being generated.');
 
                 setTimeout(function() {
-                    var generate_response = generateKeystoreFromPrivateKey($('#generate-keystore-private-key').val().trim(), $('#generate-keystore-password').val().trim());
-
-                    if(generate_response.success) {
-                        var keystore_file_name = buildKeystoreFileName(generate_response.success.address);
-                        if(is_hybrid) {
-                            //MOBILE APP
-                            //downloading the file in mobile device file system
-                            androidFileDownload(keystore_file_name, generate_response.success.keystore_file, function() {
-                                basic.closeDialog();
-                                basic.showAlert('File ' + keystore_file_name + ' has been downloaded to the top-level directory of your device file system.', '', true);
+                    generateKeystoreFromPrivateKey($('#generate-keystore-private-key').val().trim(), $('#generate-keystore-password').val().trim(), function(generating_response, address, keystore_file) {
+                        if(generating_response) {
+                            var keystore_file_name = buildKeystoreFileName(address);
+                            if(is_hybrid) {
+                                //MOBILE APP
+                                if(basic.getMobileOperatingSystem() == 'Android') {
+                                    //downloading the file in mobile device file system
+                                    androidFileDownload(keystore_file_name, keystore_file, function() {
+                                        basic.closeDialog();
+                                        basic.showAlert('File ' + keystore_file_name + ' has been downloaded to the top-level directory of your device file system.', '', true);
+                                        hideLoader();
+                                    });
+                                } else if(basic.getMobileOperatingSystem() == 'iOS') {
+                                    hideLoader();
+                                    //using export plugin, because in iOS there is no such thing as direct file download
+                                    window.plugins.socialsharing.share(keystore_file);
+                                }
+                            } else {
+                                //BROWSER
                                 hideLoader();
-                            });
-                        } else {
-                            //BROWSER
-                            hideLoader();
 
-                            downloadFile(buildKeystoreFileName(generate_response.success.address), generate_response.success.keystore_file);
-                            basic.closeDialog();
-                            basic.showAlert('File ' + buildKeystoreFileName(generate_response.success.address) + ' has been downloaded to the top-level directory of your device file system.', '', true);
+                                downloadFile(buildKeystoreFileName(address), keystore_file);
+                                basic.closeDialog();
+                                basic.showAlert('File ' + buildKeystoreFileName(address) + ' has been downloaded to the top-level directory of your device file system.', '', true);
+                            }
+                        } else if(!generating_response) {
+                            hideLoader();
+                            basic.showAlert('Wrong secret private key.', '', true);
                         }
-                    } else if(generate_response.error) {
-                        hideLoader();
-                        basic.showAlert(generate_response.message, '', true);
-                    }
-                }, 1000);
+                    });
+                }, 2000);
             }
         });
     });
@@ -83656,6 +82991,37 @@ function androidFileDownload(file_name, file_content, callback) {
             hideLoader();
             alert('Something went wrong with downloading your file (Core error 5). Please contact admin@dentacoin.com.');
         });
+    });
+}
+
+//opening filepicker for iOS
+function iOSFileUpload(callback) {
+    console.log('iOSFileUpload');
+    FilePicker.pickFile(function(path) {
+        console.log(path, 'path');
+        var fileDir = cordova.file.tempDirectory.replace('file://', '');
+        var fileName = path.replace(fileDir, '');
+        console.log(fileDir, 'fileDir');
+        console.log(fileName, 'fileName');
+
+        window.resolveLocalFileSystemURL(cordova.file.tempDirectory , function (rootEntry) {
+            rootEntry.getFile(fileName, {create: false}, function (fileEntry) {
+                fileEntry.file(function (file) {
+                    var reader = new FileReader();
+
+                    reader.onloadend = function () {
+                        var keystore_string = this.result;
+                        callback(keystore_string);
+                    };
+
+                    reader.readAsText(file);
+                });
+            }, function (err) {
+                alert('Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.');
+            });
+        });
+    }, function(err) {
+        alert('File importing failed. Please update to one of the latest iOS versions in order to have file importing working.');
     });
 }
 
@@ -83784,10 +83150,167 @@ function router() {
             $('.camp-for-custom-popover').addClass('hide');
             clearInterval(custom_popover_interval);
         }
-    });
 
-    console.log(current_route, 'current_route');
+        updateExternalURLsForiOSDevice();
+    });
 }
 router();
+
+function updateExternalURLsForiOSDevice() {
+    if($('.data-external-link').length && is_hybrid) {
+        for(var i = 0, len = $('.data-external-link').length; i < len; i+=1) {
+            if(!$('.data-external-link').eq(i).hasClass('passed')) {
+                $('.data-external-link').eq(i).addClass('passed');
+                $('.data-external-link').eq(i).attr('data-href', $('.data-external-link').eq(i).attr('href'));
+
+                $('.data-external-link').eq(i).click(function() {
+                    window.open($(this).attr('data-href'), '_system');
+                    return false;
+                });
+                $('.data-external-link').eq(i).removeAttr('target');
+                $('.data-external-link').eq(i).attr('href', '#');
+            }
+        }
+    }
+}
+
+function getGETParameters() {
+    var prmstr = window.location.search.substr(1);
+    return prmstr != null && prmstr != "" ? transformToAssocArray(prmstr) : {};
+}
+
+function transformToAssocArray( prmstr ) {
+    var params = {};
+    var prmarr = prmstr.split("&");
+    for ( var i = 0; i < prmarr.length; i++) {
+        var tmparr = prmarr[i].split("=");
+        params[tmparr[0]] = tmparr[1];
+    }
+    return params;
+}
+
+function savePublicKeyToAssurance(address, key) {
+    $.ajax({
+        type: 'POST',
+        url: 'https://assurance.dentacoin.com/save-public-key',
+        data: {
+            password: config_variable.cross_website_password,
+            address: address,
+            public_key: key
+        },
+        dataType: 'json',
+        success: function(response) {
+            console.log(address, key);
+            console.log(response, 'response');
+        }
+    });
+}
+
+function buildEthereumHistoryTransaction(ethereum_data, value, to, from, timestamp, hash, pending) {
+    var eth_amount_symbol;
+    var other_address = '';
+    var class_name = '';
+    var label = '';
+    if(checksumAddress(to) == checksumAddress(global_state.account)) {
+        //IF THE CURRENT ACCOUNT IS RECEIVER
+        other_address = from;
+        label = 'Received from';
+        class_name = 'received_from';
+        eth_amount_symbol = '+';
+    } else if(checksumAddress(from) == checksumAddress(global_state.account)) {
+        //IF THE CURRENT ACCOUNT IS SENDER
+        other_address = to;
+        label = 'Sent to';
+        class_name = 'sent_to';
+        eth_amount_symbol = '-';
+    }
+
+    var usd_amount = (ethereum_data.market_data.current_price.usd * value).toFixed(2);
+    var timestamp_javascript = timestamp * 1000;
+    var date_obj = new Date(timestamp_javascript);
+    var minutes;
+    var hours;
+
+    if(new Date(timestamp_javascript).getMinutes() < 10) {
+        minutes = '0'+new Date(timestamp_javascript).getMinutes();
+    }else {
+        minutes = new Date(timestamp_javascript).getMinutes();
+    }
+
+    if(new Date(timestamp_javascript).getHours() < 10) {
+        hours = '0'+new Date(timestamp_javascript).getHours();
+    }else {
+        hours = new Date(timestamp_javascript).getHours();
+    }
+
+    if(basic.isMobile()) {
+        if($(window).width() < 350) {
+            other_address = substr_replace(other_address, '...', -27);
+        } else {
+            other_address = substr_replace(other_address, '...', -20);
+        }
+    }
+
+    var transaction_id_label = 'Transaction ID';
+    if(pending != undefined) {
+        transaction_id_label += '<span class="pending-transaction">( Pending )</span>';
+    }
+
+    return '<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+hash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+hash+'" target="_blank" class="lato-bold color-white data-external-link">'+transaction_id_label+'</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+eth_amount_symbol+value+' ETH</li><li>'+usd_amount+' USD</li></ul></td></tr>';
+}
+
+function buildDentacoinHistoryTransaction(dentacoin_data, value, to, from, timestamp, transactionHash, pending) {
+    var dcn_amount_symbol;
+    var other_address = '';
+    var class_name = '';
+    var label = '';
+    var usd_amount = (parseInt(value) * dentacoin_data.market_data.current_price.usd).toFixed(2);
+    if(checksumAddress(to) == checksumAddress(global_state.account)) {
+        //IF THE CURRENT ACCOUNT IS RECEIVER
+        other_address = from;
+        label = 'Received from';
+        class_name = 'received_from';
+        dcn_amount_symbol = '+';
+    } else if(checksumAddress(from) == checksumAddress(global_state.account)) {
+        //IF THE CURRENT ACCOUNT IS SENDER
+        other_address = to;
+        label = 'Sent to';
+        class_name = 'sent_to';
+        dcn_amount_symbol = '-';
+    }
+
+    var dcn_amount = dcn_amount_symbol+value+' DCN';
+    var timestamp_javascript = timestamp*1000;
+    var date_obj = new Date(timestamp_javascript);
+    var minutes;
+    var hours;
+
+    if(new Date(timestamp_javascript).getMinutes() < 10) {
+        minutes = '0'+new Date(timestamp_javascript).getMinutes();
+    }else {
+        minutes = new Date(timestamp_javascript).getMinutes();
+    }
+
+    if(new Date(timestamp_javascript).getHours() < 10) {
+        hours = '0'+new Date(timestamp_javascript).getHours();
+    }else {
+        hours = new Date(timestamp_javascript).getHours();
+    }
+
+    if(basic.isMobile()) {
+        if($(window).width() < 350) {
+            other_address = substr_replace(other_address, '...', -30);
+        } else {
+            other_address = substr_replace(other_address, '...', -20);
+        }
+    }
+
+    var transaction_id_label = 'Transaction ID';
+    if(pending != undefined) {
+        transaction_id_label += '<span class="pending-transaction">( Pending )</span>';
+    }
+
+    return '<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+transactionHash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+transactionHash+'" target="_blank" class="lato-bold color-white data-external-link">'+transaction_id_label+'</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+dcn_amount+'</li><li>'+usd_amount+' USD</li></ul></td></tr>';
+}
 }).call(this,require("buffer").Buffer)
-},{"./helper":583,"buffer":52,"ethereumjs-tx":369}]},{},[584]);
+},{"./config":574,"./helper":575,"buffer":52,"ethereumjs-tx":365}]},{},[576]);
