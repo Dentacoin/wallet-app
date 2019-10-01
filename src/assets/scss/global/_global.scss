@@ -520,6 +520,13 @@ img {
                             font-size: 15px;
                         }
                     }
+                    &.loading-tr {
+                        @include breakpoint($xs) {
+                            td:first-child {
+                                display: table-cell;
+                            }
+                        }
+                    }
                     &:hover {
                         td {
                             background-color: #00b4e2;
@@ -590,6 +597,7 @@ img {
 }
 
 .bootbox {
+    padding-left: 0 !important;
     .modal-content {
         border: 0;
         @include box-shadow(0 8px 44px rgba(0,0,0,0.2));
@@ -1077,6 +1085,9 @@ img {
     &.settings-popup {
         .bootbox-close-button {
             display: none;
+        }
+        .custom-close-bootbox {
+            max-width: 25px;
         }
         .modal-dialog {
             width: 95%;

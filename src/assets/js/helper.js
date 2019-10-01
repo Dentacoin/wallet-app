@@ -47,13 +47,13 @@ function importKeystoreFile(keystore, password, callback) {
 }
 
 function decryptKeystore(keystore, password, callback) {
-    try {
-        keythereum.recover(password, JSON.parse(keystore), function(private_key) {
+    keythereum.recover(password, JSON.parse(keystore), function(private_key) {
+        try {
             callback(private_key, private_key.toString('hex'));
-        });
-    } catch (e) {
-        callback(null, null, true, 'Wrong secret password.');
-    }
+        } catch (e) {
+            callback(null, null, true, 'Wrong secret password.');
+        }
+    });
 }
 
 function validatePrivateKey(private_key) {
