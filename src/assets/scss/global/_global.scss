@@ -1080,6 +1080,10 @@ img {
                     }
                 }
             }
+            @include breakpoint($xs) {
+                width: 100%;
+                margin: 0 !important;   
+            }
         }
     }
     &.settings-popup {
