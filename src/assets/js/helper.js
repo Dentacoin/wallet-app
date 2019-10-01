@@ -57,12 +57,14 @@ function decryptKeystore(keystore, password, callback) {
 }
 
 function validatePrivateKey(private_key) {
+    console.log(private_key, 'validatePrivateKey');
     try {
         const public_key = EthCrypto.publicKeyByPrivateKey(private_key);
         const address = EthCrypto.publicKey.toAddress(public_key);
 
         return {
             success: {
+                private_key: private_key,
                 public_key: public_key,
                 address: address
             }
