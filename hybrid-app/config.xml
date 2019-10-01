@@ -54,17 +54,17 @@
         <icon src="app-resources/images/wallet-app-icon-100px.png" width="100" height="100" />
         <!-- iPad Pro -->
         <icon src="app-resources/images/wallet-app-icon-167px.png" width="167" height="167" />
-        
-        <splash src="res/screen/ios/Default~iphone.png" width="320" height="480"/>
-        <splash src="res/screen/ios/Default@2x~iphone.png" width="640" height="960"/>
-        <splash src="res/screen/ios/Default-Portrait~ipad.png" width="768" height="1024"/>
-        <splash src="res/screen/ios/Default-Portrait@2x~ipad.png" width="1536" height="2048"/>
-        <splash src="res/screen/ios/Default-Landscape~ipad.png" width="1024" height="768"/>
-        <splash src="res/screen/ios/Default-Landscape@2x~ipad.png" width="2048" height="1536"/>
-        <splash src="res/screen/ios/Default-568h@2x~iphone.png" width="640" height="1136"/>
-        <splash src="res/screen/ios/Default-667h.png" width="750" height="1334"/>
-        <splash src="res/screen/ios/Default-736h.png" width="1242" height="2208"/>
-        <splash src="res/screen/ios/Default-Landscape-736h.png" width="2208" height="1242"/>
+
+        <splash src="app-resources/images/splash-screens/wallet-loading-screen-320px.png" width="320" height="480"/>
+        <splash src="app-resources/images/splash-screens/wallet-loading-screen-640px_1.png" width="640" height="960"/>
+        <splash src="app-resources/images/splash-screens/wallet-loading-screen-768px.png" width="768" height="1024"/>
+        <splash src="app-resources/images/splash-screens/wallet-loading-screen-1536px.png" width="1536" height="2048"/>
+        <splash src="app-resources/images/splash-screens/wallet-loading-screen-1024px.png" width="1024" height="768"/>
+        <splash src="app-resources/images/splash-screens/wallet-loading-screen-2048px.png" width="2048" height="1536"/>
+        <splash src="app-resources/images/splash-screens/wallet-loading-screen-640-1136px_1.png" width="640" height="1136"/>
+        <splash src="app-resources/images/splash-screens/wallet-loading-screen-750px.png" width="750" height="1334"/>
+        <splash src="app-resources/images/splash-screens/wallet-loading-screen-1242px.png" width="1242" height="2208"/>
+        <splash src="app-resources/images/splash-screens/wallet-loading-screen-2208px.png" width="2208" height="1242"/>
     </platform><!-- for iOS -->
     <feature name="SocialSharing">
         <param name="ios-package" value="SocialSharing" />
