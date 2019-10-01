@@ -75,8 +75,8 @@
     </feature>
     <preference name="SplashScreen" value="none" />
     <preference name="SplashScreenDelay" value="0" />
-    <preference name="StatusBarOverlaysWebView" value="true" />
-    <preference name="StatusBarBackgroundColor" value="red" />
+    <preference name="StatusBarOverlaysWebView" value="false" />
+    <preference name="StatusBarBackgroundColor" value="#000000" />
     <preference name="StatusBarStyle" value="lightcontent" />
     <access origin="*"/>
     <allow-navigation href="https://dentacoin.com/*"/>
