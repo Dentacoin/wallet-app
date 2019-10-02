@@ -1952,6 +1952,12 @@ function initAccountChecker()  {
                                 } else if(basic.getMobileOperatingSystem() == 'iOS') {
                                     //saving keystore file to App folder
                                     hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function() {
+                                        window.localStorage.setItem('current_account', '0x' + keystore.address);
+
+                                        if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
+                                            window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
+                                        }
+
                                         fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
                                         refreshApp();
                                     }, cordova.file.dataDirectory, false);
@@ -1982,6 +1988,7 @@ function initAccountChecker()  {
                                 }
                             } else {
                                 if(basic.getMobileOperatingSystem() == 'iOS' && basic.isMobile()) {
+                                    //mobile browser from iPhone
                                     basic.showAlert('Backup File has been opened in new tab of your browser. Please make sure to share/ copy and keep it in a safe place. Only you are responsible for it!', 'mobile-safari-keystore-creation', true);
 
                                     $('.mobile-safari-keystore-creation .modal-footer .btn.btn-primary, .mobile-safari-keystore-creation .bootbox-close-button.close').click(function() {
@@ -2516,7 +2523,7 @@ $(document).on('click', '.open-settings', function() {
 
                     var file_name = buildKeystoreFileName(global_state.account);
                     console.log(file_name, 'file_name');
-                    window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory , function(rootEntry) {
+                    window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function(rootEntry) {
                         console.log(rootEntry, 'rootEntry');
                         rootEntry.getFile(file_name, {create: false}, function (fileEntry) {
                             console.log(fileEntry, 'fileEntry');
