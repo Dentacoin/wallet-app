@@ -82170,7 +82170,7 @@ function initAccountChecker()  {
                                     hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function() {
                                         fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
                                         refreshApp();
-                                    }, cordova.file.syncedDataDirectory, false);
+                                    }, cordova.file.dataDirectory, false);
 
 
                                     //if iOS adding 2 more additional buttons. Downloads in iOS are not possible, because they have different file architecture. First button is for export (copy or share in socials) the keystore file and second one is to login in the Wallet
@@ -83018,6 +83018,7 @@ $(document).on('click', '.open-settings', function() {
 
 //method to download files in Download folder in Android device
 function hybridAppFileDownload(file_name, file_content, callback, location, download_folder) {
+    console.log(file_name, 'file_name');
     console.log(location, 'location');
     window.resolveLocalFileSystemURL(location, function (fileSystem) {
         if(download_folder) {
@@ -83040,12 +83041,12 @@ function hybridAppFileDownload(file_name, file_content, callback, location, down
                 console.log(fileEntry, 'fileEntry');
                 fileEntry.createWriter(function (fileWriter) {
                     fileWriter.onwriteend = function (e) {
-                        console.log(e, 'e');
+                        console.log(e, 'onwriteend');
                         callback();
                     };
 
                     fileWriter.onerror = function (e) {
-                        console.log(e, 'e');
+                        console.log(e, 'error');
                         hideLoader();
                         alert('Something went wrong with caching your file (Core error 3). Please contact admin@dentacoin.com.');
                     };
