@@ -99,5 +99,8 @@ function generateKeystoreFromPrivateKey(private_key, password, callback) {
     }
 }
 
-module.exports = {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey};
+function encryptString(string) {
+}
+
+module.exports = {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey, encryptString};
 

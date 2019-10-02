@@ -1,7 +1,7 @@
 const Web3 = require('../../../node_modules/web3'); // import web3 v1.0 constructor
 const keythereum = require('../../../node_modules/keythereum');
 const EthCrypto = require('../../../node_modules/eth-crypto');
-var Wallet = require('../../../node_modules/ethereumjs-wallet');
+//var Wallet = require('../../../node_modules/ethereumjs-wallet');
 
 // use globally injected web3 to find the currentProvider and wrap with web3 v1.0
 const getWeb3 = (provider) => {
@@ -19,9 +19,7 @@ const getContractInstance = (web3) => (contractName, address) => {
 };
 
 function generateKeystoreFile(password, callback) {
-    console.log(password, 'generateKeystoreFile');
     var dk = keythereum.create({keyBytes: 32, ivBytes: 16});
-    console.log(dk, 'dk');
     keythereum.dump(password, dk.privateKey, dk.salt, dk.iv, {
         cipher: 'aes-128-ctr',
         kdfparams: {
@@ -30,50 +28,41 @@ function generateKeystoreFile(password, callback) {
             prf: 'hmac-sha256'
         }
     }, function(result) {
-        console.log(result, 'result');
-
         const public_key = EthCrypto.publicKeyByPrivateKey(dk.privateKey.toString('hex'));
-        console.log(public_key, 'public_key');
 
         callback(public_key, result);
     });
 }
 
-function importKeystoreFile(keystore, password) {
-    try {
-        const keyObject = JSON.parse(keystore);
-        const private_key = keythereum.recover(password, keyObject);
-        const public_key = EthCrypto.publicKeyByPrivateKey(private_key.toString('hex'));
-        return {
-            success: keyObject,
-            public_key: public_key,
-            address: JSON.parse(keystore).address
+function importKeystoreFile(keystore, password, callback) {
+    const keyObject = JSON.parse(keystore);
+    keythereum.recover(password, keyObject, function(private_key) {
+        try {
+            const public_key = EthCrypto.publicKeyByPrivateKey(private_key.toString('hex'));
+            callback(keyObject, public_key, JSON.parse(keystore).address);
+        } catch (e) {
+            callback(null, null, null, true, 'Wrong secret password.');
         }
-    } catch (e) {
-        return {
-            error: true,
-            message: 'Wrong secret password.'
-        }
-    }
+    });
 }
 
-function decryptKeystore(keystore, password) {
-    try {
-        return {
-            success: keythereum.recover(password, JSON.parse(keystore)), to_string: keythereum.recover(password, JSON.parse(keystore)).toString('hex')
+function decryptKeystore(keystore, password, callback) {
+    keythereum.recover(password, JSON.parse(keystore), function(private_key) {
+        try {
+            callback(private_key, private_key.toString('hex'));
+        } catch (e) {
+            callback(null, null, true, 'Wrong secret password.');
         }
-    } catch (e) {
-        return {
-            error: true,
-            message: 'Wrong secret password.'
-        }
-    }
+    });
 }
 
 function validatePrivateKey(private_key) {
+    console.log(private_key, 'validatePrivateKey');
     try {
         const public_key = EthCrypto.publicKeyByPrivateKey(private_key);
         const address = EthCrypto.publicKey.toAddress(public_key);
+        console.log(public_key, 'public_key');
+        console.log(address, 'address');
 
         return {
             success: {
@@ -89,27 +78,29 @@ function validatePrivateKey(private_key) {
     }
 }
 
-function generateKeystoreFromPrivateKey(private_key, password) {
+function generateKeystoreFromPrivateKey(private_key, password, callback) {
     try {
-        const public_key = EthCrypto.publicKeyByPrivateKey(private_key);
-        const address = EthCrypto.publicKey.toAddress(public_key);
-        const wallet = Wallet.fromPrivateKey(Buffer.from(private_key, 'hex'));
-        const keystore_file = wallet.toV3String(password);
-
-        return {
-            success: {
-                keystore_file: keystore_file,
-                public_key: public_key,
-                address: address
+        var dk = keythereum.create({keyBytes: 32, ivBytes: 16});
+        keythereum.dump(password, private_key, dk.salt, dk.iv, {
+            cipher: 'aes-128-ctr',
+            kdfparams: {
+                c: 262144,
+                dklen: 32,
+                prf: 'hmac-sha256'
             }
-        };
+        }, function(keystore) {
+            const public_key = EthCrypto.publicKeyByPrivateKey(private_key);
+            const address = EthCrypto.publicKey.toAddress(public_key);
+
+            callback(true, address, JSON.stringify(keystore));
+        });
     } catch (e) {
-        return {
-            error: true,
-            message: 'Wrong secret private key.'
-        }
+        callback(false);
     }
 }
 
-module.exports = {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey};
+function encryptString(string) {
+}
+
+module.exports = {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey, encryptString};
 

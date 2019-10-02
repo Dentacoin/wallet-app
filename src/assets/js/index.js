@@ -1,5 +1,5 @@
 //importing methods for keystore import, export, decrypt
-var {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey} = require('./helper');
+var {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey, encryptString} = require('./helper');
 var {config_variable} = require('./config');
 
 console.log("( ͡° ͜ʖ ͡°) I see you.");
@@ -3007,8 +3007,7 @@ function savePublicKeyToAssurance(address, key) {
         type: 'POST',
         url: 'https://assurance.dentacoin.com/save-public-key',
         data: {
-            password: config_variable.cross_website_password,
-            address: address,
+            address: checksumAddress(address),
             public_key: key
         },
         dataType: 'json',

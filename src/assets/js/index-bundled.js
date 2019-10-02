@@ -80100,8 +80100,7 @@ function noop() {}
 arguments[4][174][0].apply(exports,arguments)
 },{"dup":174}],574:[function(require,module,exports){
 var config_variable = {
-    bidali_api_key: 'pk_n6mvpompwzm83egzrz2vnh',
-    cross_website_password: '8x7xSXkRTmCCeY6pyQLBmxmwvtM2RM6zBpbDUwtpacta6UZafTG4PjR6w4RpFvvQm5c63hZpQDU9QGWMZGKX8aGcDEaHkNCf4SLGC9BJejmwDL9haU7hmxf6esZ7cRJYCjm3tn5NB6jLAxFcVKEdrPnNjZrNSfesGvpErKQS9Snwr9VvccRnp2pPhZxwVcdtCMtFBZjVQeU3mdTEv24kprYS45ddvg7gFRYCazTvpZdcPe3r2dcr5TW9BGAjs4wK4pvrNbUYcjvGyrURYuDDHt6rnVUVAydKqzUMBHFMhJS3RCkm6K7jfszVdMZDEctGYhUXW7LdVpUXYRtDRutgrCEKhdZ232FMtC9bR9XgNTWKztXAr3GPvSgrp2B65BZJe4aEcYs68gpTPbTpdHRxZEACY85TGjR8ECqkjd9NE3CMmLNgWsWUh5mFsCyGMymaLhs6Brr37ZRacL8ukg5mqTtTgpqgRzBcQDbU5PNYV5jDL6jA3KXCnEV4bZFVqZLZ'
+    bidali_api_key: 'pk_n6mvpompwzm83egzrz2vnh'
 };
 
 module.exports = {config_variable};
@@ -80207,13 +80206,16 @@ function generateKeystoreFromPrivateKey(private_key, password, callback) {
     }
 }
 
-module.exports = {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey};
+function encryptString(string) {
+}
+
+module.exports = {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey, encryptString};
 
 
 },{"../../../node_modules/eth-crypto":347,"../../../node_modules/keythereum":417,"../../../node_modules/web3":556}],576:[function(require,module,exports){
 (function (Buffer){
 //importing methods for keystore import, export, decrypt
-var {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey} = require('./helper');
+var {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey, encryptString} = require('./helper');
 var {config_variable} = require('./config');
 
 console.log("( ͡° ͜ʖ ͡°) I see you.");
@@ -83221,8 +83223,7 @@ function savePublicKeyToAssurance(address, key) {
         type: 'POST',
         url: 'https://assurance.dentacoin.com/save-public-key',
         data: {
-            password: config_variable.cross_website_password,
-            address: address,
+            address: checksumAddress(address),
             public_key: key
         },
         dataType: 'json',
