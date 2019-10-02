@@ -1940,13 +1940,24 @@ function initAccountChecker()  {
                             if(is_hybrid) {
                                 //MOBILE APP
                                 if(basic.getMobileOperatingSystem() == 'Android') {
-                                    androidFileDownload(keystore_file_name, JSON.stringify(keystore), function() {
-                                        fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
-                                        loginIntoWallet();
-                                    });
+                                    //saving keystore file to Downloads folder
+                                    hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function() {
+                                        //saving keystore file to App folder
+                                        hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function() {
+                                            fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
+                                            loginIntoWallet();
+                                        }, cordova.file.externalDataDirectory, false);
+                                    }, cordova.file.externalRootDirectory, true);
                                 } else if(basic.getMobileOperatingSystem() == 'iOS') {
+                                    //saving keystore file to App folder
+                                    hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function() {
+                                        fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
+                                        refreshApp();
+                                    }, cordova.file.externalDataDirectory, false);
+
+
                                     //if iOS adding 2 more additional buttons. Downloads in iOS are not possible, because they have different file architecture. First button is for export (copy or share in socials) the keystore file and second one is to login in the Wallet
-                                    $(this_btn).parent().html('<div class="padding-bottom-20 text-center"><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border ios-export-keystore min-width-200">Export Backup file</a></div><div><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border ios-login-into-wallet disabled min-width-200">Login into Wallet</a></div>');
+                                    /*$(this_btn).parent().html('<div class="padding-bottom-20 text-center"><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border ios-export-keystore min-width-200">Export Backup file</a></div><div><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border ios-login-into-wallet disabled min-width-200">Login into Wallet</a></div>');
                                     hideLoader();
 
                                     $('.ios-export-keystore').click(function() {
@@ -1966,7 +1977,7 @@ function initAccountChecker()  {
                                             fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
                                             refreshApp();
                                         }
-                                    });
+                                    });*/
                                 }
                             } else {
                                 if(basic.getMobileOperatingSystem() == 'iOS' && basic.isMobile()) {
@@ -2297,7 +2308,7 @@ function hideLoader() {
 }
 
 function buildKeystoreFileName(address) {
-    return 'Dentacoin secret key - ' + address;
+    return 'Dentacoin secret key - ' + checksumAddress(address);
 }
 
 function downloadFile(filename, text) {
@@ -2437,12 +2448,10 @@ $(document).on('click', '.open-settings', function() {
                 }
             });
         }
-    } else if(window.localStorage.getItem('keystore_file') != null) {
+    } else if(window.localStorage.getItem('keystore_file') != null || (is_hybrid && basic.getMobileOperatingSystem() == 'iOS')) {
         var download_btn_label = 'Download';
-        if(is_hybrid) {
-            if (basic.getMobileOperatingSystem() == 'iOS') {
-                download_btn_label = 'Export';
-            }
+        if(is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
+            download_btn_label = 'Export';
         }
 
         //if cached keystore file show the option for downloading it
@@ -2494,15 +2503,37 @@ $(document).on('click', '.open-settings', function() {
                     setTimeout(function () {
                         var keystore_file_name = buildKeystoreFileName(global_state.account);
                         //downloading the file in mobile device file system
-                        androidFileDownload(keystore_file_name, window.localStorage.getItem('keystore_file'), function() {
+                        hybridAppFileDownload(keystore_file_name, window.localStorage.getItem('keystore_file'), function() {
                             basic.closeDialog();
                             basic.showAlert('File ' + keystore_file_name + ' has been downloaded to the top-level directory of your device file system.', '', true);
                             hideLoader();
-                        });
+                        }, cordova.file.externalRootDirectory, true);
                     }, 500);
                 } else if(basic.getMobileOperatingSystem() == 'iOS') {
                     //using export plugin, because in iOS there is no such thing as direct file download
-                    window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
+                    //window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
+
+                    var file_name = buildKeystoreFileName(global_state.account);
+                    console.log(file_name, 'file_name');
+                    window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory , function(rootEntry) {
+                        console.log(rootEntry, 'rootEntry');
+                        rootEntry.getFile(file_name, {create: false}, function (fileEntry) {
+                            console.log(fileEntry, 'fileEntry');
+                            fileEntry.file(function (file) {
+                                var reader = new FileReader();
+
+                                reader.onloadend = function () {
+                                    var keystore_string = this.result;
+                                    console.log(keystore_string, 'keystore_string');
+                                    window.plugins.socialsharing.share(keystore_string);
+                                };
+
+                                reader.readAsText(file);
+                            });
+                        }, function (err) {
+                            alert('Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.');
+                        });
+                    });
                 }
             } else {
                 if(basic.getMobileOperatingSystem() == 'iOS' && basic.isMobile()) {
@@ -2739,11 +2770,11 @@ $(document).on('click', '.open-settings', function() {
                                 //MOBILE APP
                                 if(basic.getMobileOperatingSystem() == 'Android') {
                                     //downloading the file in mobile device file system
-                                    androidFileDownload(keystore_file_name, keystore_file, function() {
+                                    hybridAppFileDownload(keystore_file_name, keystore_file, function() {
                                         basic.closeDialog();
                                         basic.showAlert('File ' + keystore_file_name + ' has been downloaded to the top-level directory of your device file system.', '', true);
                                         hideLoader();
-                                    });
+                                    }, cordova.file.externalRootDirectory, true);
                                 } else if(basic.getMobileOperatingSystem() == 'iOS') {
                                     hideLoader();
                                     //using export plugin, because in iOS there is no such thing as direct file download
@@ -2769,16 +2800,30 @@ $(document).on('click', '.open-settings', function() {
 });
 
 //method to download files in Download folder in Android device
-function androidFileDownload(file_name, file_content, callback) {
-    window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function (fileSystem) {
-        fileSystem.getDirectory('Download', {create: true, exclusive: false}, function(dirEntry) {
+function hybridAppFileDownload(file_name, file_content, callback, location, download_folder) {
+    window.resolveLocalFileSystemURL(location, function (fileSystem) {
+        if(download_folder) {
+            fileSystem.getDirectory('Download', {create: true, exclusive: false}, function(dirEntry) {
+                proceedWithDownload(dirEntry);
+            }, function(err) {
+                console.log(err, 'err');
+                hideLoader();
+                alert('Something went wrong with downloading your file (Core error 5). Please contact admin@dentacoin.com.');
+            });
+        } else {
+            proceedWithDownload(fileSystem);
+        }
+        
+        function proceedWithDownload(dirEntry) {
             dirEntry.getFile(file_name, {create: true, exclusive: true}, function (fileEntry) {
                 fileEntry.createWriter(function (fileWriter) {
                     fileWriter.onwriteend = function (e) {
+                        console.log(e, 'e');
                         callback();
                     };
 
                     fileWriter.onerror = function (e) {
+                        console.log(e, 'e');
                         hideLoader();
                         alert('Something went wrong with caching your file (Core error 3). Please contact admin@dentacoin.com.');
                     };
@@ -2796,11 +2841,7 @@ function androidFileDownload(file_name, file_content, callback) {
                 hideLoader();
                 alert('Seems like file with this name already exist in your root directory, move it or delete it and try again.');
             });
-        }, function(err) {
-            console.log(err, 'err');
-            hideLoader();
-            alert('Something went wrong with downloading your file (Core error 5). Please contact admin@dentacoin.com.');
-        });
+        }
     });
 }
 

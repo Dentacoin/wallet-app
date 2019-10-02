@@ -57,9 +57,12 @@ function decryptKeystore(keystore, password, callback) {
 }
 
 function validatePrivateKey(private_key) {
+    console.log(private_key, 'validatePrivateKey');
     try {
         const public_key = EthCrypto.publicKeyByPrivateKey(private_key);
         const address = EthCrypto.publicKey.toAddress(public_key);
+        console.log(public_key, 'public_key');
+        console.log(address, 'address');
 
         return {
             success: {
@@ -96,5 +99,8 @@ function generateKeystoreFromPrivateKey(private_key, password, callback) {
     }
 }
 
-module.exports = {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey};
+function encryptString(string) {
+}
+
+module.exports = {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey, encryptString};
 

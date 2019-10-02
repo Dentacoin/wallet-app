@@ -543,6 +543,7 @@ img {
     position: fixed;
     bottom: 0;
     display: none;
+    background-color: white;
     nav {
         ul {
             li {
@@ -1079,6 +1080,10 @@ img {
                         min-width: 180px;
                     }
                 }
+            }
+            @include breakpoint($xs) {
+                width: 100%;
+                margin: 0 !important;
             }
         }
     }
