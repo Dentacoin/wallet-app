@@ -82170,7 +82170,7 @@ function initAccountChecker()  {
                                     hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function() {
                                         fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
                                         refreshApp();
-                                    }, cordova.file.externalDataDirectory, false);
+                                    }, cordova.file.syncedDataDirectory, false);
 
 
                                     //if iOS adding 2 more additional buttons. Downloads in iOS are not possible, because they have different file architecture. First button is for export (copy or share in socials) the keystore file and second one is to login in the Wallet

@@ -55,6 +55,8 @@
         <!-- iPad Pro -->
         <icon src="app-resources/images/wallet-app-icon-167px.png" width="167" height="167" />
         <icon src="app-resources/images/wallet-app-icon-20px.png" width="20" height="20" />
+        <icon src="app-resources/images/wallet-app-icon-127px.png" width="127" height="127" />
+        <icon src="app-resources/images/wallet-app-icon-196px.png" width="196" height="196" />
         <icon src="app-resources/images/wallet-app-icon-24px.png" width="24" height="24" />
         <icon src="app-resources/images/wallet-app-icon-44px.png" width="44" height="44" />
         <icon src="app-resources/images/wallet-app-icon-48px.png" width="48" height="48" />
@@ -62,6 +64,7 @@
         <icon src="app-resources/images/wallet-app-icon-87px.png" width="87" height="87" />
         <icon src="app-resources/images/wallet-app-icon-88px.png" width="88" height="88" />
         <icon src="app-resources/images/wallet-app-icon-1024px.png" width="1024" height="1024" />
+        <icon src="app-resources/images/wallet-icon-1024pt.png" width="1365" height="1365" />
 
         <splash src="app-resources/images/splash-screens/wallet-loading-screen-320px.png" width="320" height="480"/>
         <splash src="app-resources/images/splash-screens/wallet-loading-screen-640px.png" width="640" height="960"/>
