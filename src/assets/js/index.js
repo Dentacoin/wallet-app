@@ -1938,6 +1938,7 @@ function initAccountChecker()  {
 
                         setTimeout(function() {
                             if(is_hybrid) {
+                                console.log(cordova.file);
                                 //MOBILE APP
                                 if(basic.getMobileOperatingSystem() == 'Android') {
                                     //saving keystore file to Downloads folder
@@ -2801,8 +2802,10 @@ $(document).on('click', '.open-settings', function() {
 
 //method to download files in Download folder in Android device
 function hybridAppFileDownload(file_name, file_content, callback, location, download_folder) {
+    console.log(location, 'location');
     window.resolveLocalFileSystemURL(location, function (fileSystem) {
         if(download_folder) {
+            console.log('download_folder 1');
             fileSystem.getDirectory('Download', {create: true, exclusive: false}, function(dirEntry) {
                 proceedWithDownload(dirEntry);
             }, function(err) {
@@ -2811,11 +2814,14 @@ function hybridAppFileDownload(file_name, file_content, callback, location, down
                 alert('Something went wrong with downloading your file (Core error 5). Please contact admin@dentacoin.com.');
             });
         } else {
+            console.log('download_folder 2');
             proceedWithDownload(fileSystem);
         }
         
         function proceedWithDownload(dirEntry) {
+            console.log(dirEntry, 'dirEntry');
             dirEntry.getFile(file_name, {create: true, exclusive: true}, function (fileEntry) {
+                console.log(fileEntry, 'fileEntry');
                 fileEntry.createWriter(function (fileWriter) {
                     fileWriter.onwriteend = function (e) {
                         console.log(e, 'e');
