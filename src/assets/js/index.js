@@ -85,7 +85,6 @@ var request_interval_for_rest_of_transaction_history;
 //by this variable we recognize is project is loaded from web browser or like hybrid app
 var is_hybrid;
 var meta_mask_installed = false;
-var meta_mask_logged = false;
 var temporally_timestamps = {};
 var global_state = {};
 var getInstance;
@@ -120,6 +119,7 @@ var dApp = {
 
                     web3 = getWeb3(window['ethereum']);
                     dApp.web3_1_0 = web3;
+                    meta_mask_installed = true;
 
                     continueWithContractInstanceInit();
                 }
@@ -130,6 +130,7 @@ var dApp = {
 
                         web3 = getWeb3(window['ethereum']);
                         dApp.web3_1_0 = web3;
+                        meta_mask_installed = true;
 
                         basic.closeDialog();
                         continueWithContractInstanceInit();
