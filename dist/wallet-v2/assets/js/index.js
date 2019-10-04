@@ -108,38 +108,57 @@ var dApp = {
         dApp.loaded = true;
 
         //init web3
-        if(typeof(web3) !== 'undefined') {
-            console.log('METAMASK INSTALLED');
-            //METAMASK INSTALLED
-            global_state.account = web3.eth.defaultAccount;
-
-            web3.eth.getAccounts(function(error, accounts) {
-                console.log(error, 'accountsChanged');
-                console.log(accounts, 'accountsChanged');
-                if(error) {
-                    console.log(error);
+        if(window.ethereum) {
+            $(document).ready(async function() {
+                //METAMASK INSTALLED
+                if(ethereum.selectedAddress == undefined || ethereum.selectedAddress == null) {
+                    //if metamask is installed, but user not logged show login popup
+                    basic.showDialog('<div class="popup-body"><div class="title">Sign in to MetaMask</div><div class="subtitle">Open up your browser\'s MetaMask extention and give approval if asked for it.</div><div class="separator"></div><figure class="gif"><img src="assets/images/metamask-animation.gif" alt="Login MetaMask animation"/> </figure></div>', 'login-metamask-desktop');
+                    await ethereum.enable();
                 } else {
-                    if(accounts.length) {
-                        global_state.account = accounts[0];
+                    global_state.account = ethereum.selectedAddress;
 
-                        console.log(global_state.account, 'global_state.account');
+                    web3 = getWeb3(window['ethereum']);
+                    dApp.web3_1_0 = web3;
 
-                        //overwrite web3 0.2 with web 1.0
-                        web3 = getWeb3(web3.currentProvider);
+                    continueWithContractInstanceInit();
+                }
+
+                window.ethereum.on('accountsChanged', function () {
+                    if(ethereum.selectedAddress != null && ethereum.selectedAddress != undefined && !basic.property_exists(global_state, 'account')) {
+                        global_state.account = ethereum.selectedAddress;
+
+                        web3 = getWeb3(window['ethereum']);
                         dApp.web3_1_0 = web3;
 
+                        basic.closeDialog();
                         continueWithContractInstanceInit();
+                    } else if((ethereum.selectedAddress == null || ethereum.selectedAddress == undefined) && basic.property_exists(global_state, 'account')) {
+                        //if user logged in with metamask, but logging out or dissaproved wallet.dentacoin.com from metamask trusted domain
+                        window.location.reload();
+                    } else if(ethereum.selectedAddress != null && ethereum.selectedAddress != undefined && basic.property_exists(global_state, 'account') && ethereum.selectedAddress != global_state.account) {
+                        //if user logged in with metamask, but trying to switch his active metamask accounti
+                        window.location.reload();
                     }
-                }
+                });
             });
+        } else if(typeof(web3) !== 'undefined') {
+            //METAMASK INSTALLED
+            if(web3.eth.defaultAccount != null && web3.eth.defaultAccount != undefined && web3.eth.defaultAccount != '') {
+                global_state.account = web3.eth.defaultAccount;
+                //overwrite web3 0.2 with web 1.0
+                web3 = getWeb3(web3.currentProvider);
+                dApp.web3_1_0 = web3;
+
+                continueWithContractInstanceInit();
+            }
         } else {
             //NO METAMASK INSTALLED
-            if (window.localStorage.getItem('current_account') != null && typeof(web3) === 'undefined') {
+            if(window.localStorage.getItem('current_account') != null && typeof(web3) === 'undefined') {
                 global_state.account = window.localStorage.getItem('current_account');
             }
 
             dApp.web3_1_0 = getWeb3(new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/c6ab28412b494716bc5315550c0d4071'));
-
             continueWithContractInstanceInit();
         }
 
@@ -262,7 +281,7 @@ var dApp = {
                                                         if(custom_iterator < 5 && custom_iterator < intervals_stopper) {
                                                             if(basic.property_exists(merged_events_arr[custom_iterator], 'type') && merged_events_arr[custom_iterator].type == 'eth_transaction') {
                                                                 //eth transaction
-                                                                transaction_history_html+=buildEthereumHistoryTransaction(ethereum_data, dApp.web3_1_0.utils.fromWei(merged_events_arr[custom_iterator].value, 'ether'), merged_events_arr[custom_iterator].to, merged_events_arr[custom_iterator].from, merged_events_arr[custom_iterator].timeStamp, merged_events_arr[custom_iterator].hash);
+                                                                transaction_history_html+=buildEthereumHistoryTransaction(ethereum_data, fromWei(merged_events_arr[custom_iterator].value, 'ether'), merged_events_arr[custom_iterator].to, merged_events_arr[custom_iterator].from, merged_events_arr[custom_iterator].timeStamp, merged_events_arr[custom_iterator].hash);
 
                                                                 if(custom_iterator < 5) {
                                                                     custom_iterator+=1;
@@ -312,7 +331,7 @@ var dApp = {
                                                         if(custom_iterator < merged_events_arr.length) {
                                                             if(basic.property_exists(merged_events_arr[custom_iterator], 'type') && merged_events_arr[custom_iterator].type == 'eth_transaction') {
                                                                 //eth transaction
-                                                                next_transaction_history_html+=buildEthereumHistoryTransaction(ethereum_data, dApp.web3_1_0.utils.fromWei(merged_events_arr[custom_iterator].value, 'ether'), merged_events_arr[custom_iterator].to, merged_events_arr[custom_iterator].from, merged_events_arr[custom_iterator].timeStamp, merged_events_arr[custom_iterator].hash);
+                                                                next_transaction_history_html+=buildEthereumHistoryTransaction(ethereum_data, fromWei(merged_events_arr[custom_iterator].value, 'ether'), merged_events_arr[custom_iterator].to, merged_events_arr[custom_iterator].from, merged_events_arr[custom_iterator].timeStamp, merged_events_arr[custom_iterator].hash);
 
                                                                 if(custom_iterator < merged_events_arr.length) {
                                                                     custom_iterator+=1;
@@ -500,7 +519,7 @@ var pages_data = {
                             if(error) {
                                 console.log(error);
                             } else {
-                                $('.eth-amount').html(parseFloat(dApp.web3_1_0.utils.fromWei(result)).toFixed(6));
+                                $('.eth-amount').html(parseFloat(fromWei(result)).toFixed(6));
 
                                 if(hide_loader != undefined) {
                                     hideLoader();
@@ -1131,7 +1150,7 @@ var pages_data = {
                                                     //checking if dcn value is lesser than 10 (contract condition)
                                                     basic.showAlert('Please make sure DCN value is greater than 10. You cannot send less than 10 DCN.', '', true);
                                                     return false;
-                                                } else if (0.005 > parseFloat(dApp.web3_1_0.utils.fromWei(eth_balance))) {
+                                                } else if (0.005 > parseFloat(fromWei(eth_balance))) {
                                                     //checking if current balance is lower than the desired value to send
                                                     if($('.section-amount-to #active-crypto').val() == 'dcn') {
                                                         basic.showAlert('For sending Dentacoins you need at least 0.005 ETH. Please refill.', '', true);
@@ -1142,7 +1161,7 @@ var pages_data = {
                                                 } else if($('.section-amount-to #active-crypto').val() == 'dcn' && crypto_val > parseInt(dcn_balance)) {
                                                     basic.showAlert('The value you want to send is higher than your balance.', '', true);
                                                     return false;
-                                                } else if($('.section-amount-to #active-crypto').val() == 'eth' && crypto_val > parseFloat(dApp.web3_1_0.utils.fromWei(eth_balance))) {
+                                                } else if($('.section-amount-to #active-crypto').val() == 'eth' && crypto_val > parseFloat(fromWei(eth_balance))) {
                                                     basic.showAlert('The value you want to send is higher than your balance.', '', true);
                                                     return false;
                                                 } else if (!innerAddressCheck(sending_to_address)) {
@@ -1160,7 +1179,7 @@ var pages_data = {
                                                         dApp.methods.transfer(sending_to_address, crypto_val);
                                                     } else if($('.section-amount-to #active-crypto').val() == 'eth') {
                                                         dApp.web3_1_0.eth.sendTransaction({
-                                                            from: global_state.account, to: sending_to_address, value: dApp.web3_1_0.utils.toWei(crypto_val, 'ether')
+                                                            from: global_state.account, to: sending_to_address, value: toWei(crypto_val)
                                                         }).on('transactionHash', function(hash){
                                                             displayMessageOnTransactionSend('Ethers', hash);
                                                         }).catch(function(err) {
@@ -1192,7 +1211,7 @@ var pages_data = {
                                                         if(error) {
                                                             console.log(error);
                                                         } else {
-                                                            var eth_fee = dApp.web3_1_0.utils.fromWei((on_popup_load_gas_price * result).toString(), 'ether');
+                                                            var eth_fee = fromWei((on_popup_load_gas_price * result).toString(), 'ether');
 
                                                             var transaction_popup_html = '<div class="title">Send confirmation</div><div class="pictogram-and-dcn-usd-price"><svg version="1.1" class="width-100 max-width-100 margin-bottom-10" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><style type="text/css">.st0-recipe{fill:#FFFFFF;}.st1-recipe{fill:#CA675A;}.st2-recipe{fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="100" width="105.7" x="-7.2" y="-6.4"></sliceSourceBounds></sfw></metadata><circle class="st0-recipe" cx="50" cy="50" r="50"/><g><g><g><path class="st1-recipe" d="M50.1,93.7c-18.7,0-36-12.4-41.3-31.3C2.4,39.6,15.8,16,38.5,9.6C48.9,6.7,60,7.8,69.6,12.8c1.2,0.6,1.6,2,1,3.2s-2,1.6-3.2,1c-8.6-4.4-18.4-5.4-27.7-2.8c-20.1,5.6-32,26.7-26.3,46.9s26.7,32.1,46.9,26.4s32.1-26.7,26.4-46.9c-1.1-3.9-2.8-7.6-5-10.9c-0.7-1.1-0.4-2.6,0.7-3.3c1.1-0.7,2.6-0.4,3.3,0.7c2.5,3.8,4.4,7.9,5.6,12.3c6.4,22.8-7,46.5-29.7,52.8C57.8,93.2,53.9,93.7,50.1,93.7z"/></g><g><path class="st1-recipe" d="M33.1,78.6c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.4l40.4-50.5c0.8-1,2.3-1.2,3.4-0.4c1,0.8,1.2,2.3,0.4,3.4L35,77.7C34.5,78.3,33.8,78.6,33.1,78.6z"/></g><g><g><path class="st2-recipe" d="M105.7,56.9"/></g></g></g><g><path class="st1-recipe" d="M73.7,54.2c-0.1,0-0.2,0-0.2,0c-1.3-0.2-2.3-1.4-2.2-2.7L74,23.9L47.6,39.8c-1.1,0.7-2.6,0.3-3.3-0.8c-0.7-1.1-0.3-2.6,0.8-3.3l34.5-20.8L76.1,52C76,53.2,74.9,54.2,73.7,54.2z"/></g></g></svg><div class="dcn-amount">-'+crypto_val+' '+token_symbol+'</div><div class="usd-amount">=$'+usd_val+'</div></div><div class="confirm-row to"> <div class="label inline-block">To:</div><div class="value inline-block">'+sending_to_address+'</div></div><div class="confirm-row from"> <div class="label inline-block">From:</div><div class="value inline-block">'+global_state.account+'</div></div><div class="confirm-row free"> <div class="label inline-block">Ether fee:</div><div class="value inline-block">'+parseFloat(eth_fee).toFixed(8)+'</div></div>';
 
@@ -1487,7 +1506,7 @@ function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver
             token_label = 'Dentacoin tokens';
         } else if(symbol == 'ETH') {
             transaction_obj.to = receiver;
-            transaction_obj.value = dApp.web3_1_0.utils.toHex(dApp.web3_1_0.utils.toWei(token_val.toString(), 'ether'));
+            transaction_obj.value = dApp.web3_1_0.utils.toHex(toWei(token_val.toString()));
             token_label = 'Ethers';
         }
 
@@ -1670,12 +1689,28 @@ window.initdApp = function(){
 };
 
 //checking if passed address is valid
-function innerAddressCheck(address)    {
+function innerAddressCheck(address) {
     return dApp.web3_1_0.utils.isAddress(address);
+}
+
+function fromWei(wei_amount, type) {
+    console.log('fromWei');
+    if(type != undefined) {
+        return dApp.web3_1_0.utils.fromWei(wei_amount, type);
+    } else {
+        return dApp.web3_1_0.utils.fromWei(wei_amount);
+    }
+}
+
+function toWei(eth_amount) {
+
+    console.log('toWei');
+    return dApp.web3_1_0.utils.toWei(eth_amount, 'ether');
 }
 
 //converting address to checksum
 function checksumAddress(address)    {
+    console.log('checksumAddress');
     return dApp.web3_1_0.utils.toChecksumAddress(address);
 }
 
@@ -1753,64 +1788,14 @@ function bindGoogleAlikeButtonsEvents() {
 }
 bindGoogleAlikeButtonsEvents();
 
-var current_meta_mask_account;
-if(typeof(web3) !== 'undefined' && web3.currentProvider.isMetaMask === true) {
-    current_meta_mask_account = web3.eth.defaultAccount;
-}
-
 //checking if metamask or if saved current_account in the local storage. If both are false then show custom login popup with CREATE / IMPORT logic
 function initAccountChecker()  {
     is_hybrid = $('#main-container').attr('hybrid') == 'true';
     checkIfLoadingFromMobileBrowser();
 
-    //checking if metamask
-    if(typeof(web3) !== 'undefined' && web3.currentProvider.isMetaMask === true) {
-        console.log('METAMASK');
-        meta_mask_installed = true;
-
-        //on metamask account change refresh the website
-        window.ethereum.on('accountsChanged', function () {
-            web3.eth.getAccounts(function(error, accounts) {
-                if(error) {
-                    console.log(error);
-                } else {
-                    if(accounts.length) {
-                        if(innerAddressCheck(current_meta_mask_account) && checksumAddress(current_meta_mask_account) != checksumAddress(accounts[0]) || current_meta_mask_account == null) {
-                            window.location.reload();
-                        }
-                    } else if(current_meta_mask_account != undefined && current_meta_mask_account != null) {
-                        window.location.reload();
-                    }
-                }
-            });
-        });
-
-        //on metamask login refresh the website
-        web3.currentProvider.publicConfigStore.on('update', function() {
-            web3.eth.getAccounts(function(error, accounts) {
-                if(error) {
-                    console.log(error);
-                } else {
-                    if(accounts.length) {
-                        if(innerAddressCheck(current_meta_mask_account) && checksumAddress(current_meta_mask_account) != checksumAddress(accounts[0]) || current_meta_mask_account == null) {
-                            window.location.reload();
-                        }
-                    } else if(current_meta_mask_account != undefined && current_meta_mask_account != null) {
-                        window.location.reload();
-                    }
-                }
-            });
-        });
-
-        if(current_meta_mask_account != undefined && current_meta_mask_account != null)  {
-            meta_mask_logged = true;
-        }else {
-            //if metamask is installed, but user not logged show login popup
-            basic.showDialog('<div class="popup-body"><div class="title">Sign in to MetaMask</div><div class="subtitle">Open up your browser\'s MetaMask extention.</div><div class="separator"></div><figure class="gif"><img src="assets/images/metamask-animation.gif" alt="Login MetaMask animation"/> </figure></div>', 'login-metamask-desktop');
-        }
-    } else if(window.localStorage.getItem('current_account') == null && typeof(web3) === 'undefined') {
+    if(window.localStorage.getItem('current_account') == null && typeof(web3) === 'undefined') {
         //show custom authentication popup
-        var popup_html = '<div class="popup-header padding-bottom-10 text-center"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/wallet-loading.png" class="max-width-80 width-100" alt="Dentacoin wallet logo"></figure></div><div class="left-right-side-holder fs-0"><div class="popup-left inline-block-top" data-step="first"><div class="navigation-link"><a href="javascript:void(0)" data-slug="first" class="active">CREATE</a></div><div class="navigation-link mobile"><a href="javascript:void(0)" data-slug="second">IMPORT</a></div><div class="popup-body first"><div class="creation-text max-width-400 padding-top-20 padding-bottom-20"><svg class="inline-block-top" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 63.3 64.1" style="enable-background:new 0 0 63.3 64.1;" xml:space="preserve"><style type="text/css">.keyholder-st0{fill:url(#SVGID_1_);}.keyholder-st1{fill:url(#SVGID_2_);}.keyholder-st2{fill:url(#SVGID_3_);}.keyholder-st3{fill:url(#SVGID_4_);}.keyholder-st4{fill:url(#SVGID_5_);}.keyholder-st5{fill:url(#SVGID_6_);}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="64.1" width="63.3" x="1.3" y="17.4"></sliceSourceBounds></sfw></metadata><g><g><linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="23.7" y1="8.35" x2="38.6" y2="8.35"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st0" d="M31.2,16.7c4.2,0,7.4-5.2,7.4-9.3S35.3,0,31.2,0s-7.5,3.3-7.5,7.4S27,16.7,31.2,16.7z"/></g><g><linearGradient id="SVGID_2_" gradientUnits="userSpaceOnUse" x1="15.6" y1="20.5" x2="46.8" y2="20.5"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st1" d="M19.1,27.9h3.4c0.3-1.4,0.3-1.5,0.3-1.7c0-0.3,0.5-0.3,0.5,0v1.7h15.8v-1.7c0-0.1,0.3-0.7,0.8,1.5c0,0.1,0,0.1,0.1,0.2h1.9v-2.3c0-1.7,1.3-3,3-3h1.9c-0.5-3.6-1.5-9.3-7.7-9.5c-1.7,3.1-4.5,5.6-7.9,5.6s-6.3-2.5-7.9-5.6c-6.4,0.2-7.3,6.2-7.7,10.7C17,24.9,18.3,26.3,19.1,27.9z"/></g><g><linearGradient id="SVGID_3_" gradientUnits="userSpaceOnUse" x1="17.6" y1="39.35" x2="20.5" y2="39.35"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st2" d="M17.6,40.5c0.3,0,0.5-0.1,0.7-0.2c1-0.4,1.8-1.1,2.2-2.1h-1.4C18.7,39.1,18.2,39.8,17.6,40.5z"/></g><g><linearGradient id="SVGID_4_" gradientUnits="userSpaceOnUse" x1="23.3" y1="51.2" x2="39.1" y2="51.2"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st3" d="M23.3,60.5c0,1.9,1.5,3.5,3.4,3.5c1.9,0,3.5-1.6,3.5-3.5V44.7c0-0.5,0.5-1,1-1s1,0.5,1,1v15.9c0,1.9,1.5,3.5,3.5,3.5c1.9,0,3.4-1.6,3.4-3.5V38.3H23.3V60.5z"/></g><g><linearGradient id="SVGID_5_" gradientUnits="userSpaceOnUse" x1="43" y1="39.4" x2="49.5" y2="39.4"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st4" d="M46.2,40.5c1.4,0,2.8-0.8,3.3-2.2H43C43.4,39.7,44.8,40.5,46.2,40.5z"/></g><g><linearGradient id="SVGID_6_" gradientUnits="userSpaceOnUse" x1="0" y1="32" x2="63.3129" y2="32"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><path class="keyholder-st5" d="M62.4,29.9h-2.7v-7.2c0-0.6-0.5-1-1-1h-4.4c-0.6,0-1,0.4-1,1v7.2h-3.1v-4.3c0-0.6-0.5-1-1-1h-4.4c-0.5,0-1,0.4-1,1v4.3h-26c-1.3-3.6-4.8-6-8.6-6C4.1,23.9,0,28,0,33.1s4.1,9.2,9.2,9.2c3.9,0,7.3-2.4,8.6-6h44.5c0.5,0,1-0.5,1-1v-4.4C63.4,30.3,62.9,29.9,62.4,29.9z M9.2,36.8c-2.1,0-3.7-1.7-3.7-3.7s1.7-3.7,3.7-3.7c2.1,0,3.7,1.7,3.7,3.7S11.3,36.8,9.2,36.8z"/></g></g></svg><div class="inline-block-top text padding-left-10 fs-xs-14 fs-16"><div class="lato-bold fs-18">Let\'s create a new wallet!</div>Please set a secure password, download your Backup File and keep it safe! If lost, there is no way to access your tokens. </div></div><div class="field-parent margin-bottom-15 max-width-300 margin-left-right-auto"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="keystore-file-pass">Enter password:</label><input type="password" maxlength="30" id="keystore-file-pass" class="full-rounded keystore-file-pass required-field"/></div></div><div class="field-parent max-width-300 margin-left-right-auto"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="second-pass">Repeat password:</label><input type="password" maxlength="30" id="second-pass" class="full-rounded second-pass required-field"/></div></div><div class="text-center padding-top-15"><input type="checkbox" checked id="agree-to-cache-create" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-create"><span class="padding-left-5 padding-right-5 inline-block">Remember backup file</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block more-info-keystore-remember fs-0" data-content="Remembering your backup file allows for easier and faster transactions. It is stored only in local device storage and nobody else has access to it."><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="btn-container text-center padding-top-15 padding-bottom-15"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border login-into-wallet min-width-180">CREATE</a></div></div></div><div class="popup-right inline-block-top"><div class="navigation-link"><a href="javascript:void(0)" data-slug="second">IMPORT</a></div><div class="popup-body second custom-hide"><div class="padding-top-20 padding-bottom-30 fs-0 row-with-image-and-text max-width-400 max-width-xs-300"><svg class="max-width-80 inline-block" version="1.1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 70.1 86" style="enable-background:new 0 0 70.1 86;" xml:space="preserve"><style type="text/css">.st0-import{fill:url(#SVGID_1_import);}.st1-import{fill:url(#SVGID_2_import);}.st2-import{fill:#FFFFFF;}.st3-import{fill:url(#SVGID_3_import);stroke:#FFFFFF;stroke-width:0.75;stroke-miterlimit:10;}.st4-import{fill:#FFFFFF;stroke:#FFFFFF;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="86" width="70.1" x="16" y="29"></sliceSourceBounds></sfw></metadata><linearGradient id="SVGID_1_import" gradientUnits="userSpaceOnUse" x1="0" y1="43" x2="64" y2="43"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="st0-import" d="M44.7,0H3.1C1.4,0,0,1.3,0,3v80c0,1.6,1.4,3,3.1,3h57.9c1.7,0,3.1-1.3,3.1-3V18.8c0-0.9-0.4-1.8-1-2.5L47.2,1C46.5,0.4,45.6,0,44.7,0z"/><linearGradient id="SVGID_2_import" gradientUnits="userSpaceOnUse" x1="35.9571" y1="23.008" x2="69.6066" y2="23.008"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><circle class="st1-import" cx="52.8" cy="23" r="16.8"/><rect x="28" y="49" class="st2-import" width="8" height="37"/><path class="st2-import" d="M18.2,58.8l13.4-14.6c0.3-0.3,0.7-0.3,1,0l13.4,14.7c0.4,0.4,0.1,1.2-0.5,1.2H18.6C18.1,60,17.8,59.2,18.2,58.8z"/><g><linearGradient id="SVGID_3_import" gradientUnits="userSpaceOnUse" x1="34.8246" y1="23.1469" x2="69.7484" y2="23.1469"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><path class="st3-import" d="M52.3,6.5C61.5,6.5,69,14,69,23.1s-7.5,16.7-16.7,16.7s-16.7-7.5-16.7-16.7S43.1,6.5,52.3,6.5 M52.3,5.7c-9.7,0-17.5,7.8-17.5,17.5s7.8,17.5,17.5,17.5s17.5-7.8,17.5-17.5S61.9,5.7,52.3,5.7L52.3,5.7z"/></g><g><rect x="59" y="28.4" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -2.9698 50.8809)" class="st4-import" width="1.9" height="1.2"/><rect x="58.2" y="27.7" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -2.6509 50.155)" class="st4-import" width="1.9" height="1.2"/><g><polygon class="st4-import" points="60.7,30.7 59.7,31.8 50.9,22.9 51.9,21.9 "/><path class="st4-import" d="M45,16c-1.9,1.9-1.9,4.9,0,6.8c1.9,1.9,4.9,1.9,6.8,0c1.9-1.9,1.9-4.9,0-6.8C49.8,14.1,46.8,14.1,45,16z M50.9,21.9c-1.4,1.4-3.7,1.4-5.1,0c-1.4-1.4-1.4-3.7,0-5.1c1.4-1.4,3.7-1.4,5.1,0C52.3,18.2,52.3,20.5,50.9,21.9z"/></g></g></svg><div class="inline-block padding-left-10 fs-16 fs-xs-14 text"><div class="lato-bold fs-18">Welcome back!</div>To import an existing wallet, please upload your Backup File.</div></div><div class="text-center import-keystore-file-row">';
+        var popup_html = '<div class="popup-header padding-bottom-10 text-center"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/wallet-loading.png" class="max-width-80 width-100" alt="Dentacoin wallet logo"></figure></div><div class="left-right-side-holder fs-0"><div class="popup-left inline-block-top" data-step="first"><div class="navigation-link"><a href="javascript:void(0)" data-slug="first" class="active">CREATE</a></div><div class="navigation-link mobile"><a href="javascript:void(0)" data-slug="second">IMPORT</a></div><div class="popup-body first"><div class="creation-text max-width-400 padding-top-20 padding-bottom-20"><svg class="inline-block-top" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 63.3 64.1" style="enable-background:new 0 0 63.3 64.1;" xml:space="preserve"><style type="text/css">.keyholder-st0{fill:url(#SVGID_1_);}.keyholder-st1{fill:url(#SVGID_2_);}.keyholder-st2{fill:url(#SVGID_3_);}.keyholder-st3{fill:url(#SVGID_4_);}.keyholder-st4{fill:url(#SVGID_5_);}.keyholder-st5{fill:url(#SVGID_6_);}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="64.1" width="63.3" x="1.3" y="17.4"></sliceSourceBounds></sfw></metadata><g><g><linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="23.7" y1="8.35" x2="38.6" y2="8.35"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st0" d="M31.2,16.7c4.2,0,7.4-5.2,7.4-9.3S35.3,0,31.2,0s-7.5,3.3-7.5,7.4S27,16.7,31.2,16.7z"/></g><g><linearGradient id="SVGID_2_" gradientUnits="userSpaceOnUse" x1="15.6" y1="20.5" x2="46.8" y2="20.5"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st1" d="M19.1,27.9h3.4c0.3-1.4,0.3-1.5,0.3-1.7c0-0.3,0.5-0.3,0.5,0v1.7h15.8v-1.7c0-0.1,0.3-0.7,0.8,1.5c0,0.1,0,0.1,0.1,0.2h1.9v-2.3c0-1.7,1.3-3,3-3h1.9c-0.5-3.6-1.5-9.3-7.7-9.5c-1.7,3.1-4.5,5.6-7.9,5.6s-6.3-2.5-7.9-5.6c-6.4,0.2-7.3,6.2-7.7,10.7C17,24.9,18.3,26.3,19.1,27.9z"/></g><g><linearGradient id="SVGID_3_" gradientUnits="userSpaceOnUse" x1="17.6" y1="39.35" x2="20.5" y2="39.35"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st2" d="M17.6,40.5c0.3,0,0.5-0.1,0.7-0.2c1-0.4,1.8-1.1,2.2-2.1h-1.4C18.7,39.1,18.2,39.8,17.6,40.5z"/></g><g><linearGradient id="SVGID_4_" gradientUnits="userSpaceOnUse" x1="23.3" y1="51.2" x2="39.1" y2="51.2"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st3" d="M23.3,60.5c0,1.9,1.5,3.5,3.4,3.5c1.9,0,3.5-1.6,3.5-3.5V44.7c0-0.5,0.5-1,1-1s1,0.5,1,1v15.9c0,1.9,1.5,3.5,3.5,3.5c1.9,0,3.4-1.6,3.4-3.5V38.3H23.3V60.5z"/></g><g><linearGradient id="SVGID_5_" gradientUnits="userSpaceOnUse" x1="43" y1="39.4" x2="49.5" y2="39.4"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st4" d="M46.2,40.5c1.4,0,2.8-0.8,3.3-2.2H43C43.4,39.7,44.8,40.5,46.2,40.5z"/></g><g><linearGradient id="SVGID_6_" gradientUnits="userSpaceOnUse" x1="0" y1="32" x2="63.3129" y2="32"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><path class="keyholder-st5" d="M62.4,29.9h-2.7v-7.2c0-0.6-0.5-1-1-1h-4.4c-0.6,0-1,0.4-1,1v7.2h-3.1v-4.3c0-0.6-0.5-1-1-1h-4.4c-0.5,0-1,0.4-1,1v4.3h-26c-1.3-3.6-4.8-6-8.6-6C4.1,23.9,0,28,0,33.1s4.1,9.2,9.2,9.2c3.9,0,7.3-2.4,8.6-6h44.5c0.5,0,1-0.5,1-1v-4.4C63.4,30.3,62.9,29.9,62.4,29.9z M9.2,36.8c-2.1,0-3.7-1.7-3.7-3.7s1.7-3.7,3.7-3.7c2.1,0,3.7,1.7,3.7,3.7S11.3,36.8,9.2,36.8z"/></g></g></svg><div class="inline-block-top text padding-left-10 fs-xs-14 fs-16"><div class="lato-bold fs-18">Let\'s create a new wallet!</div>Please set a secure password, download your Backup File and keep it safe! If lost, there is no way to access your tokens. </div></div><div class="field-parent margin-bottom-15 max-width-300 margin-left-right-auto"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="keystore-file-pass">Enter password:</label><input type="password" maxlength="30" id="keystore-file-pass" class="full-rounded keystore-file-pass required-field"/></div></div><div class="field-parent max-width-300 margin-left-right-auto"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="second-pass">Repeat password:</label><input type="password" maxlength="30" id="second-pass" class="full-rounded second-pass required-field"/></div></div><div class="btn-container text-center padding-top-15 padding-bottom-15"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border login-into-wallet min-width-180">CREATE</a></div></div></div><div class="popup-right inline-block-top"><div class="navigation-link"><a href="javascript:void(0)" data-slug="second">IMPORT</a></div><div class="popup-body second custom-hide"><div class="padding-top-20 padding-bottom-30 fs-0 row-with-image-and-text max-width-400 max-width-xs-300"><svg class="max-width-80 inline-block" version="1.1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 70.1 86" style="enable-background:new 0 0 70.1 86;" xml:space="preserve"><style type="text/css">.st0-import{fill:url(#SVGID_1_import);}.st1-import{fill:url(#SVGID_2_import);}.st2-import{fill:#FFFFFF;}.st3-import{fill:url(#SVGID_3_import);stroke:#FFFFFF;stroke-width:0.75;stroke-miterlimit:10;}.st4-import{fill:#FFFFFF;stroke:#FFFFFF;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="86" width="70.1" x="16" y="29"></sliceSourceBounds></sfw></metadata><linearGradient id="SVGID_1_import" gradientUnits="userSpaceOnUse" x1="0" y1="43" x2="64" y2="43"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="st0-import" d="M44.7,0H3.1C1.4,0,0,1.3,0,3v80c0,1.6,1.4,3,3.1,3h57.9c1.7,0,3.1-1.3,3.1-3V18.8c0-0.9-0.4-1.8-1-2.5L47.2,1C46.5,0.4,45.6,0,44.7,0z"/><linearGradient id="SVGID_2_import" gradientUnits="userSpaceOnUse" x1="35.9571" y1="23.008" x2="69.6066" y2="23.008"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><circle class="st1-import" cx="52.8" cy="23" r="16.8"/><rect x="28" y="49" class="st2-import" width="8" height="37"/><path class="st2-import" d="M18.2,58.8l13.4-14.6c0.3-0.3,0.7-0.3,1,0l13.4,14.7c0.4,0.4,0.1,1.2-0.5,1.2H18.6C18.1,60,17.8,59.2,18.2,58.8z"/><g><linearGradient id="SVGID_3_import" gradientUnits="userSpaceOnUse" x1="34.8246" y1="23.1469" x2="69.7484" y2="23.1469"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><path class="st3-import" d="M52.3,6.5C61.5,6.5,69,14,69,23.1s-7.5,16.7-16.7,16.7s-16.7-7.5-16.7-16.7S43.1,6.5,52.3,6.5 M52.3,5.7c-9.7,0-17.5,7.8-17.5,17.5s7.8,17.5,17.5,17.5s17.5-7.8,17.5-17.5S61.9,5.7,52.3,5.7L52.3,5.7z"/></g><g><rect x="59" y="28.4" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -2.9698 50.8809)" class="st4-import" width="1.9" height="1.2"/><rect x="58.2" y="27.7" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -2.6509 50.155)" class="st4-import" width="1.9" height="1.2"/><g><polygon class="st4-import" points="60.7,30.7 59.7,31.8 50.9,22.9 51.9,21.9 "/><path class="st4-import" d="M45,16c-1.9,1.9-1.9,4.9,0,6.8c1.9,1.9,4.9,1.9,6.8,0c1.9-1.9,1.9-4.9,0-6.8C49.8,14.1,46.8,14.1,45,16z M50.9,21.9c-1.4,1.4-3.7,1.4-5.1,0c-1.4-1.4-1.4-3.7,0-5.1c1.4-1.4,3.7-1.4,5.1,0C52.3,18.2,52.3,20.5,50.9,21.9z"/></g></g></svg><div class="inline-block padding-left-10 fs-16 fs-xs-14 text"><div class="lato-bold fs-18">Welcome back!</div>To import an existing wallet, please upload your Backup File.</div></div><div class="text-center import-keystore-file-row">';
         if(is_hybrid) {
             popup_html+='<label class="button custom-upload-button">';
         } else {
@@ -1938,44 +1923,39 @@ function initAccountChecker()  {
 
                         setTimeout(function() {
                             if(is_hybrid) {
+                                console.log(cordova.file);
                                 //MOBILE APP
                                 if(basic.getMobileOperatingSystem() == 'Android') {
-                                    androidFileDownload(keystore_file_name, JSON.stringify(keystore), function() {
-                                        fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
-                                        loginIntoWallet();
-                                    });
+                                    //saving keystore file to Downloads folder
+                                    hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function() {
+                                        //saving keystore file to App folder
+                                        hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function() {
+                                            fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
+                                            loginIntoWallet();
+                                        }, cordova.file.externalDataDirectory, false);
+                                    }, cordova.file.externalRootDirectory, true);
                                 } else if(basic.getMobileOperatingSystem() == 'iOS') {
-                                    //if iOS adding 2 more additional buttons. Downloads in iOS are not possible, because they have different file architecture. First button is for export (copy or share in socials) the keystore file and second one is to login in the Wallet
-                                    $(this_btn).parent().html('<div class="padding-bottom-20 text-center"><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border ios-export-keystore min-width-200">Export Backup file</a></div><div><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border ios-login-into-wallet disabled min-width-200">Login into Wallet</a></div>');
-                                    hideLoader();
+                                    //saving keystore file to App folder
+                                    hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function() {
+                                        window.localStorage.setItem('current_account', '0x' + keystore.address);
 
-                                    $('.ios-export-keystore').click(function() {
-                                        //using export plugin, because in iOS there is no such thing as direct file download
-                                        window.plugins.socialsharing.share(JSON.stringify(keystore));
-                                        $('.ios-login-into-wallet').removeClass('disabled');
-                                    });
-
-                                    //logging into wallet
-                                    $('.ios-login-into-wallet').click(function() {
-                                        if($(this).hasClass('disabled')) {
-                                            basic.showAlert('Please make sure you copied and saved your Backup file and keep it in a safe place. Only you are responsible for it!', '', true);
-                                        } else {
+                                        //if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
                                             window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
-                                            window.localStorage.setItem('current_account', '0x' + keystore.address);
+                                        //}
 
-                                            fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
-                                            refreshApp();
-                                        }
-                                    });
+                                        fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
+                                        refreshApp();
+                                    }, cordova.file.dataDirectory, false);
                                 }
                             } else {
                                 if(basic.getMobileOperatingSystem() == 'iOS' && basic.isMobile()) {
+                                    //mobile browser from iPhone
                                     basic.showAlert('Backup File has been opened in new tab of your browser. Please make sure to share/ copy and keep it in a safe place. Only you are responsible for it!', 'mobile-safari-keystore-creation', true);
 
                                     $('.mobile-safari-keystore-creation .modal-footer .btn.btn-primary, .mobile-safari-keystore-creation .bootbox-close-button.close').click(function() {
-                                        if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
+                                        //if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
                                             window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
-                                        }
+                                        //}
                                         window.localStorage.setItem('current_account', '0x' + keystore.address);
 
                                         fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
@@ -1994,30 +1974,20 @@ function initAccountChecker()  {
                         }, 500);
 
                         function loginIntoWallet() {
-                            if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
+                            //if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
                                 window.localStorage.setItem('current_account', '0x' + keystore.address);
+                                window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
                                 basic.showAlert('File ' + keystore_file_name + ' has been stored to the Downloads folder of your device and remembered for faster transactions.', '', true);
 
                                 setTimeout(function() {
+                                    fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
                                     if(is_hybrid) {
-                                        //in browser saving keystore file in localstorage
-                                        window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
-                                        window.localStorage.setItem('current_account', '0x' + keystore.address);
-
-                                        fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
                                         refreshApp();
-                                        //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
                                     } else {
-                                        //in browser saving keystore file in localstorage
-                                        window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
-                                        window.localStorage.setItem('current_account', '0x' + keystore.address);
-
-                                        fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
-
                                         window.location.reload();
                                     }
                                 }, 6000);
-                            } else {
+                            /*} else {
                                 window.localStorage.setItem('current_account', '0x' + keystore.address);
                                 basic.showAlert('File ' + keystore_file_name + ' has been stored to the Downloads folder of your device.', '', true);
 
@@ -2029,7 +1999,7 @@ function initAccountChecker()  {
                                         window.location.reload();
                                     }
                                 }, 6000);
-                            }
+                            }*/
                         }
                     });
                 }, 500);
@@ -2297,7 +2267,7 @@ function hideLoader() {
 }
 
 function buildKeystoreFileName(address) {
-    return 'Dentacoin secret key - ' + address;
+    return 'Dentacoin secret key - ' + checksumAddress(address);
 }
 
 function downloadFile(filename, text) {
@@ -2319,7 +2289,19 @@ $(document).on('click', '.open-settings', function() {
     basic.closeDialog();
     var settings_html = '<div class="text-center fs-0 color-white lato-bold popup-header"><a href="javascript:void(0)" class="custom-close-bootbox inline-block margin-right-5"><svg class="width-100" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 62 52.3" style="enable-background:new 0 0 62 52.3;" xml:space="preserve"><style type="text/css">.st1{fill:#FFFFFF;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="52.3" width="62" x="19" y="48.9"/></sfw></metadata><path class="st1" d="M62,26.2c0-2.2-1.8-4-4-4H14.2L30.4,7c1.7-1.4,1.8-4,0.4-5.6c-1.4-1.7-4-1.8-5.6-0.4C25.1,1,25,1.1,25,1.2 L1.3,23.2c-1.6,1.5-1.7,4-0.2,5.7C1.1,29,1.2,29,1.3,29.1L25,51.2c1.6,1.5,4.1,1.4,5.7-0.2c1.5-1.6,1.4-4.1-0.2-5.7L14.2,30.2H58 C60.2,30.2,62,28.4,62,26.2z"/></svg></a><span class="inline-block text-center fs-28 fs-xs-16">DENTACOIN WALLET SETTINGS</span></div><div class="popup-body">';
 
-    if((window.localStorage.getItem('keystore_file') == null)) {
+    if(window.localStorage.getItem('keystore_file') != null || (is_hybrid && basic.getMobileOperatingSystem() == 'iOS' && window.localStorage.getItem('keystore_file_ios_saved') == null)) {
+        var download_btn_label = 'Download';
+        var warning_html = '';
+        if(is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
+            download_btn_label = 'Export';
+            if(window.localStorage.getItem('keystore_file_ios_saved') == null) {
+                warning_html = '<div class="error-handle">You have not saved your Backup file yet.</div>';
+            }
+        }
+
+        //if cached keystore file show the option for downloading it
+        settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important download-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M14.4,10.4v3.2c0,0.1,0,0.2-0.1,0.3c0,0.1-0.1,0.2-0.2,0.3c-0.1,0.1-0.2,0.1-0.3,0.2c-0.1,0-0.2,0.1-0.3,0.1 H2.4c-0.1,0-0.2,0-0.3-0.1c-0.1,0-0.2-0.1-0.3-0.2S1.7,14,1.7,13.9c0-0.1-0.1-0.2-0.1-0.3v-3.2c0-0.4-0.4-0.8-0.8-0.8S0,10,0,10.4 v3.2c0,0.3,0.1,0.6,0.2,0.9c0.1,0.3,0.3,0.6,0.5,0.8c0.2,0.2,0.5,0.4,0.8,0.5C1.8,15.9,2.1,16,2.4,16h11.2c0.3,0,0.6-0.1,0.9-0.2 c0.3-0.1,0.6-0.3,0.8-0.5c0.2-0.2,0.4-0.5,0.5-0.8c0.1-0.3,0.2-0.6,0.2-0.9v-3.2c0-0.4-0.4-0.8-0.8-0.8S14.4,10,14.4,10.4z M8.8,8.5 V0.8C8.8,0.4,8.4,0,8,0C7.6,0,7.2,0.4,7.2,0.8v7.7L4.6,5.8c-0.3-0.3-0.8-0.3-1.1,0C3.1,6.1,3.1,6.7,3.4,7l4,4c0,0,0,0,0,0 c0.1,0.1,0.2,0.1,0.3,0.2c0.1,0,0.2,0.1,0.3,0.1c0,0,0,0,0,0c0.1,0,0.2,0,0.3-0.1c0.1,0,0.2-0.1,0.3-0.2l4-4c0.3-0.3,0.3-0.8,0-1.1 s-0.8-0.3-1.1,0L8.8,8.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold">'+download_btn_label+' Backup File</span></a><div class="fs-14 option-description">Forgot where you’ve stored your wallet access file? Make sure you save it again.</div>'+warning_html+'</div>';
+    } else if((window.localStorage.getItem('keystore_file') == null)) {
         //if not cached keystore file show the option for caching it
         settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important remember-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M14,0H2C0.9,0,0,0.9,0,2v12c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V2C16,0.9,15.1,0,14,0z M15,14c0,0.6-0.4,1-1,1 H2c-0.6,0-1-0.4-1-1v-3h14V14z M15,10H1V6h14V10z M1,5V2c0-0.6,0.4-1,1-1h12c0.6,0,1,0.4,1,1v3H1z M14,3.5C14,3.8,13.8,4,13.5,4h-1 C12.2,4,12,3.8,12,3.5v-1C12,2.2,12.2,2,12.5,2h1C13.8,2,14,2.2,14,2.5V3.5z M14,8.5C14,8.8,13.8,9,13.5,9h-1C12.2,9,12,8.8,12,8.5 v-1C12,7.2,12.2,7,12.5,7h1C13.8,7,14,7.2,14,7.5V8.5z M14,13.5c0,0.3-0.2,0.5-0.5,0.5h-1c-0.3,0-0.5-0.2-0.5-0.5v-1 c0-0.3,0.2-0.5,0.5-0.5h1c0.3,0,0.5,0.2,0.5,0.5V13.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold">Remember Backup File</span></a><div class="fs-14 option-description">By doing so, you will not be asked to upload it every time you want to access your wallet.</div><div class="camping-for-action"></div></div>';
 
@@ -2437,16 +2419,6 @@ $(document).on('click', '.open-settings', function() {
                 }
             });
         }
-    } else if(window.localStorage.getItem('keystore_file') != null) {
-        var download_btn_label = 'Download';
-        if(is_hybrid) {
-            if (basic.getMobileOperatingSystem() == 'iOS') {
-                download_btn_label = 'Export';
-            }
-        }
-
-        //if cached keystore file show the option for downloading it
-        settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important download-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M14.4,10.4v3.2c0,0.1,0,0.2-0.1,0.3c0,0.1-0.1,0.2-0.2,0.3c-0.1,0.1-0.2,0.1-0.3,0.2c-0.1,0-0.2,0.1-0.3,0.1 H2.4c-0.1,0-0.2,0-0.3-0.1c-0.1,0-0.2-0.1-0.3-0.2S1.7,14,1.7,13.9c0-0.1-0.1-0.2-0.1-0.3v-3.2c0-0.4-0.4-0.8-0.8-0.8S0,10,0,10.4 v3.2c0,0.3,0.1,0.6,0.2,0.9c0.1,0.3,0.3,0.6,0.5,0.8c0.2,0.2,0.5,0.4,0.8,0.5C1.8,15.9,2.1,16,2.4,16h11.2c0.3,0,0.6-0.1,0.9-0.2 c0.3-0.1,0.6-0.3,0.8-0.5c0.2-0.2,0.4-0.5,0.5-0.8c0.1-0.3,0.2-0.6,0.2-0.9v-3.2c0-0.4-0.4-0.8-0.8-0.8S14.4,10,14.4,10.4z M8.8,8.5 V0.8C8.8,0.4,8.4,0,8,0C7.6,0,7.2,0.4,7.2,0.8v7.7L4.6,5.8c-0.3-0.3-0.8-0.3-1.1,0C3.1,6.1,3.1,6.7,3.4,7l4,4c0,0,0,0,0,0 c0.1,0.1,0.2,0.1,0.3,0.2c0.1,0,0.2,0.1,0.3,0.1c0,0,0,0,0,0c0.1,0,0.2,0,0.3-0.1c0.1,0,0.2-0.1,0.3-0.2l4-4c0.3-0.3,0.3-0.8,0-1.1 s-0.8-0.3-1.1,0L8.8,8.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold">'+download_btn_label+' Backup File</span></a><div class="fs-14 option-description">Forgot where you’ve stored your wallet access file? Make sure you save it again.</div></div>';
     }
 
     settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important generate-keystore"><svg class="margin-right-5 inline-block max-width-30" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 66.3 74.8" style="enable-background:new 0 0 66.3 74.8;" xml:space="preserve"><style type="text/css">.st0-generate-keystore-file{fill:#00B5E2;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="74.8" width="66.3" x="16.6" y="37.3"></sliceSourceBounds></sfw></metadata><path class="st0-generate-keystore-file" d="M66.3,37.4c0-13.7-8.6-26.1-21.4-31c-0.8-0.3-1.6,0.1-1.9,0.9c-0.3,0.8,0.1,1.6,0.9,1.9c11.6,4.4,19.5,15.7,19.5,28.2c0,15.5-11.8,28.3-26.8,29.9l2.1-2.6c0.5-0.6,0.4-1.6-0.2-2.1c-0.6-0.5-1.6-0.4-2.1,0.2l-4.1,5.1c-0.3,0.2-0.4,0.6-0.5,1c0,0,0,0.1,0,0.1c0,0,0,0,0,0.1c0,0,0,0,0,0.1c0,0.1,0,0.2,0,0.2c0,0,0,0,0,0c0.1,0.3,0.2,0.7,0.5,0.9l5.3,4.3c0.3,0.2,0.6,0.3,0.9,0.3c0.4,0,0.9-0.2,1.2-0.6c0.5-0.6,0.4-1.6-0.2-2.1L37,70.3C53.5,68.3,66.3,54.3,66.3,37.4z M34.3,6.7c0.1-0.1,0.1-0.1,0.1-0.2c0,0,0,0,0,0c0-0.1,0.1-0.1,0.1-0.2c0,0,0-0.1,0-0.1c0-0.1,0-0.1,0-0.2c0,0,0-0.1,0-0.1c0,0,0,0,0-0.1c0,0,0,0,0-0.1c0-0.1,0-0.1,0-0.2c0,0,0-0.1,0-0.1c0-0.1,0-0.1-0.1-0.2c0,0,0,0,0-0.1c0-0.1-0.1-0.1-0.1-0.2c0,0,0,0,0,0c0-0.1-0.1-0.1-0.2-0.2c0,0,0,0,0,0c0,0-0.1-0.1-0.1-0.1l-5.3-4.3c-0.6-0.5-1.6-0.4-2.1,0.2c-0.5,0.6-0.4,1.6,0.2,2.1l2.3,1.8C12.8,6.5,0,20.5,0,37.4c0,13.8,8.7,26.3,21.6,31.1c0.2,0.1,0.3,0.1,0.5,0.1c0.6,0,1.2-0.4,1.4-1c0.3-0.8-0.1-1.6-0.9-1.9C10.9,61.3,3,49.9,3,37.4C3,21.9,14.8,9.1,29.8,7.5l-2.1,2.6c-0.5,0.6-0.4,1.6,0.2,2.1c0.3,0.2,0.6,0.3,0.9,0.3c0.4,0,0.9-0.2,1.2-0.6L34.3,6.7C34.3,6.7,34.3,6.7,34.3,6.7z"/><g transform="translate(0,-952.36218)"><path class="st0-generate-keystore-file" d="M31.6,974.2c3,3,3.3,7.8,0.9,11.2l16.5,16.5c0.5,0.5,0.5,1.4,0,1.9l-3.7,3.7c-0.5,0.5-1.4,0.5-1.9,0c-0.5-0.5-0.5-1.4,0-1.9l2.7-2.7l-3.9-3.9l-4.2,4.2c-0.5,0.5-1.4,0.5-1.9,0c-0.5-0.5-0.5-1.4,0-1.9l4.2-4.2l-9.7-9.7c-3.4,2.4-8.2,2.2-11.2-0.9c-3.4-3.4-3.4-8.9,0-12.2C22.7,970.8,28.2,970.8,31.6,974.2z M29.7,976.1c-2.3-2.3-6.1-2.3-8.4,0c-2.3,2.3-2.3,6.1,0,8.4c2.3,2.3,6.1,2.3,8.4,0C32,982.2,32,978.4,29.7,976.1L29.7,976.1z"/></g></svg><span class="inline-block color-light-blue fs-18 lato-bold">Generate Backup File</span></a><div class="fs-14 option-description">Create an easy-to-use wallet access file from your private key and secure it with a password.</div><div class="camping-for-action"></div></div><div class="option-row"><a href="javascript:void(0)" class="display-block-important show-private-key"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 21.3" style="enable-background:new 0 0 16 21.3;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="21.3" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M5.3,0C5.1,0,5,0.1,4.9,0.2L0.2,4.9C0.1,5,0,5.2,0,5.3v13.9c0,1.1,0.9,2.1,2.1,2.1h11.8c1.1,0,2.1-0.9,2.1-2.1 V2.1C16,0.9,15.1,0,13.9,0H5.3C5.3,0,5.3,0,5.3,0z M6.2,1.2h7.7c0.5,0,0.9,0.4,0.9,0.9v17.2c0,0.5-0.4,0.9-0.9,0.9H2.1 c-0.5,0-0.9-0.4-0.9-0.9v-13h4.4C6,6.2,6.2,6,6.2,5.6V1.2z M5,1.7V5H1.7L5,1.7z M4.4,9.8c-1.1,0-2.1,0.9-2.1,2.1s0.9,2.1,2.1,2.1 c0.9,0,1.7-0.6,2-1.5h3.6v0.9c0,0.3,0.3,0.6,0.6,0.6c0.3,0,0.6-0.3,0.6-0.6c0,0,0,0,0,0v-0.9h1.2v0.9c0,0.3,0.3,0.6,0.6,0.6 c0.3,0,0.6-0.3,0.6-0.6c0,0,0,0,0,0v-1.5c0-0.3-0.3-0.6-0.6-0.6H6.4C6.2,10.4,5.4,9.8,4.4,9.8L4.4,9.8z M4.4,11 c0.5,0,0.9,0.4,0.9,0.9c0,0.5-0.4,0.9-0.9,0.9c-0.5,0-0.9-0.4-0.9-0.9C3.6,11.3,3.9,11,4.4,11z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold">Display Private Key</span></a><div class="fs-14 option-description">Upload your backup file and the secret password to decrypt and show the private key.</div><div class="camping-for-action"></div></div>';
@@ -2494,15 +2466,38 @@ $(document).on('click', '.open-settings', function() {
                     setTimeout(function () {
                         var keystore_file_name = buildKeystoreFileName(global_state.account);
                         //downloading the file in mobile device file system
-                        androidFileDownload(keystore_file_name, window.localStorage.getItem('keystore_file'), function() {
+                        hybridAppFileDownload(keystore_file_name, window.localStorage.getItem('keystore_file'), function() {
                             basic.closeDialog();
                             basic.showAlert('File ' + keystore_file_name + ' has been downloaded to the top-level directory of your device file system.', '', true);
                             hideLoader();
-                        });
+                        }, cordova.file.externalRootDirectory, true);
                     }, 500);
                 } else if(basic.getMobileOperatingSystem() == 'iOS') {
                     //using export plugin, because in iOS there is no such thing as direct file download
-                    window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
+                    //window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
+
+                    if(window.localStorage.getItem('keystore_file_ios_saved') == null) {
+                        var file_name = buildKeystoreFileName(global_state.account);
+                        window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function(rootEntry) {
+                            rootEntry.getFile(file_name, {create: false}, function (fileEntry) {
+                                fileEntry.file(function (file) {
+                                    var reader = new FileReader();
+
+                                    reader.onloadend = function () {
+                                        var keystore_string = this.result;
+                                        window.plugins.socialsharing.share(keystore_string);
+                                        window.localStorage.setItem('keystore_file_ios_saved', true);
+                                    };
+
+                                    reader.readAsText(file);
+                                });
+                            }, function (err) {
+                                alert('Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.');
+                            });
+                        });
+                    } else {
+                        window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
+                    }
                 }
             } else {
                 if(basic.getMobileOperatingSystem() == 'iOS' && basic.isMobile()) {
@@ -2739,11 +2734,11 @@ $(document).on('click', '.open-settings', function() {
                                 //MOBILE APP
                                 if(basic.getMobileOperatingSystem() == 'Android') {
                                     //downloading the file in mobile device file system
-                                    androidFileDownload(keystore_file_name, keystore_file, function() {
+                                    hybridAppFileDownload(keystore_file_name, keystore_file, function() {
                                         basic.closeDialog();
                                         basic.showAlert('File ' + keystore_file_name + ' has been downloaded to the top-level directory of your device file system.', '', true);
                                         hideLoader();
-                                    });
+                                    }, cordova.file.externalRootDirectory, true);
                                 } else if(basic.getMobileOperatingSystem() == 'iOS') {
                                     hideLoader();
                                     //using export plugin, because in iOS there is no such thing as direct file download
@@ -2769,16 +2764,36 @@ $(document).on('click', '.open-settings', function() {
 });
 
 //method to download files in Download folder in Android device
-function androidFileDownload(file_name, file_content, callback) {
-    window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function (fileSystem) {
-        fileSystem.getDirectory('Download', {create: true, exclusive: false}, function(dirEntry) {
+function hybridAppFileDownload(file_name, file_content, callback, location, download_folder) {
+    console.log(file_name, 'file_name');
+    console.log(location, 'location');
+    window.resolveLocalFileSystemURL(location, function (fileSystem) {
+        if(download_folder) {
+            console.log('download_folder 1');
+            fileSystem.getDirectory('Download', {create: true, exclusive: false}, function(dirEntry) {
+                proceedWithDownload(dirEntry);
+            }, function(err) {
+                console.log(err, 'err');
+                hideLoader();
+                alert('Something went wrong with downloading your file (Core error 5). Please contact admin@dentacoin.com.');
+            });
+        } else {
+            console.log('download_folder 2');
+            proceedWithDownload(fileSystem);
+        }
+        
+        function proceedWithDownload(dirEntry) {
+            console.log(dirEntry, 'dirEntry');
             dirEntry.getFile(file_name, {create: true, exclusive: true}, function (fileEntry) {
+                console.log(fileEntry, 'fileEntry');
                 fileEntry.createWriter(function (fileWriter) {
                     fileWriter.onwriteend = function (e) {
+                        console.log(e, 'onwriteend');
                         callback();
                     };
 
                     fileWriter.onerror = function (e) {
+                        console.log(e, 'error');
                         hideLoader();
                         alert('Something went wrong with caching your file (Core error 3). Please contact admin@dentacoin.com.');
                     };
@@ -2796,11 +2811,7 @@ function androidFileDownload(file_name, file_content, callback) {
                 hideLoader();
                 alert('Seems like file with this name already exist in your root directory, move it or delete it and try again.');
             });
-        }, function(err) {
-            console.log(err, 'err');
-            hideLoader();
-            alert('Something went wrong with downloading your file (Core error 5). Please contact admin@dentacoin.com.');
-        });
+        }
     });
 }
 
