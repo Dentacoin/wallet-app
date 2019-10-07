@@ -507,7 +507,7 @@ var pages_data = {
                 dApp.methods.getDCNBalance(global_state.account, function(err, response) {
                     var dcn_balance = parseInt(response);
 
-                    $('.dcn-amount').html(dcn_balance);
+                    $('.main-wrapper .dcn-amount').html(dcn_balance);
 
                     //update usd amount (dentacoins in usd)
                     getDentacoinDataByCoingecko(function(request_response) {
