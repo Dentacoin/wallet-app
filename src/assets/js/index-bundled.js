@@ -81919,7 +81919,6 @@ function toWei(eth_amount) {
 
 //converting address to checksum
 function checksumAddress(address)    {
-    console.log('checksumAddress');
     return dApp.web3_1_0.utils.toChecksumAddress(address);
 }
 
@@ -82132,7 +82131,6 @@ function initAccountChecker()  {
 
                         setTimeout(function() {
                             if(is_hybrid) {
-                                console.log(cordova.file);
                                 //MOBILE APP
                                 if(basic.getMobileOperatingSystem() == 'Android') {
                                     //saving keystore file to Downloads folder
@@ -82175,7 +82173,7 @@ function initAccountChecker()  {
                                     });
                                 } else {
                                     //BROWSER
-                                    downloadFile(buildKeystoreFileName(keystore_file_name), JSON.stringify(keystore));
+                                    downloadFile(keystore_file_name, JSON.stringify(keystore));
                                     fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
                                     loginIntoWallet();
                                 }
@@ -83241,8 +83239,7 @@ function savePublicKeyToAssurance(address, key) {
         },
         dataType: 'json',
         success: function(response) {
-            console.log(address, key);
-            console.log(response, 'response');
+            //console.log(address, key);
         }
     });
 }
