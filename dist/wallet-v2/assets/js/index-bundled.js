@@ -80726,7 +80726,7 @@ var pages_data = {
                     $('.main-wrapper .dcn-amount').html(dcn_balance);
 
                     //update usd amount (dentacoins in usd)
-                    getDentacoinDataByCoingecko(function(request_response) { 
+                    getDentacoinDataByCoingecko(function(request_response) {
                         var dentacoin_data = request_response;
 
                         $('.usd-amount').html((dcn_balance * dentacoin_data.market_data.current_price.usd).toFixed(2));
@@ -81579,23 +81579,15 @@ function styleKeystoreUploadBtnForTx(function_abi, token_symbol, crypto_val, sen
             $('.custom-upload-keystore-file-label').click(function() {
                 if(basic.getMobileOperatingSystem() == 'Android') {
                     fileChooser.open(function(file_uri) {
-                        window.resolveLocalFileSystemURL(decodeURIComponent(file_uri), function (entry) {
-                            window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function (rootEntry) {
-                                rootEntry.getFile(decodeURIComponent(entry.fullPath), { create: false }, function (fileEntry) {
-                                    fileEntry.file(function (file) {
-                                        var reader = new FileReader();
+                        androidFileUpload(file_uri, function(file) {
+                            var reader = new FileReader();
 
-                                        reader.onloadend = function () {
-                                            var keystore_string = this.result;
-                                            proceedWithTransactionFiringAfterHavingTheKeystoreFile(keystore_string);
-                                        };
+                            reader.onloadend = function () {
+                                var keystore_string = this.result;
+                                proceedWithTransactionFiringAfterHavingTheKeystoreFile(keystore_string);
+                            };
 
-                                        reader.readAsText(file);
-                                    }, function (err) {
-                                        alert('Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.');
-                                    });
-                                });
-                            });
+                            reader.readAsText(file);
                         });
                     }, function(err) {
                         alert('File upload failed, please try again with file inside your internal storage.');
@@ -82169,6 +82161,9 @@ function initAccountChecker()  {
                                     //mobile browser from iPhone
                                     basic.showAlert('Backup File has been opened in new tab of your browser. Please make sure to share/ copy and keep it in a safe place. Only you are responsible for it!', 'mobile-safari-keystore-creation', true);
 
+                                    //mobile safari
+                                    downloadFile(keystore_file_name, JSON.stringify(keystore));
+
                                     $('.mobile-safari-keystore-creation .modal-footer .btn.btn-primary, .mobile-safari-keystore-creation .bootbox-close-button.close').click(function() {
                                         //if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
                                             window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
@@ -82178,12 +82173,9 @@ function initAccountChecker()  {
                                         fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
                                         refreshApp();
                                     });
-
-                                    //mobile safari
-                                    downloadFile(keystore_file_name, JSON.stringify(keystore));
                                 } else {
                                     //BROWSER
-                                    downloadFile(buildKeystoreFileName('0x' + keystore.address), JSON.stringify(keystore));
+                                    downloadFile(buildKeystoreFileName(keystore_file_name), JSON.stringify(keystore));
                                     fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
                                     loginIntoWallet();
                                 }
@@ -82235,8 +82227,6 @@ function customErrorHandle(el, string) {
 function styleKeystoreUploadBtn()    {
     function proceedWithImportingAfterKeystoreUploading(keystore_string) {
         if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address')) {
-            var address = JSON.parse(keystore_string).address;
-
             $('.or-label').hide();
             $('.import-private-key-row').hide();
 
@@ -82299,28 +82289,21 @@ function styleKeystoreUploadBtn()    {
             $('.custom-upload-button').click(function() {
                 var this_btn = $(this);
                 fileChooser.open(function(file_uri) {
-                    console.log(file_uri, 'file_uri');
-                    window.resolveLocalFileSystemURL(decodeURIComponent(file_uri), function (entry) {
-                        window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function (rootEntry) {
-                            rootEntry.getFile(decodeURIComponent(entry.fullPath), {create: false}, function (fileEntry) {
-                                fileEntry.file(function (file) {
-                                    var reader = new FileReader();
+                    androidFileUpload(file_uri, function(file) {
+                        var reader = new FileReader();
 
-                                    initCustomInputFileAnimation(this_btn);
+                        if(this_btn != undefined) {
+                            initCustomInputFileAnimation(this_btn);
+                        }
 
-                                    reader.onloadend = function () {
-                                        var keystore_string = this.result;
-                                        setTimeout(function () {
-                                            proceedWithImportingAfterKeystoreUploading(keystore_string);
-                                        }, 500);
-                                    };
+                        reader.onloadend = function () {
+                            var keystore_string = this.result;
+                            setTimeout(function () {
+                                proceedWithImportingAfterKeystoreUploading(keystore_string);
+                            }, 500);
+                        };
 
-                                    reader.readAsText(file);
-                                }, function (err) {
-                                    alert('Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.');
-                                });
-                            });
-                        });
+                        reader.readAsText(file);
                     });
                 }, function(err) {
                     alert('File upload failed, please try again with file inside your internal storage.');
@@ -82488,6 +82471,9 @@ function buildKeystoreFileName(address) {
 }
 
 function downloadFile(filename, text) {
+    console.log('--------------------------------downloadFile--------------------------------');
+    console.log(filename, 'filename');
+    console.log(text, 'text');
     var element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
     element.setAttribute('download', filename);
@@ -82542,29 +82528,21 @@ $(document).on('click', '.open-settings', function() {
                     $('.remember-keystore-upload').click(function() {
                         var this_btn = $(this);
                         fileChooser.open(function(file_uri) {
-                            window.resolveLocalFileSystemURL(decodeURIComponent(file_uri), function (entry) {
-                                window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function (rootEntry) {
-                                    rootEntry.getFile(decodeURIComponent(entry.fullPath), {create: false}, function (fileEntry) {
-                                        fileEntry.file(function (file) {
-                                            var reader = new FileReader();
-                                            initCustomInputFileAnimation(this_btn);
+                            androidFileUpload(file_uri, function(file) {
+                                var reader = new FileReader();
+                                initCustomInputFileAnimation(this_btn);
 
-                                            reader.onloadend = function () {
-                                                var keystore_string = this.result;
+                                reader.onloadend = function () {
+                                    var keystore_string = this.result;
 
-                                                if(basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && checksumAddress('0x' + JSON.parse(keystore_string).address) == checksumAddress(global_state.account)) {
-                                                    validateKeystoreFileAndPasswordForCachingKeystoreFile(this_camping_row, keystore_string);
-                                                } else {
-                                                    basic.showAlert('Please upload valid keystore file which is related to your Dentacoin Wallet address.', '', true);
-                                                }
-                                            };
+                                    if(basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && checksumAddress('0x' + JSON.parse(keystore_string).address) == checksumAddress(global_state.account)) {
+                                        validateKeystoreFileAndPasswordForCachingKeystoreFile(this_camping_row, keystore_string);
+                                    } else {
+                                        basic.showAlert('Please upload valid keystore file which is related to your Dentacoin Wallet address.', '', true);
+                                    }
+                                };
 
-                                            reader.readAsText(file);
-                                        }, function (err) {
-                                            alert('Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.');
-                                        });
-                                    });
-                                });
+                                reader.readAsText(file);
                             });
                         }, function(err) {
                             alert('File upload failed, please try again with file inside your internal storage.');
@@ -82849,32 +82827,23 @@ $(document).on('click', '.open-settings', function() {
                     //ANDROID
                     $('.show-private-key-keystore-upload').click(function() {
                         var this_btn = $(this);
-
                         fileChooser.open(function(file_uri) {
-                            window.resolveLocalFileSystemURL(decodeURIComponent(file_uri), function (entry) {
-                                window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function (rootEntry) {
-                                    rootEntry.getFile(decodeURIComponent(entry.fullPath), {create: false}, function (fileEntry) {
-                                        fileEntry.file(function (file) {
-                                            var reader = new FileReader();
+                            androidFileUpload(file_uri, function(file) {
+                                var reader = new FileReader();
 
-                                            initCustomInputFileAnimation(this_btn);
+                                initCustomInputFileAnimation(this_btn);
 
-                                            reader.onloadend = function () {
-                                                var keystore_string = this.result;
+                                reader.onloadend = function () {
+                                    var keystore_string = this.result;
 
-                                                if(basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && checksumAddress('0x' + JSON.parse(keystore_string).address) == checksumAddress(global_state.account)) {
-                                                    decryptKeystoreFileAndShowPrivateKey(this_camping_row, keystore_string);
-                                                } else {
-                                                    basic.showAlert('Please upload valid keystore file which is related to your Dentacoin Wallet address.', '', true);
-                                                }
-                                            };
+                                    if(basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && checksumAddress('0x' + JSON.parse(keystore_string).address) == checksumAddress(global_state.account)) {
+                                        decryptKeystoreFileAndShowPrivateKey(this_camping_row, keystore_string);
+                                    } else {
+                                        basic.showAlert('Please upload valid keystore file which is related to your Dentacoin Wallet address.', '', true);
+                                    }
+                                };
 
-                                            reader.readAsText(file);
-                                        }, function (err) {
-                                            alert('Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.');
-                                        });
-                                    });
-                                });
+                                reader.readAsText(file);
                             });
                         }, function(err) {
                             alert('File upload failed, please try again with file inside your internal storage.');
@@ -82985,11 +82954,8 @@ $(document).on('click', '.open-settings', function() {
 
 //method to download files in Download folder in Android device
 function hybridAppFileDownload(file_name, file_content, callback, location, download_folder) {
-    console.log(file_name, 'file_name');
-    console.log(location, 'location');
     window.resolveLocalFileSystemURL(location, function (fileSystem) {
         if(download_folder) {
-            console.log('download_folder 1');
             fileSystem.getDirectory('Download', {create: true, exclusive: false}, function(dirEntry) {
                 proceedWithDownload(dirEntry);
             }, function(err) {
@@ -82998,14 +82964,11 @@ function hybridAppFileDownload(file_name, file_content, callback, location, down
                 alert('Something went wrong with downloading your file (Core error 5). Please contact admin@dentacoin.com.');
             });
         } else {
-            console.log('download_folder 2');
             proceedWithDownload(fileSystem);
         }
         
         function proceedWithDownload(dirEntry) {
-            console.log(dirEntry, 'dirEntry');
             dirEntry.getFile(file_name, {create: true, exclusive: true}, function (fileEntry) {
-                console.log(fileEntry, 'fileEntry');
                 fileEntry.createWriter(function (fileWriter) {
                     fileWriter.onwriteend = function (e) {
                         console.log(e, 'onwriteend');
@@ -83033,6 +82996,41 @@ function hybridAppFileDownload(file_name, file_content, callback, location, down
             });
         }
     });
+}
+
+//opening filepicker for Android
+function androidFileUpload(file_uri, callback) {
+    window.FilePath.resolveNativePath(file_uri, successNative, failNative);
+
+    function failNative(e) {
+        alert('Something went wrong with uploading your Backup file. Please contact admin@dentacoin.com.');
+    }
+
+    function successNative(finalPath) {
+        window.resolveLocalFileSystemURL(finalPath, function (entry) {
+            window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function (rootEntry) {
+                //checking external storage
+                rootEntry.getFile(decodeURIComponent(entry.fullPath), {create: false}, function (fileEntry) {
+                    fileEntry.file(function (file) {
+                        callback(file);
+                    }, function (err) {
+                        alert('Something went wrong with uploading your Backup file. Please contact admin@dentacoin.com.');
+                    });
+                }, function(err) {
+                    //if file is not found in the external storage check in the internal one
+                    window.resolveLocalFileSystemURL('file:///', function (rootEntry) {
+                        rootEntry.getFile(decodeURIComponent(entry.fullPath), {create: false}, function (fileEntry) {
+                            fileEntry.file(function (file) {
+                                callback(file);
+                            }, function (err) {
+                                alert('Something went wrong with uploading your Backup file. Please contact admin@dentacoin.com.');
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    }
 }
 
 //opening filepicker for iOS

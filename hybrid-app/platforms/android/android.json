@@ -47,6 +47,10 @@
             {
               "xml": "<feature name=\"InAppBrowser\"><param name=\"android-package\" value=\"org.apache.cordova.inappbrowser.InAppBrowser\" /></feature>",
               "count": 1
+            },
+            {
+              "xml": "<feature name=\"FilePath\"><param name=\"android-package\" value=\"com.hiddentao.cordova.filepath.FilePath\" /><param name=\"onload\" value=\"true\" /></feature>",
+              "count": 1
             }
           ],
           "/widget": [
@@ -66,6 +70,10 @@
             },
             {
               "xml": "<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\" />",
+              "count": 1
+            },
+            {
+              "xml": "<uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\" />",
               "count": 1
             }
           ],
@@ -149,6 +157,9 @@
       "PACKAGE_NAME": "wallet.dentacoin.com"
     },
     "cordova-plugin-inappbrowser": {
+      "PACKAGE_NAME": "wallet.dentacoin.com"
+    },
+    "cordova-plugin-filepath": {
       "PACKAGE_NAME": "wallet.dentacoin.com"
     }
   },
@@ -422,6 +433,14 @@
         "cordova.InAppBrowser.open",
         "window.open"
       ]
+    },
+    {
+      "id": "cordova-plugin-filepath.FilePath",
+      "file": "plugins/cordova-plugin-filepath/www/FilePath.js",
+      "pluginId": "cordova-plugin-filepath",
+      "clobbers": [
+        "window.FilePath"
+      ]
     }
   ],
   "plugin_metadata": {
@@ -436,6 +455,7 @@
     "es6-promise-plugin": "4.2.2",
     "cordova-plugin-x-socialsharing": "5.4.7",
     "cordova-plugin-statusbar": "2.4.3",
-    "cordova-plugin-inappbrowser": "3.1.0"
+    "cordova-plugin-inappbrowser": "3.1.0",
+    "cordova-plugin-filepath": "1.5.6"
   }
 }

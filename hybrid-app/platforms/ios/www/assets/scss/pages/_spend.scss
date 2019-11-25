@@ -72,7 +72,7 @@ app-spend-page-exchanges {
     }
 }
 
-app-spend-page-pay-assurance-fees {
+app-spend-page-pay-assurance-fees, app-spend-page-gift-cards {
     @include breakpoint($xs) {
         video {
             height: 220px;

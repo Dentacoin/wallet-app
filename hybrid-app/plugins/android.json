@@ -41,6 +41,9 @@
     },
     "cordova-plugin-inappbrowser": {
       "PACKAGE_NAME": "wallet.dentacoin.com"
+    },
+    "cordova-plugin-filepath": {
+      "PACKAGE_NAME": "wallet.dentacoin.com"
     }
   },
   "dependent_plugins": {
