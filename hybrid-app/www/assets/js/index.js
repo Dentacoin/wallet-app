@@ -1800,6 +1800,7 @@ bindGoogleAlikeButtonsEvents();
 
 //checking if metamask or if saved current_account in the local storage. If both are false then show custom login popup with CREATE / IMPORT logic
 function initAccountChecker()  {
+    // variable to track if the wallet is loaded as mobile application
     is_hybrid = $('#main-container').attr('hybrid') == 'true';
     checkIfLoadingFromMobileBrowser();
 
@@ -2053,19 +2054,52 @@ function styleKeystoreUploadBtn()    {
                                     savePublicKeyToAssurance(address, public_key);
                                 }
 
+                                var keystore_file_name = buildKeystoreFileName('0x' + address);
+
                                 setTimeout(function() {
-                                    fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
+                                    //saving keystore file to App folder
+                                    window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function (dirEntry) {
+                                        dirEntry.getFile(keystore_file_name, {create: true, exclusive: false}, function (fileEntry) {
+                                            fileEntry.createWriter(function (fileWriter) {
+                                                fileWriter.onwriteend = function (e) {
+                                                    console.log('Saved keystore to inapp folder');
+                                                    proceedWithImporting();
+                                                };
 
-                                    if ($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
-                                        window.localStorage.setItem('keystore_file', keystore_string);
-                                        window.localStorage.setItem('current_account', '0x' + address);
+                                                fileWriter.onerror = function (e) {
+                                                    console.log(e, 'error');
+                                                    hideLoader();
+                                                    alert('Something went wrong with caching your file (Core error 3). Please contact admin@dentacoin.com.');
+                                                };
 
-                                        refreshApp();
-                                    } else {
-                                        window.localStorage.setItem('current_account', '0x' + address);
-                                        refreshApp();
-                                        //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog: "Wait,Loading App", loadUrlTimeoutValue: 60000});
-                                    }
+                                                // Create a new Blob and write they keystore content inside of it
+                                                var blob = new Blob([keystore_string], {type: 'text/plain'});
+                                                fileWriter.write(blob);
+                                            }, function(err) {
+                                                console.log(err, 'err');
+                                                hideLoader();
+                                                alert('Something went wrong with downloading your file (Core error 4). Please contact admin@dentacoin.com.');
+                                            });
+                                        }, function(err) {
+                                            console.log(err, 'Keystore already exists in inapp folder');
+                                            proceedWithImporting();
+                                        });
+
+                                        function proceedWithImporting() {
+                                            fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
+
+                                            if ($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
+                                                window.localStorage.setItem('keystore_file', keystore_string);
+                                                window.localStorage.setItem('current_account', '0x' + address);
+
+                                                refreshApp();
+                                            } else {
+                                                window.localStorage.setItem('current_account', '0x' + address);
+                                                refreshApp();
+                                                //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog: "Wait,Loading App", loadUrlTimeoutValue: 60000});
+                                            }
+                                        }
+                                    });
                                 }, 500);
                             } else if (error) {
                                 hideLoader();
@@ -2293,6 +2327,7 @@ $(document).on('click', '.open-settings', function() {
     var settings_html = '<div class="text-center fs-0 color-white lato-bold popup-header"><a href="javascript:void(0)" class="custom-close-bootbox inline-block margin-right-5"><svg class="width-100" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 62 52.3" style="enable-background:new 0 0 62 52.3;" xml:space="preserve"><style type="text/css">.st1{fill:#FFFFFF;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="52.3" width="62" x="19" y="48.9"/></sfw></metadata><path class="st1" d="M62,26.2c0-2.2-1.8-4-4-4H14.2L30.4,7c1.7-1.4,1.8-4,0.4-5.6c-1.4-1.7-4-1.8-5.6-0.4C25.1,1,25,1.1,25,1.2 L1.3,23.2c-1.6,1.5-1.7,4-0.2,5.7C1.1,29,1.2,29,1.3,29.1L25,51.2c1.6,1.5,4.1,1.4,5.7-0.2c1.5-1.6,1.4-4.1-0.2-5.7L14.2,30.2H58 C60.2,30.2,62,28.4,62,26.2z"/></svg></a><span class="inline-block text-center fs-28 fs-xs-16">DENTACOIN WALLET SETTINGS</span></div><div class="popup-body">';
 
     if(window.localStorage.getItem('keystore_file') != null || (is_hybrid && basic.getMobileOperatingSystem() == 'iOS' && window.localStorage.getItem('keystore_file_ios_saved') == null)) {
+        // if user is logged in wallet via keystore file and if its iOS device
         var download_btn_label = 'Download';
         var warning_html = '';
         if(is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
@@ -2473,8 +2508,8 @@ $(document).on('click', '.open-settings', function() {
 
                     if(window.localStorage.getItem('keystore_file_ios_saved') == null) {
                         var file_name = buildKeystoreFileName(global_state.account);
-                        //window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function(rootEntry) {
-                        window.resolveLocalFileSystemURL(cordova.file.syncedDataDirectory, function(rootEntry) {
+                        
+                        window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function(rootEntry) {
                             rootEntry.getFile(file_name, {create: false}, function (fileEntry) {
                                 fileEntry.file(function (file) {
                                     var reader = new FileReader();
@@ -2494,7 +2529,7 @@ $(document).on('click', '.open-settings', function() {
                                 alert('Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.');
                             });
                         });
-                    } else {
+                    } else if(window.localStorage.getItem('keystore_file') != null) {
                         window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
                     }
                 }
