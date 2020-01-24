@@ -114,26 +114,15 @@ var dApp = {
                     //if metamask is installed, but user not logged show login popup
                     basic.showDialog('<div class="popup-body"><div class="title">Sign in to MetaMask</div><div class="subtitle">Open up your browser\'s MetaMask extention and give approval if asked for it.</div><div class="separator"></div><figure class="gif"><img src="assets/images/metamask-animation.gif" alt="Login MetaMask animation"/> </figure></div>', 'login-metamask-desktop');
                     await ethereum.enable();
+
+                    proceedWithMetaMaskWalletConnection();
                 } else {
-                    global_state.account = ethereum.selectedAddress;
-
-                    web3 = getWeb3(window['ethereum']);
-                    dApp.web3_1_0 = web3;
-                    meta_mask_installed = true;
-
-                    continueWithContractInstanceInit();
+                    proceedWithMetaMaskWalletConnection();
                 }
 
                 window.ethereum.on('accountsChanged', function () {
                     if(ethereum.selectedAddress != null && ethereum.selectedAddress != undefined && !basic.property_exists(global_state, 'account')) {
-                        global_state.account = ethereum.selectedAddress;
-
-                        web3 = getWeb3(window['ethereum']);
-                        dApp.web3_1_0 = web3;
-                        meta_mask_installed = true;
-
-                        basic.closeDialog();
-                        continueWithContractInstanceInit();
+                        proceedWithMetaMaskWalletConnection();
                     } else if((ethereum.selectedAddress == null || ethereum.selectedAddress == undefined) && basic.property_exists(global_state, 'account')) {
                         //if user logged in with metamask, but logging out or dissaproved wallet.dentacoin.com from metamask trusted domain
                         window.location.reload();
@@ -142,6 +131,17 @@ var dApp = {
                         window.location.reload();
                     }
                 });
+
+                function proceedWithMetaMaskWalletConnection() {
+                    global_state.account = ethereum.selectedAddress;
+
+                    web3 = getWeb3(window['ethereum']);
+                    dApp.web3_1_0 = web3;
+                    meta_mask_installed = true;
+
+                    basic.closeDialog();
+                    continueWithContractInstanceInit();
+                }
             });
         } else if(typeof(web3) !== 'undefined') {
             //METAMASK INSTALLED
@@ -372,7 +372,6 @@ var dApp = {
 
                                                             //updating transaction history every 10 minutes, because the project is SPA and pages are not really refreshed on route change, routes are dynamicly loaded with AngularJS
                                                             setTimeout(function() {
-                                                                console.log('=-------======= REFRESH TRANSACTION HISTORY ===0000000000000000000000000000');
                                                                 dApp.buildTransactionHistory();
                                                             }, 600000);
                                                         }
@@ -825,7 +824,6 @@ var pages_data = {
                         });
 
                         Instascan.Camera.getCameras().then(function (cameras) {
-                            console.log(cameras, 'cameras');
                             if (cameras.length > 0) {
                                 cameras_global = cameras;
                                 scanner.start(cameras[0]);
@@ -989,7 +987,6 @@ var pages_data = {
                                     });
 
                                     Instascan.Camera.getCameras().then(function (cameras) {
-                                        console.log(cameras, 'cameras');
                                         if (cameras.length > 0) {
                                             cameras_global = cameras;
                                             scanner.start(cameras[0]);
@@ -1064,6 +1061,24 @@ var pages_data = {
                         $('.section-send').hide();
                         $('.section-amount-to .address-cell').html($('.search-field #search').val().trim()).attr('data-receiver', $('.search-field #search').val().trim());
                         $('.section-amount-to').fadeIn(500);
+
+                        // if user has enough dcn balance show maximum spending balance shortcut
+                        dApp.methods.getDCNBalance(global_state.account, function(err, response) {
+                            var dcn_balance = parseInt(response);
+
+                            if (dcn_balance > 0) {
+                                $('.spendable-amount').addClass('active').html('<div class="spendable-dcn-amount inline-block fs-18 fs-xs-16 lato-bold"><label class="color-light-blue">Spendable amount: </label><span></span></div><div class="max-btn inline-block"><button class="white-light-blue-btn use-max-dcn-amount">Max</button></div>');
+                                $('.spendable-amount .spendable-dcn-amount span').html(dcn_balance + ' DCN');
+
+                                $('.use-max-dcn-amount').click(function() {
+                                    $('.section-amount-to #active-crypto').val('dcn');
+                                    $('.section-amount-to input#crypto-amount').val(dcn_balance);
+                                    $('.section-amount-to input#crypto-amount').closest('.custom-google-label-style').find('label').addClass('active-label');
+                                });
+                            } else {
+                                $('.spendable-amount').removeClass('active').html('');
+                            }
+                        });
                     }
                 });
 
@@ -1258,7 +1273,6 @@ var pages_data = {
                                                                             setTimeout(function() {
                                                                                 var validating_private_key = validatePrivateKey($('.proof-of-address #your-private-key').val().trim());
                                                                                 if(validating_private_key.success) {
-                                                                                    console.log(checksumAddress(validating_private_key.success.address) == checksumAddress(global_state.account), 'checksumAddress(validating_private_key.success.address) == checksumAddress(global_state.account)');
                                                                                     if(checksumAddress(validating_private_key.success.address) == checksumAddress(global_state.account)) {
                                                                                         submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, new Buffer($('.proof-of-address #your-private-key').val().trim(), 'hex'));
                                                                                     } else {
@@ -1687,7 +1701,6 @@ function innerAddressCheck(address) {
 }
 
 function fromWei(wei_amount, type) {
-    console.log('fromWei');
     if(type != undefined) {
         return dApp.web3_1_0.utils.fromWei(wei_amount, type);
     } else {
@@ -1696,8 +1709,6 @@ function fromWei(wei_amount, type) {
 }
 
 function toWei(eth_amount) {
-
-    console.log('toWei');
     return dApp.web3_1_0.utils.toWei(eth_amount, 'ether');
 }
 
@@ -1782,6 +1793,7 @@ bindGoogleAlikeButtonsEvents();
 
 //checking if metamask or if saved current_account in the local storage. If both are false then show custom login popup with CREATE / IMPORT logic
 function initAccountChecker()  {
+    // variable to track if the wallet is loaded as mobile application
     is_hybrid = $('#main-container').attr('hybrid') == 'true';
     checkIfLoadingFromMobileBrowser();
 
@@ -1939,7 +1951,7 @@ function initAccountChecker()  {
                                     }, cordova.file.dataDirectory, false);
                                 }
                             } else {
-                                if(basic.getMobileOperatingSystem() == 'iOS' && basic.isMobile()) {
+                                if(basic.getMobileOperatingSystem() == 'iOS') {
                                     //mobile browser from iPhone
                                     basic.showAlert('Backup File has been opened in new tab of your browser. Please make sure to share/ copy and keep it in a safe place. Only you are responsible for it!', 'mobile-safari-keystore-creation', true);
 
@@ -2035,19 +2047,48 @@ function styleKeystoreUploadBtn()    {
                                     savePublicKeyToAssurance(address, public_key);
                                 }
 
+                                var keystore_file_name = buildKeystoreFileName('0x' + address);
+
                                 setTimeout(function() {
-                                    fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
+                                    //saving keystore file to App folder
+                                    window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function (dirEntry) {
+                                        dirEntry.getFile(keystore_file_name, {create: true, exclusive: false}, function (fileEntry) {
+                                            fileEntry.createWriter(function (fileWriter) {
+                                                fileWriter.onwriteend = function (e) {
+                                                    fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
 
-                                    if ($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
-                                        window.localStorage.setItem('keystore_file', keystore_string);
-                                        window.localStorage.setItem('current_account', '0x' + address);
+                                                    if ($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
+                                                        window.localStorage.setItem('keystore_file', keystore_string);
+                                                        window.localStorage.setItem('current_account', '0x' + address);
 
-                                        refreshApp();
-                                    } else {
-                                        window.localStorage.setItem('current_account', '0x' + address);
-                                        refreshApp();
-                                        //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog: "Wait,Loading App", loadUrlTimeoutValue: 60000});
-                                    }
+                                                        refreshApp();
+                                                    } else {
+                                                        window.localStorage.setItem('current_account', '0x' + address);
+                                                        refreshApp();
+                                                        //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog: "Wait,Loading App", loadUrlTimeoutValue: 60000});
+                                                    }
+                                                };
+
+                                                fileWriter.onerror = function (e) {
+                                                    console.log(e, 'error');
+                                                    hideLoader();
+                                                    alert('Something went wrong with caching your file (Core error 2). Please contact admin@dentacoin.com.');
+                                                };
+
+                                                // Create a new Blob and write they keystore content inside of it
+                                                var blob = new Blob([keystore_string], {type: 'text/plain'});
+                                                fileWriter.write(blob);
+                                            }, function(err) {
+                                                console.log(err, 'err');
+                                                hideLoader();
+                                                alert('Something went wrong with downloading your file (Core error 3). Please contact admin@dentacoin.com.');
+                                            });
+                                        }, function(err) {
+                                            console.log(err, 'err');
+                                            hideLoader();
+                                            alert('Something went wrong with downloading your file (Core error 4). Please contact admin@dentacoin.com.');
+                                        });
+                                    });
                                 }, 500);
                             } else if (error) {
                                 hideLoader();
@@ -2106,12 +2147,10 @@ function styleKeystoreUploadBtn()    {
         Array.prototype.forEach.call( document.querySelectorAll('.upload-keystore'), function( input ) {
             var label = input.nextElementSibling;
             input.addEventListener('change', function(e) {
-                console.log('change');
                 var myFile = this.files[0];
                 var reader = new FileReader();
 
                 reader.addEventListener('load', function (e) {
-                    console.log('addEventListener');
                     if(basic.isJsonString(e.target.result) && basic.property_exists(JSON.parse(e.target.result), 'address'))    {
                         var keystore_string = e.target.result;
                         var address = JSON.parse(keystore_string).address;
@@ -2182,7 +2221,6 @@ function styleKeystoreUploadBtn()    {
 
 //animation of the button which uploads keystore file
 function initCustomInputFileAnimation(this_btn) {
-    console.log('initCustomInputFileAnimation');
     var btn = $(this_btn);
     var loadSVG = btn.children("a").children(".load");
     var loadBar = btn.children("div").children("span");
@@ -2253,9 +2291,6 @@ function buildKeystoreFileName(address) {
 }
 
 function downloadFile(filename, text) {
-    console.log('--------------------------------downloadFile--------------------------------');
-    console.log(filename, 'filename');
-    console.log(text, 'text');
     var element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
     element.setAttribute('download', filename);
@@ -2275,6 +2310,7 @@ $(document).on('click', '.open-settings', function() {
     var settings_html = '<div class="text-center fs-0 color-white lato-bold popup-header"><a href="javascript:void(0)" class="custom-close-bootbox inline-block margin-right-5"><svg class="width-100" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 62 52.3" style="enable-background:new 0 0 62 52.3;" xml:space="preserve"><style type="text/css">.st1{fill:#FFFFFF;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="52.3" width="62" x="19" y="48.9"/></sfw></metadata><path class="st1" d="M62,26.2c0-2.2-1.8-4-4-4H14.2L30.4,7c1.7-1.4,1.8-4,0.4-5.6c-1.4-1.7-4-1.8-5.6-0.4C25.1,1,25,1.1,25,1.2 L1.3,23.2c-1.6,1.5-1.7,4-0.2,5.7C1.1,29,1.2,29,1.3,29.1L25,51.2c1.6,1.5,4.1,1.4,5.7-0.2c1.5-1.6,1.4-4.1-0.2-5.7L14.2,30.2H58 C60.2,30.2,62,28.4,62,26.2z"/></svg></a><span class="inline-block text-center fs-28 fs-xs-16">DENTACOIN WALLET SETTINGS</span></div><div class="popup-body">';
 
     if(window.localStorage.getItem('keystore_file') != null || (is_hybrid && basic.getMobileOperatingSystem() == 'iOS' && window.localStorage.getItem('keystore_file_ios_saved') == null)) {
+        // if user is logged in wallet via keystore file and if its iOS device
         var download_btn_label = 'Download';
         var warning_html = '';
         if(is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
@@ -2455,6 +2491,7 @@ $(document).on('click', '.open-settings', function() {
 
                     if(window.localStorage.getItem('keystore_file_ios_saved') == null) {
                         var file_name = buildKeystoreFileName(global_state.account);
+
                         window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function(rootEntry) {
                             rootEntry.getFile(file_name, {create: false}, function (fileEntry) {
                                 fileEntry.file(function (file) {
@@ -2475,7 +2512,7 @@ $(document).on('click', '.open-settings', function() {
                                 alert('Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.');
                             });
                         });
-                    } else {
+                    } else if(window.localStorage.getItem('keystore_file') != null) {
                         window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
                     }
                 }
@@ -2711,9 +2748,13 @@ $(document).on('click', '.open-settings', function() {
                                         hideLoader();
                                     }, cordova.file.externalRootDirectory, true);
                                 } else if(basic.getMobileOperatingSystem() == 'iOS') {
+                                    basic.closeDialog();
+
                                     hideLoader();
                                     //using export plugin, because in iOS there is no such thing as direct file download
                                     window.plugins.socialsharing.share(keystore_file);
+
+
                                 }
                             } else {
                                 //BROWSER
@@ -2753,7 +2794,6 @@ function hybridAppFileDownload(file_name, file_content, callback, location, down
             dirEntry.getFile(file_name, {create: true, exclusive: true}, function (fileEntry) {
                 fileEntry.createWriter(function (fileWriter) {
                     fileWriter.onwriteend = function (e) {
-                        console.log(e, 'onwriteend');
                         callback();
                     };
 
@@ -2817,13 +2857,9 @@ function androidFileUpload(file_uri, callback) {
 
 //opening filepicker for iOS
 function iOSFileUpload(callback) {
-    console.log('iOSFileUpload');
     FilePicker.pickFile(function(path) {
-        console.log(path, 'path');
         var fileDir = cordova.file.tempDirectory.replace('file://', '');
         var fileName = path.replace(fileDir, '');
-        console.log(fileDir, 'fileDir');
-        console.log(fileName, 'fileName');
 
         window.resolveLocalFileSystemURL(cordova.file.tempDirectory , function (rootEntry) {
             rootEntry.getFile(fileName, {create: false}, function (fileEntry) {

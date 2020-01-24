@@ -81735,26 +81735,15 @@ var dApp = {
                     //if metamask is installed, but user not logged show login popup
                     basic.showDialog('<div class="popup-body"><div class="title">Sign in to MetaMask</div><div class="subtitle">Open up your browser\'s MetaMask extention and give approval if asked for it.</div><div class="separator"></div><figure class="gif"><img src="assets/images/metamask-animation.gif" alt="Login MetaMask animation"/> </figure></div>', 'login-metamask-desktop');
                     await ethereum.enable();
+
+                    proceedWithMetaMaskWalletConnection();
                 } else {
-                    global_state.account = ethereum.selectedAddress;
-
-                    web3 = getWeb3(window['ethereum']);
-                    dApp.web3_1_0 = web3;
-                    meta_mask_installed = true;
-
-                    continueWithContractInstanceInit();
+                    proceedWithMetaMaskWalletConnection();
                 }
 
                 window.ethereum.on('accountsChanged', function () {
                     if(ethereum.selectedAddress != null && ethereum.selectedAddress != undefined && !basic.property_exists(global_state, 'account')) {
-                        global_state.account = ethereum.selectedAddress;
-
-                        web3 = getWeb3(window['ethereum']);
-                        dApp.web3_1_0 = web3;
-                        meta_mask_installed = true;
-
-                        basic.closeDialog();
-                        continueWithContractInstanceInit();
+                        proceedWithMetaMaskWalletConnection();
                     } else if((ethereum.selectedAddress == null || ethereum.selectedAddress == undefined) && basic.property_exists(global_state, 'account')) {
                         //if user logged in with metamask, but logging out or dissaproved wallet.dentacoin.com from metamask trusted domain
                         window.location.reload();
@@ -81763,6 +81752,17 @@ var dApp = {
                         window.location.reload();
                     }
                 });
+
+                function proceedWithMetaMaskWalletConnection() {
+                    global_state.account = ethereum.selectedAddress;
+
+                    web3 = getWeb3(window['ethereum']);
+                    dApp.web3_1_0 = web3;
+                    meta_mask_installed = true;
+
+                    basic.closeDialog();
+                    continueWithContractInstanceInit();
+                }
             });
         } else if(typeof(web3) !== 'undefined') {
             //METAMASK INSTALLED
@@ -81993,7 +81993,6 @@ var dApp = {
 
                                                             //updating transaction history every 10 minutes, because the project is SPA and pages are not really refreshed on route change, routes are dynamicly loaded with AngularJS
                                                             setTimeout(function() {
-                                                                console.log('=-------======= REFRESH TRANSACTION HISTORY ===0000000000000000000000000000');
                                                                 dApp.buildTransactionHistory();
                                                             }, 600000);
                                                         }
@@ -82446,7 +82445,6 @@ var pages_data = {
                         });
 
                         Instascan.Camera.getCameras().then(function (cameras) {
-                            console.log(cameras, 'cameras');
                             if (cameras.length > 0) {
                                 cameras_global = cameras;
                                 scanner.start(cameras[0]);
@@ -82610,7 +82608,6 @@ var pages_data = {
                                     });
 
                                     Instascan.Camera.getCameras().then(function (cameras) {
-                                        console.log(cameras, 'cameras');
                                         if (cameras.length > 0) {
                                             cameras_global = cameras;
                                             scanner.start(cameras[0]);
@@ -82897,7 +82894,6 @@ var pages_data = {
                                                                             setTimeout(function() {
                                                                                 var validating_private_key = validatePrivateKey($('.proof-of-address #your-private-key').val().trim());
                                                                                 if(validating_private_key.success) {
-                                                                                    console.log(checksumAddress(validating_private_key.success.address) == checksumAddress(global_state.account), 'checksumAddress(validating_private_key.success.address) == checksumAddress(global_state.account)');
                                                                                     if(checksumAddress(validating_private_key.success.address) == checksumAddress(global_state.account)) {
                                                                                         submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, new Buffer($('.proof-of-address #your-private-key').val().trim(), 'hex'));
                                                                                     } else {
@@ -83326,7 +83322,6 @@ function innerAddressCheck(address) {
 }
 
 function fromWei(wei_amount, type) {
-    console.log('fromWei');
     if(type != undefined) {
         return dApp.web3_1_0.utils.fromWei(wei_amount, type);
     } else {
@@ -83335,8 +83330,6 @@ function fromWei(wei_amount, type) {
 }
 
 function toWei(eth_amount) {
-
-    console.log('toWei');
     return dApp.web3_1_0.utils.toWei(eth_amount, 'ether');
 }
 
@@ -83669,7 +83662,6 @@ function styleKeystoreUploadBtn()    {
 
                     setTimeout(function () {
                         importKeystoreFile(keystore_string, keystore_password, function(success, public_key, address, error, error_message) {
-                            console.log(address, 'address');
                             if (success) {
                                 var internet = navigator.onLine;
                                 if (internet) {
@@ -83677,7 +83669,6 @@ function styleKeystoreUploadBtn()    {
                                 }
 
                                 var keystore_file_name = buildKeystoreFileName('0x' + address);
-                                console.log(keystore_file_name, 'keystore_file_name');
 
                                 setTimeout(function() {
                                     //saving keystore file to App folder
@@ -83685,8 +83676,6 @@ function styleKeystoreUploadBtn()    {
                                         dirEntry.getFile(keystore_file_name, {create: true, exclusive: false}, function (fileEntry) {
                                             fileEntry.createWriter(function (fileWriter) {
                                                 fileWriter.onwriteend = function (e) {
-                                                    console.log('Saved keystore to inapp folder.');
-
                                                     fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
 
                                                     if ($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
@@ -83779,12 +83768,10 @@ function styleKeystoreUploadBtn()    {
         Array.prototype.forEach.call( document.querySelectorAll('.upload-keystore'), function( input ) {
             var label = input.nextElementSibling;
             input.addEventListener('change', function(e) {
-                console.log('change');
                 var myFile = this.files[0];
                 var reader = new FileReader();
 
                 reader.addEventListener('load', function (e) {
-                    console.log('addEventListener');
                     if(basic.isJsonString(e.target.result) && basic.property_exists(JSON.parse(e.target.result), 'address'))    {
                         var keystore_string = e.target.result;
                         var address = JSON.parse(keystore_string).address;
@@ -83855,7 +83842,6 @@ function styleKeystoreUploadBtn()    {
 
 //animation of the button which uploads keystore file
 function initCustomInputFileAnimation(this_btn) {
-    console.log('initCustomInputFileAnimation');
     var btn = $(this_btn);
     var loadSVG = btn.children("a").children(".load");
     var loadBar = btn.children("div").children("span");
@@ -83926,9 +83912,6 @@ function buildKeystoreFileName(address) {
 }
 
 function downloadFile(filename, text) {
-    console.log('--------------------------------downloadFile--------------------------------');
-    console.log(filename, 'filename');
-    console.log(text, 'text');
     var element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
     element.setAttribute('download', filename);
@@ -84432,7 +84415,6 @@ function hybridAppFileDownload(file_name, file_content, callback, location, down
             dirEntry.getFile(file_name, {create: true, exclusive: true}, function (fileEntry) {
                 fileEntry.createWriter(function (fileWriter) {
                     fileWriter.onwriteend = function (e) {
-                        console.log(e, 'onwriteend');
                         callback();
                     };
 
@@ -84497,11 +84479,8 @@ function androidFileUpload(file_uri, callback) {
 //opening filepicker for iOS
 function iOSFileUpload(callback) {
     FilePicker.pickFile(function(path) {
-        console.log(path, 'path');
         var fileDir = cordova.file.tempDirectory.replace('file://', '');
         var fileName = path.replace(fileDir, '');
-        console.log(fileDir, 'fileDir');
-        console.log(fileName, 'fileName');
 
         window.resolveLocalFileSystemURL(cordova.file.tempDirectory , function (rootEntry) {
             rootEntry.getFile(fileName, {create: false}, function (fileEntry) {

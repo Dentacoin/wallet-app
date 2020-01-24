@@ -4004,7 +4004,6 @@ img {
     margin-top: 0 !important;
     border: 0;
     background: transparent;
-    position: absolute;
     right: 5px;
     font-size: 40px;
     top: 5px; }
@@ -5024,17 +5023,40 @@ app-send-page .section-send {
       border-radius: 0; } }
 app-send-page .section-amount-to {
   display: none; }
-  app-send-page .section-amount-to .send-to {
-    border-bottom: 2px solid #dddddd; }
-    @media screen and (max-width: 767px) {
-      app-send-page .section-amount-to .send-to {
-        width: calc(100% - 50px);
+  @media screen and (max-width: 767px) {
+    app-send-page .section-amount-to .send-to {
+      width: calc(100% - 50px);
+      border: 0;
+      display: inline-block;
+      vertical-align: middle; }
+      app-send-page .section-amount-to .send-to .send-to-label, app-send-page .section-amount-to .send-to .address-cell {
+        display: block;
+        text-align: left; } }
+  app-send-page .section-amount-to .spendable-amount.active {
+    padding: 5px 10px;
+    max-width: 450px;
+    width: 100%;
+    margin: 0 auto;
+    border: 2px solid #dddddd;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    -ms-border-radius: 4px;
+    border-radius: 4px; }
+    app-send-page .section-amount-to .spendable-amount.active .spendable-dcn-amount {
+      width: calc(100% - 80px); }
+    app-send-page .section-amount-to .spendable-amount.active .max-btn {
+      width: 80px;
+      text-align: right; }
+      app-send-page .section-amount-to .spendable-amount.active .max-btn .white-light-blue-btn {
+        padding: 5px 10px; }
+    @media screen and (max-width: 991px) {
+      app-send-page .section-amount-to .spendable-amount.active {
         border: 0;
-        display: inline-block;
-        vertical-align: middle; }
-        app-send-page .section-amount-to .send-to .send-to-label, app-send-page .section-amount-to .send-to .address-cell {
-          display: block;
-          text-align: left; } }
+        margin-top: 20px;
+        padding-left: 0;
+        padding-right: 0; }
+        app-send-page .section-amount-to .spendable-amount.active .spendable-dcn-amount label, app-send-page .section-amount-to .spendable-amount.active .spendable-dcn-amount span {
+          display: block; } }
   @media screen and (max-width: 767px) {
     app-send-page .section-amount-to .mobile-background {
       background: white;
