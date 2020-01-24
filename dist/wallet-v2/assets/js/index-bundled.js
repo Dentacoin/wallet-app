@@ -82666,8 +82666,6 @@ var pages_data = {
                         });
                     });
 
-                    hideLoader();
-
                     bindSendPageElementsEvents();
                 } else {
                     bindSendPageElementsEvents();
@@ -82682,24 +82680,6 @@ var pages_data = {
                         $('.section-send').hide();
                         $('.section-amount-to .address-cell').html($('.search-field #search').val().trim()).attr('data-receiver', $('.search-field #search').val().trim());
                         $('.section-amount-to').fadeIn(500);
-
-                        // if user has enough dcn balance show maximum spending balance shortcut
-                        dApp.methods.getDCNBalance(global_state.account, function(err, response) {
-                            var dcn_balance = parseInt(response);
-
-                            if (dcn_balance > 0) {
-                                $('.spendable-amount').addClass('active').html('<div class="spendable-dcn-amount inline-block fs-18 fs-xs-16 lato-bold"><label class="color-light-blue">Spendable amount: </label><span></span></div><div class="max-btn inline-block"><button class="white-light-blue-btn use-max-dcn-amount">Max</button></div>');
-                                $('.spendable-amount .spendable-dcn-amount span').html(dcn_balance + ' DCN');
-
-                                $('.use-max-dcn-amount').click(function() {
-                                    $('.section-amount-to #active-crypto').val('dcn');
-                                    $('.section-amount-to input#crypto-amount').val(dcn_balance);
-                                    $('.section-amount-to input#crypto-amount').closest('.custom-google-label-style').find('label').addClass('active-label');
-                                });
-                            } else {
-                                $('.spendable-amount').removeClass('active').html('');
-                            }
-                        });
                     }
                 });
 
@@ -82713,7 +82693,34 @@ var pages_data = {
 
                     //getting dentacoin data by Coingecko
                     getDentacoinDataByCoingecko(function(request_response) {
+                        // remove loader from send page when all external requests are made
+                        hideLoader();
+
                         var dentacoin_data = request_response;
+
+                        // if user has enough dcn balance show maximum spending balance shortcut
+                        dApp.methods.getDCNBalance(global_state.account, function(err, response) {
+                            var dcn_balance = parseInt(response);
+
+                            if (dcn_balance > 0) {
+                                $('.spendable-amount').addClass('active').html('<div class="spendable-dcn-amount inline-block fs-18 fs-xs-16 lato-bold"><label class="color-light-blue">Spendable amount: </label><span></span></div><div class="max-btn inline-block"><button class="white-light-blue-btn use-max-dcn-amount">Max</button></div>');
+                                $('.spendable-amount .spendable-dcn-amount span').html(dcn_balance + ' DCN');
+
+                                $('.use-max-dcn-amount').click(function() {
+                                    $('.section-amount-to #active-crypto').val('dcn');
+                                    $('.section-amount-to input#crypto-amount').val(dcn_balance);
+                                    $('.section-amount-to input#crypto-amount').closest('.custom-google-label-style').find('label').addClass('active-label');
+
+                                    var to_fixed_num = 2;
+                                    if(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd) < 0.01) {
+                                        to_fixed_num = 4;
+                                    }
+                                    $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
+                                });
+                            } else {
+                                $('.spendable-amount').removeClass('active').html('');
+                            }
+                        });
 
                         //on input in dcn/ eth input change usd input
                         $('.section-amount-to input#crypto-amount').on('input', function()  {
