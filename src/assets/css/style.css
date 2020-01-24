@@ -3978,6 +3978,9 @@ img {
 .cursor-pointer {
   cursor: pointer; }
 
+.popover {
+  border: 0 !important; }
+
 .bootbox {
   padding-left: 0 !important; }
   .bootbox .modal-content {

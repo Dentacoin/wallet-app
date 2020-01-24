@@ -20,6 +20,7 @@
     "cordova-plugin-file-chooser": "git+https://github.com/caixiangsap/filechooser.git",
     "cordova-plugin-file-transfer": "^1.7.1",
     "cordova-plugin-filechooser": "git+ssh://git@github.com/ihadeed/cordova-filechooser.git",
+    "cordova-plugin-filepath": "^1.5.6",
     "cordova-plugin-filepicker": "^1.1.6",
     "cordova-plugin-inappbrowser": "^3.1.0",
     "cordova-plugin-network-information": "^2.0.2",
@@ -49,7 +50,8 @@
         "PHOTO_LIBRARY_USAGE_DESCRIPTION": "This app requires photo library access to function properly."
       },
       "cordova-plugin-statusbar": {},
-      "cordova-plugin-inappbrowser": {}
+      "cordova-plugin-inappbrowser": {},
+      "cordova-plugin-filepath": {}
     },
     "platforms": [
       "android",

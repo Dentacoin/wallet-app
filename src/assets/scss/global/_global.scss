@@ -597,6 +597,10 @@ img {
     cursor: pointer;
 }
 
+.popover {
+    border: 0 !important;
+}
+
 .bootbox {
     padding-left: 0 !important;
     .modal-content {
@@ -616,7 +620,6 @@ img {
         margin-top: 0 !important;
         border: 0;
         background: transparent;
-        position: absolute;
         right: 5px;
         font-size: 40px;
         top: 5px;
