@@ -1958,7 +1958,7 @@ function initAccountChecker()  {
                                     }, cordova.file.dataDirectory, false);
                                 }
                             } else {
-                                if(basic.getMobileOperatingSystem() == 'iOS' && basic.isMobile()) {
+                                if(basic.getMobileOperatingSystem() == 'iOS') {
                                     //mobile browser from iPhone
                                     basic.showAlert('Backup File has been opened in new tab of your browser. Please make sure to share/ copy and keep it in a safe place. Only you are responsible for it!', 'mobile-safari-keystore-creation', true);
 
@@ -2048,6 +2048,7 @@ function styleKeystoreUploadBtn()    {
 
                     setTimeout(function () {
                         importKeystoreFile(keystore_string, keystore_password, function(success, public_key, address, error, error_message) {
+                            console.log(address, 'address');
                             if (success) {
                                 var internet = navigator.onLine;
                                 if (internet) {
@@ -2055,21 +2056,34 @@ function styleKeystoreUploadBtn()    {
                                 }
 
                                 var keystore_file_name = buildKeystoreFileName('0x' + address);
+                                console.log(keystore_file_name, 'keystore_file_name');
 
                                 setTimeout(function() {
                                     //saving keystore file to App folder
                                     window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function (dirEntry) {
-                                        dirEntry.getFile(keystore_file_name, {create: true, exclusive: false}, function (fileEntry) {
+                                        dirEntry.getFile(keystore_file_name, {create: true, exclusive: true}, function (fileEntry) {
                                             fileEntry.createWriter(function (fileWriter) {
                                                 fileWriter.onwriteend = function (e) {
-                                                    console.log('Saved keystore to inapp folder');
-                                                    proceedWithImporting();
+                                                    console.log('Saved keystore to inapp folder.');
+
+                                                    fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
+
+                                                    if ($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
+                                                        window.localStorage.setItem('keystore_file', keystore_string);
+                                                        window.localStorage.setItem('current_account', '0x' + address);
+
+                                                        refreshApp();
+                                                    } else {
+                                                        window.localStorage.setItem('current_account', '0x' + address);
+                                                        refreshApp();
+                                                        //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog: "Wait,Loading App", loadUrlTimeoutValue: 60000});
+                                                    }
                                                 };
 
                                                 fileWriter.onerror = function (e) {
                                                     console.log(e, 'error');
                                                     hideLoader();
-                                                    alert('Something went wrong with caching your file (Core error 3). Please contact admin@dentacoin.com.');
+                                                    alert('Something went wrong with caching your file (Core error 2). Please contact admin@dentacoin.com.');
                                                 };
 
                                                 // Create a new Blob and write they keystore content inside of it
@@ -2078,27 +2092,13 @@ function styleKeystoreUploadBtn()    {
                                             }, function(err) {
                                                 console.log(err, 'err');
                                                 hideLoader();
-                                                alert('Something went wrong with downloading your file (Core error 4). Please contact admin@dentacoin.com.');
+                                                alert('Something went wrong with downloading your file (Core error 3). Please contact admin@dentacoin.com.');
                                             });
                                         }, function(err) {
-                                            console.log(err, 'Keystore already exists in inapp folder');
-                                            proceedWithImporting();
+                                            console.log(err, 'err');
+                                            hideLoader();
+                                            alert('Something went wrong with downloading your file (Core error 4). Please contact admin@dentacoin.com.');
                                         });
-
-                                        function proceedWithImporting() {
-                                            fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
-
-                                            if ($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
-                                                window.localStorage.setItem('keystore_file', keystore_string);
-                                                window.localStorage.setItem('current_account', '0x' + address);
-
-                                                refreshApp();
-                                            } else {
-                                                window.localStorage.setItem('current_account', '0x' + address);
-                                                refreshApp();
-                                                //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog: "Wait,Loading App", loadUrlTimeoutValue: 60000});
-                                            }
-                                        }
                                     });
                                 }, 500);
                             } else if (error) {
