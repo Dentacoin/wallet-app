@@ -66,8 +66,7 @@
 }
 
 - (void)evaluateJavaScript:(NSString*)javaScriptString completionHandler:(void (^)(id, NSError*))completionHandler
-{
-    NSString* ret = [(UIWebView*)_engineWebView stringByEvaluatingJavaScriptFromString:javaScriptString];
+{    NSString* ret = [(UIWebView*)_engineWebView stringByEvaluatingJavaScriptFromString:javaScriptString];
 
     if (completionHandler) {
         completionHandler(ret, nil);

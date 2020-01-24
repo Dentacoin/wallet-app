@@ -468,6 +468,10 @@ img {
                     &.show-this {
                         display: table-row;
                     }
+                    .pending-transaction {
+                        padding-left: 5px;
+                        color: #FFCC00;
+                    }
                     .icon {
                         background-repeat: no-repeat;
                         background-size: calc(100% - 20px);
@@ -516,6 +520,13 @@ img {
                             font-size: 15px;
                         }
                     }
+                    &.loading-tr {
+                        @include breakpoint($xs) {
+                            td:first-child {
+                                display: table-cell;
+                            }
+                        }
+                    }
                     &:hover {
                         td {
                             background-color: #00b4e2;
@@ -532,6 +543,7 @@ img {
     position: fixed;
     bottom: 0;
     display: none;
+    background-color: white;
     nav {
         ul {
             li {
@@ -586,6 +598,7 @@ img {
 }
 
 .bootbox {
+    padding-left: 0 !important;
     .modal-content {
         border: 0;
         @include box-shadow(0 8px 44px rgba(0,0,0,0.2));
@@ -599,6 +612,7 @@ img {
     .bootbox-close-button {
         position: absolute;
         line-height: 22px;
+        padding: 0 10px;
         margin-top: 0 !important;
         border: 0;
         background: transparent;
@@ -695,6 +709,28 @@ img {
                     }
                 }
                 .left-right-side-holder {
+                    position: relative;
+                    .auth-popup-faq-link {
+                        bottom: -30px;
+                        @include horizontal-align(absolute);
+                        a {
+                            width: 45px;
+                            height: 45px;
+                            line-height: 45px;
+                            font-size: 36px;
+                            font-family: "Calibri-Bold";
+                            text-align: center;
+                            display: inline-block;
+                            background-color: $light_blue;
+                            color: white;
+                            @include rounded(50%);
+                        }
+                        @include breakpoint($xs) {
+                            bottom: auto;
+                            position: static;
+                            @include clear_transform();
+                        }
+                    }
                     .popup-left, .popup-right {
                         width: 50%;
                         font-size: 16px;
@@ -857,6 +893,15 @@ img {
                     width: 100%;
                     @include box-shadow(none);
                     @include vertical-horizontal-align(absolute);
+                    &.clear-center-position {
+                        position: static;
+                        top: auto;
+                        left: auto;
+                        @include clear_transform();
+                    }
+                    .modal-body {
+                        padding: 15px 0;
+                    }
                 }
             }
         }
@@ -1036,11 +1081,18 @@ img {
                     }
                 }
             }
+            @include breakpoint($xs) {
+                width: 100%;
+                margin: 0 !important;
+            }
         }
     }
     &.settings-popup {
         .bootbox-close-button {
             display: none;
+        }
+        .custom-close-bootbox {
+            max-width: 25px;
         }
         .modal-dialog {
             width: 95%;
@@ -1058,7 +1110,7 @@ img {
                     }
                     .private-key-holder {
                         border: 1.5px solid $warning_red;
-                        padding: 12px 10px;
+                        padding: 8px 10px;
                         text-align: center;
                         font-size: 14px;
                         overflow-x: auto;
@@ -1087,7 +1139,14 @@ img {
                             @include rounded(10px);
                         }
                         .scroll-content {
-                            width: 460px;
+                            width: 500px;
+                            .copy-private-key {
+                                max-width: 25px;
+                            }
+                            #copy-private-key {
+                                width: calc(100% - 25px);
+                                border: 0;
+                            }
                         }
                     }
                     .row-with-warning-red-background {
@@ -1136,6 +1195,10 @@ img {
                         }
                     }
                 }
+            }
+            @include breakpoint($xs) {
+                margin: 0 !important;
+                width: 100%;
             }
         }
     }
@@ -1272,21 +1335,6 @@ input[type=file].hide-input {
     }
 }
 
-.auth-popup-faq-link {
-    a {
-        width: 45px;
-        height: 45px;
-        line-height: 45px;
-        font-size: 36px;
-        font-family: "Calibri-Bold";
-        text-align: center;
-        display: inline-block;
-        background-color: $light_blue;
-        color: white;
-        @include rounded(50%);
-    }
-}
-
 .camp-for-custom-popover {
     width: 250px;
     padding: 9px 14px;
@@ -1323,3 +1371,21 @@ input[type=file].hide-input {
          display: none;
      }
  }
+
+.container-404 {
+    .num-404 {
+        font-size: 180px;
+        font-family: "Calibri-Bold";
+    }
+    @include breakpoint($xs)    {
+        .num-404 {
+            font-size: 100px;
+        }
+    }
+    @include breakpoint($xxs)    {
+        .num-404 {
+            font-size: 100px;
+            text-align: center;
+        }
+    }
+}

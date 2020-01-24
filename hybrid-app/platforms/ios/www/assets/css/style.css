@@ -3872,6 +3872,9 @@ img {
       display: table-row; }
     .camping-transaction-history .transaction-history table tbody tr.show-this {
       display: table-row; }
+    .camping-transaction-history .transaction-history table tbody tr .pending-transaction {
+      padding-left: 5px;
+      color: #FFCC00; }
     .camping-transaction-history .transaction-history table tbody tr .icon {
       background-repeat: no-repeat;
       background-size: calc(100% - 20px);
@@ -3913,6 +3916,9 @@ img {
       @media screen and (max-width: 767px) {
         .camping-transaction-history .transaction-history table tbody tr td {
           font-size: 15px; } }
+    @media screen and (max-width: 767px) {
+      .camping-transaction-history .transaction-history table tbody tr.loading-tr td:first-child {
+        display: table-cell; } }
     .camping-transaction-history .transaction-history table tbody tr:hover td {
       background-color: #00b4e2; }
 
@@ -3920,7 +3926,8 @@ img {
   width: 100%;
   position: fixed;
   bottom: 0;
-  display: none; }
+  display: none;
+  background-color: white; }
   .camp-for-fixed-mobile-nav nav ul li {
     width: 25%;
     font-size: 18px;
@@ -3971,457 +3978,518 @@ img {
 .cursor-pointer {
   cursor: pointer; }
 
-.bootbox .modal-content {
-  border: 0;
-  -webkit-box-shadow: 0 8px 44px rgba(0, 0, 0, 0.2);
-  -moz-box-shadow: 0 8px 44px rgba(0, 0, 0, 0.2);
-  -ms-box-shadow: 0 8px 44px rgba(0, 0, 0, 0.2);
-  box-shadow: 0 8px 44px rgba(0, 0, 0, 0.2); }
-  @media screen and (max-width: 767px) {
-    .bootbox .modal-content {
-      -webkit-box-shadow: 0 19px 130px rgba(0, 0, 0, 0.3);
-      -moz-box-shadow: 0 19px 130px rgba(0, 0, 0, 0.3);
-      -ms-box-shadow: 0 19px 130px rgba(0, 0, 0, 0.3);
-      box-shadow: 0 19px 130px rgba(0, 0, 0, 0.3); } }
-  .bootbox .modal-content .modal-body {
-    padding: 30px 20px; }
-.bootbox .bootbox-close-button {
-  position: absolute;
-  line-height: 22px;
-  margin-top: 0 !important;
-  border: 0;
-  background: transparent;
-  position: absolute;
-  right: 5px;
-  font-size: 40px;
-  top: 5px; }
-.bootbox.download-mobile-app .phone-container {
-  position: relative; }
-  .bootbox.download-mobile-app .phone-container .absolute-content {
-    bottom: 10px;
-    position: absolute;
-    left: 50%;
-    -webkit-transform: translateX(-50%);
-    -ms-transform: translateX(-50%);
-    transform: translateX(-50%); }
-.bootbox.login-metamask-desktop .bootbox-close-button {
-  display: none; }
-.bootbox.login-metamask-desktop .modal-dialog {
-  width: 95%;
-  max-width: 700px;
-  margin: 30px auto; }
-  .bootbox.login-metamask-desktop .modal-dialog .title {
-    font-family: 'Calibri-Bold';
-    font-size: 24px; }
-  .bootbox.login-metamask-desktop .modal-dialog .subtitle {
-    color: #777;
-    font-weight: 500; }
-  .bootbox.login-metamask-desktop .modal-dialog .separator {
-    height: 1px;
-    background-color: #D0D0D0;
-    margin-top: 20px; }
-  .bootbox.login-metamask-desktop .modal-dialog .btns-container {
-    text-align: center;
-    padding-bottom: 30px; }
-    .bootbox.login-metamask-desktop .modal-dialog .btns-container a {
-      margin: 0 5px;
-      display: block;
-      white-space: nowrap; }
-  .bootbox.login-metamask-desktop .modal-dialog figure.gif img {
-    width: 100%; }
-.bootbox.custom-auth-popup .bootbox-close-button {
-  display: none; }
-.bootbox.custom-auth-popup .modal-dialog {
-  width: 95%;
-  max-width: 1100px; }
-  .bootbox.custom-auth-popup .modal-dialog .modal-body {
-    padding: 1rem 0; }
-    .bootbox.custom-auth-popup .modal-dialog .modal-body .import-private-key {
-      width: 320px;
-      text-align: center;
-      padding: 10px 5px;
-      font-family: "Calibri-Regular"; }
-      @media screen and (max-width: 767px) {
-        .bootbox.custom-auth-popup .modal-dialog .modal-body .import-private-key {
-          width: 260px; } }
-    .bootbox.custom-auth-popup .modal-dialog .modal-body .import-private-key-field {
-      border: 1.5px solid #ff0046;
-      padding: 12px 10px;
-      text-align: center;
-      font-size: 14px;
-      overflow-x: auto;
-      -webkit-border-radius: 4px;
-      -moz-border-radius: 4px;
-      -ms-border-radius: 4px;
-      border-radius: 4px; }
-    .bootbox.custom-auth-popup .modal-dialog .modal-body .bootbox-close-button {
-      margin-top: -10px;
-      margin-right: 10px;
-      font-size: 40px;
-      line-height: 20px; }
-    .bootbox.custom-auth-popup .modal-dialog .modal-body .title {
-      font-size: 30px;
-      padding: 0 15px 10px;
-      font-weight: normal;
-      text-align: center; }
-      @media screen and (max-width: 767px) {
-        .bootbox.custom-auth-popup .modal-dialog .modal-body .title {
-          font-size: 22px; } }
-    .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left, .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right {
-      width: 50%;
-      font-size: 16px; }
-      .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .navigation-link a, .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .navigation-link a {
-        display: block;
-        padding-top: 5px;
-        padding-bottom: 5px;
-        text-align: center;
-        border-left: 1px solid #ddd;
-        border-top: 1px solid #ddd;
-        border-bottom: 1px solid #ddd;
-        font-size: 30px;
-        font-family: "Calibri-Bold"; }
-        .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .navigation-link a.active, .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .navigation-link a.active {
-          background-color: #00b7e2;
-          color: white; }
-      .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .popup-body, .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .popup-body {
-        font-size: 16px;
-        min-height: 350px;
-        padding-left: 30px;
-        padding-right: 30px; }
-        .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .popup-body.custom-hide, .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .popup-body.custom-hide {
-          visibility: hidden; }
-          @media screen and (max-width: 767px) {
-            .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .popup-body.custom-hide, .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .popup-body.custom-hide {
-              display: none; } }
-        .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .popup-body .row-with-image-and-text, .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .popup-body .row-with-image-and-text {
-          margin: 0 auto; }
-          .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .popup-body .row-with-image-and-text .text, .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .popup-body .row-with-image-and-text .text {
-            width: calc(100% - 80px); }
-        @media screen and (max-width: 767px) {
-          .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .popup-body, .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .popup-body {
-            padding-left: 10px;
-            padding-right: 10px; }
-            .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .popup-body .row-with-image-and-text .text, .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .popup-body .row-with-image-and-text .text {
-              text-align: left; } }
-    .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left {
-      border-right: 1px solid #ddd; }
-      .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .navigation-link.mobile {
-        display: none; }
-      .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left label.custom-label {
-        padding: 30px 10px 20px;
-        display: block;
-        text-align: center;
-        font-size: 16px; }
-      .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .private-key-holder {
-        border: 1.5px solid #ff0046;
-        padding: 12px 10px;
-        text-align: center;
-        font-size: 14px;
-        overflow-x: auto;
-        -webkit-border-radius: 4px;
-        -moz-border-radius: 4px;
-        -ms-border-radius: 4px;
-        border-radius: 4px; }
-        .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .private-key-holder ::-webkit-scrollbar {
-          -webkit-appearance: none; }
-        .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .private-key-holder ::-webkit-scrollbar:vertical {
-          width: 12px; }
-        .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .private-key-holder ::-webkit-scrollbar:horizontal {
-          height: 12px; }
-        .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .private-key-holder ::-webkit-scrollbar-thumb {
-          background-color: rgba(0, 0, 0, 0.5);
-          border-radius: 10px;
-          border: 2px solid white; }
-        .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .private-key-holder ::-webkit-scrollbar-track {
-          background-color: white;
-          -webkit-border-radius: 10px;
-          -moz-border-radius: 10px;
-          -ms-border-radius: 10px;
-          border-radius: 10px; }
-        .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .private-key-holder .scroll-content {
-          width: 460px; }
-      .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .creation-text {
-        font-size: 0;
-        margin: 0 auto; }
-        .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .creation-text svg {
-          width: 100px; }
-        .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .creation-text .text {
-          width: calc(100% - 100px); }
-      @media screen and (max-width: 767px) {
-        .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left {
-          width: 100%;
-          font-size: 0; }
-          .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .navigation-link {
-            width: 50%;
-            display: inline-block;
-            vertical-align: top; }
-            .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .navigation-link.mobile {
-              display: inline-block; } }
-    .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .enter-pass-label {
-      padding-top: 20px;
-      padding-bottom: 15px;
-      display: block;
-      font-size: 16px; }
-    .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .btn-container {
-      padding-top: 20px;
-      padding-bottom: 20px; }
-    .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .camping-for-action {
-      text-align: center; }
-    .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .custom-upload-button a {
-      height: 45px;
-      -webkit-border-radius: 4px;
-      -moz-border-radius: 4px;
-      -ms-border-radius: 4px;
-      border-radius: 4px; }
-      .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .custom-upload-button a span {
-        height: 45px;
-        line-height: 45px; }
+.bootbox {
+  padding-left: 0 !important; }
+  .bootbox .modal-content {
+    border: 0;
+    -webkit-box-shadow: 0 8px 44px rgba(0, 0, 0, 0.2);
+    -moz-box-shadow: 0 8px 44px rgba(0, 0, 0, 0.2);
+    -ms-box-shadow: 0 8px 44px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 44px rgba(0, 0, 0, 0.2); }
     @media screen and (max-width: 767px) {
-      .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right {
-        width: 100%; }
-        .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .navigation-link {
-          display: none; } }
-@media screen and (max-width: 767px) {
-  .bootbox.custom-auth-popup .modal-dialog {
-    margin: 0 !important;
-    width: 100%;
-    height: 100%;
-    background: white;
-    position: relative; }
-    .bootbox.custom-auth-popup .modal-dialog .modal-content {
-      width: 100%;
-      -webkit-box-shadow: none;
-      -moz-box-shadow: none;
-      -ms-box-shadow: none;
-      box-shadow: none;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      -webkit-transform: translate(-50%, -50%);
-      -ms-transform: translate(-50%, -50%);
-      transform: translate(-50%, -50%); } }
-.bootbox.mobile-dentacoin-address-and-qr .modal-body {
-  padding-bottom: 30px;
-  text-align: center; }
-  .bootbox.mobile-dentacoin-address-and-qr .modal-body #mobile-qrcode img {
-    margin: 0 auto; }
-  .bootbox.mobile-dentacoin-address-and-qr .modal-body .address-value {
+      .bootbox .modal-content {
+        -webkit-box-shadow: 0 19px 130px rgba(0, 0, 0, 0.3);
+        -moz-box-shadow: 0 19px 130px rgba(0, 0, 0, 0.3);
+        -ms-box-shadow: 0 19px 130px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 19px 130px rgba(0, 0, 0, 0.3); } }
+    .bootbox .modal-content .modal-body {
+      padding: 30px 20px; }
+  .bootbox .bootbox-close-button {
+    position: absolute;
+    line-height: 22px;
+    padding: 0 10px;
+    margin-top: 0 !important;
     border: 0;
     background: transparent;
-    width: 225px;
-    font-size: 12px;
-    font-weight: 500; }
-  .bootbox.mobile-dentacoin-address-and-qr .modal-body .mobile-copy-address {
-    display: block; }
-.bootbox.popup-scan-qr-code .video-container {
-  max-width: 500px;
-  margin: 0 auto;
-  padding-top: 30px;
-  padding-bottom: 30px; }
-  .bootbox.popup-scan-qr-code .video-container video {
-    width: 100%; }
-  @media screen and (max-width: 767px) {
-    .bootbox.popup-scan-qr-code .video-container {
-      max-width: 350px; } }
-  @media screen and (max-width: 450px) {
-    .bootbox.popup-scan-qr-code .video-container {
-      max-width: 260px; } }
-.bootbox.transaction-confirmation-popup .modal-dialog {
-  width: 95%;
-  max-width: 800px; }
-  .bootbox.transaction-confirmation-popup .modal-dialog .modal-body {
-    padding: 1rem 0; }
-    .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .bootbox-close-button {
-      margin-top: -10px;
-      margin-right: 10px;
-      font-size: 40px;
-      line-height: 20px; }
-    .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .title {
-      font-size: 28px;
-      font-family: "Calibri-Bold";
-      padding: 0 30px 10px; }
-      @media screen and (max-width: 767px) {
-        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .title {
-          font-size: 22px;
-          text-align: center; } }
-    .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .pictogram-and-dcn-usd-price {
+    position: absolute;
+    right: 5px;
+    font-size: 40px;
+    top: 5px; }
+  .bootbox.download-mobile-app .phone-container {
+    position: relative; }
+    .bootbox.download-mobile-app .phone-container .absolute-content {
+      bottom: 10px;
+      position: absolute;
+      left: 50%;
+      -webkit-transform: translateX(-50%);
+      -ms-transform: translateX(-50%);
+      transform: translateX(-50%); }
+  .bootbox.login-metamask-desktop .bootbox-close-button {
+    display: none; }
+  .bootbox.login-metamask-desktop .modal-dialog {
+    width: 95%;
+    max-width: 700px;
+    margin: 30px auto; }
+    .bootbox.login-metamask-desktop .modal-dialog .title {
+      font-family: 'Calibri-Bold';
+      font-size: 24px; }
+    .bootbox.login-metamask-desktop .modal-dialog .subtitle {
+      color: #777;
+      font-weight: 500; }
+    .bootbox.login-metamask-desktop .modal-dialog .separator {
+      height: 1px;
+      background-color: #D0D0D0;
+      margin-top: 20px; }
+    .bootbox.login-metamask-desktop .modal-dialog .btns-container {
       text-align: center;
-      border-top: 1px solid #888888;
-      border-bottom: 1px solid #888888;
-      padding-top: 30px;
       padding-bottom: 30px; }
-      .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .pictogram-and-dcn-usd-price .dcn-amount {
-        font-size: 28px;
-        line-height: 28px;
-        font-family: "Calibri-Bold"; }
-      .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .pictogram-and-dcn-usd-price .usd-amount {
-        color: #888888;
-        font-size: 18px;
-        font-weight: 500; }
-    .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row {
-      padding-top: 15px;
-      padding-bottom: 15px;
-      border-bottom: 1px solid #888888;
-      font-size: 0; }
-      .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row .label {
-        font-size: 16px;
-        color: #888888;
-        width: 200px;
-        padding-left: 100px; }
-      .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row .value {
-        font-size: 16px;
-        text-align: right;
-        width: calc(100% - 200px);
-        padding-right: 100px; }
-      @media screen and (max-width: 767px) {
-        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row .label {
-          width: 100%;
-          padding: 0 15px !important; }
-        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row .value {
-          font-size: 12px;
-          text-align: left;
-          width: 100%;
-          padding: 0 15px !important; } }
-    .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .upload-file-container .btn-wrapper label {
-      width: 100%;
-      display: block;
-      padding: 0;
-      margin: 0;
-      min-height: 65px;
-      position: relative;
-      text-align: center; }
-      .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .upload-file-container .btn-wrapper label span {
-        width: 95%;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        -webkit-transform: translate(-50%, -50%);
-        -ms-transform: translate(-50%, -50%);
-        transform: translate(-50%, -50%); }
-    .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .enter-private-key {
-      min-height: 65px;
-      position: relative; }
-      .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .enter-private-key span {
-        width: 95%;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        -webkit-transform: translate(-50%, -50%);
-        -ms-transform: translate(-50%, -50%);
-        transform: translate(-50%, -50%); }
-    .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .file-name {
-      word-break: break-word; }
-    .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .checkbox-container {
-      padding-top: 10px; }
-      .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .checkbox-container input[type="checkbox"] {
-        width: auto;
-        height: auto; }
-      .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .checkbox-container .pretty label {
-        padding-top: 3px;
-        padding-left: 5px;
-        cursor: pointer;
-        width: 100%; }
-        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .checkbox-container .pretty label i {
-          display: inline;
-          padding-left: 5px; }
-    @media screen and (max-width: 767px) {
-      .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .enter-private-key {
-        margin: 0 auto 10px;
-        max-width: 280px; }
-      .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .upload-file-container {
-        margin: 10px auto 0;
-        max-width: 280px; } }
-    .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .btn-container {
-      padding-top: 15px;
-      padding-bottom: 20px;
-      text-align: center; }
-      .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .btn-container a {
-        display: inline-block;
-        min-width: 180px; }
-.bootbox.settings-popup .bootbox-close-button {
-  display: none; }
-.bootbox.settings-popup .modal-dialog {
-  width: 95%;
-  max-width: 700px; }
-  .bootbox.settings-popup .modal-dialog .modal-content {
-    overflow: hidden; }
-    .bootbox.settings-popup .modal-dialog .modal-content .modal-body {
-      padding: 0; }
-      .bootbox.settings-popup .modal-dialog .modal-content .modal-body .log-out:hover svg path {
-        fill: white; }
-      .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder {
+      .bootbox.login-metamask-desktop .modal-dialog .btns-container a {
+        margin: 0 5px;
+        display: block;
+        white-space: nowrap; }
+    .bootbox.login-metamask-desktop .modal-dialog figure.gif img {
+      width: 100%; }
+  .bootbox.custom-auth-popup .bootbox-close-button {
+    display: none; }
+  .bootbox.custom-auth-popup .modal-dialog {
+    width: 95%;
+    max-width: 1100px; }
+    .bootbox.custom-auth-popup .modal-dialog .modal-body {
+      padding: 1rem 0; }
+      .bootbox.custom-auth-popup .modal-dialog .modal-body .import-private-key {
+        width: 320px;
+        text-align: center;
+        padding: 10px 5px;
+        font-family: "Calibri-Regular"; }
+        @media screen and (max-width: 767px) {
+          .bootbox.custom-auth-popup .modal-dialog .modal-body .import-private-key {
+            width: 260px; } }
+      .bootbox.custom-auth-popup .modal-dialog .modal-body .import-private-key-field {
         border: 1.5px solid #ff0046;
         padding: 12px 10px;
         text-align: center;
         font-size: 14px;
         overflow-x: auto;
-        margin-top: 20px;
         -webkit-border-radius: 4px;
         -moz-border-radius: 4px;
         -ms-border-radius: 4px;
         border-radius: 4px; }
-        .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder ::-webkit-scrollbar {
-          -webkit-appearance: none; }
-        .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder ::-webkit-scrollbar:vertical {
-          width: 12px; }
-        .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder ::-webkit-scrollbar:horizontal {
-          height: 12px; }
-        .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder ::-webkit-scrollbar-thumb {
-          background-color: rgba(0, 0, 0, 0.5);
-          border-radius: 10px;
-          border: 2px solid white; }
-        .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder ::-webkit-scrollbar-track {
-          background-color: white;
-          -webkit-border-radius: 10px;
-          -moz-border-radius: 10px;
-          -ms-border-radius: 10px;
-          border-radius: 10px; }
-        .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder .scroll-content {
-          width: 460px; }
-      .bootbox.settings-popup .modal-dialog .modal-content .modal-body .row-with-warning-red-background {
-        background-color: #ff0046;
-        margin-left: -70px;
-        margin-right: -70px; }
+      .bootbox.custom-auth-popup .modal-dialog .modal-body .bootbox-close-button {
+        margin-top: -10px;
+        margin-right: 10px;
+        font-size: 40px;
+        line-height: 20px; }
+      .bootbox.custom-auth-popup .modal-dialog .modal-body .title {
+        font-size: 30px;
+        padding: 0 15px 10px;
+        font-weight: normal;
+        text-align: center; }
         @media screen and (max-width: 767px) {
-          .bootbox.settings-popup .modal-dialog .modal-content .modal-body .row-with-warning-red-background {
-            margin-left: -10px;
-            margin-right: -10px; } }
-      .bootbox.settings-popup .modal-dialog .modal-content .modal-body .popup-header {
-        background-color: #00b7e2;
-        padding: 10px; }
-        .bootbox.settings-popup .modal-dialog .modal-content .modal-body .popup-header span {
-          width: calc(100% - 30px); }
-      .bootbox.settings-popup .modal-dialog .modal-content .modal-body .popup-body {
-        padding: 25px 70px; }
-        .bootbox.settings-popup .modal-dialog .modal-content .modal-body .popup-body .option-row {
-          padding-bottom: 20px; }
-          .bootbox.settings-popup .modal-dialog .modal-content .modal-body .popup-body .option-row .option-description {
-            margin-top: 10px;
+          .bootbox.custom-auth-popup .modal-dialog .modal-body .title {
+            font-size: 22px; } }
+      .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder {
+        position: relative; }
+        .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .auth-popup-faq-link {
+          bottom: -30px;
+          position: absolute;
+          left: 50%;
+          -webkit-transform: translateX(-50%);
+          -ms-transform: translateX(-50%);
+          transform: translateX(-50%); }
+          .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .auth-popup-faq-link a {
+            width: 45px;
+            height: 45px;
+            line-height: 45px;
+            font-size: 36px;
+            font-family: "Calibri-Bold";
+            text-align: center;
+            display: inline-block;
+            background-color: #00b7e2;
+            color: white;
+            -webkit-border-radius: 50%;
+            -moz-border-radius: 50%;
+            -ms-border-radius: 50%;
+            border-radius: 50%; }
+          @media screen and (max-width: 767px) {
+            .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .auth-popup-faq-link {
+              bottom: auto;
+              position: static;
+              -webkit-transform: none;
+              -moz-transform: none;
+              -ms-transform: none;
+              -o-transform: none;
+              transform: none; } }
+        .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left, .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right {
+          width: 50%;
+          font-size: 16px; }
+          .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .navigation-link a, .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .navigation-link a {
+            display: block;
             padding-top: 5px;
-            border-top: 1px solid #888888;
-            color: #888888; }
+            padding-bottom: 5px;
+            text-align: center;
+            border-left: 1px solid #ddd;
+            border-top: 1px solid #ddd;
+            border-bottom: 1px solid #ddd;
+            font-size: 30px;
+            font-family: "Calibri-Bold"; }
+            .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .navigation-link a.active, .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .navigation-link a.active {
+              background-color: #00b7e2;
+              color: white; }
+          .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .popup-body, .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .popup-body {
+            font-size: 16px;
+            min-height: 350px;
+            padding-left: 30px;
+            padding-right: 30px; }
+            .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .popup-body.custom-hide, .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .popup-body.custom-hide {
+              visibility: hidden; }
+              @media screen and (max-width: 767px) {
+                .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .popup-body.custom-hide, .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .popup-body.custom-hide {
+                  display: none; } }
+            .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .popup-body .row-with-image-and-text, .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .popup-body .row-with-image-and-text {
+              margin: 0 auto; }
+              .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .popup-body .row-with-image-and-text .text, .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .popup-body .row-with-image-and-text .text {
+                width: calc(100% - 80px); }
+            @media screen and (max-width: 767px) {
+              .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .popup-body, .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .popup-body {
+                padding-left: 10px;
+                padding-right: 10px; }
+                .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .popup-body .row-with-image-and-text .text, .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .popup-body .row-with-image-and-text .text {
+                  text-align: left; } }
+        .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left {
+          border-right: 1px solid #ddd; }
+          .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .navigation-link.mobile {
+            display: none; }
+          .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left label.custom-label {
+            padding: 30px 10px 20px;
+            display: block;
+            text-align: center;
+            font-size: 16px; }
+          .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .private-key-holder {
+            border: 1.5px solid #ff0046;
+            padding: 12px 10px;
+            text-align: center;
+            font-size: 14px;
+            overflow-x: auto;
+            -webkit-border-radius: 4px;
+            -moz-border-radius: 4px;
+            -ms-border-radius: 4px;
+            border-radius: 4px; }
+            .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .private-key-holder ::-webkit-scrollbar {
+              -webkit-appearance: none; }
+            .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .private-key-holder ::-webkit-scrollbar:vertical {
+              width: 12px; }
+            .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .private-key-holder ::-webkit-scrollbar:horizontal {
+              height: 12px; }
+            .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .private-key-holder ::-webkit-scrollbar-thumb {
+              background-color: rgba(0, 0, 0, 0.5);
+              border-radius: 10px;
+              border: 2px solid white; }
+            .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .private-key-holder ::-webkit-scrollbar-track {
+              background-color: white;
+              -webkit-border-radius: 10px;
+              -moz-border-radius: 10px;
+              -ms-border-radius: 10px;
+              border-radius: 10px; }
+            .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .private-key-holder .scroll-content {
+              width: 460px; }
+          .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .creation-text {
+            font-size: 0;
+            margin: 0 auto; }
+            .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .creation-text svg {
+              width: 100px; }
+            .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .creation-text .text {
+              width: calc(100% - 100px); }
+          @media screen and (max-width: 767px) {
+            .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left {
+              width: 100%;
+              font-size: 0; }
+              .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .navigation-link {
+                width: 50%;
+                display: inline-block;
+                vertical-align: top; }
+                .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-left .navigation-link.mobile {
+                  display: inline-block; } }
+        .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .enter-pass-label {
+          padding-top: 20px;
+          padding-bottom: 15px;
+          display: block;
+          font-size: 16px; }
+        .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .btn-container {
+          padding-top: 20px;
+          padding-bottom: 20px; }
+        .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .camping-for-action {
+          text-align: center; }
+        .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .custom-upload-button a {
+          height: 45px;
+          -webkit-border-radius: 4px;
+          -moz-border-radius: 4px;
+          -ms-border-radius: 4px;
+          border-radius: 4px; }
+          .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .custom-upload-button a span {
+            height: 45px;
+            line-height: 45px; }
         @media screen and (max-width: 767px) {
-          .bootbox.settings-popup .modal-dialog .modal-content .modal-body .popup-body {
-            padding: 20px 10px; } }
-      .bootbox.settings-popup .modal-dialog .modal-content .modal-body .popup-footer {
+          .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right {
+            width: 100%; }
+            .bootbox.custom-auth-popup .modal-dialog .modal-body .left-right-side-holder .popup-right .navigation-link {
+              display: none; } }
+  @media screen and (max-width: 767px) {
+    .bootbox.custom-auth-popup .modal-dialog {
+      margin: 0 !important;
+      width: 100%;
+      height: 100%;
+      background: white;
+      position: relative; }
+      .bootbox.custom-auth-popup .modal-dialog .modal-content {
+        width: 100%;
+        -webkit-box-shadow: none;
+        -moz-box-shadow: none;
+        -ms-box-shadow: none;
+        box-shadow: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        -webkit-transform: translate(-50%, -50%);
+        -ms-transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%); }
+        .bootbox.custom-auth-popup .modal-dialog .modal-content.clear-center-position {
+          position: static;
+          top: auto;
+          left: auto;
+          -webkit-transform: none;
+          -moz-transform: none;
+          -ms-transform: none;
+          -o-transform: none;
+          transform: none; }
+        .bootbox.custom-auth-popup .modal-dialog .modal-content .modal-body {
+          padding: 15px 0; } }
+  .bootbox.mobile-dentacoin-address-and-qr .modal-body {
+    padding-bottom: 30px;
+    text-align: center; }
+    .bootbox.mobile-dentacoin-address-and-qr .modal-body #mobile-qrcode img {
+      margin: 0 auto; }
+    .bootbox.mobile-dentacoin-address-and-qr .modal-body .address-value {
+      border: 0;
+      background: transparent;
+      width: 225px;
+      font-size: 12px;
+      font-weight: 500; }
+    .bootbox.mobile-dentacoin-address-and-qr .modal-body .mobile-copy-address {
+      display: block; }
+  .bootbox.popup-scan-qr-code .video-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding-top: 30px;
+    padding-bottom: 30px; }
+    .bootbox.popup-scan-qr-code .video-container video {
+      width: 100%; }
+    @media screen and (max-width: 767px) {
+      .bootbox.popup-scan-qr-code .video-container {
+        max-width: 350px; } }
+    @media screen and (max-width: 450px) {
+      .bootbox.popup-scan-qr-code .video-container {
+        max-width: 260px; } }
+  .bootbox.transaction-confirmation-popup .modal-dialog {
+    width: 95%;
+    max-width: 800px; }
+    .bootbox.transaction-confirmation-popup .modal-dialog .modal-body {
+      padding: 1rem 0; }
+      .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .bootbox-close-button {
+        margin-top: -10px;
+        margin-right: 10px;
+        font-size: 40px;
+        line-height: 20px; }
+      .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .title {
+        font-size: 28px;
+        font-family: "Calibri-Bold";
+        padding: 0 30px 10px; }
+        @media screen and (max-width: 767px) {
+          .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .title {
+            font-size: 22px;
+            text-align: center; } }
+      .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .pictogram-and-dcn-usd-price {
+        text-align: center;
+        border-top: 1px solid #888888;
+        border-bottom: 1px solid #888888;
+        padding-top: 30px;
         padding-bottom: 30px; }
-        .bootbox.settings-popup .modal-dialog .modal-content .modal-body .popup-footer hr {
-          width: calc(100% - 140px);
-          margin: 0 auto;
-          border: 0;
-          border-top: 1px solid #888888;
-          padding-bottom: 25px; }
+        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .pictogram-and-dcn-usd-price .dcn-amount {
+          font-size: 28px;
+          line-height: 28px;
+          font-family: "Calibri-Bold"; }
+        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .pictogram-and-dcn-usd-price .usd-amount {
+          color: #888888;
+          font-size: 18px;
+          font-weight: 500; }
+      .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row {
+        padding-top: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #888888;
+        font-size: 0; }
+        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row .label {
+          font-size: 16px;
+          color: #888888;
+          width: 200px;
+          padding-left: 100px; }
+        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row .value {
+          font-size: 16px;
+          text-align: right;
+          width: calc(100% - 200px);
+          padding-right: 100px; }
         @media screen and (max-width: 767px) {
-          .bootbox.settings-popup .modal-dialog .modal-content .modal-body .popup-footer {
-            padding-left: 10px;
-            padding-right: 10px; } }
-@media screen and (max-width: 991px) {
-  .bootbox .modal-content {
-    background-clip: border-box;
-    -webkit-border-radius: 0;
-    -moz-border-radius: 0;
-    -ms-border-radius: 0;
-    border-radius: 0; } }
+          .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row .label {
+            width: 100%;
+            padding: 0 15px !important; }
+          .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row .value {
+            font-size: 12px;
+            text-align: left;
+            width: 100%;
+            padding: 0 15px !important; } }
+      .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .upload-file-container .btn-wrapper label {
+        width: 100%;
+        display: block;
+        padding: 0;
+        margin: 0;
+        min-height: 65px;
+        position: relative;
+        text-align: center; }
+        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .upload-file-container .btn-wrapper label span {
+          width: 95%;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          -webkit-transform: translate(-50%, -50%);
+          -ms-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%); }
+      .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .enter-private-key {
+        min-height: 65px;
+        position: relative; }
+        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .enter-private-key span {
+          width: 95%;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          -webkit-transform: translate(-50%, -50%);
+          -ms-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%); }
+      .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .file-name {
+        word-break: break-word; }
+      .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .checkbox-container {
+        padding-top: 10px; }
+        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .checkbox-container input[type="checkbox"] {
+          width: auto;
+          height: auto; }
+        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .checkbox-container .pretty label {
+          padding-top: 3px;
+          padding-left: 5px;
+          cursor: pointer;
+          width: 100%; }
+          .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .checkbox-container .pretty label i {
+            display: inline;
+            padding-left: 5px; }
+      @media screen and (max-width: 767px) {
+        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .enter-private-key {
+          margin: 0 auto 10px;
+          max-width: 280px; }
+        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .upload-file-container {
+          margin: 10px auto 0;
+          max-width: 280px; } }
+      .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .btn-container {
+        padding-top: 15px;
+        padding-bottom: 20px;
+        text-align: center; }
+        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .btn-container a {
+          display: inline-block;
+          min-width: 180px; }
+    @media screen and (max-width: 767px) {
+      .bootbox.transaction-confirmation-popup .modal-dialog {
+        width: 100%;
+        margin: 0 !important; } }
+  .bootbox.settings-popup .bootbox-close-button {
+    display: none; }
+  .bootbox.settings-popup .custom-close-bootbox {
+    max-width: 25px; }
+  .bootbox.settings-popup .modal-dialog {
+    width: 95%;
+    max-width: 700px; }
+    .bootbox.settings-popup .modal-dialog .modal-content {
+      overflow: hidden; }
+      .bootbox.settings-popup .modal-dialog .modal-content .modal-body {
+        padding: 0; }
+        .bootbox.settings-popup .modal-dialog .modal-content .modal-body .log-out:hover svg path {
+          fill: white; }
+        .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder {
+          border: 1.5px solid #ff0046;
+          padding: 8px 10px;
+          text-align: center;
+          font-size: 14px;
+          overflow-x: auto;
+          margin-top: 20px;
+          -webkit-border-radius: 4px;
+          -moz-border-radius: 4px;
+          -ms-border-radius: 4px;
+          border-radius: 4px; }
+          .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder ::-webkit-scrollbar {
+            -webkit-appearance: none; }
+          .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder ::-webkit-scrollbar:vertical {
+            width: 12px; }
+          .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder ::-webkit-scrollbar:horizontal {
+            height: 12px; }
+          .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder ::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            border: 2px solid white; }
+          .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder ::-webkit-scrollbar-track {
+            background-color: white;
+            -webkit-border-radius: 10px;
+            -moz-border-radius: 10px;
+            -ms-border-radius: 10px;
+            border-radius: 10px; }
+          .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder .scroll-content {
+            width: 500px; }
+            .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder .scroll-content .copy-private-key {
+              max-width: 25px; }
+            .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder .scroll-content #copy-private-key {
+              width: calc(100% - 25px);
+              border: 0; }
+        .bootbox.settings-popup .modal-dialog .modal-content .modal-body .row-with-warning-red-background {
+          background-color: #ff0046;
+          margin-left: -70px;
+          margin-right: -70px; }
+          @media screen and (max-width: 767px) {
+            .bootbox.settings-popup .modal-dialog .modal-content .modal-body .row-with-warning-red-background {
+              margin-left: -10px;
+              margin-right: -10px; } }
+        .bootbox.settings-popup .modal-dialog .modal-content .modal-body .popup-header {
+          background-color: #00b7e2;
+          padding: 10px; }
+          .bootbox.settings-popup .modal-dialog .modal-content .modal-body .popup-header span {
+            width: calc(100% - 30px); }
+        .bootbox.settings-popup .modal-dialog .modal-content .modal-body .popup-body {
+          padding: 25px 70px; }
+          .bootbox.settings-popup .modal-dialog .modal-content .modal-body .popup-body .option-row {
+            padding-bottom: 20px; }
+            .bootbox.settings-popup .modal-dialog .modal-content .modal-body .popup-body .option-row .option-description {
+              margin-top: 10px;
+              padding-top: 5px;
+              border-top: 1px solid #888888;
+              color: #888888; }
+          @media screen and (max-width: 767px) {
+            .bootbox.settings-popup .modal-dialog .modal-content .modal-body .popup-body {
+              padding: 20px 10px; } }
+        .bootbox.settings-popup .modal-dialog .modal-content .modal-body .popup-footer {
+          padding-bottom: 30px; }
+          .bootbox.settings-popup .modal-dialog .modal-content .modal-body .popup-footer hr {
+            width: calc(100% - 140px);
+            margin: 0 auto;
+            border: 0;
+            border-top: 1px solid #888888;
+            padding-bottom: 25px; }
+          @media screen and (max-width: 767px) {
+            .bootbox.settings-popup .modal-dialog .modal-content .modal-body .popup-footer {
+              padding-left: 10px;
+              padding-right: 10px; } }
+    @media screen and (max-width: 767px) {
+      .bootbox.settings-popup .modal-dialog {
+        margin: 0 !important;
+        width: 100%; } }
+  @media screen and (max-width: 991px) {
+    .bootbox .modal-content {
+      background-clip: border-box;
+      -webkit-border-radius: 0;
+      -moz-border-radius: 0;
+      -ms-border-radius: 0;
+      border-radius: 0; } }
 
 input[type=file].hide-input {
   display: none; }
@@ -4550,21 +4618,6 @@ input[type=file].hide-input {
     -ms-box-shadow: 0 6px 10px 0px rgba(0, 0, 0, 0.3);
     box-shadow: 0 6px 10px 0px rgba(0, 0, 0, 0.3); }
 
-.auth-popup-faq-link a {
-  width: 45px;
-  height: 45px;
-  line-height: 45px;
-  font-size: 36px;
-  font-family: "Calibri-Bold";
-  text-align: center;
-  display: inline-block;
-  background-color: #00b7e2;
-  color: white;
-  -webkit-border-radius: 50%;
-  -moz-border-radius: 50%;
-  -ms-border-radius: 50%;
-  border-radius: 50%; }
-
 .camp-for-custom-popover {
   width: 250px;
   padding: 9px 14px;
@@ -4606,6 +4659,17 @@ input[type=file].hide-input {
   border-radius: 4px; }
   .error-handle.alert.alert-warning {
     display: none; }
+
+.container-404 .num-404 {
+  font-size: 180px;
+  font-family: "Calibri-Bold"; }
+@media screen and (max-width: 767px) {
+  .container-404 .num-404 {
+    font-size: 100px; } }
+@media screen and (max-width: 450px) {
+  .container-404 .num-404 {
+    font-size: 100px;
+    text-align: center; } }
 
 header .logo {
   padding-top: 10px;
@@ -4684,16 +4748,21 @@ footer {
       font-size: 16px; } }
   @media screen and (max-width: 767px) {
     footer {
-      padding-top: 20px; }
-      footer ul {
-        padding-bottom: 10px; }
-        footer ul li {
-          width: 20%;
-          padding: 0 5px; }
-          footer ul li span {
-            font-size: 11px; }
-      footer .copyright {
-        font-size: 12px; } }
+      display: none;
+      /*padding-top: 20px;
+      ul {
+          padding-bottom: 10px;
+          li {
+              width: 20%;
+              padding: 0 5px;
+              span {
+                  font-size: 11px;
+              }
+          }
+      }
+      .copyright {
+          font-size: 12px;
+      }*/ } }
 
 app-homepage .main-wrapper {
   width: calc(100% - 20px);
@@ -4768,10 +4837,10 @@ app-homepage .eth-address-container {
   @media screen and (max-width: 450px) {
     app-homepage .eth-address-container .address-value {
       font-size: 10px !important;
-      width: 240px;
+      width: 230px;
       text-align: center; }
     app-homepage .eth-address-container .copy-icon img, app-homepage .eth-address-container .qr-code-icon img {
-      max-width: 25px !important; } }
+      max-width: 20px !important; } }
 app-homepage .fade-in-element {
   display: none; }
 
@@ -4909,14 +4978,15 @@ app-send-page .section-send {
               background-color: #00b7e2;
               color: white; }
           app-send-page .section-send .search-field .search-result .search-body .clinics ul li.removeable-element a, app-send-page .section-send .search-field .search-result .search-body .address-book ul li.removeable-element a {
-            width: calc(100% - 30px);
+            width: calc(100% - 40px);
             font-size: 16px; }
           app-send-page .section-send .search-field .search-result .search-body .clinics ul li.removeable-element button, app-send-page .section-send .search-field .search-result .search-body .address-book ul li.removeable-element button {
-            width: 30px;
+            width: 40px;
             border: 0;
+            padding: 0;
             background: transparent;
             color: red;
-            font-size: 24px; }
+            font-size: 26px; }
         app-send-page .section-send .search-field .search-result .search-body .address-book {
           display: none; }
       app-send-page .section-send .search-field .search-result .search-footer {
@@ -5036,7 +5106,7 @@ app-spend-page-exchanges .camping-for-exchanges {
         display: block; } }
 
 @media screen and (max-width: 767px) {
-  app-spend-page-pay-assurance-fees video {
+  app-spend-page-pay-assurance-fees video, app-spend-page-gift-cards video {
     height: 220px; } }
 
 /*# sourceMappingURL=style.css.map */
