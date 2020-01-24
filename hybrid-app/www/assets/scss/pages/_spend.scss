@@ -1,0 +1,81 @@
+app-spend-page-pay-for-dental-services, app-spend-page-gift-cards, app-spend-page-exchanges, app-spend-page-pay-assurance-fees {
+    .mobile-nav {
+        a {
+            display: none;
+        }
+    }
+    @include breakpoint($xs) {
+        .main-wrapper {
+            @include rounded(0);
+        }
+        .module.spend-navigation {
+            display: none;
+        }
+        .mobile-nav {
+            a {
+                display: inline-block;
+                width: 20px;
+                vertical-align: middle;
+                img {
+                    max-width: 15px;
+                }
+            }
+            h1 {
+                padding-left: 5px;
+                padding-right: 5px;
+                width: calc(100% - 40px);
+                display: inline-block;
+                vertical-align: middle;
+            }
+        }
+    }
+}
+
+app-spend-page-pay-for-dental-services {
+    iframe {
+        width: 100%;
+        height: 580px;
+        border: 0;
+        @include breakpoint($xs) {
+            height: 630px;
+        }
+    }
+}
+
+app-spend-page-exchanges {
+    .camping-for-exchanges {
+        font-size: 0;
+        li {
+            width: 20%;
+            display: inline-block;
+            vertical-align: top;
+            font-size: 18px;
+            padding-bottom: 10px;
+            a {
+                color: black;
+                @include simple_transition(.3s);
+                &:hover {
+                    color: $light_blue;
+                }
+            }
+        }
+        @include breakpoint($sm-down) {
+            height: 320px;
+            overflow-y: auto;
+            width: 80%;
+            margin: 0 auto 20px;
+            li {
+                width: 100%;
+                display: block;
+            }
+        }
+    }
+}
+
+app-spend-page-pay-assurance-fees, app-spend-page-gift-cards {
+    @include breakpoint($xs) {
+        video {
+            height: 220px;
+        }
+    }
+}
