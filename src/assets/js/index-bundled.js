@@ -83682,7 +83682,7 @@ function styleKeystoreUploadBtn()    {
                                 setTimeout(function() {
                                     //saving keystore file to App folder
                                     window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function (dirEntry) {
-                                        dirEntry.getFile(keystore_file_name, {create: true, exclusive: true}, function (fileEntry) {
+                                        dirEntry.getFile(keystore_file_name, {create: true, exclusive: false}, function (fileEntry) {
                                             fileEntry.createWriter(function (fileWriter) {
                                                 fileWriter.onwriteend = function (e) {
                                                     console.log('Saved keystore to inapp folder.');
