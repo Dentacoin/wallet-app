@@ -3978,9 +3978,12 @@ img {
 .cursor-pointer {
   cursor: pointer; }
 
+<<<<<<< HEAD
+=======
 .popover {
   border: 0 !important; }
 
+>>>>>>> ef53f7809913baad65fc7b4ba65181a657c5ff37
 .bootbox {
   padding-left: 0 !important; }
   .bootbox .modal-content {

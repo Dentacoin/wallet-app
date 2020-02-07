@@ -2,9 +2,15 @@
 <widget id="wallet.dentacoin.com" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>Dentacoin Wallet</name>
     <description>
+<<<<<<< HEAD
       Dentacoin Wallet App: Buy, Store and Manage Your DCN Tokens
     </description>
     <author email="admin@dentacoin.com" href="http://dentacoin.com">
+=======
+        Dentacoin Wallet allows users to easily and securely store, send, receive DCN tokens, as well as to buy DCN with credit card and other cryptocurrencies.
+    </description>
+    <author email="miroslav.nedelchev@dentacoin.com" href="https://dentacoin.com">
+>>>>>>> 244125bb742cd8647cae450db893283b43c6c7ef
         Dentacoin Team
     </author>
     <content src="index.html" />
