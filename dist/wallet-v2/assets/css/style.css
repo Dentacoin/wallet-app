@@ -341,7 +341,7 @@
     position: relative; }
     .module.custom-google-label-style .left-side.error-field input, .module.custom-google-label-style .left-side.error-field label {
       color: red; }
-  .module.custom-google-label-style input {
+  .module.custom-google-label-style input, .module.custom-google-label-style textarea {
     border: 2px solid #dddddd;
     cursor: pointer;
     font-size: 16px;
@@ -352,12 +352,12 @@
     -moz-border-radius: 4px 0 0 4px;
     -ms-border-radius: 4px 0 0 4px;
     border-radius: 4px 0 0 4px; }
-    .module.custom-google-label-style input.full-rounded {
+    .module.custom-google-label-style input.full-rounded, .module.custom-google-label-style textarea.full-rounded {
       -webkit-border-radius: 4px;
       -moz-border-radius: 4px;
       -ms-border-radius: 4px;
       border-radius: 4px; }
-    .module.custom-google-label-style input.light-blue-border {
+    .module.custom-google-label-style input.light-blue-border, .module.custom-google-label-style textarea.light-blue-border {
       border: 2px solid #00b7e2; }
   .module.custom-google-label-style .input-label {
     width: 100px;
@@ -3997,6 +3997,10 @@ img {
         box-shadow: 0 19px 130px rgba(0, 0, 0, 0.3); } }
     .bootbox .modal-content .modal-body {
       padding: 30px 20px; }
+    .bootbox .modal-content button.btn-primary {
+      background-color: #00b7e2 !important;
+      border-color: #00b7e2 !important;
+      width: 70px; }
   .bootbox .bootbox-close-button {
     position: absolute;
     line-height: 22px;
@@ -4004,7 +4008,6 @@ img {
     margin-top: 0 !important;
     border: 0;
     background: transparent;
-    position: absolute;
     right: 5px;
     font-size: 40px;
     top: 5px; }
@@ -4049,6 +4052,9 @@ img {
     max-width: 1100px; }
     .bootbox.custom-auth-popup .modal-dialog .modal-body {
       padding: 1rem 0; }
+      .bootbox.custom-auth-popup .modal-dialog .modal-body #import-private-key {
+        resize: none;
+        height: 75px; }
       .bootbox.custom-auth-popup .modal-dialog .modal-body .import-private-key {
         width: 320px;
         text-align: center;
@@ -4438,13 +4444,17 @@ img {
             -moz-border-radius: 10px;
             -ms-border-radius: 10px;
             border-radius: 10px; }
-          .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder .scroll-content {
-            width: 500px; }
-            .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder .scroll-content .copy-private-key {
-              max-width: 25px; }
-            .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder .scroll-content #copy-private-key {
-              width: calc(100% - 25px);
-              border: 0; }
+          .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder .scroll-content .copy-private-key {
+            max-width: 25px; }
+          .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder .scroll-content #copy-private-key {
+            width: calc(100% - 25px);
+            border: 0;
+            padding: 0;
+            height: 25px;
+            resize: none; }
+            @media screen and (max-width: 767px) {
+              .bootbox.settings-popup .modal-dialog .modal-content .modal-body .private-key-holder .scroll-content #copy-private-key {
+                height: 45px; } }
         .bootbox.settings-popup .modal-dialog .modal-content .modal-body .row-with-warning-red-background {
           background-color: #ff0046;
           margin-left: -70px;
