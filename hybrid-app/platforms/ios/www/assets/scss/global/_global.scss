@@ -612,6 +612,11 @@ img {
         .modal-body {
             padding: 30px 20px;
         }
+        button.btn-primary {
+            background-color: #00b7e2 !important;
+            border-color: #00b7e2 !important;
+            width: 70px;
+        }
     }
     .bootbox-close-button {
         position: absolute;
@@ -620,7 +625,6 @@ img {
         margin-top: 0 !important;
         border: 0;
         background: transparent;
-        position: absolute;
         right: 5px;
         font-size: 40px;
         top: 5px;
@@ -680,6 +684,10 @@ img {
             max-width: 1100px;
             .modal-body {
                 padding: 1rem 0;
+                #import-private-key {
+                    resize: none;
+                    height: 75px;
+                }
                 .import-private-key {
                     width: 320px;
                     text-align: center;
@@ -1143,13 +1151,18 @@ img {
                             @include rounded(10px);
                         }
                         .scroll-content {
-                            width: 500px;
                             .copy-private-key {
                                 max-width: 25px;
                             }
                             #copy-private-key {
                                 width: calc(100% - 25px);
                                 border: 0;
+                                padding: 0;
+                                height: 25px;
+                                resize: none;
+                                @include breakpoint($xs) {
+                                    height: 45px;
+                                }
                             }
                         }
                     }

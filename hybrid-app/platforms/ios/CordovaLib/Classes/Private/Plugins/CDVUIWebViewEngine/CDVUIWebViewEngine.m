@@ -17,6 +17,8 @@
  under the License.
  */
 
+#if !WK_WEB_VIEW_ONLY
+
 #import "CDVUIWebViewEngine.h"
 #import "CDVUIWebViewDelegate.h"
 #import "CDVUIWebViewNavigationDelegate.h"
@@ -66,7 +68,8 @@
 }
 
 - (void)evaluateJavaScript:(NSString*)javaScriptString completionHandler:(void (^)(id, NSError*))completionHandler
-{    NSString* ret = [(UIWebView*)_engineWebView stringByEvaluatingJavaScriptFromString:javaScriptString];
+{
+    NSString* ret = [(UIWebView*)_engineWebView stringByEvaluatingJavaScriptFromString:javaScriptString];
 
     if (completionHandler) {
         completionHandler(ret, nil);
@@ -199,3 +202,5 @@
 }
 
 @end
+
+#endif
