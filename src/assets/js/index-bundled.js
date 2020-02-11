@@ -82692,11 +82692,15 @@ $(document).on('click', '.open-settings', function() {
                 downloadBtnLabel = 'EXPORT';
             }
 
-            var enterKeystorePasswordHtml = '<div class="custom-google-label-style margin-bottom-15 margin-top-20 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="download-keystore-password">Password:</label><input type="password" id="download-keystore-password" class="full-rounded"></div><div class="text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 download-keystore-action">'+downloadBtnLabel+'</a><button class="padding-top-20 padding-bottom-20 margin-top-20" onclick="window.plugins.socialsharing.share(null, \'Android filename\, \'data:text/plain;charset=utf-8,Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.\', null)">base64 image only</button></div>';
+            var enterKeystorePasswordHtml = '<div class="custom-google-label-style margin-bottom-15 margin-top-20 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="download-keystore-password">Password:</label><input type="password" id="download-keystore-password" class="full-rounded"></div><div class="text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 download-keystore-action">'+downloadBtnLabel+'</a><button class="padding-top-20 padding-bottom-20 margin-top-20" id="test">base64 image only</button></div>';
 
             var this_row = $(this).closest('.option-row');
             var this_camping_row = this_row.find('.camping-for-action');
             this_camping_row.html(enterKeystorePasswordHtml);
+
+            $('#test').click(function() {
+                window.plugins.socialsharing.share(null, 'Android filename', "data:text/plain;charset=utf-8,Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.", null);
+            });
 
             $('#download-keystore-password').focus();
             $('label[for="download-keystore-password"]').addClass('active-label');
