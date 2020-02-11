@@ -14,6 +14,7 @@ SocialSharing.prototype.iPadPopupCoordinates = function () {
 };
 
 SocialSharing.prototype.setIPadPopupCoordinates = function (coords) {
+  console.log("Deprecated - setIPadPopupCoordinates no longer works since plugin version 5.5.0. See https://github.com/EddyVerbruggen/SocialSharing-PhoneGap-Plugin/issues/1052");
   // left,top,width,height
   cordova.exec(function() {}, this._getErrorCallback(function() {}, "setIPadPopupCoordinates"), "SocialSharing", "setIPadPopupCoordinates", [coords]);
 };
@@ -34,7 +35,8 @@ SocialSharing.prototype.shareW3C = function (sharedata) {
     var options = {
       subject: sharedata.title,
       message: sharedata.text,
-      url: sharedata.url
+      url: sharedata.url,
+      iPadCoordinates: sharedata.iPadCoordinates || undefined
     };
     if(sharedata.hasOwnProperty('title') ||
         sharedata.hasOwnProperty('text') ||
@@ -46,8 +48,13 @@ SocialSharing.prototype.shareW3C = function (sharedata) {
   });
 };
 
-SocialSharing.prototype.share = function (message, subject, fileOrFileArray, url, successCallback, errorCallback) {
-  cordova.exec(successCallback, this._getErrorCallback(errorCallback, "share"), "SocialSharing", "share", [message, subject, this._asArray(fileOrFileArray), url]);
+SocialSharing.prototype.share = function (message, subject, fileOrFileArray, url, iPadCoordinates, successCallback, errorCallback) {
+  if (typeof iPadCoordinates === 'function') {
+    errorCallback = successCallback;
+    successCallback = iPadCoordinates;
+    iPadCoordinates = "";
+  }
+  cordova.exec(successCallback, this._getErrorCallback(errorCallback, "share"), "SocialSharing", "share", [message, subject, this._asArray(fileOrFileArray), url, iPadCoordinates]);
 };
 
 SocialSharing.prototype.shareViaTwitter = function (message, file /* multiple not allowed by twitter */, url, successCallback, errorCallback) {
