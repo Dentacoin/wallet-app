@@ -80,27 +80,25 @@
             left: 10px;
             color: #888888;
             font-weight: normal;
-            top: 50%;
+            top: 5px;
             font-family: 'Calibri-Regular';
-            -webkit-transform: translateY(-50%);
-            -ms-transform: translateY(-50%);
-            transform: translateY(-50%);
-            padding-top: 8px;
-            height: calc(100% - 8px);
             z-index: 50;
+            height: 35px;
+            line-height: 35px;
             @include rounded(4px);
             @include simple_transition(.3s);
             &.active-label {
                 width: auto !important;
                 font-size: 14px !important;
-                top: -8px;
+                top: -10px;
                 padding: 0 5px !important;
                 -webkit-transform: none;
                 -ms-transform: none;
                 transform: none;
                 color: $light_blue;
                 font-weight: bold;
-                height: auto;
+                height: 20px;
+                line-height: 20px;
             }
         }
         .left-side {

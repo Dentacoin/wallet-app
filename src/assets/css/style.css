@@ -309,14 +309,11 @@
     left: 10px;
     color: #888888;
     font-weight: normal;
-    top: 50%;
+    top: 5px;
     font-family: 'Calibri-Regular';
-    -webkit-transform: translateY(-50%);
-    -ms-transform: translateY(-50%);
-    transform: translateY(-50%);
-    padding-top: 8px;
-    height: calc(100% - 8px);
     z-index: 50;
+    height: 35px;
+    line-height: 35px;
     -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
     -ms-border-radius: 4px;
@@ -329,20 +326,22 @@
     .module.custom-google-label-style label.active-label {
       width: auto !important;
       font-size: 14px !important;
-      top: -8px;
+      top: -10px;
       padding: 0 5px !important;
       -webkit-transform: none;
       -ms-transform: none;
       transform: none;
       color: #00b7e2;
       font-weight: bold;
-      height: auto; }
+      height: 20px;
+      line-height: 20px; }
   .module.custom-google-label-style .left-side {
     width: calc(100% - 100px);
     position: relative; }
     .module.custom-google-label-style .left-side.error-field input, .module.custom-google-label-style .left-side.error-field label {
       color: red; }
   .module.custom-google-label-style input, .module.custom-google-label-style textarea {
+    z-index: 40;
     border: 2px solid #dddddd;
     cursor: pointer;
     font-size: 16px;
