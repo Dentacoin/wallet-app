@@ -120989,11 +120989,11 @@ function bindGoogleAlikeButtonsEvents() {
     $('body').on('click', '.custom-google-label-style label', function() {
         $(this).addClass('active-label');
         if($('.custom-google-label-style').attr('data-input-light-blue-border') == 'true') {
-            $(this).parent().find('input').addClass('light-blue-border');
+            $(this).parent().find('input, textarea').addClass('light-blue-border');
         }
     });
 
-    $('body').on('keyup change focusout', '.custom-google-label-style input', function() {
+    $('body').on('keyup change focusout', '.custom-google-label-style input, .custom-google-label-style textarea', function() {
         var value = $(this).val().trim();
         if (value.length) {
             $(this).closest('.custom-google-label-style').find('label').addClass('active-label');
@@ -122484,6 +122484,10 @@ function buildDentacoinHistoryTransaction(dentacoin_data, value, to, from, times
 }
 
 function initScan(clicker, valueHolder, callback) {
+    console.log(clicker, 'clicker');
+    console.log(valueHolder, 'valueHolder');
+    console.log(callback, 'callback');
+    console.log(is_hybrid, 'is_hybrid');
     if(callback === undefined) {
         callback = null;
     }

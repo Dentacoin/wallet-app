@@ -87,6 +87,7 @@
             transform: translateY(-50%);
             padding-top: 8px;
             height: calc(100% - 8px);
+            z-index: 50;
             @include rounded(4px);
             @include simple_transition(.3s);
             &.active-label {
@@ -112,6 +113,7 @@
             }
         }
         input, textarea {
+            z-index: 40;
             border: 2px solid #dddddd;
             cursor: pointer;
             font-size: 16px;
