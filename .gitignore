@@ -9,8 +9,7 @@
 # dependencies
 /node_modules
 /src/assets/js/config.js
-/.hybrid-app/platforms/android
-/.hybrid-app/platforms/ios
+hybrid-app/platforms/
 
 # profiling files
 chrome-profiler-events.json

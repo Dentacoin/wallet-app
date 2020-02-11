@@ -25,8 +25,6 @@
     "cordova-plugin-inappbrowser": "^3.1.0",
     "cordova-plugin-network-information": "^2.0.2",
     "cordova-plugin-statusbar": "^2.4.3",
-    "cordova-plugin-x-socialsharing": "^5.6.3",
-    "es6-promise-plugin": "^4.2.2",
     "phonegap-plugin-barcodescanner": "^8.1.0"
   },
   "devDependencies": {
@@ -46,12 +44,7 @@
       "cordova-plugin-file-transfer": {},
       "cordova-plugin-statusbar": {},
       "cordova-plugin-inappbrowser": {},
-      "cordova-plugin-filepath": {},
-      "cordova-plugin-x-socialsharing": {
-        "ANDROID_SUPPORT_V4_VERSION": "24.1.1+",
-        "PHOTO_LIBRARY_ADD_USAGE_DESCRIPTION": "This app requires photo library access to function properly.",
-        "PHOTO_LIBRARY_USAGE_DESCRIPTION": "This app requires photo library access to function properly."
-      }
+      "cordova-plugin-filepath": {}
     },
     "platforms": [
       "android",
