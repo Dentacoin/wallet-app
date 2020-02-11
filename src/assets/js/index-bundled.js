@@ -80155,21 +80155,18 @@ function importKeystoreFile(keystore, password, callback) {
 
 function decryptKeystore(keystore, password, callback) {
     keythereum.recover(password, JSON.parse(keystore), function(private_key) {
-        try {
-            callback(private_key, private_key.toString('hex'));
-        } catch (e) {
+        if (private_key instanceof Error) {
             callback(null, null, true, 'Wrong secret password.');
+        } else {
+            callback(private_key, private_key.toString('hex'));
         }
     });
 }
 
 function validatePrivateKey(private_key) {
-    console.log(private_key, 'validatePrivateKey');
     try {
         const public_key = EthCrypto.publicKeyByPrivateKey(private_key);
         const address = EthCrypto.publicKey.toAddress(public_key);
-        console.log(public_key, 'public_key');
-        console.log(address, 'address');
 
         return {
             success: {
@@ -80246,6 +80243,8 @@ window.addEventListener('load', function() {
 
 document.addEventListener('deviceready', function() {
     console.log('================= deviceready ===================');
+
+    window.open = cordova.InAppBrowser.open;
 
     //=================================== internet connection check ONLY for MOBILE DEVICES ===================================
 
@@ -81024,7 +81023,7 @@ var pages_data = {
                         }
                     }
 
-                    clinics_select_html += '<li><a href="javascript:void(0);" class="display-block-important" data-value="0x65D5a4fc19DBb1d5da873bc5a7fe1b03F46eda5B">Swiss Dentaprime (V - 0x65D5a4fc19DBb1d5da873bc5a7fe1b03F46eda5B)</a></li><li><a href="javascript:void(0);" class="display-block-important" data-value="0x90336e8F76c720B449eE64976aF98696CabA36FB">Swiss Dentaprime (N - 0x90336e8F76c720B449eE64976aF98696CabA36FB)</a></li>';
+                    clinics_select_html += '<li><a href="javascript:void(0);" class="display-block-important" data-value="0x65D5a4fc19DBb1d5da873bc5a7fe1b03F46eda5B">Swiss Dentaprime - V <span>(0x65D5a4fc19DBb1d5da873bc5a7fe1b03F46eda5B)</span></a></li><li><a href="javascript:void(0);" class="display-block-important" data-value="0x90336e8F76c720B449eE64976aF98696CabA36FB">Swiss Dentaprime - N <span>(0x90336e8F76c720B449eE64976aF98696CabA36FB)</span></a></li>';
 
                     $('.clinics-list').append(clinics_select_html);
                     sortList('clinics-list');
@@ -81972,6 +81971,14 @@ bindGoogleAlikeButtonsEvents();
 function initAccountChecker()  {
     // variable to track if the wallet is loaded as mobile application
     is_hybrid = $('#main-container').attr('hybrid') == 'true';
+    if (is_hybrid) {
+        // opening the external links in app browser
+        $(document).on('click', '.data-external-link', function() {
+            event.preventDefault();
+            cordova.InAppBrowser.open($(this).attr('href'), '_blank', 'location=yes,zoom=no,toolbarposition=top,closebuttoncaption=Back');
+        });
+    }
+
     checkIfLoadingFromMobileBrowser();
 
     if(window.localStorage.getItem('current_account') == null && typeof(web3) === 'undefined') {
@@ -82964,27 +82971,35 @@ $(document).on('click', '.open-settings', function() {
 
     //encrypting private key with user password and return keystore file
     $('.settings-popup .generate-keystore').click(function() {
+        var this_row = $(this).closest('.option-row');
+        var this_camping_row = this_row.find('.camping-for-action');
+
         $('.settings-popup .camping-for-action').html('');
         $('.settings-popup .error-handle').remove();
-        $(this).closest('.option-row').find('.camping-for-action').html('<div class="padding-top-20"><div class="custom-google-label-style margin-bottom-15 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-private-key">Private key:</label><input type="text" id="generate-keystore-private-key" class="full-rounded"/></div></div><div><div class="custom-google-label-style margin-bottom-15 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-password">Password:</label><input type="password" id="generate-keystore-password" class="full-rounded"/></div></div><div><div class="custom-google-label-style margin-bottom-15 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-repeat-password">Repeat Password:</label><input type="password" id="generate-keystore-repeat-password" class="full-rounded"/></div></div><div class="text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 generate-keystore-keystore-action">GENERATE BACKUP FILE</a></div>');
+        this_camping_row.html('<div class="padding-top-20"><div class="custom-google-label-style margin-bottom-15 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-private-key">Private key:</label><input type="text" id="generate-keystore-private-key" class="full-rounded"/></div></div><div><div class="custom-google-label-style margin-bottom-15 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-password">Password:</label><input type="password" id="generate-keystore-password" class="full-rounded"/></div></div><div><div class="custom-google-label-style margin-bottom-15 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-repeat-password">Repeat Password:</label><input type="password" id="generate-keystore-repeat-password" class="full-rounded"/></div></div><div class="text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 generate-keystore-keystore-action">GENERATE BACKUP FILE</a></div>');
 
         $('#generate-keystore-private-key').focus();
         $('label[for="generate-keystore-private-key"]').addClass('active-label');
 
         $('.generate-keystore-keystore-action').click(function() {
+            this_row.find('.error-handle').remove();
+
             var generate_error = false;
             if($('#generate-keystore-private-key').val().trim() == '') {
                 generate_error = true;
-                basic.showAlert('Please enter valid private key.', '', true);
+                $('<div class="error-handle">Please enter valid private key.</div>').insertAfter(this_camping_row);
             } else if($('#generate-keystore-password').val().trim() == '' || $('#generate-keystore-repeat-password').val().trim() == '') {
                 generate_error = true;
-                basic.showAlert('Please enter both passwords.', '', true);
+                $('<div class="error-handle">Please enter both passwords.</div>').insertAfter(this_camping_row);
             } else if($('#generate-keystore-password').val().trim().length < 8 || $('#generate-keystore-password').val().trim().length > 30)  {
                 generate_error = true;
-                basic.showAlert('The password must be with minimum length of 8 characters and maximum 30.', '', true);
+                $('<div class="error-handle">The password must be with minimum length of 8 characters and maximum 30.</div>').insertAfter(this_camping_row);
             } else if($('#generate-keystore-password').val().trim() != $('#generate-keystore-repeat-password').val().trim())  {
                 generate_error = true;
-                basic.showAlert('Please make sure you entered same password in both fields.', '', true);
+                $('<div class="error-handle">Please make sure you entered same password in both fields.</div>').insertAfter(this_camping_row);
+            } else if($('#generate-keystore-password').val().trim() != 64)  {
+                generate_error = true;
+                $('<div class="error-handle">Wrong private key length.</div>').insertAfter(this_camping_row);
             }
 
             if(!generate_error) {
@@ -83018,7 +83033,7 @@ $(document).on('click', '.open-settings', function() {
                             }
                         } else if(!generating_response) {
                             hideLoader();
-                            basic.showAlert('Wrong secret private key.', '', true);
+                            $('<div class="error-handle">Wrong secret private key.</div>').insertAfter(this_camping_row);
                         }
                     });
                 }, 2000);
@@ -83268,7 +83283,7 @@ router();
 
 //Method that check if the device is mobile app and if the project is hybrid and then overwrite all _blank targets to _system. _blank is not working in iOS in WebView
 function updateExternalURLsForiOSDevice() {
-    if($('.data-external-link').length && is_hybrid) {
+    /*if($('.data-external-link').length && is_hybrid) {
         for(var i = 0, len = $('.data-external-link').length; i < len; i+=1) {
             if(!$('.data-external-link').eq(i).hasClass('passed')) {
                 $('.data-external-link').eq(i).addClass('passed');
@@ -83282,7 +83297,7 @@ function updateExternalURLsForiOSDevice() {
                 $('.data-external-link').eq(i).attr('href', '#');
             }
         }
-    }
+    }*/
 }
 
 //fetching all get parameters from the URL into object

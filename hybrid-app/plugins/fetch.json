@@ -63,16 +63,6 @@
     "is_top_level": true,
     "variables": {}
   },
-  "cordova-plugin-x-socialsharing": {
-    "source": {
-      "type": "registry",
-      "id": "https://github.com/EddyVerbruggen/SocialSharing-PhoneGap-Plugin.git"
-    },
-    "is_top_level": true,
-    "variables": {
-      "ANDROID_SUPPORT_V4_VERSION": "24.1.1+"
-    }
-  },
   "es6-promise-plugin": {
     "source": {
       "type": "registry",
