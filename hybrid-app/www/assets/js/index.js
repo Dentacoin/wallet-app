@@ -2538,6 +2538,8 @@ $(document).on('click', '.open-settings', function() {
                                         hybridAppFileDownload(keystore_file_name, window.localStorage.getItem('keystore_file'), function() {
                                             basic.closeDialog();
                                             basic.showAlert('File ' + keystore_file_name + ' has been downloaded to the top-level directory of your device file system.', '', true);
+
+                                            $('#download-keystore-password').val('');
                                             hideLoader();
                                         }, cordova.file.externalRootDirectory, true);
                                     }, 500);
@@ -2573,24 +2575,26 @@ $(document).on('click', '.open-settings', function() {
                                             });
                                         });*/
                                     }
-                                    
+
                                     hideLoader();
                                     window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
+                                    $('#download-keystore-password').val('');
                                 }
                             } else {
                                 hideLoader();
-                                if(basic.getMobileOperatingSystem() == 'iOS' && basic.isMobile()) {
-                                    basic.showAlert('Backup File has been opened in new tab of your browser. Please make sure to share/ copy and keep it in a safe place. Only you are responsible for it!', '', true);
+                                basic.closeDialog();
 
-                                    //mobile safari
-                                    downloadFile(buildKeystoreFileName(global_state.account), window.localStorage.getItem('keystore_file'));
+                                if(basic.getMobileOperatingSystem() == 'iOS' && basic.isMobile()) {
+                                    // mobile ios device
+                                    basic.showAlert('Backup File has been opened in new tab of your browser. Please make sure to share/ copy and keep it in a safe place. Only you are responsible for it!', '', true);
                                 } else {
-                                    //BROWSER
-                                    basic.closeDialog();
+                                    // BROWSER
                                     basic.showAlert('File ' + buildKeystoreFileName(global_state.account) + ' has been downloaded to the top-level directory of your device file system.', '', true);
 
-                                    downloadFile(buildKeystoreFileName(global_state.account), window.localStorage.getItem('keystore_file'));
+
                                 }
+                                downloadFile(buildKeystoreFileName(global_state.account), window.localStorage.getItem('keystore_file'));
+                                $('#download-keystore-password').val('');
                             }
                         } else if (error) {
                             hideLoader();
