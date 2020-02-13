@@ -80155,21 +80155,18 @@ function importKeystoreFile(keystore, password, callback) {
 
 function decryptKeystore(keystore, password, callback) {
     keythereum.recover(password, JSON.parse(keystore), function(private_key) {
-        try {
-            callback(private_key, private_key.toString('hex'));
-        } catch (e) {
+        if (private_key instanceof Error) {
             callback(null, null, true, 'Wrong secret password.');
+        } else {
+            callback(private_key, private_key.toString('hex'));
         }
     });
 }
 
 function validatePrivateKey(private_key) {
-    console.log(private_key, 'validatePrivateKey');
     try {
         const public_key = EthCrypto.publicKeyByPrivateKey(private_key);
         const address = EthCrypto.publicKey.toAddress(public_key);
-        console.log(public_key, 'public_key');
-        console.log(address, 'address');
 
         return {
             success: {
@@ -80246,6 +80243,12 @@ window.addEventListener('load', function() {
 
 document.addEventListener('deviceready', function() {
     console.log('================= deviceready ===================');
+
+    console.log(window);
+    console.log(window.plugins);
+    console.log(cordova);
+
+    window.open = cordova.InAppBrowser.open;
 
     //=================================== internet connection check ONLY for MOBILE DEVICES ===================================
 
@@ -81024,7 +81027,7 @@ var pages_data = {
                         }
                     }
 
-                    clinics_select_html += '<li><a href="javascript:void(0);" class="display-block-important" data-value="0x65D5a4fc19DBb1d5da873bc5a7fe1b03F46eda5B">Swiss Dentaprime (V - 0x65D5a4fc19DBb1d5da873bc5a7fe1b03F46eda5B)</a></li><li><a href="javascript:void(0);" class="display-block-important" data-value="0x90336e8F76c720B449eE64976aF98696CabA36FB">Swiss Dentaprime (N - 0x90336e8F76c720B449eE64976aF98696CabA36FB)</a></li>';
+                    clinics_select_html += '<li><a href="javascript:void(0);" class="display-block-important" data-value="0x65D5a4fc19DBb1d5da873bc5a7fe1b03F46eda5B">Swiss Dentaprime - V <span>(0x65D5a4fc19DBb1d5da873bc5a7fe1b03F46eda5B)</span></a></li><li><a href="javascript:void(0);" class="display-block-important" data-value="0x90336e8F76c720B449eE64976aF98696CabA36FB">Swiss Dentaprime - N <span>(0x90336e8F76c720B449eE64976aF98696CabA36FB)</span></a></li>';
 
                     $('.clinics-list').append(clinics_select_html);
                     sortList('clinics-list');
@@ -81572,7 +81575,7 @@ function styleKeystoreUploadBtnForTx(function_abi, token_symbol, crypto_val, sen
             });
 
             function proceedWithTransactionFiringAfterHavingTheKeystoreFile(keystore_string) {
-                if(basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && checksumAddress('0x' + JSON.parse(keystore_string).address) == checksumAddress(global_state.account)) {
+                if(basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && checksumAddress(JSON.parse(keystore_string).address) == checksumAddress(global_state.account)) {
                     $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="fs-14 light-gray-color text-center padding-bottom-10 padding-top-15 file-name">' + fileEntry.name + '</div><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">Secret password:</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"/></div></div><div class="col-xs-12"><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-tx-sign" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-tx-sign"><span class="padding-left-5 padding-right-5 inline-block">Remember backup file</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block tx-sign-more-info-keystore-remember fs-0" data-content="Remembering your backup file allows for easier and faster transactions. It is stored only in local device storage and nobody else has access to it."><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div></div><div class="btn-container col-xs-12 padding-top-25"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">Confirm</a></div>');
 
                     $('.tx-sign-more-info-keystore-remember').popover({
@@ -81619,7 +81622,7 @@ function styleKeystoreUploadBtnForTx(function_abi, token_symbol, crypto_val, sen
                     var uploaded_file = this.files[0];
                     var reader = new FileReader();
                     reader.addEventListener('load', function (e) {
-                        if (basic.isJsonString(e.target.result) && basic.property_exists(JSON.parse(e.target.result), 'address') && checksumAddress(('0x' + JSON.parse(e.target.result).address)) == checksumAddress(global_state.account)) {
+                        if (basic.isJsonString(e.target.result) && basic.property_exists(JSON.parse(e.target.result), 'address') && checksumAddress(JSON.parse(e.target.result).address) == checksumAddress(global_state.account)) {
                             var keystore_string = e.target.result;
                             $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="fs-14 light-gray-color text-center padding-bottom-10 padding-top-15 file-name">'+fileName+'</div><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">Secret password:</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"/></div></div><div class="col-xs-12"><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-tx-sign" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-tx-sign"><span class="padding-left-5 padding-right-5 inline-block">Remember backup file</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block tx-sign-more-info-keystore-remember fs-0" data-content="Remembering your backup file allows for easier and faster transactions. It is stored only in local device storage and nobody else has access to it."><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div></div><div class="btn-container col-xs-12 padding-top-25"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">CONFIRM</a></div>');
 
@@ -81891,6 +81894,10 @@ function toWei(eth_amount) {
 
 //converting address to checksum
 function checksumAddress(address)    {
+    if(address.length == 40) {
+        address = '0x' + address;
+    }
+
     return dApp.web3_1_0.utils.toChecksumAddress(address);
 }
 
@@ -81947,11 +81954,11 @@ function bindGoogleAlikeButtonsEvents() {
     $('body').on('click', '.custom-google-label-style label', function() {
         $(this).addClass('active-label');
         if($('.custom-google-label-style').attr('data-input-light-blue-border') == 'true') {
-            $(this).parent().find('input').addClass('light-blue-border');
+            $(this).parent().find('input, textarea').addClass('light-blue-border');
         }
     });
 
-    $('body').on('keyup change focusout', '.custom-google-label-style input', function() {
+    $('body').on('keyup change focusout', '.custom-google-label-style input, .custom-google-label-style textarea', function() {
         var value = $(this).val().trim();
         if (value.length) {
             $(this).closest('.custom-google-label-style').find('label').addClass('active-label');
@@ -81972,6 +81979,14 @@ bindGoogleAlikeButtonsEvents();
 function initAccountChecker()  {
     // variable to track if the wallet is loaded as mobile application
     is_hybrid = $('#main-container').attr('hybrid') == 'true';
+    if (is_hybrid) {
+        // opening the external links in app browser
+        $(document).on('click', '.data-external-link', function() {
+            event.preventDefault();
+            cordova.InAppBrowser.open($(this).attr('href'), '_blank', 'location=yes,zoom=no,toolbarposition=top,closebuttoncaption=Back');
+        });
+    }
+
     checkIfLoadingFromMobileBrowser();
 
     if(window.localStorage.getItem('current_account') == null && typeof(web3) === 'undefined') {
@@ -82104,12 +82119,12 @@ function initAccountChecker()  {
 
                 setTimeout(function() {
                     generateKeystoreFile($('.custom-auth-popup .keystore-file-pass').val().trim(), function(public_key, keystore) {
-                        var keystore_file_name = buildKeystoreFileName('0x' + keystore.address);
+                        var keystore_file_name = buildKeystoreFileName(keystore.address);
 
                         //save the public key to assurance
                         var internet = navigator.onLine;
                         if(internet) {
-                            savePublicKeyToAssurance('0x' + keystore.address, public_key);
+                            savePublicKeyToAssurance(keystore.address, public_key);
                         }
 
                         setTimeout(function() {
@@ -82127,7 +82142,11 @@ function initAccountChecker()  {
                                 } else if(basic.getMobileOperatingSystem() == 'iOS') {
                                     //saving keystore file to App folder
                                     hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function() {
-                                        window.localStorage.setItem('current_account', '0x' + keystore.address);
+                                        var localStorageAddress = keystore.address;
+                                        if(localStorageAddress.length == 40) {
+                                            localStorageAddress = '0x' + localStorageAddress;
+                                        }
+                                        window.localStorage.setItem('current_account', localStorageAddress);
 
                                         //if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
                                             window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
@@ -82149,7 +82168,12 @@ function initAccountChecker()  {
                                         //if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
                                             window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
                                         //}
-                                        window.localStorage.setItem('current_account', '0x' + keystore.address);
+
+                                        var localStorageAddress = keystore.address;
+                                        if(localStorageAddress.length == 40) {
+                                            localStorageAddress = '0x' + localStorageAddress;
+                                        }
+                                        window.localStorage.setItem('current_account', localStorageAddress);
 
                                         fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
                                         refreshApp();
@@ -82165,18 +82189,23 @@ function initAccountChecker()  {
 
                         function loginIntoWallet() {
                             //if($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
-                                window.localStorage.setItem('current_account', '0x' + keystore.address);
-                                window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
-                                basic.showAlert('File ' + keystore_file_name + ' has been stored to the Downloads folder of your device and remembered for faster transactions.', '', true);
+                            var localStorageAddress = keystore.address;
+                            if(localStorageAddress.length == 40) {
+                                localStorageAddress = '0x' + localStorageAddress;
+                            }
 
-                                setTimeout(function() {
-                                    fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
-                                    if(is_hybrid) {
-                                        refreshApp();
-                                    } else {
-                                        window.location.reload();
-                                    }
-                                }, 6000);
+                            window.localStorage.setItem('current_account', localStorageAddress);
+                            window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
+                            basic.showAlert('File ' + keystore_file_name + ' has been stored to the Downloads folder of your device and remembered for faster transactions.', '', true);
+
+                            setTimeout(function() {
+                                fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
+                                if(is_hybrid) {
+                                    refreshApp();
+                                } else {
+                                    window.location.reload();
+                                }
+                            }, 6000);
                             /*} else {
                                 window.localStorage.setItem('current_account', '0x' + keystore.address);
                                 basic.showAlert('File ' + keystore_file_name + ' has been stored to the Downloads folder of your device.', '', true);
@@ -82237,7 +82266,7 @@ function styleKeystoreUploadBtn()    {
                                     savePublicKeyToAssurance(address, public_key);
                                 }
 
-                                var keystore_file_name = buildKeystoreFileName('0x' + address);
+                                var keystore_file_name = buildKeystoreFileName(address);
 
                                 setTimeout(function() {
                                     //saving keystore file to App folder
@@ -82247,13 +82276,18 @@ function styleKeystoreUploadBtn()    {
                                                 fileWriter.onwriteend = function (e) {
                                                     fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
 
+                                                    var localStorageAddress = address;
+                                                    if(localStorageAddress.length == 40) {
+                                                        localStorageAddress = '0x' + localStorageAddress;
+                                                    }
+
                                                     if ($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
                                                         window.localStorage.setItem('keystore_file', keystore_string);
-                                                        window.localStorage.setItem('current_account', '0x' + address);
+                                                        window.localStorage.setItem('current_account', localStorageAddress);
 
                                                         refreshApp();
                                                     } else {
-                                                        window.localStorage.setItem('current_account', '0x' + address);
+                                                        window.localStorage.setItem('current_account', localStorageAddress);
                                                         refreshApp();
                                                         //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog: "Wait,Loading App", loadUrlTimeoutValue: 60000});
                                                     }
@@ -82381,12 +82415,17 @@ function styleKeystoreUploadBtn()    {
                                                 setTimeout(function() {
                                                     fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
 
+                                                    var localStorageAddress = address;
+                                                    if(localStorageAddress.length == 40) {
+                                                        localStorageAddress = '0x' + localStorageAddress;
+                                                    }
+
                                                     if($('.custom-auth-popup .popup-right .popup-body #agree-to-cache-import').is(':checked')) {
-                                                        window.localStorage.setItem('current_account', '0x' + address);
+                                                        window.localStorage.setItem('current_account', localStorageAddress);
                                                         window.localStorage.setItem('keystore_file', JSON.stringify(success));
                                                         window.location.reload();
                                                     } else {
-                                                        window.localStorage.setItem('current_account', '0x' + address);
+                                                        window.localStorage.setItem('current_account', localStorageAddress);
                                                         window.location.reload();
                                                     }
                                                 }, 500);
@@ -82480,6 +82519,9 @@ function hideLoader() {
 }
 
 function buildKeystoreFileName(address) {
+    if(address.length == 40) {
+        address = '0x' + address;
+    }
     return 'Dentacoin secret key - ' + checksumAddress(address);
 }
 
@@ -82502,7 +82544,7 @@ $(document).on('click', '.open-settings', function() {
     basic.closeDialog();
     var settings_html = '<div class="text-center fs-0 color-white lato-bold popup-header"><a href="javascript:void(0)" class="custom-close-bootbox inline-block margin-right-5"><svg class="width-100" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 62 52.3" style="enable-background:new 0 0 62 52.3;" xml:space="preserve"><style type="text/css">.st1{fill:#FFFFFF;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="52.3" width="62" x="19" y="48.9"/></sfw></metadata><path class="st1" d="M62,26.2c0-2.2-1.8-4-4-4H14.2L30.4,7c1.7-1.4,1.8-4,0.4-5.6c-1.4-1.7-4-1.8-5.6-0.4C25.1,1,25,1.1,25,1.2 L1.3,23.2c-1.6,1.5-1.7,4-0.2,5.7C1.1,29,1.2,29,1.3,29.1L25,51.2c1.6,1.5,4.1,1.4,5.7-0.2c1.5-1.6,1.4-4.1-0.2-5.7L14.2,30.2H58 C60.2,30.2,62,28.4,62,26.2z"/></svg></a><span class="inline-block text-center fs-28 fs-xs-16">DENTACOIN WALLET SETTINGS</span></div><div class="popup-body">';
 
-    if(window.localStorage.getItem('keystore_file') != null || (is_hybrid && basic.getMobileOperatingSystem() == 'iOS' && window.localStorage.getItem('keystore_file_ios_saved') == null)) {
+    if(window.localStorage.getItem('keystore_file') != null/* || (is_hybrid && basic.getMobileOperatingSystem() == 'iOS' && window.localStorage.getItem('keystore_file_ios_saved') == null)*/) {
         var download_btn_label = 'Download';
         var warning_html = '';
         if(is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
@@ -82514,7 +82556,7 @@ $(document).on('click', '.open-settings', function() {
 
         //if cached keystore file show the option for downloading it
         settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important download-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M14.4,10.4v3.2c0,0.1,0,0.2-0.1,0.3c0,0.1-0.1,0.2-0.2,0.3c-0.1,0.1-0.2,0.1-0.3,0.2c-0.1,0-0.2,0.1-0.3,0.1 H2.4c-0.1,0-0.2,0-0.3-0.1c-0.1,0-0.2-0.1-0.3-0.2S1.7,14,1.7,13.9c0-0.1-0.1-0.2-0.1-0.3v-3.2c0-0.4-0.4-0.8-0.8-0.8S0,10,0,10.4 v3.2c0,0.3,0.1,0.6,0.2,0.9c0.1,0.3,0.3,0.6,0.5,0.8c0.2,0.2,0.5,0.4,0.8,0.5C1.8,15.9,2.1,16,2.4,16h11.2c0.3,0,0.6-0.1,0.9-0.2 c0.3-0.1,0.6-0.3,0.8-0.5c0.2-0.2,0.4-0.5,0.5-0.8c0.1-0.3,0.2-0.6,0.2-0.9v-3.2c0-0.4-0.4-0.8-0.8-0.8S14.4,10,14.4,10.4z M8.8,8.5 V0.8C8.8,0.4,8.4,0,8,0C7.6,0,7.2,0.4,7.2,0.8v7.7L4.6,5.8c-0.3-0.3-0.8-0.3-1.1,0C3.1,6.1,3.1,6.7,3.4,7l4,4c0,0,0,0,0,0 c0.1,0.1,0.2,0.1,0.3,0.2c0.1,0,0.2,0.1,0.3,0.1c0,0,0,0,0,0c0.1,0,0.2,0,0.3-0.1c0.1,0,0.2-0.1,0.3-0.2l4-4c0.3-0.3,0.3-0.8,0-1.1 s-0.8-0.3-1.1,0L8.8,8.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold">'+download_btn_label+' Backup File</span></a><div class="fs-14 option-description">It\'s very important to make a Backup, in order to protect your funds even if you lose your phone.</div><div class="camping-for-action"></div>'+warning_html+'</div>';
-    } else if((window.localStorage.getItem('keystore_file') == null)) {
+    } else if(window.localStorage.getItem('keystore_file') == null) {
         //if not cached keystore file show the option for caching it
         settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important remember-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M14,0H2C0.9,0,0,0.9,0,2v12c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V2C16,0.9,15.1,0,14,0z M15,14c0,0.6-0.4,1-1,1 H2c-0.6,0-1-0.4-1-1v-3h14V14z M15,10H1V6h14V10z M1,5V2c0-0.6,0.4-1,1-1h12c0.6,0,1,0.4,1,1v3H1z M14,3.5C14,3.8,13.8,4,13.5,4h-1 C12.2,4,12,3.8,12,3.5v-1C12,2.2,12.2,2,12.5,2h1C13.8,2,14,2.2,14,2.5V3.5z M14,8.5C14,8.8,13.8,9,13.5,9h-1C12.2,9,12,8.8,12,8.5 v-1C12,7.2,12.2,7,12.5,7h1C13.8,7,14,7.2,14,7.5V8.5z M14,13.5c0,0.3-0.2,0.5-0.5,0.5h-1c-0.3,0-0.5-0.2-0.5-0.5v-1 c0-0.3,0.2-0.5,0.5-0.5h1c0.3,0,0.5,0.2,0.5,0.5V13.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold">Remember Backup File</span></a><div class="fs-14 option-description">By doing so, you will not be asked to upload it every time you want to access your wallet.</div><div class="camping-for-action"></div></div>';
 
@@ -82549,7 +82591,7 @@ $(document).on('click', '.open-settings', function() {
                                 reader.onloadend = function () {
                                     var keystore_string = this.result;
 
-                                    if(basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && checksumAddress('0x' + JSON.parse(keystore_string).address) == checksumAddress(global_state.account)) {
+                                    if(basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && checksumAddress(JSON.parse(keystore_string).address) == checksumAddress(global_state.account)) {
                                         validateKeystoreFileAndPasswordForCachingKeystoreFile(this_camping_row, keystore_string, this_row);
                                     } else {
                                         $('<div class="error-handle">Please upload valid keystore file which is related to your Dentacoin Wallet address.</div>').insertAfter(this_camping_row);
@@ -82571,7 +82613,7 @@ $(document).on('click', '.open-settings', function() {
                         iOSFileUpload(function(keystore_string) {
                             initCustomInputFileAnimation(this_btn);
 
-                            if(basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && checksumAddress('0x' + JSON.parse(keystore_string).address) == checksumAddress(global_state.account)) {
+                            if(basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && checksumAddress(JSON.parse(keystore_string).address) == checksumAddress(global_state.account)) {
                                 validateKeystoreFileAndPasswordForCachingKeystoreFile(this_camping_row, keystore_string, this_row);
                             } else {
                                 $('<div class="error-handle">Please upload valid keystore file which is related to your Dentacoin Wallet address.</div>').insertAfter(this_camping_row);
@@ -82589,7 +82631,7 @@ $(document).on('click', '.open-settings', function() {
                         var reader = new FileReader();
 
                         reader.addEventListener('load', function (e) {
-                            if(basic.isJsonString(e.target.result) && basic.property_exists(JSON.parse(e.target.result), 'address') && checksumAddress('0x' + JSON.parse(e.target.result).address) == checksumAddress(global_state.account)) {
+                            if(basic.isJsonString(e.target.result) && basic.property_exists(JSON.parse(e.target.result), 'address') && checksumAddress(JSON.parse(e.target.result).address) == checksumAddress(global_state.account)) {
                                 var keystore_string = e.target.result;
                                 //init upload button animation
                                 initCustomInputFileAnimation(label);
@@ -82709,6 +82751,8 @@ $(document).on('click', '.open-settings', function() {
                                         hybridAppFileDownload(keystore_file_name, window.localStorage.getItem('keystore_file'), function() {
                                             basic.closeDialog();
                                             basic.showAlert('File ' + keystore_file_name + ' has been downloaded to the top-level directory of your device file system.', '', true);
+
+                                            $('#download-keystore-password').val('');
                                             hideLoader();
                                         }, cordova.file.externalRootDirectory, true);
                                     }, 500);
@@ -82717,7 +82761,9 @@ $(document).on('click', '.open-settings', function() {
                                     //window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
 
                                     if(window.localStorage.getItem('keystore_file_ios_saved') == null) {
-                                        var file_name = buildKeystoreFileName(global_state.account);
+                                        window.localStorage.setItem('keystore_file_ios_saved', true);
+                                        /*var file_name = buildKeystoreFileName(global_state.account);
+
                                         window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function(rootEntry) {
                                             rootEntry.getFile(file_name, {create: false}, function (fileEntry) {
                                                 fileEntry.file(function (file) {
@@ -82740,26 +82786,28 @@ $(document).on('click', '.open-settings', function() {
                                                 hideLoader();
                                                 $('<div class="error-handle">Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.</div>').insertAfter(this_camping_row);
                                             });
-                                        });
-                                    } else {
-                                        hideLoader();
-                                        window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
+                                        });*/
                                     }
+
+                                    hideLoader();
+                                    window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
+                                    $('#download-keystore-password').val('');
                                 }
                             } else {
                                 hideLoader();
-                                if(basic.getMobileOperatingSystem() == 'iOS' && basic.isMobile()) {
-                                    basic.showAlert('Backup File has been opened in new tab of your browser. Please make sure to share/ copy and keep it in a safe place. Only you are responsible for it!', '', true);
+                                basic.closeDialog();
 
-                                    //mobile safari
-                                    downloadFile(buildKeystoreFileName(global_state.account), window.localStorage.getItem('keystore_file'));
+                                if(basic.getMobileOperatingSystem() == 'iOS' && basic.isMobile()) {
+                                    // mobile ios device
+                                    basic.showAlert('Backup File has been opened in new tab of your browser. Please make sure to share/ copy and keep it in a safe place. Only you are responsible for it!', '', true);
                                 } else {
-                                    //BROWSER
-                                    basic.closeDialog();
+                                    // BROWSER
                                     basic.showAlert('File ' + buildKeystoreFileName(global_state.account) + ' has been downloaded to the top-level directory of your device file system.', '', true);
 
-                                    downloadFile(buildKeystoreFileName(global_state.account), window.localStorage.getItem('keystore_file'));
+
                                 }
+                                downloadFile(buildKeystoreFileName(global_state.account), window.localStorage.getItem('keystore_file'));
+                                $('#download-keystore-password').val('');
                             }
                         } else if (error) {
                             hideLoader();
@@ -82905,7 +82953,7 @@ $(document).on('click', '.open-settings', function() {
                                 reader.onloadend = function () {
                                     var keystore_string = this.result;
 
-                                    if(basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && checksumAddress('0x' + JSON.parse(keystore_string).address) == checksumAddress(global_state.account)) {
+                                    if(basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && checksumAddress(JSON.parse(keystore_string).address) == checksumAddress(global_state.account)) {
                                         decryptKeystoreFileAndShowPrivateKey(this_camping_row, keystore_string, this_row);
                                     } else {
                                         $('<div class="error-handle">Please upload valid keystore file which is related to your Dentacoin Wallet address.</div>').insertAfter(this_camping_row);
@@ -82926,7 +82974,7 @@ $(document).on('click', '.open-settings', function() {
                         iOSFileUpload(function(keystore_string) {
                             initCustomInputFileAnimation(this_btn);
 
-                            if(basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && checksumAddress('0x' + JSON.parse(keystore_string).address) == checksumAddress(global_state.account)) {
+                            if(basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && checksumAddress(JSON.parse(keystore_string).address) == checksumAddress(global_state.account)) {
                                 decryptKeystoreFileAndShowPrivateKey(this_camping_row, keystore_string, this_row);
                             } else {
                                 $('<div class="error-handle">Please upload valid keystore file which is related to your Dentacoin Wallet address.</div>').insertAfter(this_camping_row);
@@ -82944,7 +82992,7 @@ $(document).on('click', '.open-settings', function() {
                         var reader = new FileReader();
 
                         reader.addEventListener('load', function (e) {
-                            if(basic.isJsonString(e.target.result) && basic.property_exists(JSON.parse(e.target.result), 'address') && checksumAddress('0x' + JSON.parse(e.target.result).address) == checksumAddress(global_state.account)) {
+                            if(basic.isJsonString(e.target.result) && basic.property_exists(JSON.parse(e.target.result), 'address') && checksumAddress(JSON.parse(e.target.result).address) == checksumAddress(global_state.account)) {
                                 var keystore_string = e.target.result;
                                 //init upload button animation
                                 initCustomInputFileAnimation(label);
@@ -82964,27 +83012,35 @@ $(document).on('click', '.open-settings', function() {
 
     //encrypting private key with user password and return keystore file
     $('.settings-popup .generate-keystore').click(function() {
+        var this_row = $(this).closest('.option-row');
+        var this_camping_row = this_row.find('.camping-for-action');
+
         $('.settings-popup .camping-for-action').html('');
         $('.settings-popup .error-handle').remove();
-        $(this).closest('.option-row').find('.camping-for-action').html('<div class="padding-top-20"><div class="custom-google-label-style margin-bottom-15 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-private-key">Private key:</label><input type="text" id="generate-keystore-private-key" class="full-rounded"/></div></div><div><div class="custom-google-label-style margin-bottom-15 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-password">Password:</label><input type="password" id="generate-keystore-password" class="full-rounded"/></div></div><div><div class="custom-google-label-style margin-bottom-15 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-repeat-password">Repeat Password:</label><input type="password" id="generate-keystore-repeat-password" class="full-rounded"/></div></div><div class="text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 generate-keystore-keystore-action">GENERATE BACKUP FILE</a></div>');
+        this_camping_row.html('<div class="padding-top-20"><div class="custom-google-label-style margin-bottom-15 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-private-key">Private key:</label><input type="text" id="generate-keystore-private-key" class="full-rounded"/></div></div><div><div class="custom-google-label-style margin-bottom-15 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-password">Password:</label><input type="password" id="generate-keystore-password" class="full-rounded"/></div></div><div><div class="custom-google-label-style margin-bottom-15 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-repeat-password">Repeat Password:</label><input type="password" id="generate-keystore-repeat-password" class="full-rounded"/></div></div><div class="text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 generate-keystore-keystore-action">GENERATE BACKUP FILE</a></div>');
 
         $('#generate-keystore-private-key').focus();
         $('label[for="generate-keystore-private-key"]').addClass('active-label');
 
         $('.generate-keystore-keystore-action').click(function() {
+            this_row.find('.error-handle').remove();
+
             var generate_error = false;
             if($('#generate-keystore-private-key').val().trim() == '') {
                 generate_error = true;
-                basic.showAlert('Please enter valid private key.', '', true);
+                $('<div class="error-handle">Please enter valid private key.</div>').insertAfter(this_camping_row);
             } else if($('#generate-keystore-password').val().trim() == '' || $('#generate-keystore-repeat-password').val().trim() == '') {
                 generate_error = true;
-                basic.showAlert('Please enter both passwords.', '', true);
+                $('<div class="error-handle">Please enter both passwords.</div>').insertAfter(this_camping_row);
             } else if($('#generate-keystore-password').val().trim().length < 8 || $('#generate-keystore-password').val().trim().length > 30)  {
                 generate_error = true;
-                basic.showAlert('The password must be with minimum length of 8 characters and maximum 30.', '', true);
+                $('<div class="error-handle">The password must be with minimum length of 8 characters and maximum 30.</div>').insertAfter(this_camping_row);
             } else if($('#generate-keystore-password').val().trim() != $('#generate-keystore-repeat-password').val().trim())  {
                 generate_error = true;
-                basic.showAlert('Please make sure you entered same password in both fields.', '', true);
+                $('<div class="error-handle">Please make sure you entered same password in both fields.</div>').insertAfter(this_camping_row);
+            } else if($('#generate-keystore-password').val().trim() != 64)  {
+                generate_error = true;
+                $('<div class="error-handle">Wrong private key length.</div>').insertAfter(this_camping_row);
             }
 
             if(!generate_error) {
@@ -83018,7 +83074,7 @@ $(document).on('click', '.open-settings', function() {
                             }
                         } else if(!generating_response) {
                             hideLoader();
-                            basic.showAlert('Wrong secret private key.', '', true);
+                            $('<div class="error-handle">Wrong secret private key.</div>').insertAfter(this_camping_row);
                         }
                     });
                 }, 2000);
@@ -83268,7 +83324,7 @@ router();
 
 //Method that check if the device is mobile app and if the project is hybrid and then overwrite all _blank targets to _system. _blank is not working in iOS in WebView
 function updateExternalURLsForiOSDevice() {
-    if($('.data-external-link').length && is_hybrid) {
+    /*if($('.data-external-link').length && is_hybrid) {
         for(var i = 0, len = $('.data-external-link').length; i < len; i+=1) {
             if(!$('.data-external-link').eq(i).hasClass('passed')) {
                 $('.data-external-link').eq(i).addClass('passed');
@@ -83282,7 +83338,7 @@ function updateExternalURLsForiOSDevice() {
                 $('.data-external-link').eq(i).attr('href', '#');
             }
         }
-    }
+    }*/
 }
 
 //fetching all get parameters from the URL into object
@@ -83302,6 +83358,10 @@ function transformToAssocArray( prmstr ) {
 }
 
 function savePublicKeyToAssurance(address, key) {
+    if(address.length == 40) {
+        address = '0x' + address;
+    }
+
     $.ajax({
         type: 'POST',
         url: 'https://assurance.dentacoin.com/save-public-key',

@@ -48,21 +48,18 @@ function importKeystoreFile(keystore, password, callback) {
 
 function decryptKeystore(keystore, password, callback) {
     keythereum.recover(password, JSON.parse(keystore), function(private_key) {
-        try {
-            callback(private_key, private_key.toString('hex'));
-        } catch (e) {
+        if (private_key instanceof Error) {
             callback(null, null, true, 'Wrong secret password.');
+        } else {
+            callback(private_key, private_key.toString('hex'));
         }
     });
 }
 
 function validatePrivateKey(private_key) {
-    console.log(private_key, 'validatePrivateKey');
     try {
         const public_key = EthCrypto.publicKeyByPrivateKey(private_key);
         const address = EthCrypto.publicKey.toAddress(public_key);
-        console.log(public_key, 'public_key');
-        console.log(address, 'address');
 
         return {
             success: {

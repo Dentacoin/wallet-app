@@ -11,6 +11,11 @@ app-send-page {
             vertical-align: middle;
             font-size: 16px;
             position: relative;
+            #search-label {
+                span {
+                    display: none;
+                }
+            }
             #search {
                 border-right: 0;
                 @include rounded(4px 0 0 4px);
