@@ -80328,10 +80328,16 @@ var dApp = {
         //init web3
         if(window.ethereum) {
             $(document).ready(async function() {
+                // sometimes for some reason window.ethereum comes as object with undefined properties, after refreshing its working as it should
+                if(window.ethereum.chainId == undefined || window.ethereum.networkVersion == undefined) {
+                    window.location.reload();
+                }
+
                 //METAMASK INSTALLED
                 if(ethereum.selectedAddress == undefined || ethereum.selectedAddress == null) {
                     //if metamask is installed, but user not logged show login popup
                     basic.showDialog('<div class="popup-body"><div class="title">Sign in to MetaMask</div><div class="subtitle">Open up your browser\'s MetaMask extention and give approval if asked for it.</div><div class="separator"></div><figure class="gif"><img src="assets/images/metamask-animation.gif" alt="Login MetaMask animation"/> </figure></div>', 'login-metamask-desktop');
+
                     await ethereum.enable();
 
                     proceedWithMetaMaskWalletConnection();
