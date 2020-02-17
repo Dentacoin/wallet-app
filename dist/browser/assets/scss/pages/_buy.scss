@@ -1,0 +1,10 @@
+app-buy-page {
+    #privacy-policy-agree, .privacy-policy-agree-label {
+        vertical-align: middle;
+    }
+    @include breakpoint($xs) {
+        .main-wrapper {
+            @include rounded(0);
+        }
+    }
+}
