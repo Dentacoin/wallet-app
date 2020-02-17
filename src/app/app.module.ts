@@ -11,7 +11,7 @@ import { AppComponent } from './app.component';
         routingComponents
     ],
     imports: [
-        BrowserModule,
+        BrowserModule.withServerTransition({ appId: 'serverApp' }),
         AppRoutingModule
     ],
     providers: [],
