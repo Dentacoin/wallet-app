@@ -114,6 +114,7 @@ var dApp = {
 
         //init web3
         if(window.ethereum) {
+            console.log(1);
             $(document).ready(async function() {
                 // sometimes for some reason window.ethereum comes as object with undefined properties, after refreshing its working as it should
                 if(window.ethereum.chainId == undefined || window.ethereum.networkVersion == undefined) {
@@ -156,6 +157,7 @@ var dApp = {
                 }
             });
         } else if(typeof(web3) !== 'undefined') {
+            console.log(2);
             //METAMASK INSTALLED
             if(web3.eth.defaultAccount != null && web3.eth.defaultAccount != undefined && web3.eth.defaultAccount != '') {
                 global_state.account = web3.eth.defaultAccount;
@@ -166,6 +168,7 @@ var dApp = {
                 continueWithContractInstanceInit();
             }
         } else {
+            console.log(3);
             //NO METAMASK INSTALLED
             if(window.localStorage.getItem('current_account') != null && typeof(web3) === 'undefined') {
                 global_state.account = window.localStorage.getItem('current_account');
@@ -176,17 +179,17 @@ var dApp = {
         }
 
         function continueWithContractInstanceInit() {
-            if(typeof(global_state.account) != 'undefined' && typeof(web3) == 'undefined') {
-                if(!$('.logo-and-settings-row .open-settings-col').length) {
-                    $('.logo-and-settings-row').append('<div class="col-xs-6 inline-block open-settings-col"><figure itemscope="" itemtype="http://schema.org/Organization" class="text-right"><a href="javascript:void(0)" itemprop="url" class="open-settings"><img src="assets/images/settings-icon.svg" class="max-width-30" itemprop="logo" alt="Settings icon"/></a></figure></div>');
-                }
-            } else {
+            if((typeof(global_state.account) == 'undefined' || !innerAddressCheck(global_state.account)) && typeof(web3) != 'undefined') {
                 $('.logo-and-settings-row .open-settings-col').remove();
             }
 
             //init contract
-            if(typeof(global_state.account) != 'undefined') {
+            if(typeof(global_state.account) != 'undefined' && innerAddressCheck(global_state.account)) {
                 $.getJSON('assets/jsons/DentacoinToken.json', function (DCNArtifact) {
+                    if(typeof(web3) == 'undefined' && $('.logo-and-settings-row .open-settings-col').length == 0 && $('.logo-and-settings-row').length > 0) {
+                        $('.logo-and-settings-row').append('<div class="col-xs-6 inline-block open-settings-col"><figure itemscope="" itemtype="http://schema.org/Organization" class="text-right"><a href="javascript:void(0)" itemprop="url" class="open-settings"><img src="assets/images/settings-icon.svg" class="max-width-30" itemprop="logo" alt="Settings icon"/></a></figure></div>');
+                    }
+
                     // get the contract artifact file and use it to instantiate a truffle contract abstraction
                     getInstance = getContractInstance(dApp.web3_1_0);
                     DCNContract = getInstance(DCNArtifact, dApp.contract_address);
