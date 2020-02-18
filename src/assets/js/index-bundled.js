@@ -80392,12 +80392,7 @@ var dApp = {
         }
 
         function continueWithContractInstanceInit() {
-            console.log(global_state.account, 'global_state.account');
-            console.log(typeof(global_state.account), 'typeof(global_state.account)');
-            console.log(typeof(web3), 'typeof(web3)');
-            console.log(typeof(global_state.account) != 'undefined' && typeof(web3) == 'undefined', 'typeof(global_state.account) != \'undefined\' && typeof(web3) == \'undefined\'');
             if((typeof(global_state.account) == 'undefined' || !innerAddressCheck(global_state.account)) && typeof(web3) != 'undefined') {
-                console.log('remove()');
                 $('.logo-and-settings-row .open-settings-col').remove();
             }
 
@@ -80405,9 +80400,7 @@ var dApp = {
             if(typeof(global_state.account) != 'undefined' && innerAddressCheck(global_state.account)) {
                 $.getJSON('assets/jsons/DentacoinToken.json', function (DCNArtifact) {
                     if(typeof(web3) == 'undefined' && $('.logo-and-settings-row .open-settings-col').length == 0 && $('.logo-and-settings-row').length > 0) {
-                        console.log($('.logo-and-settings-row').length, '$(\'.logo-and-settings-row\')');
                         $('.logo-and-settings-row').append('<div class="col-xs-6 inline-block open-settings-col"><figure itemscope="" itemtype="http://schema.org/Organization" class="text-right"><a href="javascript:void(0)" itemprop="url" class="open-settings"><img src="assets/images/settings-icon.svg" class="max-width-30" itemprop="logo" alt="Settings icon"/></a></figure></div>');
-                        console.log('appended');
                     }
 
                     // get the contract artifact file and use it to instantiate a truffle contract abstraction
