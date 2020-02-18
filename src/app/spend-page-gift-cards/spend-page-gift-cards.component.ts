@@ -14,9 +14,11 @@ export class SpendPageGiftCardsComponent implements AfterViewInit {
       this.titleService.setTitle('Buy giftcards with Dentacoin | Dentacoin Wallet DApp');
       this.meta.updateTag({name: 'description', content: 'From coffee to clothes, books and hotel bookings, you can purchase online gift cards for various major brands with Dentacoin (DCN).'});
       this.meta.updateTag({name: 'keywords', content: 'spend dentacoin online, gift cards dentacoin, bidali gift cards, online gift cards'});
-      this.meta.updateTag({name: 'og:title', content: 'Buy giftcards online with Dentacoin'});
-      this.meta.updateTag({name: 'og:description', content: 'From coffee to clothes, books and hotel bookings, you can purchase online gift cards for various major brands with Dentacoin (DCN).'});
-      this.meta.updateTag({name: 'og:image', content: 'https://wallet.dentacoin.com/assets/images/gift-cards-dentacoin-wallet.png'});
+      this.meta.updateTag({property: 'og:title', content: 'Buy giftcards online with Dentacoin'});
+      this.meta.updateTag({property: 'og:description', content: 'From coffee to clothes, books and hotel bookings, you can purchase online gift cards for various major brands with Dentacoin (DCN).'});
+      this.meta.updateTag({property: 'og:image', content: 'https://wallet.dentacoin.com/assets/images/gift-cards-dentacoin-wallet.png'});
+      this.meta.updateTag({property: 'og:image:width', content: '1200'});
+      this.meta.updateTag({property: 'og:image:height', content: '630'});
   }
 
   ngAfterViewInit() {

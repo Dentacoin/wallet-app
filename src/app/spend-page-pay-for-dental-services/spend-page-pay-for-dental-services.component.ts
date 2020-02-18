@@ -14,9 +14,12 @@ export class SpendPagePayForDentalServicesComponent implements AfterViewInit {
         this.titleService.setTitle('Pay for dental services in Dentacoin | Dentacoin Wallet DApp');
         this.meta.updateTag({name: 'description', content: 'Cover your dental treatment in Dentacoin tokens at all partner dentists, accepting DCN. Pay directly with ease via Dentacoin Wallet DApp.'});
         this.meta.updateTag({name: 'keywords', content: 'dentacoin accepted, dental currency, dental payment, spend dentacoin, pay with dentacoin'});
-        this.meta.updateTag({name: 'og:title', content: 'Pay for dental services with Dentacoin'});
-        this.meta.updateTag({name: 'og:description', content: 'Cover your dental treatment in Dentacoin tokens at all partner dentists and clinics, accepting DCN. Handle payments with ease via Dentacoin Wallet DApp.'});
-        this.meta.updateTag({name: 'og:image', content: 'https://wallet.dentacoin.com/assets/images/dentist-pay-with-dentacoin.png'}); }
+        this.meta.updateTag({property: 'og:title', content: 'Pay for dental services with Dentacoin'});
+        this.meta.updateTag({property: 'og:description', content: 'Cover your dental treatment in Dentacoin tokens at all partner dentists and clinics, accepting DCN. Handle payments with ease via Dentacoin Wallet DApp.'});
+        this.meta.updateTag({property: 'og:image', content: 'https://wallet.dentacoin.com/assets/images/dentist-pay-with-dentacoin.png'});
+        this.meta.updateTag({property: 'og:image:width', content: '1200'});
+        this.meta.updateTag({property: 'og:image:height', content: '630'});
+    }
 
     ngAfterViewInit() {
         //initdApp();

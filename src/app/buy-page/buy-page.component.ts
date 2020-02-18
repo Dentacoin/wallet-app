@@ -13,9 +13,11 @@ export class BuyPageComponent implements AfterViewInit {
         this.titleService.setTitle('Buy Dentacoin (DCN) via Dentacoin Wallet App');
         this.meta.updateTag({name: 'description', content: 'Dentacoin Wallet App allows users to easily and securely buy Dentacoin (DCN) with USD, Ether (ETH), Bitcoin (BTC) and 100+ other cryptocurrencies.'});
         this.meta.updateTag({name: 'keywords', content: 'buy dentacoin, how to buy dentacoin, buy dentacoin with usd'});
-        this.meta.updateTag({name: 'og:title', content: 'Buy Dentacoin (DCN) via Dentacoin Wallet App'});
-        this.meta.updateTag({name: 'og:description', content: 'Dentacoin Wallet App allows users to easily and securely buy Dentacoin (DCN) with USD, Ether (ETH), Bitcoin (BTC) and 100+ other cryptocurrencies.'});
-        this.meta.updateTag({name: 'og:image', content: 'https://wallet.dentacoin.com/assets/images/buy-dentacoin-wallet-app.png'});
+        this.meta.updateTag({property: 'og:title', content: 'Buy Dentacoin (DCN) via Dentacoin Wallet App'});
+        this.meta.updateTag({property: 'og:description', content: 'Dentacoin Wallet App allows users to easily and securely buy Dentacoin (DCN) with USD, Ether (ETH), Bitcoin (BTC) and 100+ other cryptocurrencies.'});
+        this.meta.updateTag({property: 'og:image', content: 'https://wallet.dentacoin.com/assets/images/buy-dentacoin-wallet-app.png'});
+        this.meta.updateTag({property: 'og:image:width', content: '1200'});
+        this.meta.updateTag({property: 'og:image:height', content: '630'});
     }
 
     ngAfterViewInit() {
