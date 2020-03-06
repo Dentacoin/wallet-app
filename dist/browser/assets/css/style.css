@@ -4275,19 +4275,19 @@ img {
       font-weight: 500; }
     .bootbox.mobile-dentacoin-address-and-qr .modal-body .mobile-copy-address {
       display: block; }
-  .bootbox.popup-scan-qr-code .video-container {
-    max-width: 500px;
-    margin: 0 auto;
-    padding-top: 30px;
-    padding-bottom: 30px; }
-    .bootbox.popup-scan-qr-code .video-container video {
-      width: 100%; }
-    @media screen and (max-width: 767px) {
-      .bootbox.popup-scan-qr-code .video-container {
-        max-width: 350px; } }
-    @media screen and (max-width: 450px) {
-      .bootbox.popup-scan-qr-code .video-container {
-        max-width: 260px; } }
+  .bootbox.popup-scan-qr-code .modal-dialog {
+    width: 95%;
+    max-width: 900px; }
+    .bootbox.popup-scan-qr-code .modal-dialog .video-container {
+      max-width: 700px;
+      margin: 0 auto;
+      padding-top: 30px;
+      padding-bottom: 30px; }
+      .bootbox.popup-scan-qr-code .modal-dialog .video-container video {
+        width: 100%; }
+      @media screen and (max-width: 767px) {
+        .bootbox.popup-scan-qr-code .modal-dialog .video-container {
+          max-width: 400px; } }
   .bootbox.transaction-confirmation-popup .modal-dialog {
     width: 95%;
     max-width: 800px; }

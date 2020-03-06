@@ -81545,6 +81545,79 @@ var pages_data = {
                 hideLoader();
             }
         });
+    },
+    spend_page_assurance_fees: function() {
+        initScan($('.open-transaction-scanner'), null, function(content) {
+            console.log(content, 'content');
+            console.log(JSON.parse(content), 'JSON.parse(content)');
+
+            /*var transaction_popup_html = '<div class="title">Send confirmation</div><div class="pictogram-and-dcn-usd-price"><svg version="1.1" class="width-100 max-width-100 margin-bottom-10" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><style type="text/css">.st0-recipe{fill:#FFFFFF;}.st1-recipe{fill:#CA675A;}.st2-recipe{fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="100" width="105.7" x="-7.2" y="-6.4"></sliceSourceBounds></sfw></metadata><circle class="st0-recipe" cx="50" cy="50" r="50"/><g><g><g><path class="st1-recipe" d="M50.1,93.7c-18.7,0-36-12.4-41.3-31.3C2.4,39.6,15.8,16,38.5,9.6C48.9,6.7,60,7.8,69.6,12.8c1.2,0.6,1.6,2,1,3.2s-2,1.6-3.2,1c-8.6-4.4-18.4-5.4-27.7-2.8c-20.1,5.6-32,26.7-26.3,46.9s26.7,32.1,46.9,26.4s32.1-26.7,26.4-46.9c-1.1-3.9-2.8-7.6-5-10.9c-0.7-1.1-0.4-2.6,0.7-3.3c1.1-0.7,2.6-0.4,3.3,0.7c2.5,3.8,4.4,7.9,5.6,12.3c6.4,22.8-7,46.5-29.7,52.8C57.8,93.2,53.9,93.7,50.1,93.7z"/></g><g><path class="st1-recipe" d="M33.1,78.6c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.4l40.4-50.5c0.8-1,2.3-1.2,3.4-0.4c1,0.8,1.2,2.3,0.4,3.4L35,77.7C34.5,78.3,33.8,78.6,33.1,78.6z"/></g><g><g><path class="st2-recipe" d="M105.7,56.9"/></g></g></g><g><path class="st1-recipe" d="M73.7,54.2c-0.1,0-0.2,0-0.2,0c-1.3-0.2-2.3-1.4-2.2-2.7L74,23.9L47.6,39.8c-1.1,0.7-2.6,0.3-3.3-0.8c-0.7-1.1-0.3-2.6,0.8-3.3l34.5-20.8L76.1,52C76,53.2,74.9,54.2,73.7,54.2z"/></g></g></svg><div class="dcn-amount">-'+crypto_val+' '+token_symbol+'</div><div class="usd-amount">=$'+usd_val+'</div></div><div class="confirm-row to"> <div class="label inline-block">To:</div><div class="value inline-block">'+sending_to_address+'</div></div><div class="confirm-row from"> <div class="label inline-block">From:</div><div class="value inline-block">'+global_state.account+'</div></div><div class="confirm-row free"> <div class="label inline-block">Ether fee:</div><div class="value inline-block">'+parseFloat(eth_fee).toFixed(8)+'</div></div>';
+
+            if(window.localStorage.getItem('keystore_file') != null) {
+                //cached keystore path on mobile device or cached keystore file on browser
+                transaction_popup_html+='<div class="container-fluid"><div class="row padding-top-25 cached-keystore-file"><div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">Secret password:</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">Confirm</a></div></div></div>';
+                basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
+
+                $('.cached-keystore-file .confirm-transaction.keystore-file').click(function() {
+                    if($('.cached-keystore-file #your-secret-key-password').val().trim() == '') {
+                        basic.showAlert('Please enter valid secret file password.', '', true);
+                    } else {
+                        showLoader('Hold on...<br>Your transaction is being processed.');
+
+                        setTimeout(function () {
+                            decryptKeystore(window.localStorage.getItem('keystore_file'), $('.cached-keystore-file #your-secret-key-password').val().trim(), function(success, to_string, error, error_message) {
+                                if(success) {
+                                    submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, success);
+                                } else if(error) {
+                                    basic.showAlert(error_message, '', true);
+                                    hideLoader();
+                                }
+                            });
+                        }, 2000);
+                    }
+                });
+            } else {
+                //nothing is cached
+                transaction_popup_html+='<div class="container-fluid proof-of-address padding-top-20 padding-bottom-20"> <div class="row fs-0"> <div class="col-xs-12 col-sm-5 inline-block padding-left-30 padding-left-xs-15"> <a href="javascript:void(0)" class="light-blue-white-btn text-center enter-private-key display-block-important fs-18 line-height-18"><span>Enter your Private Key<div class="fs-16">(not recommended)</div></span></a> </div><div class="col-xs-12 col-sm-2 text-center calibri-bold fs-20 inline-block">or</div><div class="col-xs-12 col-sm-5 inline-block padding-right-30 padding-right-xs-15"> <div class="upload-file-container" data-id="upload-keystore-file" data-label="Upload your Backup file"> <input type="file" id="upload-keystore-file" class="custom-upload-keystore-file hide-input"/> <div class="btn-wrapper"></div></div></div></div><div class="row on-change-result"></div></div>';
+                basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
+
+                //init private key btn logic
+                $(document).on('click', '.enter-private-key', function() {
+                    $('.proof-of-address #upload-keystore-file').val('');
+                    $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-20"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-private-key">Your Private Key:</label><input type="text" id="your-private-key" maxlength="64" class="full-rounded"/></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction private-key">CONFIRM</a></div>');
+
+                    $('#your-private-key').focus();
+                    $('label[for="your-private-key"]').addClass('active-label');
+
+                    $('.confirm-transaction.private-key').click(function() {
+                        if($('.proof-of-address #your-private-key').val().trim() == '') {
+                            basic.showAlert('Please enter valid private key.', '', true);
+                        } else {
+                            showLoader('Hold on...<br>Your transaction is being processed.');
+
+                            setTimeout(function() {
+                                var validating_private_key = validatePrivateKey($('.proof-of-address #your-private-key').val().trim());
+                                if(validating_private_key.success) {
+                                    if(checksumAddress(validating_private_key.success.address) == checksumAddress(global_state.account)) {
+                                        submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, new Buffer($('.proof-of-address #your-private-key').val().trim(), 'hex'));
+                                    } else {
+                                        basic.showAlert('Please enter private key related to your Wallet Address', '', true);
+                                        hideLoader();
+                                    }
+                                } else if(validating_private_key.error) {
+                                    basic.showAlert(validating_private_key.message, '', true);
+                                    hideLoader();
+                                }
+                            }, 2000);
+                        }
+                    });
+                });
+
+                //init keystore btn logic
+                styleKeystoreUploadBtnForTx(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price);
+            }
+            hideLoader();*/
+        });
     }
 };
 
@@ -81873,6 +81946,21 @@ window.getSpendPageExchanges = function(){
         //called on page init
         $(document).ready(function() {
             pages_data.spend_page_exchanges();
+        });
+    }
+};
+
+window.getSpendPageAssuranceFees = function(){
+    if(!dApp.loaded) {
+        dApp.init();
+    }
+    if($.isReady) {
+        //called on route change
+        pages_data.spend_page_assurance_fees();
+    } else {
+        //called on page init
+        $(document).ready(function() {
+            pages_data.spend_page_assurance_fees();
         });
     }
 };
@@ -83305,6 +83393,7 @@ function router() {
         getSpendPageExchanges();
     } else if($('.main-holder app-spend-page-pay-assurance-fees').length) {
         current_route = 'pay-assurance-fees';
+        getSpendPageAssuranceFees();
         initdApp();
     }
 
@@ -83329,6 +83418,7 @@ function router() {
             getSpendPageExchanges();
         } else if($('.main-holder app-spend-page-pay-assurance-fees').length && current_route != 'pay-assurance-fees') {
             current_route = 'pay-assurance-fees';
+            getSpendPageAssuranceFees();
             initdApp();
         }
 
@@ -83447,7 +83537,7 @@ function buildEthereumHistoryTransaction(ethereum_data, value, to, from, timesta
         transaction_id_label += '<span class="pending-transaction">( Pending )</span>';
     }
 
-    return '<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+hash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+hash+'" target="_blank" class="lato-bold color-white data-external-link">'+transaction_id_label+'</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+eth_amount_symbol+value+' ETH</li><li>'+usd_amount+' USD</li></ul></td></tr>';
+    return '<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+hash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+hash+'" target="_blank" class="lato-bold color-white data-external-link">'+transaction_id_label+'</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+eth_amount_symbol+value.toFixed(8)+' ETH</li><li>'+usd_amount+' USD</li></ul></td></tr>';
 }
 
 //template to append dentacoin transactions while build the transactions history
@@ -83507,6 +83597,12 @@ function buildDentacoinHistoryTransaction(dentacoin_data, value, to, from, times
 }
 
 function initScan(clicker, valueHolder, callback) {
+    if(clicker === undefined) {
+        clicker = null;
+    }
+    if(valueHolder === undefined) {
+        valueHolder = null;
+    }
     if(callback === undefined) {
         callback = null;
     }
@@ -83515,9 +83611,11 @@ function initScan(clicker, valueHolder, callback) {
         if(is_hybrid) {
             cordova.plugins.barcodeScanner.scan(
                 function (result) {
-                    valueHolder.val(result.text).trigger('change');
+                    if(valueHolder != null) {
+                        valueHolder.val(result.text).trigger('change');
+                    }
                     if(callback != null) {
-                        callback();
+                        callback(result.text);
                     }
                 },
                 function (error) {
@@ -83544,12 +83642,14 @@ function initScan(clicker, valueHolder, callback) {
                 var cameras_global;
                 var scanner = new Instascan.Scanner({ video: document.getElementById('qr-preview') });
                 scanner.addListener('scan', function (content) {
-                    valueHolder.val(content).trigger('change');
-                    scanner.stop(cameras_global[0]);
+                    if(valueHolder != null) {
+                        valueHolder.val(content).trigger('change');
+                    }
                     if(callback != null) {
-                        callback();
+                        callback(content);
                     }
                     $('.popup-scan-qr-code').modal('hide');
+                    scanner.stop(cameras_global[0]);
                 });
 
                 Instascan.Camera.getCameras().then(function (cameras) {
