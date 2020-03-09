@@ -31,10 +31,6 @@ window.addEventListener('load', function() {
 document.addEventListener('deviceready', function() {
     console.log('================= deviceready ===================');
 
-    console.log(window);
-    console.log(window.plugins);
-    console.log(cordova);
-
     window.open = cordova.InAppBrowser.open;
 
     //=================================== internet connection check ONLY for MOBILE DEVICES ===================================
@@ -114,7 +110,6 @@ var dApp = {
 
         //init web3
         if(window.ethereum) {
-            console.log(1);
             $(document).ready(async function() {
                 // sometimes for some reason window.ethereum comes as object with undefined properties, after refreshing its working as it should
                 if(window.ethereum.chainId == undefined || window.ethereum.networkVersion == undefined) {
@@ -157,7 +152,6 @@ var dApp = {
                 }
             });
         } else if(typeof(web3) !== 'undefined') {
-            console.log(2);
             //METAMASK INSTALLED
             if(web3.eth.defaultAccount != null && web3.eth.defaultAccount != undefined && web3.eth.defaultAccount != '') {
                 global_state.account = web3.eth.defaultAccount;
@@ -168,7 +162,6 @@ var dApp = {
                 continueWithContractInstanceInit();
             }
         } else {
-            console.log(3);
             //NO METAMASK INSTALLED
             if(window.localStorage.getItem('current_account') != null && typeof(web3) === 'undefined') {
                 global_state.account = window.localStorage.getItem('current_account');
@@ -3293,7 +3286,7 @@ function buildEthereumHistoryTransaction(ethereum_data, value, to, from, timesta
         eth_amount_symbol = '-';
     }
 
-    var usd_amount = (ethereum_data.market_data.current_price.usd * value).toFixed(2);
+    var usd_amount = (ethereum_data.market_data.current_price.usd * parseFloat(value)).toFixed(2);
     var timestamp_javascript = timestamp * 1000;
     var date_obj = new Date(timestamp_javascript);
     var minutes;
@@ -3324,7 +3317,7 @@ function buildEthereumHistoryTransaction(ethereum_data, value, to, from, timesta
         transaction_id_label += '<span class="pending-transaction">( Pending )</span>';
     }
 
-    return '<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+hash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+hash+'" target="_blank" class="lato-bold color-white data-external-link">'+transaction_id_label+'</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+eth_amount_symbol+value.toFixed(8)+' ETH</li><li>'+usd_amount+' USD</li></ul></td></tr>';
+    return '<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+hash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+hash+'" target="_blank" class="lato-bold color-white data-external-link">'+transaction_id_label+'</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+eth_amount_symbol+parseFloat(value).toFixed(8)+' ETH</li><li>'+usd_amount+' USD</li></ul></td></tr>';
 }
 
 //template to append dentacoin transactions while build the transactions history
