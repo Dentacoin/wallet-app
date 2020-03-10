@@ -119287,10 +119287,6 @@ window.addEventListener('load', function() {
 document.addEventListener('deviceready', function() {
     console.log('================= deviceready ===================');
 
-    console.log(window);
-    console.log(window.plugins);
-    console.log(cordova);
-
     window.open = cordova.InAppBrowser.open;
 
     //=================================== internet connection check ONLY for MOBILE DEVICES ===================================
@@ -119371,10 +119367,16 @@ var dApp = {
         //init web3
         if(window.ethereum) {
             $(document).ready(async function() {
+                // sometimes for some reason window.ethereum comes as object with undefined properties, after refreshing its working as it should
+                if(window.ethereum.chainId == undefined || window.ethereum.networkVersion == undefined) {
+                    window.location.reload();
+                }
+
                 //METAMASK INSTALLED
                 if(ethereum.selectedAddress == undefined || ethereum.selectedAddress == null) {
                     //if metamask is installed, but user not logged show login popup
                     basic.showDialog('<div class="popup-body"><div class="title">Sign in to MetaMask</div><div class="subtitle">Open up your browser\'s MetaMask extention and give approval if asked for it.</div><div class="separator"></div><figure class="gif"><img src="assets/images/metamask-animation.gif" alt="Login MetaMask animation"/> </figure></div>', 'login-metamask-desktop');
+
                     await ethereum.enable();
 
                     proceedWithMetaMaskWalletConnection();
@@ -119426,17 +119428,17 @@ var dApp = {
         }
 
         function continueWithContractInstanceInit() {
-            if(typeof(global_state.account) != 'undefined' && typeof(web3) == 'undefined') {
-                if(!$('.logo-and-settings-row .open-settings-col').length) {
-                    $('.logo-and-settings-row').append('<div class="col-xs-6 inline-block open-settings-col"><figure itemscope="" itemtype="http://schema.org/Organization" class="text-right"><a href="javascript:void(0)" itemprop="url" class="open-settings"><img src="assets/images/settings-icon.svg" class="max-width-30" itemprop="logo" alt="Settings icon"/></a></figure></div>');
-                }
-            } else {
+            if((typeof(global_state.account) == 'undefined' || !innerAddressCheck(global_state.account)) && typeof(web3) != 'undefined') {
                 $('.logo-and-settings-row .open-settings-col').remove();
             }
 
             //init contract
-            if(typeof(global_state.account) != 'undefined') {
+            if(typeof(global_state.account) != 'undefined' && innerAddressCheck(global_state.account)) {
                 $.getJSON('assets/jsons/DentacoinToken.json', function (DCNArtifact) {
+                    if(typeof(web3) == 'undefined' && $('.logo-and-settings-row .open-settings-col').length == 0 && $('.logo-and-settings-row').length > 0) {
+                        $('.logo-and-settings-row').append('<div class="col-xs-6 inline-block open-settings-col"><figure itemscope="" itemtype="http://schema.org/Organization" class="text-right"><a href="javascript:void(0)" itemprop="url" class="open-settings"><img src="assets/images/settings-icon.svg" class="max-width-30" itemprop="logo" alt="Settings icon"/></a></figure></div>');
+                    }
+
                     // get the contract artifact file and use it to instantiate a truffle contract abstraction
                     getInstance = getContractInstance(dApp.web3_1_0);
                     DCNContract = getInstance(DCNArtifact, dApp.contract_address);
@@ -119491,156 +119493,145 @@ var dApp = {
                                     sortByKey(merged_events_arr, 'blockNumber');
                                     merged_events_arr = merged_events_arr.reverse();
 
-                                    $.ajax({
-                                        type: 'GET',
-                                        url: 'https://api.coingecko.com/api/v3/coins/ethereum',
-                                        dataType: 'json',
-                                        success: function(response) {
-                                            var ethereum_data = response;
+                                    getEthereumDataByCoingecko(function(ethereumResponse) {
+                                        var ethereum_data = ethereumResponse;
+                                        getDentacoinDataByExternalProvider(function(dentacoinResponse) {
+                                            var dentacoin_data = dentacoinResponse;
 
-                                            $.ajax({
-                                                type: 'GET',
-                                                url: 'https://api.coingecko.com/api/v3/coins/dentacoin',
-                                                dataType: 'json',
-                                                success: function(response) {
-                                                    var dentacoin_data = response;
+                                            $('.camping-transaction-history').html('<h2 class="lato-bold fs-25 text-center white-crossed-label color-white"><span>Transaction history</span></h2><div class="transaction-history container"><div class="row"><div class="col-xs-12 no-gutter-xs col-md-10 col-md-offset-1 padding-top-20"><table class="color-white"><tbody></tbody></table></div></div><div class="row camping-show-more"></div></div>');
 
-                                                    $('.camping-transaction-history').html('<h2 class="lato-bold fs-25 text-center white-crossed-label color-white"><span>Transaction history</span></h2><div class="transaction-history container"><div class="row"><div class="col-xs-12 no-gutter-xs col-md-10 col-md-offset-1 padding-top-20"><table class="color-white"><tbody></tbody></table></div></div><div class="row camping-show-more"></div></div>');
+                                            $(document).on('click', '.camping-transaction-history .show-more', function() {
+                                                $(this).fadeOut();
+                                                $(this).attr('show-all-transactions', 'true');
+                                                $('.camping-transaction-history table tr').addClass('show-this');
+                                            });
 
-                                                    $(document).on('click', '.camping-transaction-history .show-more', function() {
-                                                        $(this).fadeOut();
-                                                        $(this).attr('show-all-transactions', 'true');
-                                                        $('.camping-transaction-history table tr').addClass('show-this');
-                                                    });
+                                            var transaction_history_html = '';
+                                            var array_with_already_shown_transactions = [];
 
-                                                    var transaction_history_html = '';
-                                                    var array_with_already_shown_transactions = [];
-
-                                                    //clearing the array with transactions from dupped ones
-                                                    for(var i = 0, len = merged_events_arr.length; i < len; i+=1) {
-                                                        if(basic.property_exists(merged_events_arr[i], 'hash')) {
-                                                            if(array_with_already_shown_transactions.includes(merged_events_arr[i].hash)) {
-                                                                merged_events_arr.splice(i, 1);
-                                                            } else {
-                                                                array_with_already_shown_transactions.push(merged_events_arr[i].hash);
-                                                            }
-                                                        } else if(basic.property_exists(merged_events_arr[i], 'transactionHash')) {
-                                                            if(array_with_already_shown_transactions.includes(merged_events_arr[i].transactionHash)) {
-                                                                merged_events_arr.splice(i, 1);
-                                                            } else {
-                                                                array_with_already_shown_transactions.push(merged_events_arr[i].transactionHash);
-                                                            }
-                                                        }
+                                            //clearing the array with transactions from dupped ones
+                                            for(var i = 0, len = merged_events_arr.length; i < len; i+=1) {
+                                                if(basic.property_exists(merged_events_arr[i], 'hash')) {
+                                                    if(array_with_already_shown_transactions.includes(merged_events_arr[i].hash)) {
+                                                        merged_events_arr.splice(i, 1);
+                                                    } else {
+                                                        array_with_already_shown_transactions.push(merged_events_arr[i].hash);
                                                     }
-
-                                                    //requesting blockchain for a lot of transactions data takes sometime and this is why first we select the latest 5 transactions for the logged user (which are shown on page load) and then we make a second query to select everything before these 5 latest transactions and show loader until they are ready to be shown
-                                                    var intervals_stopper = 5;
-                                                    if(merged_events_arr.length < 5) {
-                                                        intervals_stopper = merged_events_arr.length;
-                                                    }
-
-                                                    var stop_intervals = false;
-                                                    function recursiveLoop(custom_iterator) {
-                                                        if(custom_iterator < 5 && custom_iterator < intervals_stopper) {
-                                                            if(basic.property_exists(merged_events_arr[custom_iterator], 'type') && merged_events_arr[custom_iterator].type == 'eth_transaction') {
-                                                                //eth transaction
-                                                                transaction_history_html+=buildEthereumHistoryTransaction(ethereum_data, fromWei(merged_events_arr[custom_iterator].value, 'ether'), merged_events_arr[custom_iterator].to, merged_events_arr[custom_iterator].from, merged_events_arr[custom_iterator].timeStamp, merged_events_arr[custom_iterator].hash);
-
-                                                                if(custom_iterator < 5) {
-                                                                    custom_iterator+=1;
-                                                                    recursiveLoop(custom_iterator);
-                                                                } else {
-                                                                    stop_intervals = true;
-                                                                }
-                                                            } else {
-                                                                //dcn transaction
-                                                                dApp.helper.addBlockTimestampToTransaction(merged_events_arr[custom_iterator].blockNumber, custom_iterator);
-
-                                                                var request_interval = setInterval(function() {
-                                                                    if(!stop_intervals) {
-                                                                        if (temporally_timestamps[custom_iterator] != 0 && temporally_timestamps[custom_iterator] != undefined) {
-                                                                            clearInterval(request_interval);
-
-                                                                            transaction_history_html+=buildDentacoinHistoryTransaction(dentacoin_data, merged_events_arr[custom_iterator].returnValues._value, merged_events_arr[custom_iterator].returnValues._to, merged_events_arr[custom_iterator].returnValues._from, temporally_timestamps[custom_iterator], merged_events_arr[custom_iterator].transactionHash);
-
-                                                                            if(custom_iterator < 5) {
-                                                                                custom_iterator+=1;
-                                                                                recursiveLoop(custom_iterator);
-                                                                            } else {
-                                                                                stop_intervals = true;
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }, 300);
-                                                            }
-                                                        } else {
-                                                            stop_intervals = false;
-
-                                                            if(merged_events_arr.length > 5) {
-                                                                transaction_history_html+='<tr class="loading-tr"><td class="text-center" colspan="5"><figure class="inline-block rotate-animation"><img src="assets/images/exchange.png" alt="Exchange icon"/></figure></td></tr>';
-                                                                $('.camping-transaction-history .camping-show-more').html('<div class="col-xs-12 text-center padding-top-30"><a href="javascript:void(0)" class="white-light-blue-btn show-more">Show more</a></div>');
-                                                                recursiveLoopForRestOfHistory(5);
-                                                            }
-
-                                                            $('.camping-transaction-history table tbody').html(transaction_history_html);
-                                                            updateExternalURLsForiOSDevice();
-                                                        }
-                                                    }
-                                                    recursiveLoop(0);
-
-                                                    //requesting all transactions before the latest 5
-                                                    var next_transaction_history_html = '';
-                                                    function recursiveLoopForRestOfHistory(custom_iterator) {
-                                                        if(custom_iterator < merged_events_arr.length) {
-                                                            if(basic.property_exists(merged_events_arr[custom_iterator], 'type') && merged_events_arr[custom_iterator].type == 'eth_transaction') {
-                                                                //eth transaction
-                                                                next_transaction_history_html+=buildEthereumHistoryTransaction(ethereum_data, fromWei(merged_events_arr[custom_iterator].value, 'ether'), merged_events_arr[custom_iterator].to, merged_events_arr[custom_iterator].from, merged_events_arr[custom_iterator].timeStamp, merged_events_arr[custom_iterator].hash);
-
-                                                                if(custom_iterator < merged_events_arr.length) {
-                                                                    custom_iterator+=1;
-                                                                    recursiveLoopForRestOfHistory(custom_iterator);
-                                                                } else {
-                                                                    stop_intervals = true;
-                                                                }
-                                                            } else {
-                                                                //dcn transaction
-                                                                dApp.helper.addBlockTimestampToTransaction(merged_events_arr[custom_iterator].blockNumber, custom_iterator);
-
-                                                                request_interval_for_rest_of_transaction_history = setInterval(function() {
-                                                                    if(!stop_intervals) {
-                                                                        if (temporally_timestamps[custom_iterator] != 0 && temporally_timestamps[custom_iterator] != undefined) {
-                                                                            clearInterval(request_interval_for_rest_of_transaction_history);
-
-                                                                            next_transaction_history_html+=buildDentacoinHistoryTransaction(dentacoin_data, merged_events_arr[custom_iterator].returnValues._value, merged_events_arr[custom_iterator].returnValues._to, merged_events_arr[custom_iterator].returnValues._from, temporally_timestamps[custom_iterator], merged_events_arr[custom_iterator].transactionHash);
-
-                                                                            if(custom_iterator < merged_events_arr.length) {
-                                                                                custom_iterator+=1;
-                                                                                recursiveLoopForRestOfHistory(custom_iterator);
-                                                                            } else {
-                                                                                stop_intervals = true;
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }, 300);
-                                                            }
-                                                        } else {
-                                                            $('.camping-transaction-history table tbody tr.loading-tr').remove();
-                                                            $('.camping-transaction-history table tbody').append(next_transaction_history_html);
-                                                            updateExternalURLsForiOSDevice();
-
-                                                            if($('.camping-transaction-history .show-more').attr('show-all-transactions') == 'true') {
-                                                                $('.camping-transaction-history table tr').addClass('show-this');
-                                                            }
-
-                                                            //updating transaction history every 10 minutes, because the project is SPA and pages are not really refreshed on route change, routes are dynamicly loaded with AngularJS
-                                                            setTimeout(function() {
-                                                                dApp.buildTransactionHistory();
-                                                            }, 600000);
-                                                        }
+                                                } else if(basic.property_exists(merged_events_arr[i], 'transactionHash')) {
+                                                    if(array_with_already_shown_transactions.includes(merged_events_arr[i].transactionHash)) {
+                                                        merged_events_arr.splice(i, 1);
+                                                    } else {
+                                                        array_with_already_shown_transactions.push(merged_events_arr[i].transactionHash);
                                                     }
                                                 }
-                                            });
-                                        }
+                                            }
+
+                                            //requesting blockchain for a lot of transactions data takes sometime and this is why first we select the latest 5 transactions for the logged user (which are shown on page load) and then we make a second query to select everything before these 5 latest transactions and show loader until they are ready to be shown
+                                            var intervals_stopper = 5;
+                                            if(merged_events_arr.length < 5) {
+                                                intervals_stopper = merged_events_arr.length;
+                                            }
+
+                                            var stop_intervals = false;
+                                            function recursiveLoop(custom_iterator) {
+                                                if(custom_iterator < 5 && custom_iterator < intervals_stopper) {
+                                                    if(basic.property_exists(merged_events_arr[custom_iterator], 'type') && merged_events_arr[custom_iterator].type == 'eth_transaction') {
+                                                        //eth transaction
+                                                        transaction_history_html+=buildEthereumHistoryTransaction(ethereum_data, fromWei(merged_events_arr[custom_iterator].value, 'ether'), merged_events_arr[custom_iterator].to, merged_events_arr[custom_iterator].from, merged_events_arr[custom_iterator].timeStamp, merged_events_arr[custom_iterator].hash);
+
+                                                        if(custom_iterator < 5) {
+                                                            custom_iterator+=1;
+                                                            recursiveLoop(custom_iterator);
+                                                        } else {
+                                                            stop_intervals = true;
+                                                        }
+                                                    } else {
+                                                        //dcn transaction
+                                                        dApp.helper.addBlockTimestampToTransaction(merged_events_arr[custom_iterator].blockNumber, custom_iterator);
+
+                                                        var request_interval = setInterval(function() {
+                                                            if(!stop_intervals) {
+                                                                if (temporally_timestamps[custom_iterator] != 0 && temporally_timestamps[custom_iterator] != undefined) {
+                                                                    clearInterval(request_interval);
+
+                                                                    transaction_history_html+=buildDentacoinHistoryTransaction(dentacoin_data, merged_events_arr[custom_iterator].returnValues._value, merged_events_arr[custom_iterator].returnValues._to, merged_events_arr[custom_iterator].returnValues._from, temporally_timestamps[custom_iterator], merged_events_arr[custom_iterator].transactionHash);
+
+                                                                    if(custom_iterator < 5) {
+                                                                        custom_iterator+=1;
+                                                                        recursiveLoop(custom_iterator);
+                                                                    } else {
+                                                                        stop_intervals = true;
+                                                                    }
+                                                                }
+                                                            }
+                                                        }, 300);
+                                                    }
+                                                } else {
+                                                    stop_intervals = false;
+
+                                                    if(merged_events_arr.length > 5) {
+                                                        transaction_history_html+='<tr class="loading-tr"><td class="text-center" colspan="5"><figure class="inline-block rotate-animation"><img src="assets/images/exchange.png" alt="Exchange icon"/></figure></td></tr>';
+                                                        $('.camping-transaction-history .camping-show-more').html('<div class="col-xs-12 text-center padding-top-30"><a href="javascript:void(0)" class="white-light-blue-btn show-more">Show more</a></div>');
+                                                        recursiveLoopForRestOfHistory(5);
+                                                    }
+
+                                                    $('.camping-transaction-history table tbody').html(transaction_history_html);
+                                                    updateExternalURLsForiOSDevice();
+                                                }
+                                            }
+                                            recursiveLoop(0);
+
+                                            //requesting all transactions before the latest 5
+                                            var next_transaction_history_html = '';
+                                            function recursiveLoopForRestOfHistory(custom_iterator) {
+                                                if(custom_iterator < merged_events_arr.length) {
+                                                    if(basic.property_exists(merged_events_arr[custom_iterator], 'type') && merged_events_arr[custom_iterator].type == 'eth_transaction') {
+                                                        //eth transaction
+                                                        next_transaction_history_html+=buildEthereumHistoryTransaction(ethereum_data, fromWei(merged_events_arr[custom_iterator].value, 'ether'), merged_events_arr[custom_iterator].to, merged_events_arr[custom_iterator].from, merged_events_arr[custom_iterator].timeStamp, merged_events_arr[custom_iterator].hash);
+
+                                                        if(custom_iterator < merged_events_arr.length) {
+                                                            custom_iterator+=1;
+                                                            recursiveLoopForRestOfHistory(custom_iterator);
+                                                        } else {
+                                                            stop_intervals = true;
+                                                        }
+                                                    } else {
+                                                        //dcn transaction
+                                                        dApp.helper.addBlockTimestampToTransaction(merged_events_arr[custom_iterator].blockNumber, custom_iterator);
+
+                                                        request_interval_for_rest_of_transaction_history = setInterval(function() {
+                                                            if(!stop_intervals) {
+                                                                if (temporally_timestamps[custom_iterator] != 0 && temporally_timestamps[custom_iterator] != undefined) {
+                                                                    clearInterval(request_interval_for_rest_of_transaction_history);
+
+                                                                    next_transaction_history_html+=buildDentacoinHistoryTransaction(dentacoin_data, merged_events_arr[custom_iterator].returnValues._value, merged_events_arr[custom_iterator].returnValues._to, merged_events_arr[custom_iterator].returnValues._from, temporally_timestamps[custom_iterator], merged_events_arr[custom_iterator].transactionHash);
+
+                                                                    if(custom_iterator < merged_events_arr.length) {
+                                                                        custom_iterator+=1;
+                                                                        recursiveLoopForRestOfHistory(custom_iterator);
+                                                                    } else {
+                                                                        stop_intervals = true;
+                                                                    }
+                                                                }
+                                                            }
+                                                        }, 300);
+                                                    }
+                                                } else {
+                                                    $('.camping-transaction-history table tbody tr.loading-tr').remove();
+                                                    $('.camping-transaction-history table tbody').append(next_transaction_history_html);
+                                                    updateExternalURLsForiOSDevice();
+
+                                                    if($('.camping-transaction-history .show-more').attr('show-all-transactions') == 'true') {
+                                                        $('.camping-transaction-history table tr').addClass('show-this');
+                                                    }
+
+                                                    //updating transaction history every 10 minutes, because the project is SPA and pages are not really refreshed on route change, routes are dynamicly loaded with AngularJS
+                                                    setTimeout(function() {
+                                                        dApp.buildTransactionHistory();
+                                                    }, 600000);
+                                                }
+                                            }
+                                        });
                                     });
                                 } else {
                                     $('.camping-transaction-history').html('<h2 class="lato-bold fs-16 text-center color-white"><span>No transactions yet</span></h2>');
@@ -119771,10 +119762,11 @@ var pages_data = {
                     $('.main-wrapper .dcn-amount').html(dcn_balance);
 
                     //update usd amount (dentacoins in usd)
-                    getDentacoinDataByCoingecko(function(request_response) {
+                    getDentacoinDataByExternalProvider(function(request_response) {
                         var dentacoin_data = request_response;
 
-                        $('.usd-amount').html((dcn_balance * dentacoin_data.market_data.current_price.usd).toFixed(2));
+                        //$('.usd-amount').html((dcn_balance * dentacoin_data.market_data.current_price.usd).toFixed(2));
+                        $('.usd-amount').html((dcn_balance * prepareDcnPrice(dentacoin_data)).toFixed(2));
 
                         //update ether amount
                         dApp.web3_1_0.eth.getBalance(global_state.account, function(error, result) {
@@ -120038,13 +120030,15 @@ var pages_data = {
             }
 
             //search input validation for next button to become active
-            $('.search-field #search').on('change keyup change focusout', function() {
+            $('.search-field #search').on('change keyup focusout', function() {
                 var input_value = $(this).val().trim();
                 if(input_value != '') {
                     if(innerAddressCheck(input_value)) {
                         $('.next-send').removeClass('disabled');
                     } else {
                         $('.next-send').addClass('disabled');
+
+                        // scan QR from assurance
                     }
                 }
             });
@@ -120281,7 +120275,7 @@ var pages_data = {
                     var ethereum_data = request_response;
 
                     //getting dentacoin data by Coingecko
-                    getDentacoinDataByCoingecko(function(request_response) {
+                    getDentacoinDataByExternalProvider(function(request_response) {
                         // remove loader from send page when all external requests are made
                         hideLoader();
 
@@ -120301,10 +120295,12 @@ var pages_data = {
                                     $('.section-amount-to input#crypto-amount').closest('.custom-google-label-style').find('label').addClass('active-label');
 
                                     var to_fixed_num = 2;
-                                    if(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd) < 0.01) {
+                                    //if(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd) < 0.01) {
+                                    if(($('.section-amount-to input#crypto-amount').val().trim() * prepareDcnPrice(dentacoin_data)) < 0.01) {
                                         to_fixed_num = 4;
                                     }
-                                    $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
+                                    //$('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
+                                    $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * prepareDcnPrice(dentacoin_data)).toFixed(to_fixed_num)).trigger('change');
                                 });
                             } else {
                                 $('.spendable-amount').removeClass('active').html('');
@@ -120315,10 +120311,12 @@ var pages_data = {
                         $('.section-amount-to input#crypto-amount').on('input', function()  {
                             var to_fixed_num = 2;
                             if($('.section-amount-to #active-crypto').val() == 'dcn') {
-                                if(($(this).val().trim() * dentacoin_data.market_data.current_price.usd) < 0.01) {
+                                //if(($(this).val().trim() * dentacoin_data.market_data.current_price.usd) < 0.01) {
+                                if(($(this).val().trim() * prepareDcnPrice(dentacoin_data)) < 0.01) {
                                     to_fixed_num = 4;
                                 }
-                                $('.section-amount-to input#usd-val').val(($(this).val().trim() * dentacoin_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
+                                //$('.section-amount-to input#usd-val').val(($(this).val().trim() * dentacoin_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
+                                $('.section-amount-to input#usd-val').val(($(this).val().trim() * prepareDcnPrice(dentacoin_data)).toFixed(to_fixed_num)).trigger('change');
                             } else if($('.section-amount-to #active-crypto').val() == 'eth') {
                                 if(($(this).val().trim() * ethereum_data.market_data.current_price.usd) < 0.01) {
                                     to_fixed_num = 4;
@@ -120330,7 +120328,8 @@ var pages_data = {
                         //on input in usd input change dcn/ eth input
                         $('.section-amount-to input#usd-val').on('input', function()  {
                             if($('.section-amount-to #active-crypto').val() == 'dcn') {
-                                $('.section-amount-to input#crypto-amount').val(Math.floor($(this).val().trim() / dentacoin_data.market_data.current_price.usd)).trigger('change');
+                                //$('.section-amount-to input#crypto-amount').val(Math.floor($(this).val().trim() / dentacoin_data.market_data.current_price.usd)).trigger('change');
+                                $('.section-amount-to input#crypto-amount').val(Math.floor($(this).val().trim() / prepareDcnPrice(dentacoin_data))).trigger('change');
                             } else if($('.section-amount-to #active-crypto').val() == 'eth') {
                                 $('.section-amount-to input#crypto-amount').val($(this).val().trim() / ethereum_data.market_data.current_price.usd).trigger('change');
                             }
@@ -120340,10 +120339,12 @@ var pages_data = {
                         $('.section-amount-to #active-crypto').on('change', function() {
                             var to_fixed_num = 2;
                             if($(this).val() == 'dcn') {
-                                if(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd) < 0.01) {
+                                //if(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd) < 0.01) {
+                                if(($('.section-amount-to input#crypto-amount').val().trim() * prepareDcnPrice(dentacoin_data)) < 0.01) {
                                     to_fixed_num = 4;
                                 }
-                                $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
+                                //$('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
+                                $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * prepareDcnPrice(dentacoin_data)).toFixed(to_fixed_num)).trigger('change');
                             } else if($(this).val() == 'eth') {
                                 if(($('.section-amount-to input#crypto-amount').val().trim() * ethereum_data.market_data.current_price.usd) < 0.01) {
                                     to_fixed_num = 4;
@@ -120580,6 +120581,83 @@ var pages_data = {
                 hideLoader();
             }
         });
+    },
+    spend_page_assurance_fees: function() {
+        if(is_hybrid || basic.isMobile()) {
+            $('.camp-assurance-mobile-phone-scanning').html('<div class="text-center padding-bottom-30"><a href="javascript:void(0)" class="light-blue-white-btn no-hover open-transaction-scanner min-width-270 margin-right-10 margin-bottom-10 width-xs-100 max-width-400 margin-right-xs-0 padding-left-5 padding-right-5 fs-18 text-center">SCAN QR IN WALLET <figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block max-width-30 width-100 margin-left-5"><img src="assets/images/scan-qr-code-blue.svg" alt="Scan icon"/></figure></a></div>');
+            
+            initScan($('.open-transaction-scanner'), null, function(content) {
+                console.log(content, 'content');
+                console.log(JSON.parse(content), 'JSON.parse(content)');
+
+                /*var transaction_popup_html = '<div class="title">Send confirmation</div><div class="pictogram-and-dcn-usd-price"><svg version="1.1" class="width-100 max-width-100 margin-bottom-10" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><style type="text/css">.st0-recipe{fill:#FFFFFF;}.st1-recipe{fill:#CA675A;}.st2-recipe{fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="100" width="105.7" x="-7.2" y="-6.4"></sliceSourceBounds></sfw></metadata><circle class="st0-recipe" cx="50" cy="50" r="50"/><g><g><g><path class="st1-recipe" d="M50.1,93.7c-18.7,0-36-12.4-41.3-31.3C2.4,39.6,15.8,16,38.5,9.6C48.9,6.7,60,7.8,69.6,12.8c1.2,0.6,1.6,2,1,3.2s-2,1.6-3.2,1c-8.6-4.4-18.4-5.4-27.7-2.8c-20.1,5.6-32,26.7-26.3,46.9s26.7,32.1,46.9,26.4s32.1-26.7,26.4-46.9c-1.1-3.9-2.8-7.6-5-10.9c-0.7-1.1-0.4-2.6,0.7-3.3c1.1-0.7,2.6-0.4,3.3,0.7c2.5,3.8,4.4,7.9,5.6,12.3c6.4,22.8-7,46.5-29.7,52.8C57.8,93.2,53.9,93.7,50.1,93.7z"/></g><g><path class="st1-recipe" d="M33.1,78.6c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.4l40.4-50.5c0.8-1,2.3-1.2,3.4-0.4c1,0.8,1.2,2.3,0.4,3.4L35,77.7C34.5,78.3,33.8,78.6,33.1,78.6z"/></g><g><g><path class="st2-recipe" d="M105.7,56.9"/></g></g></g><g><path class="st1-recipe" d="M73.7,54.2c-0.1,0-0.2,0-0.2,0c-1.3-0.2-2.3-1.4-2.2-2.7L74,23.9L47.6,39.8c-1.1,0.7-2.6,0.3-3.3-0.8c-0.7-1.1-0.3-2.6,0.8-3.3l34.5-20.8L76.1,52C76,53.2,74.9,54.2,73.7,54.2z"/></g></g></svg><div class="dcn-amount">-'+crypto_val+' '+token_symbol+'</div><div class="usd-amount">=$'+usd_val+'</div></div><div class="confirm-row to"> <div class="label inline-block">To:</div><div class="value inline-block">'+sending_to_address+'</div></div><div class="confirm-row from"> <div class="label inline-block">From:</div><div class="value inline-block">'+global_state.account+'</div></div><div class="confirm-row free"> <div class="label inline-block">Ether fee:</div><div class="value inline-block">'+parseFloat(eth_fee).toFixed(8)+'</div></div>';
+
+                if(window.localStorage.getItem('keystore_file') != null) {
+                    //cached keystore path on mobile device or cached keystore file on browser
+                    transaction_popup_html+='<div class="container-fluid"><div class="row padding-top-25 cached-keystore-file"><div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">Secret password:</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">Confirm</a></div></div></div>';
+                    basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
+
+                    $('.cached-keystore-file .confirm-transaction.keystore-file').click(function() {
+                        if($('.cached-keystore-file #your-secret-key-password').val().trim() == '') {
+                            basic.showAlert('Please enter valid secret file password.', '', true);
+                        } else {
+                            showLoader('Hold on...<br>Your transaction is being processed.');
+
+                            setTimeout(function () {
+                                decryptKeystore(window.localStorage.getItem('keystore_file'), $('.cached-keystore-file #your-secret-key-password').val().trim(), function(success, to_string, error, error_message) {
+                                    if(success) {
+                                        submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, success);
+                                    } else if(error) {
+                                        basic.showAlert(error_message, '', true);
+                                        hideLoader();
+                                    }
+                                });
+                            }, 2000);
+                        }
+                    });
+                } else {
+                    //nothing is cached
+                    transaction_popup_html+='<div class="container-fluid proof-of-address padding-top-20 padding-bottom-20"> <div class="row fs-0"> <div class="col-xs-12 col-sm-5 inline-block padding-left-30 padding-left-xs-15"> <a href="javascript:void(0)" class="light-blue-white-btn text-center enter-private-key display-block-important fs-18 line-height-18"><span>Enter your Private Key<div class="fs-16">(not recommended)</div></span></a> </div><div class="col-xs-12 col-sm-2 text-center calibri-bold fs-20 inline-block">or</div><div class="col-xs-12 col-sm-5 inline-block padding-right-30 padding-right-xs-15"> <div class="upload-file-container" data-id="upload-keystore-file" data-label="Upload your Backup file"> <input type="file" id="upload-keystore-file" class="custom-upload-keystore-file hide-input"/> <div class="btn-wrapper"></div></div></div></div><div class="row on-change-result"></div></div>';
+                    basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
+
+                    //init private key btn logic
+                    $(document).on('click', '.enter-private-key', function() {
+                        $('.proof-of-address #upload-keystore-file').val('');
+                        $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-20"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-private-key">Your Private Key:</label><input type="text" id="your-private-key" maxlength="64" class="full-rounded"/></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction private-key">CONFIRM</a></div>');
+
+                        $('#your-private-key').focus();
+                        $('label[for="your-private-key"]').addClass('active-label');
+
+                        $('.confirm-transaction.private-key').click(function() {
+                            if($('.proof-of-address #your-private-key').val().trim() == '') {
+                                basic.showAlert('Please enter valid private key.', '', true);
+                            } else {
+                                showLoader('Hold on...<br>Your transaction is being processed.');
+
+                                setTimeout(function() {
+                                    var validating_private_key = validatePrivateKey($('.proof-of-address #your-private-key').val().trim());
+                                    if(validating_private_key.success) {
+                                        if(checksumAddress(validating_private_key.success.address) == checksumAddress(global_state.account)) {
+                                            submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, new Buffer($('.proof-of-address #your-private-key').val().trim(), 'hex'));
+                                        } else {
+                                            basic.showAlert('Please enter private key related to your Wallet Address', '', true);
+                                            hideLoader();
+                                        }
+                                    } else if(validating_private_key.error) {
+                                        basic.showAlert(validating_private_key.message, '', true);
+                                        hideLoader();
+                                    }
+                                }, 2000);
+                            }
+                        });
+                    });
+
+                    //init keystore btn logic
+                    styleKeystoreUploadBtnForTx(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price);
+                }
+                hideLoader();*/
+            });
+        }
     }
 };
 
@@ -120751,7 +120829,7 @@ function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver
             var pending_history_transaction;
 
             if(symbol == 'DCN') {
-                getDentacoinDataByCoingecko(function(request_response) {
+                getDentacoinDataByExternalProvider(function(request_response) {
                     pending_history_transaction += buildDentacoinHistoryTransaction(request_response, token_val, receiver, global_state.account, Math.round((new Date()).getTime() / 1000), transactionHash, true);
 
                     fireGoogleAnalyticsEvent('Pay', 'Next', 'DCN', token_val);
@@ -120908,6 +120986,21 @@ window.getSpendPageExchanges = function(){
         //called on page init
         $(document).ready(function() {
             pages_data.spend_page_exchanges();
+        });
+    }
+};
+
+window.getSpendPageAssuranceFees = function(){
+    if(!dApp.loaded) {
+        dApp.init();
+    }
+    if($.isReady) {
+        //called on route change
+        pages_data.spend_page_assurance_fees();
+    } else {
+        //called on page init
+        $(document).ready(function() {
+            pages_data.spend_page_assurance_fees();
         });
     }
 };
@@ -122271,15 +122364,27 @@ function getEthereumDataByCoingecko(callback) {
     });
 }
 
-function getDentacoinDataByCoingecko(callback) {
-    $.ajax({
+function getDentacoinDataByExternalProvider(callback) {
+    /*$.ajax({
         type: 'GET',
         url: 'https://api.coingecko.com/api/v3/coins/dentacoin',
         dataType: 'json',
         success: function(response) {
             callback(response);
         }
+    });*/
+    $.ajax({
+        type: 'GET',
+        url: 'https://indacoin.com/api/GetCoinConvertAmount/USD/DCN/100/dentacoin',
+        dataType: 'json',
+        success: function(response) {
+            callback(response);
+        }
     });
+}
+
+function prepareDcnPrice(price) {
+    return 1 / parseInt(parseInt(price) / 100);
 }
 
 function getCryptoDataByIndacoin(cryptocurrency_symbol, callback) {
@@ -122328,6 +122433,7 @@ function router() {
         getSpendPageExchanges();
     } else if($('.main-holder app-spend-page-pay-assurance-fees').length) {
         current_route = 'pay-assurance-fees';
+        getSpendPageAssuranceFees();
         initdApp();
     }
 
@@ -122352,6 +122458,7 @@ function router() {
             getSpendPageExchanges();
         } else if($('.main-holder app-spend-page-pay-assurance-fees').length && current_route != 'pay-assurance-fees') {
             current_route = 'pay-assurance-fees';
+            getSpendPageAssuranceFees();
             initdApp();
         }
 
@@ -122439,7 +122546,7 @@ function buildEthereumHistoryTransaction(ethereum_data, value, to, from, timesta
         eth_amount_symbol = '-';
     }
 
-    var usd_amount = (ethereum_data.market_data.current_price.usd * value).toFixed(2);
+    var usd_amount = (ethereum_data.market_data.current_price.usd * parseFloat(value)).toFixed(2);
     var timestamp_javascript = timestamp * 1000;
     var date_obj = new Date(timestamp_javascript);
     var minutes;
@@ -122470,7 +122577,7 @@ function buildEthereumHistoryTransaction(ethereum_data, value, to, from, timesta
         transaction_id_label += '<span class="pending-transaction">( Pending )</span>';
     }
 
-    return '<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+hash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+hash+'" target="_blank" class="lato-bold color-white data-external-link">'+transaction_id_label+'</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+eth_amount_symbol+value+' ETH</li><li>'+usd_amount+' USD</li></ul></td></tr>';
+    return '<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+hash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+hash+'" target="_blank" class="lato-bold color-white data-external-link">'+transaction_id_label+'</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+eth_amount_symbol+parseFloat(value).toFixed(8)+' ETH</li><li>'+usd_amount+' USD</li></ul></td></tr>';
 }
 
 //template to append dentacoin transactions while build the transactions history
@@ -122479,7 +122586,8 @@ function buildDentacoinHistoryTransaction(dentacoin_data, value, to, from, times
     var other_address = '';
     var class_name = '';
     var label = '';
-    var usd_amount = (parseInt(value) * dentacoin_data.market_data.current_price.usd).toFixed(2);
+    //var usd_amount = (parseInt(value) * dentacoin_data.market_data.current_price.usd).toFixed(2);
+    var usd_amount = (parseInt(value) * prepareDcnPrice(dentacoin_data)).toFixed(2);
     if(checksumAddress(to) == checksumAddress(global_state.account)) {
         //IF THE CURRENT ACCOUNT IS RECEIVER
         other_address = from;
@@ -122529,6 +122637,12 @@ function buildDentacoinHistoryTransaction(dentacoin_data, value, to, from, times
 }
 
 function initScan(clicker, valueHolder, callback) {
+    if(clicker === undefined) {
+        clicker = null;
+    }
+    if(valueHolder === undefined) {
+        valueHolder = null;
+    }
     if(callback === undefined) {
         callback = null;
     }
@@ -122537,9 +122651,11 @@ function initScan(clicker, valueHolder, callback) {
         if(is_hybrid) {
             cordova.plugins.barcodeScanner.scan(
                 function (result) {
-                    valueHolder.val(result.text).trigger('change');
+                    if(valueHolder != null) {
+                        valueHolder.val(result.text).trigger('change');
+                    }
                     if(callback != null) {
-                        callback();
+                        callback(result.text);
                     }
                 },
                 function (error) {
@@ -122556,7 +122672,6 @@ function initScan(clicker, valueHolder, callback) {
 
                     initQRCodePopupForSendingTransaction();
                 });
-                hideLoader();
             } else {
                 initQRCodePopupForSendingTransaction();
             }
@@ -122567,16 +122682,17 @@ function initScan(clicker, valueHolder, callback) {
                 var cameras_global;
                 var scanner = new Instascan.Scanner({ video: document.getElementById('qr-preview') });
                 scanner.addListener('scan', function (content) {
-                    valueHolder.val(content).trigger('change');
-                    scanner.stop(cameras_global[0]);
+                    if(valueHolder != null) {
+                        valueHolder.val(content).trigger('change');
+                    }
                     if(callback != null) {
-                        callback();
+                        callback(content);
                     }
                     $('.popup-scan-qr-code').modal('hide');
+                    scanner.stop(cameras_global[0]);
                 });
 
                 Instascan.Camera.getCameras().then(function (cameras) {
-                    console.log(cameras, 'cameras');
                     if (cameras.length > 0) {
                         cameras_global = cameras;
                         scanner.start(cameras[0]);

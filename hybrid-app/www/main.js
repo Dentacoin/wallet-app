@@ -107,7 +107,7 @@ module.exports = "<div class=\"main-wrapper\">\n    <figure itemscope=\"\" itemt
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"main-wrapper\">\n    <figure itemscope=\"\" itemtype=\"http://schema.org/ImageObject\" class=\"page-absolute-icon\">\n        <img alt=\"Buy icon\" itemprop=\"contentUrl\" src=\"assets/images/spend-icon.svg\"/>\n    </figure>\n    <div class=\"padding-bottom-50\">\n        <div class=\"container-fluid no-gutter\">\n            <div class=\"row spend-navigation module\">\n                <div class=\"col-xs-6\">\n                    <a (click)=\"toExchanges()\" class=\"fs-16 calibri-bold color-light-blue prev cursor-pointer\">TRADE ON EXCHANGES</a>\n                </div>\n                <div class=\"col-xs-6 text-right\">\n                    <a (click)=\"toPayForDentalServices()\" class=\"fs-16 calibri-bold color-light-blue next cursor-pointer\">PAY DENTAL SERVICES</a>\n                </div>\n            </div>\n            <div class=\"row padding-top-20 padding-top-xs-0\">\n                <div class=\"col-xs-12 text-center\">\n                    <div class=\"mobile-nav padding-top-xs-20\">\n                        <a (click)=\"toExchanges()\" class=\"prev cursor-pointer text-left\"><img alt=\"Buy icon\" itemprop=\"contentUrl\" src=\"assets/images/gray-arrow-left.svg\"/></a>\n                        <h1 class=\"calibri-bold fs-28 fs-xs-24\">PAY DCN ASSURANCE FEES</h1>\n                        <a (click)=\"toPayForDentalServices()\" class=\"next cursor-pointer text-right\"><img alt=\"Buy icon\" itemprop=\"contentUrl\" src=\"assets/images/gray-arrow-right.svg\"/></a>\n                    </div>\n                    <div class=\"padding-top-15 padding-top-xs-40 padding-bottom-30 fs-16 max-width-600 margin-0-auto\">Dentacoin Assurance is first blockchain-based plan that entitles you to preventive care against affordable monthly fees in Dentacoin (DCN) cryptocurrency.</div>\n                    <div class=\"padding-bottom-20\">\n                        <video controls=\"\" height=\"350\" class=\"width-100 max-width-600 margin-0-auto\" poster=\"assets/images/dentacoin-assurance-intro.png\">\n                            <source src=\"https://dentacoin.com/assets/uploads/assurance-hub-video.mp4\" type=\"video/mp4\"> Your browser does not support HTML5 video. </video>\n                    </div>\n                </div>\n            </div>\n        </div>\n        <div class=\"bottom-absolute-btn text-center\">\n            <a href=\"https://assurance.dentacoin.com\" target=\"_blank\" class=\"white-light-blue-btn light-blue-border min-width-xs-300 data-external-link\">GO TO DENTACOIN ASSURANCE</a>\n        </div>\n    </div>\n</div>"
+module.exports = "<div class=\"main-wrapper\">\n    <figure itemscope=\"\" itemtype=\"http://schema.org/ImageObject\" class=\"page-absolute-icon\">\n        <img alt=\"Buy icon\" itemprop=\"contentUrl\" src=\"assets/images/spend-icon.svg\"/>\n    </figure>\n    <div class=\"padding-bottom-50\">\n        <div class=\"container-fluid no-gutter\">\n            <div class=\"row spend-navigation module\">\n                <div class=\"col-xs-6\">\n                    <a (click)=\"toExchanges()\" class=\"fs-16 calibri-bold color-light-blue prev cursor-pointer\">TRADE ON EXCHANGES</a>\n                </div>\n                <div class=\"col-xs-6 text-right\">\n                    <a (click)=\"toPayForDentalServices()\" class=\"fs-16 calibri-bold color-light-blue next cursor-pointer\">PAY DENTAL SERVICES</a>\n                </div>\n            </div>\n            <div class=\"row padding-top-20 padding-top-xs-0\">\n                <div class=\"col-xs-12 text-center\">\n                    <div class=\"mobile-nav padding-top-xs-20\">\n                        <a (click)=\"toExchanges()\" class=\"prev cursor-pointer text-left\"><img alt=\"Buy icon\" itemprop=\"contentUrl\" src=\"assets/images/gray-arrow-left.svg\"/></a>\n                        <h1 class=\"calibri-bold fs-28 fs-xs-24\">PAY DCN ASSURANCE FEES</h1>\n                        <a (click)=\"toPayForDentalServices()\" class=\"next cursor-pointer text-right\"><img alt=\"Buy icon\" itemprop=\"contentUrl\" src=\"assets/images/gray-arrow-right.svg\"/></a>\n                    </div>\n                    <div class=\"padding-top-15 padding-top-xs-40 padding-bottom-10 fs-16 max-width-600 margin-0-auto\">Dentacoin Assurance is first blockchain-based plan that entitles you to preventive care against affordable monthly fees in Dentacoin (DCN) cryptocurrency.</div>\n                    <div class=\"camp-assurance-mobile-phone-scanning\"></div>\n                    <div class=\"padding-top-15 padding-bottom-20 fs-16 max-width-600 margin-0-auto\">You can handle all Dentacoin Assurance contract actions - such as contract creation or cancellation for patients or contact approvals and withdrawals for dentists - directly from here!</div>\n                    <div class=\"padding-bottom-20 padding-top-20\">\n                        <video controls=\"\" height=\"350\" class=\"width-100 max-width-600 margin-0-auto\" poster=\"assets/images/dentacoin-assurance-intro.png\">\n                            <source src=\"https://dentacoin.com/assets/uploads/assurance-hub-video.mp4\" type=\"video/mp4\"> Your browser does not support HTML5 video. </video>\n                    </div>\n                </div>\n            </div>\n        </div>\n        <div class=\"bottom-absolute-btn text-center\">\n            <a href=\"https://assurance.dentacoin.com\" target=\"_blank\" class=\"white-light-blue-btn light-blue-border min-width-xs-300 data-external-link\">GO TO DENTACOIN ASSURANCE</a>\n        </div>\n    </div>\n</div>"
 
 /***/ }),
 
@@ -245,7 +245,7 @@ var AppModule = /** @class */ (function () {
                 _app_routing_module__WEBPACK_IMPORTED_MODULE_3__["routingComponents"]
             ],
             imports: [
-                _angular_platform_browser__WEBPACK_IMPORTED_MODULE_1__["BrowserModule"],
+                _angular_platform_browser__WEBPACK_IMPORTED_MODULE_1__["BrowserModule"].withServerTransition({ appId: 'serverApp' }),
                 _app_routing_module__WEBPACK_IMPORTED_MODULE_3__["AppRoutingModule"]
             ],
             providers: [],
@@ -283,9 +283,11 @@ var BuyPageComponent = /** @class */ (function () {
         this.titleService.setTitle('Buy Dentacoin (DCN) via Dentacoin Wallet App');
         this.meta.updateTag({ name: 'description', content: 'Dentacoin Wallet App allows users to easily and securely buy Dentacoin (DCN) with USD, Ether (ETH), Bitcoin (BTC) and 100+ other cryptocurrencies.' });
         this.meta.updateTag({ name: 'keywords', content: 'buy dentacoin, how to buy dentacoin, buy dentacoin with usd' });
-        this.meta.updateTag({ name: 'og:title', content: 'Buy Dentacoin (DCN) via Dentacoin Wallet App' });
-        this.meta.updateTag({ name: 'og:description', content: 'Dentacoin Wallet App allows users to easily and securely buy Dentacoin (DCN) with USD, Ether (ETH), Bitcoin (BTC) and 100+ other cryptocurrencies.' });
-        this.meta.updateTag({ name: 'og:image', content: 'https://wallet.dentacoin.com/assets/images/buy-dentacoin-wallet-app.png' });
+        this.meta.updateTag({ property: 'og:title', content: 'Buy Dentacoin (DCN) via Dentacoin Wallet App' });
+        this.meta.updateTag({ property: 'og:description', content: 'Dentacoin Wallet App allows users to easily and securely buy Dentacoin (DCN) with USD, Ether (ETH), Bitcoin (BTC) and 100+ other cryptocurrencies.' });
+        this.meta.updateTag({ property: 'og:image', content: 'https://wallet.dentacoin.com/assets/images/buy-dentacoin-wallet-app.png' });
+        this.meta.updateTag({ property: 'og:image:width', content: '1200' });
+        this.meta.updateTag({ property: 'og:image:height', content: '630' });
     }
     BuyPageComponent.prototype.ngAfterViewInit = function () {
         //getBuyPageData();
@@ -320,38 +322,29 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "./node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/fesm5/core.js");
 /* harmony import */ var _angular_platform_browser__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @angular/platform-browser */ "./node_modules/@angular/platform-browser/fesm5/platform-browser.js");
-/* harmony import */ var _angular_router__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @angular/router */ "./node_modules/@angular/router/fesm5/router.js");
-
-
 
 
 
 /*declare function getHomepageData(): any;*/
 var HomepageComponent = /** @class */ (function () {
-    function HomepageComponent(meta, titleService, sanitizer, router) {
+    function HomepageComponent(meta, titleService) {
         this.meta = meta;
         this.titleService = titleService;
-        this.sanitizer = sanitizer;
-        this.router = router;
         this.titleService.setTitle('Dentacoin Wallet App: Buy, Store & Manage Your DCN Tokens');
         this.meta.updateTag({ name: 'description', content: 'Dentacoin Wallet allows users to easily and securely store, send, receive DCN tokens, as well as to buy DCN with credit card and other cryptocurrencies.' });
         this.meta.updateTag({ name: 'keywords', content: 'buy dentacoin, store dentacoin, dentacoin wallet, pay with dentacoin' });
-        this.meta.updateTag({ name: 'og:title', content: 'Dentacoin Wallet App: Buy, Store & Manage Your DCN Tokens' });
-        this.meta.updateTag({ name: 'og:description', content: 'Dentacoin Wallet allows users to easily and securely store, send, receive DCN tokens, as well as to buy DCN with credit card and other cryptocurrencies.' });
-        this.meta.updateTag({ name: 'og:image', content: 'https://wallet.dentacoin.com/assets/images/dentacoin-wallet-dapp.png' });
-        var data = 'some text';
-        var blob = new Blob([data], { type: 'application/octet-stream' });
-        this.href = this.sanitizer.bypassSecurityTrustResourceUrl(window.URL.createObjectURL(blob));
-        this.href = this.href.changingThisBreaksApplicationSecurity;
+        this.meta.updateTag({ property: 'og:title', content: 'Dentacoin Wallet App: Buy, Store & Manage Your DCN Tokens' });
+        this.meta.updateTag({ property: 'og:description', content: 'Dentacoin Wallet allows users to easily and securely store, send, receive DCN tokens, as well as to buy DCN with credit card and other cryptocurrencies.' });
+        this.meta.updateTag({ property: 'og:image', content: 'https://wallet.dentacoin.com/assets/images/dentacoin-wallet-dapp.png' });
+        this.meta.updateTag({ property: 'og:image:width', content: '1200' });
+        this.meta.updateTag({ property: 'og:image:height', content: '630' });
     }
     HomepageComponent.prototype.ngAfterViewInit = function () {
         /*getHomepageData();*/
     };
     HomepageComponent.ctorParameters = function () { return [
         { type: _angular_platform_browser__WEBPACK_IMPORTED_MODULE_2__["Meta"] },
-        { type: _angular_platform_browser__WEBPACK_IMPORTED_MODULE_2__["Title"] },
-        { type: _angular_platform_browser__WEBPACK_IMPORTED_MODULE_2__["DomSanitizer"] },
-        { type: _angular_router__WEBPACK_IMPORTED_MODULE_3__["Router"] }
+        { type: _angular_platform_browser__WEBPACK_IMPORTED_MODULE_2__["Title"] }
     ]; };
     HomepageComponent = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Component"])({
@@ -422,9 +415,11 @@ var SendPageComponent = /** @class */ (function () {
         this.titleService.setTitle('Send Dentacoin (DCN) via Dentacoin Wallet App');
         this.meta.updateTag({ name: 'description', content: 'Dentacoin Wallet App enables sending DCN tokens to any valid Ethereum address. Fast, secure and easier than ever!' });
         this.meta.updateTag({ name: 'keywords', content: 'send dentacoin, store dentacoin, dentacoin wallet, pay with dentacoin' });
-        this.meta.updateTag({ name: 'og:title', content: 'Send Dentacoin (DCN) via Dentacoin Wallet App' });
-        this.meta.updateTag({ name: 'og:description', content: 'Dentacoin Wallet App enables sending DCN tokens to any valid Ethereum address. Fast, secure and easier than ever!' });
-        this.meta.updateTag({ name: 'og:image', content: 'https://wallet.dentacoin.com/assets/images/send-dentacoin-wallet-app.png' });
+        this.meta.updateTag({ property: 'og:title', content: 'Send Dentacoin (DCN) via Dentacoin Wallet App' });
+        this.meta.updateTag({ property: 'og:description', content: 'Dentacoin Wallet App enables sending DCN tokens to any valid Ethereum address. Fast, secure and easier than ever!' });
+        this.meta.updateTag({ property: 'og:image', content: 'https://wallet.dentacoin.com/assets/images/send-dentacoin-wallet-app.png' });
+        this.meta.updateTag({ property: 'og:image:width', content: '1200' });
+        this.meta.updateTag({ property: 'og:image:height', content: '630' });
     }
     SendPageComponent.prototype.ngAfterViewInit = function () {
         //getSendPageData();
@@ -473,9 +468,11 @@ var SpendPageExchangesComponent = /** @class */ (function () {
         this.titleService.setTitle('Dentacoin (DCN) trading exchanges list | Dentacoin Wallet DApp');
         this.meta.updateTag({ name: 'description', content: 'Find the full list of trusted exchange platforms which support Dentacoin (DCN) cryptocurrency.' });
         this.meta.updateTag({ name: 'keywords', content: 'dentacoin exchanges, trade dentacoin, dcn currency, dcn crypto' });
-        this.meta.updateTag({ name: 'og:title', content: 'Dentacoin (DCN) trading exchanges list' });
-        this.meta.updateTag({ name: 'og:description', content: 'Find the full list of trusted exchange platforms which support Dentacoin (DCN) cryptocurrency.' });
-        this.meta.updateTag({ name: 'og:image', content: 'https://wallet.dentacoin.com/assets/images/dentacoin-exchanges-list.png' });
+        this.meta.updateTag({ property: 'og:title', content: 'Dentacoin (DCN) trading exchanges list' });
+        this.meta.updateTag({ property: 'og:description', content: 'Find the full list of trusted exchange platforms which support Dentacoin (DCN) cryptocurrency.' });
+        this.meta.updateTag({ property: 'og:image', content: 'https://wallet.dentacoin.com/assets/images/dentacoin-exchanges-list.png' });
+        this.meta.updateTag({ property: 'og:image:width', content: '1200' });
+        this.meta.updateTag({ property: 'og:image:height', content: '630' });
     }
     SpendPageExchangesComponent.prototype.ngAfterViewInit = function () {
         //getSpendPageExchanges();
@@ -534,9 +531,11 @@ var SpendPageGiftCardsComponent = /** @class */ (function () {
         this.titleService.setTitle('Buy giftcards with Dentacoin | Dentacoin Wallet DApp');
         this.meta.updateTag({ name: 'description', content: 'From coffee to clothes, books and hotel bookings, you can purchase online gift cards for various major brands with Dentacoin (DCN).' });
         this.meta.updateTag({ name: 'keywords', content: 'spend dentacoin online, gift cards dentacoin, bidali gift cards, online gift cards' });
-        this.meta.updateTag({ name: 'og:title', content: 'Buy giftcards online with Dentacoin' });
-        this.meta.updateTag({ name: 'og:description', content: 'From coffee to clothes, books and hotel bookings, you can purchase online gift cards for various major brands with Dentacoin (DCN).' });
-        this.meta.updateTag({ name: 'og:image', content: 'https://wallet.dentacoin.com/assets/images/gift-cards-dentacoin-wallet.png' });
+        this.meta.updateTag({ property: 'og:title', content: 'Buy giftcards online with Dentacoin' });
+        this.meta.updateTag({ property: 'og:description', content: 'From coffee to clothes, books and hotel bookings, you can purchase online gift cards for various major brands with Dentacoin (DCN).' });
+        this.meta.updateTag({ property: 'og:image', content: 'https://wallet.dentacoin.com/assets/images/gift-cards-dentacoin-wallet.png' });
+        this.meta.updateTag({ property: 'og:image:width', content: '1200' });
+        this.meta.updateTag({ property: 'og:image:height', content: '630' });
     }
     SpendPageGiftCardsComponent.prototype.ngAfterViewInit = function () {
         //getSpendPageGiftCards();
@@ -592,9 +591,11 @@ var SpendPagePayAssuranceFeesComponent = /** @class */ (function () {
         this.titleService.setTitle('Pay Dentacoin Assurance fees | Dentacoin Wallet DApp');
         this.meta.updateTag({ name: 'description', content: 'Pay your Dentacoin Assurance monthly premium easily and securely and enjoy the benefits of a prevention-focused dental plan.' });
         this.meta.updateTag({ name: 'keywords', content: 'dental plan payment, dental insurance, dentacoin assurance fee' });
-        this.meta.updateTag({ name: 'og:title', content: 'Pay Dentacoin Assurance fees' });
-        this.meta.updateTag({ name: 'og:description', content: 'Pay your Dentacoin Assurance monthly premium easily and securely and enjoy the benefits of a prevention-focused dental plan.' });
-        this.meta.updateTag({ name: 'og:image', content: 'https://wallet.dentacoin.com/assets/images/pay-dental-assurance-dentacoin.png' });
+        this.meta.updateTag({ property: 'og:title', content: 'Pay Dentacoin Assurance fees' });
+        this.meta.updateTag({ property: 'og:description', content: 'Pay your Dentacoin Assurance monthly premium easily and securely and enjoy the benefits of a prevention-focused dental plan.' });
+        this.meta.updateTag({ property: 'og:image', content: 'https://wallet.dentacoin.com/assets/images/pay-dental-assurance-dentacoin.png' });
+        this.meta.updateTag({ property: 'og:image:width', content: '1200' });
+        this.meta.updateTag({ property: 'og:image:height', content: '630' });
     }
     SpendPagePayAssuranceFeesComponent.prototype.ngAfterViewInit = function () {
         //initdApp();
@@ -650,9 +651,11 @@ var SpendPagePayForDentalServicesComponent = /** @class */ (function () {
         this.titleService.setTitle('Pay for dental services in Dentacoin | Dentacoin Wallet DApp');
         this.meta.updateTag({ name: 'description', content: 'Cover your dental treatment in Dentacoin tokens at all partner dentists, accepting DCN. Pay directly with ease via Dentacoin Wallet DApp.' });
         this.meta.updateTag({ name: 'keywords', content: 'dentacoin accepted, dental currency, dental payment, spend dentacoin, pay with dentacoin' });
-        this.meta.updateTag({ name: 'og:title', content: 'Pay for dental services with Dentacoin' });
-        this.meta.updateTag({ name: 'og:description', content: 'Cover your dental treatment in Dentacoin tokens at all partner dentists and clinics, accepting DCN. Handle payments with ease via Dentacoin Wallet DApp.' });
-        this.meta.updateTag({ name: 'og:image', content: 'https://wallet.dentacoin.com/assets/images/dentist-pay-with-dentacoin.png' });
+        this.meta.updateTag({ property: 'og:title', content: 'Pay for dental services with Dentacoin' });
+        this.meta.updateTag({ property: 'og:description', content: 'Cover your dental treatment in Dentacoin tokens at all partner dentists and clinics, accepting DCN. Handle payments with ease via Dentacoin Wallet DApp.' });
+        this.meta.updateTag({ property: 'og:image', content: 'https://wallet.dentacoin.com/assets/images/dentist-pay-with-dentacoin.png' });
+        this.meta.updateTag({ property: 'og:image:width', content: '1200' });
+        this.meta.updateTag({ property: 'og:image:height', content: '630' });
     }
     SpendPagePayForDentalServicesComponent.prototype.ngAfterViewInit = function () {
         //initdApp();
@@ -722,8 +725,10 @@ __webpack_require__.r(__webpack_exports__);
 if (_environments_environment__WEBPACK_IMPORTED_MODULE_3__["environment"].production) {
     Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["enableProdMode"])();
 }
-Object(_angular_platform_browser_dynamic__WEBPACK_IMPORTED_MODULE_1__["platformBrowserDynamic"])().bootstrapModule(_app_app_module__WEBPACK_IMPORTED_MODULE_2__["AppModule"])
-    .catch(function (err) { return console.error(err); });
+document.addEventListener('DOMContentLoaded', function () {
+    Object(_angular_platform_browser_dynamic__WEBPACK_IMPORTED_MODULE_1__["platformBrowserDynamic"])().bootstrapModule(_app_app_module__WEBPACK_IMPORTED_MODULE_2__["AppModule"])
+        .catch(function (err) { return console.error(err); });
+});
 
 
 /***/ }),

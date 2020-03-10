@@ -940,19 +940,20 @@ img {
         }
     }
     &.popup-scan-qr-code {
-        .video-container {
-            max-width: 500px;
-            margin: 0 auto;
-            padding-top: 30px;
-            padding-bottom: 30px;
-            video {
-                width: 100%;
-            }
-            @include breakpoint($xs) {
-                max-width: 350px;
-            }
-            @include breakpoint($xxs) {
-                max-width: 260px;
+        .modal-dialog {
+            width: 95%;
+            max-width: 900px;
+            .video-container {
+                max-width: 700px;
+                margin: 0 auto;
+                padding-top: 30px;
+                padding-bottom: 30px;
+                video {
+                    width: 100%;
+                }
+                @include breakpoint($xs) {
+                    max-width: 400px;
+                }
             }
         }
     }
