@@ -44,11 +44,17 @@
     "phonegap-plugin-barcodescanner": {
       "ANDROID_SUPPORT_V4_VERSION": "27.+",
       "PACKAGE_NAME": "wallet.dentacoin.com"
+    },
+    "cordova-plugin-local-notification": {
+      "PACKAGE_NAME": "com.dentacoin.wallet"
     }
   },
   "dependent_plugins": {
     "es6-promise-plugin": {
       "PACKAGE_NAME": "wallet.dentacoin.com"
+    },
+    "cordova-plugin-badge": {
+      "PACKAGE_NAME": "com.dentacoin.wallet"
     }
   }
 }
