@@ -80310,6 +80310,18 @@ checkIfInternetConnection();
 
 //=================================== /internet connection check ONLY for BROWSERS ===================================
 
+// create this custom function, because toFixed() is rounding numbers
+Number.prototype.toFixedNoRounding = function(n) {
+    const reg = new RegExp("^-?\\d+(?:\\.\\d{0," + n + "})?", "g")
+    const a = this.toString().match(reg)[0];
+    const dot = a.indexOf(".");
+    if (dot === -1) { // integer, insert decimal dot and pad up zeros
+        return a + "." + "0".repeat(n);
+    }
+    const b = n - (a.length - dot) + 1;
+    return b > 0 ? (a + "0".repeat(b)) : a;
+}
+
 var custom_popover_interval;
 var request_response = {};
 var request_interval_for_rest_of_transaction_history;
@@ -80802,7 +80814,7 @@ var pages_data = {
                             if(error) {
                                 console.log(error);
                             } else {
-                                $('.eth-amount').html(parseFloat(utils.fromWei(result)).toFixed(6));
+                                $('.eth-amount').html(parseFloat(utils.fromWei(result)).toFixedNoRounding(6));
 
                                 if(hide_loader != undefined) {
                                     hideLoader();
@@ -81615,7 +81627,7 @@ var pages_data = {
     },
     spend_page_assurance_fees: function() {
         if(is_hybrid/* || basic.isMobile()*/) {
-            $('.camp-assurance-mobile-phone-scanning').html('<div class="padding-top-15 padding-bottom-20 fs-16 max-width-600 margin-0-auto">You can handle all Dentacoin Assurance contract actions - such as contract creation or cancellation for patients or contact approvals and withdrawals for dentists - directly from here!</div><div class="text-center padding-bottom-30"><a href="javascript:void(0)" class="light-blue-white-btn no-hover open-transaction-scanner min-width-270 margin-right-10 margin-bottom-10 width-xs-100 max-width-400 margin-right-xs-0 padding-left-5 padding-right-5 fs-18 text-center">SCAN QR IN WALLET <figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block max-width-30 width-100 margin-left-5"><img src="assets/images/scan-qr-code-blue.svg" alt="Scan icon"/></figure></a></div>');
+            $('.camp-assurance-mobile-phone-scanning').html('<div class="padding-top-15 padding-bottom-20 fs-16 max-width-600 margin-0-auto">You can handle all Dentacoin Assurance contract actions - such as contract creation or cancellation for patients or contact approvals and withdrawals for dentists - directly from here!</div><div class="text-center padding-bottom-30"><a href="javascript:void(0)" class="light-blue-white-btn no-hover open-transaction-scanner min-width-270 margin-right-10 margin-bottom-10 width-xs-100 max-width-400 margin-right-xs-0 padding-left-5 padding-right-5 fs-18 text-center">SCAN TRANSACTION <figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block max-width-30 width-100 margin-left-5"><img src="assets/images/scan-qr-code-blue.svg" alt="Scan icon"/></figure></a></div>');
 
             initScan($('.open-transaction-scanner'), null, function(content) {
                 var content = decodeURIComponent(content);
@@ -81949,7 +81961,7 @@ var pages_data = {
                 } else {
                     basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
                 }
-            });
+            }, true, 'Assurance transactions signing via Dentacoin Wallet is currently in testing phase and running only on Rinkeby testnet. Are you sure you want to continue?');
         }
     }
 };
@@ -82126,7 +82138,7 @@ function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver
                     pending_history_transaction += buildDentacoinHistoryTransaction(request_response, token_val, receiver, global_state.account, Math.round((new Date()).getTime() / 1000), transactionHash, true);
 
                     fireGoogleAnalyticsEvent('Pay', 'Next', 'DCN', token_val);
-                    firePushNotification('Dentacoin transaction', token_val + 'DCN sent successfully.');
+                    firePushNotification('Dentacoin transaction', token_val + ' DCN sent successfully.');
                     displayMessageOnTransactionSend(token_label, transactionHash);
 
                     $('.transaction-history tbody').prepend(pending_history_transaction);
@@ -82136,7 +82148,7 @@ function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver
                     pending_history_transaction += buildEthereumHistoryTransaction(request_response, token_val, receiver, global_state.account, Math.round((new Date()).getTime() / 1000), transactionHash, true);
 
                     fireGoogleAnalyticsEvent('Pay', 'Next', 'ETH in USD', Math.floor(parseFloat(token_val) * request_response.market_data.current_price.usd));
-                    firePushNotification('Ethereum transaction', token_val + 'ETH sent successfully.');
+                    firePushNotification('Ethereum transaction', token_val + ' ETH sent successfully.');
                     displayMessageOnTransactionSend(token_label, transactionHash);
 
                     $('.transaction-history tbody').prepend(pending_history_transaction);
@@ -83880,7 +83892,7 @@ function buildDentacoinHistoryTransaction(dentacoin_data, value, to, from, times
     return '<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+transactionHash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+transactionHash+'" target="_blank" class="lato-bold color-white data-external-link">'+transaction_id_label+'</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+dcn_amount+'</li><li>'+usd_amount+' USD</li></ul></td></tr>';
 }
 
-function initScan(clicker, valueHolder, callback) {
+function initScan(clicker, valueHolder, callback, warning, warningText) {
     if(clicker === undefined) {
         clicker = null;
     }
@@ -83890,69 +83902,83 @@ function initScan(clicker, valueHolder, callback) {
     if(callback === undefined) {
         callback = null;
     }
+    if(warning === undefined) {
+        warning = null;
+    }
+    if(warningText === undefined) {
+        warningText = null;
+    }
 
     clicker.click(function() {
-        if(is_hybrid) {
-            cordova.plugins.barcodeScanner.scan(
-                function (result) {
-                    if(valueHolder != null) {
-                        valueHolder.val(result.text).trigger('change');
-                    }
-                    if(callback != null) {
-                        callback(result.text);
-                    }
-                },
-                function (error) {
-                    alert('Scanning failed. Please go to Settings/ Permissions and allow Camera access to Dentacoin Wallet and try again.');
-                }
-            );
-        } else {
-            //BROWSER SCAN
-            if(load_qr_code_lib) {
-                showLoader();
-                $.getScript('https://rawgit.com/schmich/instascan-builds/master/instascan.min.js', function() {
-                    load_qr_code_lib = false;
-                    hideLoader();
-
-                    initQRCodePopupForSendingTransaction();
-                });
-            } else {
-                initQRCodePopupForSendingTransaction();
-            }
-
-            function initQRCodePopupForSendingTransaction() {
-                basic.showDialog('<div class="video-container"><video id="qr-preview"></video></div>', 'popup-scan-qr-code', null, true);
-
-                var cameras_global;
-                var scanner = new Instascan.Scanner({ video: document.getElementById('qr-preview') });
-                scanner.addListener('scan', function (content) {
-                    if(valueHolder != null) {
-                        valueHolder.val(content).trigger('change');
-                    }
-                    if(callback != null) {
-                        callback(content);
-                    }
-                    $('.popup-scan-qr-code').modal('hide');
-                    scanner.stop(cameras_global[0]);
-                });
-
-                Instascan.Camera.getCameras().then(function (cameras) {
-                    if (cameras.length > 0) {
-                        cameras_global = cameras;
-                        scanner.start(cameras[0]);
+        if (warning != null) {
+            var initScanWarning = {};
+            initScanWarning.callback = function (result) {
+                if (result) {
+                    if(is_hybrid) {
+                        cordova.plugins.barcodeScanner.scan(
+                            function (result) {
+                                if(valueHolder != null) {
+                                    valueHolder.val(result.text).trigger('change');
+                                }
+                                if(callback != null) {
+                                    callback(result.text);
+                                }
+                            },
+                            function (error) {
+                                alert('Scanning failed. Please go to Settings/ Permissions and allow Camera access to Dentacoin Wallet and try again.');
+                            }
+                        );
                     } else {
-                        alert('No cameras found.');
-                    }
-                }).catch(function (e) {
-                    console.error(e);
-                });
+                        //BROWSER SCAN
+                        if(load_qr_code_lib) {
+                            showLoader();
+                            $.getScript('https://rawgit.com/schmich/instascan-builds/master/instascan.min.js', function() {
+                                load_qr_code_lib = false;
+                                hideLoader();
 
-                $('.popup-scan-qr-code .bootbox-close-button').click(function() {
-                    if (cameras_global.length > 0) {
-                        scanner.stop(cameras_global[0]);
+                                initQRCodePopupForSendingTransaction();
+                            });
+                        } else {
+                            initQRCodePopupForSendingTransaction();
+                        }
+
+                        function initQRCodePopupForSendingTransaction() {
+                            basic.showDialog('<div class="video-container"><video id="qr-preview"></video></div>', 'popup-scan-qr-code', null, true);
+
+                            var cameras_global;
+                            var scanner = new Instascan.Scanner({ video: document.getElementById('qr-preview') });
+                            scanner.addListener('scan', function (content) {
+                                if(valueHolder != null) {
+                                    valueHolder.val(content).trigger('change');
+                                }
+                                if(callback != null) {
+                                    callback(content);
+                                }
+                                $('.popup-scan-qr-code').modal('hide');
+                                scanner.stop(cameras_global[0]);
+                            });
+
+                            Instascan.Camera.getCameras().then(function (cameras) {
+                                if (cameras.length > 0) {
+                                    cameras_global = cameras;
+                                    scanner.start(cameras[0]);
+                                } else {
+                                    alert('No cameras found.');
+                                }
+                            }).catch(function (e) {
+                                console.error(e);
+                            });
+
+                            $('.popup-scan-qr-code .bootbox-close-button').click(function() {
+                                if (cameras_global.length > 0) {
+                                    scanner.stop(cameras_global[0]);
+                                }
+                            });
+                        }
                     }
-                });
-            }
+                }
+            };
+            basic.showConfirm(warningText, '', initScanWarning, true);
         }
     });
 }
