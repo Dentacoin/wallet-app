@@ -24,8 +24,9 @@ import {join} from 'path';
 const app = express();
 
 const PORT = process.env.PORT || 4000;
-const DIST_FOLDER = join(process.cwd(), 'dist/browser');
-console.log(DIST_FOLDER, 'DIST_FOLDER');
+//const DIST_FOLDER = join(process.cwd(), 'dist/browser');
+const DIST_FOLDER = join(process.cwd(), 'dist');
+
 
 // * NOTE :: leave this as require() since this file is built Dynamically from webpack
 const {AppServerModuleNgFactory, LAZY_MODULE_MAP, ngExpressEngine, provideModuleMap} = require('./dist/server/main');
@@ -39,7 +40,8 @@ app.engine('html', ngExpressEngine({
 }));
 
 app.set('view engine', 'html');
-app.set('views', DIST_FOLDER);
+//app.set('views', DIST_FOLDER);
+app.set('views', join(DIST_FOLDER, 'browser'));
 
 // Example Express Rest API endpoints
 // app.get('/api/**', (req, res) => { });
