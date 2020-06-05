@@ -81449,6 +81449,10 @@ var pages_data = {
                             var usd_val = $('.section-amount-to input#usd-val').val().trim();
                             var sending_to_address = $('.section-amount-to .address-cell').attr('data-receiver');
 
+                            if (isFloat(parseFloat(crypto_val))) {
+                                crypto_val = parseFloat(crypto_val).toFixedNoRounding(17);
+                            }
+
                             dApp.methods.getDCNBalance(global_state.account, function(err, response) {
                                 var dcn_balance = parseInt(response);
 
@@ -82113,10 +82117,6 @@ function styleKeystoreUploadBtnForTx(callback) {
 
 //method to sign and submit transaction to blockchain
 function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver, on_popup_load_gas_price, key, rawGasEstimation) {
-    if (isFloat(parseFloat(token_val))) {
-        token_val = parseFloat.toFixedNoRounding(17);
-    }
-
     dApp.web3_1_0.eth.getTransactionCount(global_state.account, 'pending', function (err, nonce) {
         const EthereumTx = require('ethereumjs-tx');
         var transaction_obj = {
