@@ -94,6 +94,11 @@ Number.prototype.toFixedNoRounding = function(n) {
     return b > 0 ? (a + "0".repeat(b)) : a;
 };
 
+Number.prototype.countDecimals = function () {
+    if(Math.floor(this.valueOf()) === this.valueOf()) return 0;
+    return this.toString().split(".")[1].length || 0;
+}
+
 function isFloat(n){
     return Number(n) === n && n % 1 !== 0;
 }
@@ -1217,14 +1222,17 @@ var pages_data = {
                             var usd_val = $('.section-amount-to input#usd-val').val().trim();
                             var sending_to_address = $('.section-amount-to .address-cell').attr('data-receiver');
 
-                            if (isFloat(parseFloat(crypto_val))) {
-                                crypto_val = parseFloat(crypto_val).toFixedNoRounding(17);
+                            console.log(parseFloat(crypto_val).countDecimals(), 'parseFloat(crypto_val).countDecimals()');
+                            if (parseFloat(crypto_val).countDecimals() > 17) {
+                                crypto_val = parseFloat(crypto_val).toFixedNoRounding(17).toString();
                             }
+
+                            console.log(crypto_val, 'crypto_val');
 
                             dApp.methods.getDCNBalance(global_state.account, function(err, response) {
                                 var dcn_balance = parseInt(response);
 
-                                dApp.web3_1_0.eth.getBalance(global_state.account, function(error, eth_balance) {
+                                dApp.web3_1_0.eth.getBalance(global_state.account, async function(error, eth_balance) {
                                     if(error) {
                                         console.log(error);
                                     } else {
@@ -1288,12 +1296,13 @@ var pages_data = {
                                                 rawGasEstimation = 65000;
                                             } else if($('.section-amount-to #active-crypto').val() == 'eth') {
                                                 token_symbol = 'ETH';
-                                                rawGasEstimation = dApp.web3_1_0.eth.estimateGas({
+                                                rawGasEstimation = await dApp.web3_1_0.eth.estimateGas({
                                                     to: sending_to_address
                                                 });
                                             }
 
                                             console.log(function_abi, 'function_abi');
+                                            console.log(rawGasEstimation, 'rawGasEstimation');
 
                                             //calculating the fee from the gas price and the estimated gas price
                                             const on_popup_load_gwei = ethgasstation_json.safeLow;
@@ -1303,7 +1312,8 @@ var pages_data = {
 
                                             //using ethgasstation gas price and not dApp.helper.getGasPrice(), because its more accurate
 
-                                            var eth_fee = utils.fromWei((gasPrice * rawGasEstimation).toString(), 'ether');
+                                            var eth_fee = utils.fromWei((on_popup_load_gas_price * rawGasEstimation).toString(), 'ether');
+                                            console.log(eth_fee, 'eth_fee');
 
                                             var transaction_popup_html = '<div class="title">Send confirmation</div><div class="pictogram-and-dcn-usd-price"><svg version="1.1" class="width-100 max-width-100 margin-bottom-10" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><style type="text/css">.st0-recipe{fill:#FFFFFF;}.st1-recipe{fill:#CA675A;}.st2-recipe{fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="100" width="105.7" x="-7.2" y="-6.4"></sliceSourceBounds></sfw></metadata><circle class="st0-recipe" cx="50" cy="50" r="50"/><g><g><g><path class="st1-recipe" d="M50.1,93.7c-18.7,0-36-12.4-41.3-31.3C2.4,39.6,15.8,16,38.5,9.6C48.9,6.7,60,7.8,69.6,12.8c1.2,0.6,1.6,2,1,3.2s-2,1.6-3.2,1c-8.6-4.4-18.4-5.4-27.7-2.8c-20.1,5.6-32,26.7-26.3,46.9s26.7,32.1,46.9,26.4s32.1-26.7,26.4-46.9c-1.1-3.9-2.8-7.6-5-10.9c-0.7-1.1-0.4-2.6,0.7-3.3c1.1-0.7,2.6-0.4,3.3,0.7c2.5,3.8,4.4,7.9,5.6,12.3c6.4,22.8-7,46.5-29.7,52.8C57.8,93.2,53.9,93.7,50.1,93.7z"/></g><g><path class="st1-recipe" d="M33.1,78.6c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.4l40.4-50.5c0.8-1,2.3-1.2,3.4-0.4c1,0.8,1.2,2.3,0.4,3.4L35,77.7C34.5,78.3,33.8,78.6,33.1,78.6z"/></g><g><g><path class="st2-recipe" d="M105.7,56.9"/></g></g></g><g><path class="st1-recipe" d="M73.7,54.2c-0.1,0-0.2,0-0.2,0c-1.3-0.2-2.3-1.4-2.2-2.7L74,23.9L47.6,39.8c-1.1,0.7-2.6,0.3-3.3-0.8c-0.7-1.1-0.3-2.6,0.8-3.3l34.5-20.8L76.1,52C76,53.2,74.9,54.2,73.7,54.2z"/></g></g></svg><div class="dcn-amount">-'+crypto_val+' '+token_symbol+'</div><div class="usd-amount">=$'+usd_val+'</div></div><div class="confirm-row to"> <div class="label inline-block">To:</div><div class="value inline-block">'+sending_to_address+'</div></div><div class="confirm-row from"> <div class="label inline-block">From:</div><div class="value inline-block">'+global_state.account+'</div></div><div class="confirm-row free"> <div class="label inline-block">Ether fee:</div><div class="value inline-block">'+parseFloat(eth_fee).toFixed(8)+'</div></div>';
 
