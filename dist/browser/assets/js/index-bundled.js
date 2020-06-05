@@ -81330,30 +81330,28 @@ var pages_data = {
                         dApp.methods.getDCNBalance(global_state.account, function(err, response) {
                             var dcn_balance = parseInt(response);
 
-                            if (dcn_balance > 0) {
-                                $('.spendable-amount').addClass('active').html('<div class="spendable-dcn-amount inline-block fs-18 fs-xs-16 lato-bold" data-value="'+dcn_balance+'"><label class="color-light-blue">Spendable amount: </label><span></span></div><div class="max-btn inline-block"><button class="white-light-blue-btn use-max-dcn-amount">Max</button></div>');
-                                $('.spendable-amount .spendable-dcn-amount span').html(dcn_balance + ' DCN');
+                            $('.spendable-amount').addClass('active').html('<div class="spendable-dcn-amount inline-block fs-18 fs-xs-16 lato-bold" data-value="'+dcn_balance+'"><label class="color-light-blue">Spendable amount: </label><span></span></div><div class="max-btn inline-block"><button class="white-light-blue-btn use-max-dcn-amount">Max</button></div>');
+                            $('.spendable-amount .spendable-dcn-amount span').html(dcn_balance + ' DCN');
 
-                                $('.use-max-dcn-amount').click(function() {
-                                    if ($('.section-amount-to #active-crypto').val() == 'dcn') {
-                                        $('.section-amount-to #active-crypto').val('dcn');
-                                    } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
-                                        $('.section-amount-to #active-crypto').val('eth');
-                                    }
-                                    $('.section-amount-to input#crypto-amount').val($('.spendable-dcn-amount').attr('data-value'));
-                                    $('.section-amount-to input#crypto-amount').closest('.custom-google-label-style').find('label').addClass('active-label');
-
-                                    /*var to_fixed_num = 2;
+                            $('.use-max-dcn-amount').click(function() {
+                                if ($('.section-amount-to #active-crypto').val() == 'dcn') {
+                                    var to_fixed_num = 2;
                                     //if(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd) < 0.01) {
                                     if(($('.section-amount-to input#crypto-amount').val().trim() * prepareDcnPrice(dentacoin_data)) < 0.01) {
                                         to_fixed_num = 4;
                                     }
                                     //$('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
-                                    $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * prepareDcnPrice(dentacoin_data)).toFixed(to_fixed_num)).trigger('change');*/
-                                });
-                            } else {
-                                $('.spendable-amount').removeClass('active').html('');
-                            }
+                                    $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * prepareDcnPrice(dentacoin_data)).toFixed(to_fixed_num)).trigger('change');
+                                } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
+                                    if(($('.section-amount-to input#crypto-amount').val().trim() * ethereum_data.market_data.current_price.usd) < 0.01) {
+                                        to_fixed_num = 4;
+                                    }
+                                    $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * ethereum_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
+                                }
+
+                                $('.section-amount-to input#crypto-amount').val($('.spendable-dcn-amount').attr('data-value'));
+                                $('.section-amount-to input#crypto-amount').closest('.custom-google-label-style').find('label').addClass('active-label');
+                            });
                         });
 
                         //on input in dcn/ eth input change usd input
@@ -83486,7 +83484,7 @@ function hybridAppFileDownload(file_name, file_content, callback, location, down
         } else {
             proceedWithDownload(fileSystem);
         }
-        
+
         function proceedWithDownload(dirEntry) {
             dirEntry.getFile(file_name, {create: true, exclusive: true}, function (fileEntry) {
                 fileEntry.createWriter(function (fileWriter) {
