@@ -80731,8 +80731,11 @@ var utils = {
             return dApp.web3_1_0.utils.fromWei(wei_amount);
         }
     },
-    toWei: function(eth_amount) {
-        return dApp.web3_1_0.utils.toWei(eth_amount, 'ether');
+    toWei: function(eth_amount, unit) {
+        if (unit == undefined) {
+            unit = 'ether';
+        }
+        return dApp.web3_1_0.utils.toWei(eth_amount, unit);
     },
     checksumAddress: function(address)    {
         if(address.length == 40) {
@@ -81300,6 +81303,7 @@ var pages_data = {
 
 
             var ethgasstation_json = await $.getJSON('https://ethgasstation.info/json/ethgasAPI.json');
+            var gasPrice = await dApp.web3_1_0.eth.getGasPrice();
             function bindSendPageElementsEvents() {
                 $('.section-send .next-send').click(function() {
                     if(!$(this).hasClass('disabled')) {
@@ -81395,36 +81399,35 @@ var pages_data = {
                                     $('.spendable-amount .spendable-dcn-amount span').html(dcn_balance + ' DCN');
                                 });
 
-                                //if(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd) < 0.01) {
                                 if(($('.section-amount-to input#crypto-amount').val().trim() * prepareDcnPrice(dentacoin_data)) < 0.01) {
                                     to_fixed_num = 4;
                                 }
-                                //$('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
                                 $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * prepareDcnPrice(dentacoin_data)).toFixed(to_fixed_num)).trigger('change');
                             } else if($(this).val() == 'eth') {
                                 dApp.web3_1_0.eth.getBalance(global_state.account, async function(error, result) {
                                     if(error) {
                                         console.log(error);
                                     } else {
-                                        var dummyReceiver = '0x3B224dEc481DddE95aBe0a605BBFa4C900584F6D';
                                         var eth_balance = parseFloat(utils.fromWei(result));
                                         const on_page_load_gwei = ethgasstation_json.safeLow;
-                                        const on_page_load_gas_price = on_page_load_gwei * 100000000;
+                                        const on_page_load_gas_price = on_page_load_gwei * 100000000 + ((on_page_load_gwei * 100000000) * 10/100);
 
                                         var ethSendGasEstimation = await dApp.web3_1_0.eth.estimateGas({
-                                            to: dummyReceiver
+                                            to: $('.section-amount-to .address-cell').attr('data-receiver')
                                         });
 
-                                        //adding 10% just in case the transaction dont fail
-                                        ethSendGasEstimation = ethSendGasEstimation + (ethSendGasEstimation * (10 / 100));
-
+                                        /*var eth_fee = utils.fromWei((gasPrice * ethSendGasEstimation).toString(), 'ether');
+                                        console.log(gasPrice, 'gasPrice');
+                                        console.log(eth_fee, 'eth_fee');*/
                                         var eth_fee = utils.fromWei((on_page_load_gas_price * ethSendGasEstimation).toString(), 'ether');
+                                        console.log(eth_fee, 'eth_fee');
 
                                         if (parseFloat(eth_fee) < eth_balance) {
                                             var availableEth = eth_balance - parseFloat(eth_fee);
                                             $('.spendable-dcn-amount').attr('data-value', availableEth);
                                             $('.spendable-amount .spendable-dcn-amount span').html(availableEth + ' ETH');
                                         } else {
+                                            $('.spendable-dcn-amount').attr('data-value', availableEth);
                                             $('.spendable-amount .spendable-dcn-amount span').html('0 ETH');
                                         }
                                     }
@@ -81513,6 +81516,7 @@ var pages_data = {
                                             const on_popup_load_gwei = ethgasstation_json.safeLow;
                                             //adding 10% of the outcome just in case transactions don't take so long
                                             const on_popup_load_gas_price = on_popup_load_gwei * 100000000 + ((on_popup_load_gwei * 100000000) * 10/100);
+                                            //const on_popup_load_gas_price = gasPrice;
 
                                             //using ethgasstation gas price and not dApp.helper.getGasPrice(), because its more accurate
                                             dApp.web3_1_0.eth.estimateGas({
@@ -81523,7 +81527,7 @@ var pages_data = {
                                                     console.log(error);
                                                 } else {
                                                     var rawGasEstimation = result;
-                                                    var eth_fee = utils.fromWei((on_popup_load_gas_price * rawGasEstimation).toString(), 'ether');
+                                                    var eth_fee = utils.fromWei((gasPrice * rawGasEstimation).toString(), 'ether');
 
                                                     var transaction_popup_html = '<div class="title">Send confirmation</div><div class="pictogram-and-dcn-usd-price"><svg version="1.1" class="width-100 max-width-100 margin-bottom-10" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><style type="text/css">.st0-recipe{fill:#FFFFFF;}.st1-recipe{fill:#CA675A;}.st2-recipe{fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="100" width="105.7" x="-7.2" y="-6.4"></sliceSourceBounds></sfw></metadata><circle class="st0-recipe" cx="50" cy="50" r="50"/><g><g><g><path class="st1-recipe" d="M50.1,93.7c-18.7,0-36-12.4-41.3-31.3C2.4,39.6,15.8,16,38.5,9.6C48.9,6.7,60,7.8,69.6,12.8c1.2,0.6,1.6,2,1,3.2s-2,1.6-3.2,1c-8.6-4.4-18.4-5.4-27.7-2.8c-20.1,5.6-32,26.7-26.3,46.9s26.7,32.1,46.9,26.4s32.1-26.7,26.4-46.9c-1.1-3.9-2.8-7.6-5-10.9c-0.7-1.1-0.4-2.6,0.7-3.3c1.1-0.7,2.6-0.4,3.3,0.7c2.5,3.8,4.4,7.9,5.6,12.3c6.4,22.8-7,46.5-29.7,52.8C57.8,93.2,53.9,93.7,50.1,93.7z"/></g><g><path class="st1-recipe" d="M33.1,78.6c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.4l40.4-50.5c0.8-1,2.3-1.2,3.4-0.4c1,0.8,1.2,2.3,0.4,3.4L35,77.7C34.5,78.3,33.8,78.6,33.1,78.6z"/></g><g><g><path class="st2-recipe" d="M105.7,56.9"/></g></g></g><g><path class="st1-recipe" d="M73.7,54.2c-0.1,0-0.2,0-0.2,0c-1.3-0.2-2.3-1.4-2.2-2.7L74,23.9L47.6,39.8c-1.1,0.7-2.6,0.3-3.3-0.8c-0.7-1.1-0.3-2.6,0.8-3.3l34.5-20.8L76.1,52C76,53.2,74.9,54.2,73.7,54.2z"/></g></g></svg><div class="dcn-amount">-'+crypto_val+' '+token_symbol+'</div><div class="usd-amount">=$'+usd_val+'</div></div><div class="confirm-row to"> <div class="label inline-block">To:</div><div class="value inline-block">'+sending_to_address+'</div></div><div class="confirm-row from"> <div class="label inline-block">From:</div><div class="value inline-block">'+global_state.account+'</div></div><div class="confirm-row free"> <div class="label inline-block">Ether fee:</div><div class="value inline-block">'+parseFloat(eth_fee).toFixed(8)+'</div></div>';
 
@@ -82105,10 +82109,15 @@ function styleKeystoreUploadBtnForTx(callback) {
 
 //method to sign and submit transaction to blockchain
 function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver, on_popup_load_gas_price, key, rawGasEstimation) {
+    console.log(token_val, 'token_val');
+    console.log(utils.toWei(token_val.toString()), 'utils.toWei(token_val.toString())');
+    console.log(on_popup_load_gas_price, 'on_popup_load_gas_price');
+    console.log(rawGasEstimation, 'rawGasEstimation');
+
     dApp.web3_1_0.eth.getTransactionCount(global_state.account, 'pending', function (err, nonce) {
         const EthereumTx = require('ethereumjs-tx');
         var transaction_obj = {
-            gasLimit: dApp.web3_1_0.utils.toHex(rawGasEstimation + (rawGasEstimation * (10 / 100))),
+            gasLimit: dApp.web3_1_0.utils.toHex(rawGasEstimation),
             gasPrice: dApp.web3_1_0.utils.toHex(on_popup_load_gas_price),
             from: global_state.account,
             nonce: dApp.web3_1_0.utils.toHex(nonce),
@@ -82135,6 +82144,8 @@ function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver
         tx.sign(key);
         //submit the transaction
         dApp.web3_1_0.eth.sendSignedTransaction('0x' + tx.serialize().toString('hex'), function (err, transactionHash) {
+            console.log(err, 'err');
+            console.log(transactionHash, 'transactionHash');
             hideLoader();
             basic.closeDialog();
 
