@@ -80320,6 +80320,10 @@ Number.prototype.toFixedNoRounding = function(n) {
     }
     const b = n - (a.length - dot) + 1;
     return b > 0 ? (a + "0".repeat(b)) : a;
+};
+
+function isFloat(n){
+    return Number(n) === n && n % 1 !== 0;
 }
 
 var custom_popover_interval;
@@ -81427,7 +81431,7 @@ var pages_data = {
                                             $('.spendable-dcn-amount').attr('data-value', availableEth);
                                             $('.spendable-amount .spendable-dcn-amount span').html(availableEth + ' ETH');
                                         } else {
-                                            $('.spendable-dcn-amount').attr('data-value', availableEth);
+                                            $('.spendable-dcn-amount').attr('data-value', 0);
                                             $('.spendable-amount .spendable-dcn-amount span').html('0 ETH');
                                         }
                                     }
@@ -82109,10 +82113,9 @@ function styleKeystoreUploadBtnForTx(callback) {
 
 //method to sign and submit transaction to blockchain
 function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver, on_popup_load_gas_price, key, rawGasEstimation) {
-    console.log(token_val, 'token_val');
-    console.log(utils.toWei(token_val.toString()), 'utils.toWei(token_val.toString())');
-    console.log(on_popup_load_gas_price, 'on_popup_load_gas_price');
-    console.log(rawGasEstimation, 'rawGasEstimation');
+    if (isFloat(parseFloat(token_val))) {
+        token_val = token_val.toFixedNoRounding(16);
+    }
 
     dApp.web3_1_0.eth.getTransactionCount(global_state.account, 'pending', function (err, nonce) {
         const EthereumTx = require('ethereumjs-tx');
