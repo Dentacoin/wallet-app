@@ -82114,7 +82114,7 @@ function styleKeystoreUploadBtnForTx(callback) {
 //method to sign and submit transaction to blockchain
 function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver, on_popup_load_gas_price, key, rawGasEstimation) {
     if (isFloat(parseFloat(token_val))) {
-        token_val = token_val.toFixedNoRounding(16);
+        token_val = parseFloat.toFixedNoRounding(17);
     }
 
     dApp.web3_1_0.eth.getTransactionCount(global_state.account, 'pending', function (err, nonce) {
