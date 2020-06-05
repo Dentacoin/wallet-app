@@ -81334,8 +81334,13 @@ var pages_data = {
                             $('.spendable-amount .spendable-dcn-amount span').html(dcn_balance + ' DCN');
 
                             $('.use-max-dcn-amount').click(function() {
+                                console.log($('.section-amount-to #active-crypto').val(), 'clicked');
+
+                                $('.section-amount-to input#crypto-amount').val($('.spendable-dcn-amount').attr('data-value'));
+                                $('.section-amount-to input#crypto-amount').closest('.custom-google-label-style').find('label').addClass('active-label');
+
+                                var to_fixed_num = 2;
                                 if ($('.section-amount-to #active-crypto').val() == 'dcn') {
-                                    var to_fixed_num = 2;
                                     //if(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd) < 0.01) {
                                     if(($('.section-amount-to input#crypto-amount').val().trim() * prepareDcnPrice(dentacoin_data)) < 0.01) {
                                         to_fixed_num = 4;
@@ -81343,14 +81348,12 @@ var pages_data = {
                                     //$('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
                                     $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * prepareDcnPrice(dentacoin_data)).toFixed(to_fixed_num)).trigger('change');
                                 } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
+                                    console.log(ethereum_data.market_data.current_price.usd, 'ethereum_data.market_data.current_price.usd');
                                     if(($('.section-amount-to input#crypto-amount').val().trim() * ethereum_data.market_data.current_price.usd) < 0.01) {
                                         to_fixed_num = 4;
                                     }
                                     $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * ethereum_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
                                 }
-
-                                $('.section-amount-to input#crypto-amount').val($('.spendable-dcn-amount').attr('data-value'));
-                                $('.section-amount-to input#crypto-amount').closest('.custom-google-label-style').find('label').addClass('active-label');
                             });
                         });
 
