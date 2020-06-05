@@ -81420,11 +81420,7 @@ var pages_data = {
                                             to: $('.section-amount-to .address-cell').attr('data-receiver')
                                         });
 
-                                        /*var eth_fee = utils.fromWei((gasPrice * ethSendGasEstimation).toString(), 'ether');
-                                        console.log(gasPrice, 'gasPrice');
-                                        console.log(eth_fee, 'eth_fee');*/
                                         var eth_fee = utils.fromWei((on_page_load_gas_price * ethSendGasEstimation).toString(), 'ether');
-                                        console.log(eth_fee, 'eth_fee');
 
                                         if (parseFloat(eth_fee) < eth_balance) {
                                             var availableEth = eth_balance - parseFloat(eth_fee);
@@ -82162,6 +82158,11 @@ function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver
                     displayMessageOnTransactionSend(token_label, transactionHash);
 
                     $('.transaction-history tbody').prepend(pending_history_transaction);
+
+                    $('.search-field #search').val('');
+                    $('.section-amount-to').hide();
+                    $('.section-send').fadeIn(500);
+                    $('#search').val('');
                 });
             } else if(symbol == 'ETH') {
                 getEthereumDataByCoingecko(function(request_response) {
@@ -82172,6 +82173,10 @@ function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver
                     displayMessageOnTransactionSend(token_label, transactionHash);
 
                     $('.transaction-history tbody').prepend(pending_history_transaction);
+
+                    $('.search-field #search').val('');
+                    $('.section-amount-to').hide();
+                    $('.section-send').fadeIn(500);
                 });
             }
         });
