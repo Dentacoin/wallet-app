@@ -577,9 +577,11 @@ var pages_data = {
                     //update usd amount (dentacoins in usd)
                     getDentacoinDataByExternalProvider(function(request_response) {
                         var dentacoin_data = request_response;
-
-                        //$('.usd-amount').html((dcn_balance * dentacoin_data.market_data.current_price.usd).toFixed(2));
-                        $('.usd-amount').html((dcn_balance * prepareDcnPrice(dentacoin_data)).toFixed(2));
+                        if (dentacoin_data != 0) {
+                            $('.usd-amount').html((dcn_balance * prepareDcnPrice(dentacoin_data)).toFixed(2));
+                        } else {
+                            $('.usd-amount-parent').hide();
+                        }
 
                         //update ether amount
                         dApp.web3_1_0.eth.getBalance(global_state.account, function(error, result) {
@@ -817,7 +819,7 @@ var pages_data = {
         //reading all clinics/ dentists from the CoreDB EVERY 1h
         showLoader();
 
-        setTimeout(function() {
+        setTimeout(async function() {
             if(core_db_clinics == undefined || core_db_clinics_time_to_request < Date.now()) {
 
                 $.ajax({
@@ -1068,6 +1070,8 @@ var pages_data = {
                 }
             }
 
+
+            var ethgasstation_json = await $.getJSON('https://ethgasstation.info/json/ethgasAPI.json');
             function bindSendPageElementsEvents() {
                 $('.section-send .next-send').click(function() {
                     if(!$(this).hasClass('disabled')) {
@@ -1099,21 +1103,25 @@ var pages_data = {
                             var dcn_balance = parseInt(response);
 
                             if (dcn_balance > 0) {
-                                $('.spendable-amount').addClass('active').html('<div class="spendable-dcn-amount inline-block fs-18 fs-xs-16 lato-bold"><label class="color-light-blue">Spendable amount: </label><span></span></div><div class="max-btn inline-block"><button class="white-light-blue-btn use-max-dcn-amount">Max</button></div>');
+                                $('.spendable-amount').addClass('active').html('<div class="spendable-dcn-amount inline-block fs-18 fs-xs-16 lato-bold" data-value="'+dcn_balance+'"><label class="color-light-blue">Spendable amount: </label><span></span></div><div class="max-btn inline-block"><button class="white-light-blue-btn use-max-dcn-amount">Max</button></div>');
                                 $('.spendable-amount .spendable-dcn-amount span').html(dcn_balance + ' DCN');
 
                                 $('.use-max-dcn-amount').click(function() {
-                                    $('.section-amount-to #active-crypto').val('dcn');
-                                    $('.section-amount-to input#crypto-amount').val(dcn_balance);
+                                    if ($('.section-amount-to #active-crypto').val() == 'dcn') {
+                                        $('.section-amount-to #active-crypto').val('dcn');
+                                    } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
+                                        $('.section-amount-to #active-crypto').val('eth');
+                                    }
+                                    $('.section-amount-to input#crypto-amount').val($('.spendable-dcn-amount').attr('data-value'));
                                     $('.section-amount-to input#crypto-amount').closest('.custom-google-label-style').find('label').addClass('active-label');
 
-                                    var to_fixed_num = 2;
+                                    /*var to_fixed_num = 2;
                                     //if(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd) < 0.01) {
                                     if(($('.section-amount-to input#crypto-amount').val().trim() * prepareDcnPrice(dentacoin_data)) < 0.01) {
                                         to_fixed_num = 4;
                                     }
                                     //$('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
-                                    $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * prepareDcnPrice(dentacoin_data)).toFixed(to_fixed_num)).trigger('change');
+                                    $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * prepareDcnPrice(dentacoin_data)).toFixed(to_fixed_num)).trigger('change');*/
                                 });
                             } else {
                                 $('.spendable-amount').removeClass('active').html('');
@@ -1152,6 +1160,12 @@ var pages_data = {
                         $('.section-amount-to #active-crypto').on('change', function() {
                             var to_fixed_num = 2;
                             if($(this).val() == 'dcn') {
+                                dApp.methods.getDCNBalance(global_state.account, function(err, response) {
+                                    var dcn_balance = parseInt(response);
+                                    $('.spendable-dcn-amount').attr('data-value', dcn_balance);
+                                    $('.spendable-amount .spendable-dcn-amount span').html(dcn_balance + ' DCN');
+                                });
+
                                 //if(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd) < 0.01) {
                                 if(($('.section-amount-to input#crypto-amount').val().trim() * prepareDcnPrice(dentacoin_data)) < 0.01) {
                                     to_fixed_num = 4;
@@ -1159,6 +1173,34 @@ var pages_data = {
                                 //$('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
                                 $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * prepareDcnPrice(dentacoin_data)).toFixed(to_fixed_num)).trigger('change');
                             } else if($(this).val() == 'eth') {
+                                dApp.web3_1_0.eth.getBalance(global_state.account, async function(error, result) {
+                                    if(error) {
+                                        console.log(error);
+                                    } else {
+                                        var dummyReceiver = '0x3B224dEc481DddE95aBe0a605BBFa4C900584F6D';
+                                        var eth_balance = parseFloat(utils.fromWei(result));
+                                        const on_page_load_gwei = ethgasstation_json.safeLow;
+                                        const on_page_load_gas_price = on_page_load_gwei * 100000000;
+
+                                        var ethSendGasEstimation = await dApp.web3_1_0.eth.estimateGas({
+                                            to: dummyReceiver
+                                        });
+
+                                        //adding 10% just in case the transaction dont fail
+                                        ethSendGasEstimation = ethSendGasEstimation + (ethSendGasEstimation * (10 / 100));
+
+                                        var eth_fee = utils.fromWei((on_page_load_gas_price * ethSendGasEstimation).toString(), 'ether');
+
+                                        if (parseFloat(eth_fee) < eth_balance) {
+                                            var availableEth = eth_balance - parseFloat(eth_fee);
+                                            $('.spendable-dcn-amount').attr('data-value', availableEth);
+                                            $('.spendable-amount .spendable-dcn-amount span').html(availableEth + ' ETH');
+                                        } else {
+                                            $('.spendable-amount .spendable-dcn-amount span').html('0 ETH');
+                                        }
+                                    }
+                                });
+
                                 if(($('.section-amount-to input#crypto-amount').val().trim() * ethereum_data.market_data.current_price.usd) < 0.01) {
                                     to_fixed_num = 4;
                                 }
@@ -1166,176 +1208,168 @@ var pages_data = {
                             }
                         });
 
-                        $.ajax({
-                            type: 'GET',
-                            url: 'https://ethgasstation.info/json/ethgasAPI.json',
-                            dataType: 'json',
-                            success: function(response) {
-                                var ethgasstation_data = response;
+                        $('.section-amount-to .open-transaction-recipe').click(function() {
+                            var crypto_val = $('.section-amount-to input#crypto-amount').val().trim();
+                            var usd_val = $('.section-amount-to input#usd-val').val().trim();
+                            var sending_to_address = $('.section-amount-to .address-cell').attr('data-receiver');
 
-                                $('.section-amount-to .open-transaction-recipe').click(function() {
-                                    var crypto_val = $('.section-amount-to input#crypto-amount').val().trim();
-                                    var usd_val = $('.section-amount-to input#usd-val').val().trim();
-                                    var sending_to_address = $('.section-amount-to .address-cell').attr('data-receiver');
+                            dApp.methods.getDCNBalance(global_state.account, function(err, response) {
+                                var dcn_balance = parseInt(response);
 
-                                    dApp.methods.getDCNBalance(global_state.account, function(err, response) {
-                                        var dcn_balance = parseInt(response);
+                                dApp.web3_1_0.eth.getBalance(global_state.account, function(error, eth_balance) {
+                                    if(error) {
+                                        console.log(error);
+                                    } else {
+                                        if (isNaN(crypto_val) || isNaN(usd_val) || crypto_val == '' || crypto_val == 0 || usd_val == '' || usd_val == 0) {
+                                            //checking if not a number or empty values
+                                            basic.showAlert('Please make sure all values are numbers.', '', true);
+                                            return false;
+                                        } else if (crypto_val < 0 || usd_val < 0) {
+                                            //checking if negative numbers
+                                            basic.showAlert('Please make sure all values are greater than 0.', '', true);
+                                            return false;
+                                        } else if (crypto_val < 10 && $('.section-amount-to #active-crypto').val() == 'dcn') {
+                                            //checking if dcn value is lesser than 10 (contract condition)
+                                            basic.showAlert('Please make sure DCN value is greater than 10. You cannot send less than 10 DCN.', '', true);
+                                            return false;
+                                        } else if (0.005 > parseFloat(utils.fromWei(eth_balance))) {
+                                            //checking if current balance is lower than the desired value to send
+                                            if($('.section-amount-to #active-crypto').val() == 'dcn') {
+                                                basic.showAlert('For sending Dentacoins you need at least 0.005 ETH. Please refill.', '', true);
+                                            } else if($('.section-amount-to #active-crypto').val() == 'eth') {
+                                                basic.showAlert('For sending Ethereum you need at least 0.005 ETH. Please refill.', '', true);
+                                            }
+                                            return false;
+                                        } else if($('.section-amount-to #active-crypto').val() == 'dcn' && crypto_val > parseInt(dcn_balance)) {
+                                            basic.showAlert('The value you want to send is higher than your balance.', '', true);
+                                            return false;
+                                        } else if($('.section-amount-to #active-crypto').val() == 'eth' && crypto_val > parseFloat(utils.fromWei(eth_balance))) {
+                                            basic.showAlert('The value you want to send is higher than your balance.', '', true);
+                                            return false;
+                                        } else if (!utils.innerAddressCheck(sending_to_address)) {
+                                            //checking again if valid address
+                                            basic.showAlert('Please enter a valid wallet address. It should start with "0x" and be followed by 40 characters (numbers and letters).', '', true);
+                                            return false;
+                                        } else if(!$('.section-amount-to #verified-receiver-address').is(':checked')) {
+                                            //checking again if valid address
+                                            basic.showAlert('Please check the checkbox.', '', true);
+                                            return false;
+                                        }
 
-                                        dApp.web3_1_0.eth.getBalance(global_state.account, function(error, eth_balance) {
-                                            if(error) {
-                                                console.log(error);
-                                            } else {
-                                                if (isNaN(crypto_val) || isNaN(usd_val) || crypto_val == '' || crypto_val == 0 || usd_val == '' || usd_val == 0) {
-                                                    //checking if not a number or empty values
-                                                    basic.showAlert('Please make sure all values are numbers.', '', true);
-                                                    return false;
-                                                } else if (crypto_val < 0 || usd_val < 0) {
-                                                    //checking if negative numbers
-                                                    basic.showAlert('Please make sure all values are greater than 0.', '', true);
-                                                    return false;
-                                                } else if (crypto_val < 10 && $('.section-amount-to #active-crypto').val() == 'dcn') {
-                                                    //checking if dcn value is lesser than 10 (contract condition)
-                                                    basic.showAlert('Please make sure DCN value is greater than 10. You cannot send less than 10 DCN.', '', true);
-                                                    return false;
-                                                } else if (0.005 > parseFloat(utils.fromWei(eth_balance))) {
-                                                    //checking if current balance is lower than the desired value to send
-                                                    if($('.section-amount-to #active-crypto').val() == 'dcn') {
-                                                        basic.showAlert('For sending Dentacoins you need at least 0.005 ETH. Please refill.', '', true);
-                                                    } else if($('.section-amount-to #active-crypto').val() == 'eth') {
-                                                        basic.showAlert('For sending Ethereum you need at least 0.005 ETH. Please refill.', '', true);
-                                                    }
-                                                    return false;
-                                                } else if($('.section-amount-to #active-crypto').val() == 'dcn' && crypto_val > parseInt(dcn_balance)) {
-                                                    basic.showAlert('The value you want to send is higher than your balance.', '', true);
-                                                    return false;
-                                                } else if($('.section-amount-to #active-crypto').val() == 'eth' && crypto_val > parseFloat(utils.fromWei(eth_balance))) {
-                                                    basic.showAlert('The value you want to send is higher than your balance.', '', true);
-                                                    return false;
-                                                } else if (!utils.innerAddressCheck(sending_to_address)) {
-                                                    //checking again if valid address
-                                                    basic.showAlert('Please enter a valid wallet address. It should start with "0x" and be followed by 40 characters (numbers and letters).', '', true);
-                                                    return false;
-                                                } else if(!$('.section-amount-to #verified-receiver-address').is(':checked')) {
-                                                    //checking again if valid address
-                                                    basic.showAlert('Please check the checkbox.', '', true);
-                                                    return false;
-                                                }
+                                        if(meta_mask_installed)    {
+                                            if($('.section-amount-to #active-crypto').val() == 'dcn') {
+                                                dApp.methods.transfer(sending_to_address, crypto_val);
+                                            } else if($('.section-amount-to #active-crypto').val() == 'eth') {
+                                                dApp.web3_1_0.eth.sendTransaction({
+                                                    from: global_state.account, to: sending_to_address, value: utils.toWei(crypto_val)
+                                                }).on('transactionHash', function(hash){
+                                                    displayMessageOnTransactionSend('Ethers', hash);
+                                                }).catch(function(err) {
+                                                    basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
+                                                });
+                                            }
+                                        } else {
+                                            showLoader();
 
-                                                if(meta_mask_installed)    {
-                                                    if($('.section-amount-to #active-crypto').val() == 'dcn') {
-                                                        dApp.methods.transfer(sending_to_address, crypto_val);
-                                                    } else if($('.section-amount-to #active-crypto').val() == 'eth') {
-                                                        dApp.web3_1_0.eth.sendTransaction({
-                                                            from: global_state.account, to: sending_to_address, value: utils.toWei(crypto_val)
-                                                        }).on('transactionHash', function(hash){
-                                                            displayMessageOnTransactionSend('Ethers', hash);
-                                                        }).catch(function(err) {
-                                                            basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
-                                                        });
-                                                    }
+                                            var function_abi;
+                                            var token_symbol;
+                                            if($('.section-amount-to #active-crypto').val() == 'dcn') {
+                                                token_symbol = 'DCN';
+                                                function_abi = DCNContract.methods.transfer(sending_to_address, crypto_val).encodeABI();
+                                            } else if($('.section-amount-to #active-crypto').val() == 'eth') {
+                                                token_symbol = 'ETH';
+                                            }
+
+                                            //calculating the fee from the gas price and the estimated gas price
+                                            const on_popup_load_gwei = ethgasstation_json.safeLow;
+                                            //adding 10% of the outcome just in case transactions don't take so long
+                                            const on_popup_load_gas_price = on_popup_load_gwei * 100000000 + ((on_popup_load_gwei * 100000000) * 10/100);
+
+                                            //using ethgasstation gas price and not dApp.helper.getGasPrice(), because its more accurate
+                                            dApp.web3_1_0.eth.estimateGas({
+                                                to: sending_to_address,
+                                                data: function_abi
+                                            }, function(error, result) {
+                                                if(error) {
+                                                    console.log(error);
                                                 } else {
-                                                    showLoader();
+                                                    var rawGasEstimation = result;
+                                                    var eth_fee = utils.fromWei((on_popup_load_gas_price * rawGasEstimation).toString(), 'ether');
 
-                                                    var function_abi;
-                                                    var token_symbol;
-                                                    if($('.section-amount-to #active-crypto').val() == 'dcn') {
-                                                        token_symbol = 'DCN';
-                                                        function_abi = DCNContract.methods.transfer(sending_to_address, crypto_val).encodeABI();
-                                                    } else if($('.section-amount-to #active-crypto').val() == 'eth') {
-                                                        token_symbol = 'ETH';
-                                                    }
+                                                    var transaction_popup_html = '<div class="title">Send confirmation</div><div class="pictogram-and-dcn-usd-price"><svg version="1.1" class="width-100 max-width-100 margin-bottom-10" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><style type="text/css">.st0-recipe{fill:#FFFFFF;}.st1-recipe{fill:#CA675A;}.st2-recipe{fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="100" width="105.7" x="-7.2" y="-6.4"></sliceSourceBounds></sfw></metadata><circle class="st0-recipe" cx="50" cy="50" r="50"/><g><g><g><path class="st1-recipe" d="M50.1,93.7c-18.7,0-36-12.4-41.3-31.3C2.4,39.6,15.8,16,38.5,9.6C48.9,6.7,60,7.8,69.6,12.8c1.2,0.6,1.6,2,1,3.2s-2,1.6-3.2,1c-8.6-4.4-18.4-5.4-27.7-2.8c-20.1,5.6-32,26.7-26.3,46.9s26.7,32.1,46.9,26.4s32.1-26.7,26.4-46.9c-1.1-3.9-2.8-7.6-5-10.9c-0.7-1.1-0.4-2.6,0.7-3.3c1.1-0.7,2.6-0.4,3.3,0.7c2.5,3.8,4.4,7.9,5.6,12.3c6.4,22.8-7,46.5-29.7,52.8C57.8,93.2,53.9,93.7,50.1,93.7z"/></g><g><path class="st1-recipe" d="M33.1,78.6c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.4l40.4-50.5c0.8-1,2.3-1.2,3.4-0.4c1,0.8,1.2,2.3,0.4,3.4L35,77.7C34.5,78.3,33.8,78.6,33.1,78.6z"/></g><g><g><path class="st2-recipe" d="M105.7,56.9"/></g></g></g><g><path class="st1-recipe" d="M73.7,54.2c-0.1,0-0.2,0-0.2,0c-1.3-0.2-2.3-1.4-2.2-2.7L74,23.9L47.6,39.8c-1.1,0.7-2.6,0.3-3.3-0.8c-0.7-1.1-0.3-2.6,0.8-3.3l34.5-20.8L76.1,52C76,53.2,74.9,54.2,73.7,54.2z"/></g></g></svg><div class="dcn-amount">-'+crypto_val+' '+token_symbol+'</div><div class="usd-amount">=$'+usd_val+'</div></div><div class="confirm-row to"> <div class="label inline-block">To:</div><div class="value inline-block">'+sending_to_address+'</div></div><div class="confirm-row from"> <div class="label inline-block">From:</div><div class="value inline-block">'+global_state.account+'</div></div><div class="confirm-row free"> <div class="label inline-block">Ether fee:</div><div class="value inline-block">'+parseFloat(eth_fee).toFixed(8)+'</div></div>';
 
-                                                    //calculating the fee from the gas price and the estimated gas price
-                                                    const on_popup_load_gwei = ethgasstation_data.safeLow;
-                                                    //adding 10% of the outcome just in case transactions don't take so long
-                                                    const on_popup_load_gas_price = on_popup_load_gwei * 100000000 + ((on_popup_load_gwei * 100000000) * 10/100);
+                                                    if(window.localStorage.getItem('keystore_file') != null) {
+                                                        //cached keystore path on mobile device or cached keystore file on browser
+                                                        transaction_popup_html+='<div class="container-fluid"><div class="row padding-top-25 cached-keystore-file"><div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">Secret password:</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">Confirm</a></div></div></div>';
+                                                        basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
 
-                                                    //using ethgasstation gas price and not dApp.helper.getGasPrice(), because its more accurate
-                                                    dApp.web3_1_0.eth.estimateGas({
-                                                        to: sending_to_address,
-                                                        data: function_abi
-                                                    }, function(error, result) {
-                                                        if(error) {
-                                                            console.log(error);
-                                                        } else {
-                                                            var eth_fee = utils.fromWei((on_popup_load_gas_price * result).toString(), 'ether');
-
-                                                            var transaction_popup_html = '<div class="title">Send confirmation</div><div class="pictogram-and-dcn-usd-price"><svg version="1.1" class="width-100 max-width-100 margin-bottom-10" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><style type="text/css">.st0-recipe{fill:#FFFFFF;}.st1-recipe{fill:#CA675A;}.st2-recipe{fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="100" width="105.7" x="-7.2" y="-6.4"></sliceSourceBounds></sfw></metadata><circle class="st0-recipe" cx="50" cy="50" r="50"/><g><g><g><path class="st1-recipe" d="M50.1,93.7c-18.7,0-36-12.4-41.3-31.3C2.4,39.6,15.8,16,38.5,9.6C48.9,6.7,60,7.8,69.6,12.8c1.2,0.6,1.6,2,1,3.2s-2,1.6-3.2,1c-8.6-4.4-18.4-5.4-27.7-2.8c-20.1,5.6-32,26.7-26.3,46.9s26.7,32.1,46.9,26.4s32.1-26.7,26.4-46.9c-1.1-3.9-2.8-7.6-5-10.9c-0.7-1.1-0.4-2.6,0.7-3.3c1.1-0.7,2.6-0.4,3.3,0.7c2.5,3.8,4.4,7.9,5.6,12.3c6.4,22.8-7,46.5-29.7,52.8C57.8,93.2,53.9,93.7,50.1,93.7z"/></g><g><path class="st1-recipe" d="M33.1,78.6c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.4l40.4-50.5c0.8-1,2.3-1.2,3.4-0.4c1,0.8,1.2,2.3,0.4,3.4L35,77.7C34.5,78.3,33.8,78.6,33.1,78.6z"/></g><g><g><path class="st2-recipe" d="M105.7,56.9"/></g></g></g><g><path class="st1-recipe" d="M73.7,54.2c-0.1,0-0.2,0-0.2,0c-1.3-0.2-2.3-1.4-2.2-2.7L74,23.9L47.6,39.8c-1.1,0.7-2.6,0.3-3.3-0.8c-0.7-1.1-0.3-2.6,0.8-3.3l34.5-20.8L76.1,52C76,53.2,74.9,54.2,73.7,54.2z"/></g></g></svg><div class="dcn-amount">-'+crypto_val+' '+token_symbol+'</div><div class="usd-amount">=$'+usd_val+'</div></div><div class="confirm-row to"> <div class="label inline-block">To:</div><div class="value inline-block">'+sending_to_address+'</div></div><div class="confirm-row from"> <div class="label inline-block">From:</div><div class="value inline-block">'+global_state.account+'</div></div><div class="confirm-row free"> <div class="label inline-block">Ether fee:</div><div class="value inline-block">'+parseFloat(eth_fee).toFixed(8)+'</div></div>';
-
-                                                            if(window.localStorage.getItem('keystore_file') != null) {
-                                                                //cached keystore path on mobile device or cached keystore file on browser
-                                                                transaction_popup_html+='<div class="container-fluid"><div class="row padding-top-25 cached-keystore-file"><div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">Secret password:</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">Confirm</a></div></div></div>';
-                                                                basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
-
-                                                                $('.cached-keystore-file .confirm-transaction.keystore-file').click(function() {
-                                                                    if($('.cached-keystore-file #your-secret-key-password').val().trim() == '') {
-                                                                        basic.showAlert('Please enter valid secret file password.', '', true);
-                                                                    } else {
-                                                                        showLoader('Hold on...<br>Your transaction is being processed.');
-
-                                                                        setTimeout(function () {
-                                                                            decryptKeystore(window.localStorage.getItem('keystore_file'), $('.cached-keystore-file #your-secret-key-password').val().trim(), function(success, to_string, error, error_message) {
-                                                                                if(success) {
-                                                                                    submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, success);
-                                                                                } else if(error) {
-                                                                                    basic.showAlert(error_message, '', true);
-                                                                                    hideLoader();
-                                                                                }
-                                                                            });
-                                                                        }, 2000);
-                                                                    }
-                                                                });
+                                                        $('.cached-keystore-file .confirm-transaction.keystore-file').click(function() {
+                                                            if($('.cached-keystore-file #your-secret-key-password').val().trim() == '') {
+                                                                basic.showAlert('Please enter valid secret file password.', '', true);
                                                             } else {
-                                                                //nothing is cached
-                                                                transaction_popup_html+='<div class="container-fluid proof-of-address padding-top-20 padding-bottom-20"> <div class="row fs-0"> <div class="col-xs-12 col-sm-5 inline-block padding-left-30 padding-left-xs-15"> <a href="javascript:void(0)" class="light-blue-white-btn text-center enter-private-key display-block-important fs-18 line-height-18"><span>Enter your Private Key<div class="fs-16">(not recommended)</div></span></a> </div><div class="col-xs-12 col-sm-2 text-center calibri-bold fs-20 inline-block">or</div><div class="col-xs-12 col-sm-5 inline-block padding-right-30 padding-right-xs-15"> <div class="upload-file-container" data-id="upload-keystore-file" data-label="Upload your Backup file"> <input type="file" id="upload-keystore-file" class="custom-upload-keystore-file hide-input"/> <div class="btn-wrapper"></div></div></div></div><div class="row on-change-result"></div></div>';
-                                                                basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
+                                                                showLoader('Hold on...<br>Your transaction is being processed.');
 
-                                                                //init private key btn logic
-                                                                $(document).on('click', '.enter-private-key', function() {
-                                                                    $('.proof-of-address #upload-keystore-file').val('');
-                                                                    $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-20"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-private-key">Your Private Key:</label><input type="text" id="your-private-key" maxlength="64" class="full-rounded"/></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction private-key">CONFIRM</a></div>');
-
-                                                                    $('#your-private-key').focus();
-                                                                    $('label[for="your-private-key"]').addClass('active-label');
-
-                                                                    $('.confirm-transaction.private-key').click(function() {
-                                                                        if($('.proof-of-address #your-private-key').val().trim() == '') {
-                                                                            basic.showAlert('Please enter valid private key.', '', true);
-                                                                        } else {
-                                                                            showLoader('Hold on...<br>Your transaction is being processed.');
-
-                                                                            setTimeout(function() {
-                                                                                var validating_private_key = validatePrivateKey($('.proof-of-address #your-private-key').val().trim());
-                                                                                if(validating_private_key.success) {
-                                                                                    if(utils.checksumAddress(validating_private_key.success.address) == utils.checksumAddress(global_state.account)) {
-                                                                                        submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, new Buffer($('.proof-of-address #your-private-key').val().trim(), 'hex'));
-                                                                                    } else {
-                                                                                        basic.showAlert('Please enter private key related to your Wallet Address', '', true);
-                                                                                        hideLoader();
-                                                                                    }
-                                                                                } else if(validating_private_key.error) {
-                                                                                    basic.showAlert(validating_private_key.message, '', true);
-                                                                                    hideLoader();
-                                                                                }
-                                                                            }, 2000);
+                                                                setTimeout(function () {
+                                                                    decryptKeystore(window.localStorage.getItem('keystore_file'), $('.cached-keystore-file #your-secret-key-password').val().trim(), function(success, to_string, error, error_message) {
+                                                                        if(success) {
+                                                                            submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, success, rawGasEstimation);
+                                                                        } else if(error) {
+                                                                            basic.showAlert(error_message, '', true);
+                                                                            hideLoader();
                                                                         }
                                                                     });
-                                                                });
-
-                                                                //init keystore btn logic
-                                                                styleKeystoreUploadBtnForTx(function(key) {
-                                                                    submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, key);
-                                                                });
+                                                                }, 2000);
                                                             }
-                                                            hideLoader();
-                                                        }
-                                                    });
+                                                        });
+                                                    } else {
+                                                        //nothing is cached
+                                                        transaction_popup_html+='<div class="container-fluid proof-of-address padding-top-20 padding-bottom-20"> <div class="row fs-0"> <div class="col-xs-12 col-sm-5 inline-block padding-left-30 padding-left-xs-15"> <a href="javascript:void(0)" class="light-blue-white-btn text-center enter-private-key display-block-important fs-18 line-height-18"><span>Enter your Private Key<div class="fs-16">(not recommended)</div></span></a> </div><div class="col-xs-12 col-sm-2 text-center calibri-bold fs-20 inline-block">or</div><div class="col-xs-12 col-sm-5 inline-block padding-right-30 padding-right-xs-15"> <div class="upload-file-container" data-id="upload-keystore-file" data-label="Upload your Backup file"> <input type="file" id="upload-keystore-file" class="custom-upload-keystore-file hide-input"/> <div class="btn-wrapper"></div></div></div></div><div class="row on-change-result"></div></div>';
+                                                        basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
+
+                                                        //init private key btn logic
+                                                        $(document).on('click', '.enter-private-key', function() {
+                                                            $('.proof-of-address #upload-keystore-file').val('');
+                                                            $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-20"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-private-key">Your Private Key:</label><input type="text" id="your-private-key" maxlength="64" class="full-rounded"/></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction private-key">CONFIRM</a></div>');
+
+                                                            $('#your-private-key').focus();
+                                                            $('label[for="your-private-key"]').addClass('active-label');
+
+                                                            $('.confirm-transaction.private-key').click(function() {
+                                                                if($('.proof-of-address #your-private-key').val().trim() == '') {
+                                                                    basic.showAlert('Please enter valid private key.', '', true);
+                                                                } else {
+                                                                    showLoader('Hold on...<br>Your transaction is being processed.');
+
+                                                                    setTimeout(function() {
+                                                                        var validating_private_key = validatePrivateKey($('.proof-of-address #your-private-key').val().trim());
+                                                                        if(validating_private_key.success) {
+                                                                            if(utils.checksumAddress(validating_private_key.success.address) == utils.checksumAddress(global_state.account)) {
+                                                                                submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, new Buffer($('.proof-of-address #your-private-key').val().trim(), 'hex'), rawGasEstimation);
+                                                                            } else {
+                                                                                basic.showAlert('Please enter private key related to your Wallet Address', '', true);
+                                                                                hideLoader();
+                                                                            }
+                                                                        } else if(validating_private_key.error) {
+                                                                            basic.showAlert(validating_private_key.message, '', true);
+                                                                            hideLoader();
+                                                                        }
+                                                                    }, 2000);
+                                                                }
+                                                            });
+                                                        });
+
+                                                        //init keystore btn logic
+                                                        styleKeystoreUploadBtnForTx(function(key) {
+                                                            submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, on_popup_load_gas_price, key, rawGasEstimation);
+                                                        });
+                                                    }
+                                                    hideLoader();
                                                 }
-                                            }
-                                        });
-                                    });
+                                            });
+                                        }
+                                    }
                                 });
-                            }
+                            });
                         });
                     });
                 });
@@ -1421,22 +1455,15 @@ var pages_data = {
                         dataType: 'json',
                         success: async function(response) {
                             if(response.success) {
-                                console.log(response.data, 'response.data');
-
                                 var dcnValue = await utils.convertUsdToDcn(response.data.usd);
                                 function scanningRouter(key) {
-                                    console.log(key, 'scanningRouter');
                                     if(scanObject[4] == 'approval-creation') {
-                                        console.log('fire approval transaction');
                                         assuranceTransactions.approval(scanObject[1], key, function() {
-                                            console.log('fire creation transaction');
                                             assuranceTransactions.creation(response.data.dentist, response.data.usd, dcnValue, response.data.next_transfer, response.data.ipfs_hash, scanObject[1], key, function(transactionHash) {
-                                                console.log('finish creation transaction');
 
                                                 var execute_ajax = true;
                                                 //doing setinterval check to check if the smart creation transaction got mined
                                                 var contractCreationCheck = setInterval(async function () {
-                                                    console.log('contractCreationCheck');
                                                     var contract_creation_status = await dApp.web3_1_0_assurance.eth.getTransactionReceipt(transactionHash);
                                                     if (contract_creation_status != null && basic.property_exists(contract_creation_status, 'status')) {
                                                         if (contract_creation_status.status && execute_ajax) {
@@ -1455,7 +1482,6 @@ var pages_data = {
                                                                     transactionHash: transactionHash
                                                                 },
                                                                 success: function(response) {
-                                                                    console.log(response, 'response');
                                                                     hideLoader();
                                                                     basic.closeDialog();
                                                                     if(response.success) {
@@ -1472,14 +1498,10 @@ var pages_data = {
                                             });
                                         });
                                     } else if(scanObject[4] == 'creation') {
-                                        console.log('fire creation transaction');
                                         assuranceTransactions.creation(response.data.dentist, response.data.usd, dcnValue, response.data.next_transfer, response.data.ipfs_hash, scanObject[1], key, function(transactionHash) {
-                                            console.log('finish creation transaction');
-
                                             var execute_ajax = true;
                                             //doing setinterval check to check if the smart creation transaction got mined
                                             var contractCreationCheck = setInterval(async function () {
-                                                console.log('contractCreationCheck');
                                                 var contract_creation_status = await dApp.web3_1_0_assurance.eth.getTransactionReceipt(transactionHash);
                                                 if (contract_creation_status != null && basic.property_exists(contract_creation_status, 'status')) {
                                                     if (contract_creation_status.status && execute_ajax) {
@@ -1498,7 +1520,6 @@ var pages_data = {
                                                                 transactionHash: transactionHash
                                                             },
                                                             success: function(response) {
-                                                                console.log(response, 'response');
                                                                 hideLoader();
                                                                 basic.closeDialog();
                                                                 if(response.success) {
@@ -1515,12 +1536,9 @@ var pages_data = {
                                         });
                                     } else if(scanObject[4] == 'dentist-approval') {
                                         assuranceTransactions.dentist_approval(response.data.patient, scanObject[1], key, function(transactionHash) {
-                                            console.log('finish dentist approval transaction');
-
                                             var execute_ajax = true;
                                             //doing setinterval check to check if the smart creation transaction got mined
                                             var contractApprovalCheck = setInterval(async function () {
-                                                console.log('contractApprovalCheck');
                                                 var contract_approval_status = await dApp.web3_1_0_assurance.eth.getTransactionReceipt(transactionHash);
                                                 if (contract_approval_status != null && basic.property_exists(contract_approval_status, 'status')) {
                                                     if (contract_approval_status.status && execute_ajax) {
@@ -1539,7 +1557,6 @@ var pages_data = {
                                                                 transactionHash: transactionHash
                                                             },
                                                             success: function(response) {
-                                                                console.log(response, 'response');
                                                                 hideLoader();
                                                                 basic.closeDialog();
                                                                 if(response.success) {
@@ -1555,14 +1572,10 @@ var pages_data = {
                                             }, 3000);
                                         });
                                     } else if(scanObject[4] == 'active-withdraw') {
-                                        console.log('start dentist withdraw transaction');
                                         assuranceTransactions.withdraw(response.data.patient, scanObject[1], key, function(transactionHash) {
-                                            console.log('finish dentist withdraw transaction');
-
                                             var execute_ajax = true;
                                             //doing setinterval check to check if the smart creation transaction got mined
                                             var contractWithdrawCheck = setInterval(async function () {
-                                                console.log('contractWithdrawCheck');
                                                 var contract_withdraw_status = await dApp.web3_1_0_assurance.eth.getTransactionReceipt(transactionHash);
                                                 if (contract_withdraw_status != null && basic.property_exists(contract_withdraw_status, 'status')) {
                                                     if (contract_withdraw_status.status && execute_ajax) {
@@ -1581,7 +1594,6 @@ var pages_data = {
                                                                 transactionHash: transactionHash
                                                             },
                                                             success: function(response) {
-                                                                console.log(response, 'response');
                                                                 hideLoader();
                                                                 basic.closeDialog();
                                                                 if(response.success) {
@@ -1598,12 +1610,9 @@ var pages_data = {
                                         });
                                     } else if(scanObject[4] == 'cancel') {
                                         assuranceTransactions.cancel(response.data.patient, response.data.dentist, scanObject[1], key, function(transactionHash) {
-                                            console.log('finish cancel transaction');
-
                                             var execute_ajax = true;
                                             //doing setinterval check to check if the smart creation transaction got mined
                                             var contractCancelCheck = setInterval(async function () {
-                                                console.log('contractCancelCheck');
                                                 var contract_cancel_status = await dApp.web3_1_0_assurance.eth.getTransactionReceipt(transactionHash);
                                                 if (contract_cancel_status != null && basic.property_exists(contract_cancel_status, 'status')) {
                                                     if (contract_cancel_status.status && execute_ajax) {
@@ -1624,7 +1633,6 @@ var pages_data = {
                                                                 reason: scanObject[6]
                                                             },
                                                             success: function(response) {
-                                                                console.log(response, 'response');
                                                                 hideLoader();
                                                                 basic.closeDialog();
                                                                 if(response.success) {
@@ -1702,8 +1710,6 @@ var pages_data = {
                                                 setTimeout(function() {
                                                     var validating_private_key = validatePrivateKey($('.proof-of-address #your-private-key').val().trim());
                                                     if(validating_private_key.success) {
-                                                        console.log(validating_private_key.success, 'validating_private_key.success');
-                                                        console.log(utils.checksumAddress(validating_private_key.success.address), 'utils.checksumAddress(validating_private_key.success.address)');
                                                         if(utils.checksumAddress(validating_private_key.success.address) == utils.checksumAddress(global_state.account)) {
                                                             scanningRouter(new Buffer($('.proof-of-address #your-private-key').val().trim(), 'hex'));
                                                         } else {
@@ -1869,11 +1875,11 @@ function styleKeystoreUploadBtnForTx(callback) {
 }
 
 //method to sign and submit transaction to blockchain
-function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver, on_popup_load_gas_price, key) {
+function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver, on_popup_load_gas_price, key, rawGasEstimation) {
     dApp.web3_1_0.eth.getTransactionCount(global_state.account, 'pending', function (err, nonce) {
         const EthereumTx = require('ethereumjs-tx');
         var transaction_obj = {
-            gasLimit: dApp.web3_1_0.utils.toHex(65000),
+            gasLimit: dApp.web3_1_0.utils.toHex(rawGasEstimation + (rawGasEstimation * (10 / 100))),
             gasPrice: dApp.web3_1_0.utils.toHex(on_popup_load_gas_price),
             from: global_state.account,
             nonce: dApp.web3_1_0.utils.toHex(nonce),
@@ -1904,7 +1910,6 @@ function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver
             basic.closeDialog();
 
             var pending_history_transaction;
-
             if(symbol == 'DCN') {
                 getDentacoinDataByExternalProvider(function(request_response) {
                     pending_history_transaction += buildDentacoinHistoryTransaction(request_response, token_val, receiver, global_state.account, Math.round((new Date()).getTime() / 1000), transactionHash, true);
@@ -3615,7 +3620,6 @@ function buildDentacoinHistoryTransaction(dentacoin_data, value, to, from, times
     var class_name = '';
     var label = '';
     //var usd_amount = (parseInt(value) * dentacoin_data.market_data.current_price.usd).toFixed(2);
-    var usd_amount = (parseInt(value) * prepareDcnPrice(dentacoin_data)).toFixed(2);
     if(utils.checksumAddress(to) == utils.checksumAddress(global_state.account)) {
         //IF THE CURRENT ACCOUNT IS RECEIVER
         other_address = from;
@@ -3661,7 +3665,15 @@ function buildDentacoinHistoryTransaction(dentacoin_data, value, to, from, times
         transaction_id_label += '<span class="pending-transaction">( Pending )</span>';
     }
 
-    return '<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+transactionHash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+transactionHash+'" target="_blank" class="lato-bold color-white data-external-link">'+transaction_id_label+'</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">'+dcn_amount+'</li><li>'+usd_amount+' USD</li></ul></td></tr>';
+    var pricesList = '';
+    if (dentacoin_data != 0) {
+        var usd_amount = (parseInt(value) * prepareDcnPrice(dentacoin_data)).toFixed(2);
+        pricesList = '<ul><li class="lato-bold dcn-amount">'+dcn_amount+'</li><li>'+usd_amount+' USD</li></ul>';
+    } else {
+        pricesList = '<ul><li class="lato-bold dcn-amount">'+dcn_amount+'</li></ul>';
+    }
+
+    return '<tr class="'+class_name+' single-transaction" onclick="window.open(\'https://etherscan.io/tx/'+transactionHash+'\');"><td class="icon"></td><td><ul><li>'+(date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() +'</li><li>'+hours+':'+minutes+'</li></ul></td><td><ul><li><span><strong>'+label+': </strong>'+other_address+'</span></li><li><a href="https://etherscan.io/tx/'+transactionHash+'" target="_blank" class="lato-bold color-white data-external-link">'+transaction_id_label+'</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5">'+pricesList+'</td></tr>';
 }
 
 function initScan(clicker, valueHolder, callback, warning, warningText) {
@@ -3758,12 +3770,8 @@ function initScan(clicker, valueHolder, callback, warning, warningText) {
 var assuranceTransactions = {
     approval: async function(gasPrice, key, callback) {
         var dentacoin_token_instance = await new dApp.web3_1_0_assurance.eth.Contract(assurance_config.dentacoin_token_abi, assurance_config.dentacoin_token_address);
-        console.log(dentacoin_token_instance, 'dentacoin_token_instance');
-
         var approval_function_abi = await dentacoin_token_instance.methods.approve(assurance_config.assurance_state_address, assurance_config.dentacoins_to_approve).encodeABI();
-        console.log(approval_function_abi, 'approval_function_abi');
         var gas_cost_for_approval = await dentacoin_token_instance.methods.approve(assurance_config.assurance_state_address, assurance_config.dentacoins_to_approve).estimateGas({gas: 500000});
-        console.log(gas_cost_for_approval, 'gas_cost_for_approval');
 
         dApp.web3_1_0_assurance.eth.getTransactionCount(global_state.account, 'pending', function (err, nonce) {
             var approval_transaction_obj = {
@@ -3792,21 +3800,12 @@ var assuranceTransactions = {
         });
     },
     creation: async function(dentist, usd, dcn, next_transfer, ipfs_hash, gasPrice, key, callback) {
-        console.log(dentist, usd, dcn, next_transfer, ipfs_hash, gasPrice, key, callback);
-        console.log(utils.checksumAddress(global_state.account), utils.checksumAddress(dentist), Math.floor(usd), dcn, next_transfer, ipfs_hash);
-
         var assurance_proxy_instance = await new dApp.web3_1_0_assurance.eth.Contract(assurance_config.assurance_proxy_abi, assurance_config.assurance_proxy_address);
         var assurance_state_instance = await new dApp.web3_1_0_assurance.eth.Contract(assurance_config.assurance_state_abi, assurance_config.assurance_state_address);
 
         var period_to_withdraw = parseInt(await assurance_state_instance.methods.getPeriodToWithdraw().call());
-        console.log(period_to_withdraw, 'period_to_withdraw');
-        console.log(parseInt(next_transfer) + period_to_withdraw, 'parseInt(next_transfer) + period_to_withdraw');
-        console.log(assurance_config.dummy_address, 'assurance_config.dummy_address');
         var contract_creation_function_abi = await assurance_proxy_instance.methods.registerContract(utils.checksumAddress(global_state.account), utils.checksumAddress(dentist), Math.floor(usd), dcn, parseInt(next_transfer) + period_to_withdraw, ipfs_hash).encodeABI();
-        console.log(contract_creation_function_abi, 'contract_creation_function_abi');
-        console.log(assurance_config.dummy_address, utils.checksumAddress(dentist), Math.floor(usd), dcn, parseInt(next_transfer) + period_to_withdraw, ipfs_hash);
         var gas_cost_for_contract_creation = await assurance_proxy_instance.methods.registerContract(assurance_config.dummy_address, utils.checksumAddress(dentist), Math.floor(usd), dcn, parseInt(next_transfer) + period_to_withdraw, ipfs_hash).estimateGas({from: assurance_config.dummy_address, gas: 1000000});
-        console.log(gas_cost_for_contract_creation, 'gas_cost_for_contract_creation');
 
         dApp.web3_1_0_assurance.eth.getTransactionCount(global_state.account, 'pending', function (err, nonce) {
             var contract_creation_transaction_obj = {
@@ -3869,19 +3868,15 @@ var assuranceTransactions = {
     },
     withdraw: async function(patient, gasPrice, key, callback) {
         var assurance_proxy_instance = await new dApp.web3_1_0_assurance.eth.Contract(assurance_config.assurance_proxy_abi, assurance_config.assurance_proxy_address);
-        console.log(assurance_proxy_instance, 'assurance_proxy_instance');
         var gas_cost_for_withdraw = await assurance_proxy_instance.methods.singleWithdraw(patient).estimateGas({
             from: global_state.account,
             gas: 500000
         });
-        console.log(gas_cost_for_withdraw, 'gas_cost_for_withdraw');
 
         var withdraw_function_abi = await assurance_proxy_instance.methods.singleWithdraw(patient).encodeABI();
-        console.log(withdraw_function_abi, 'withdraw_function_abi');
 
         const EthereumTx = require('ethereumjs-tx');
         var nonce = await dApp.web3_1_0_assurance.eth.getTransactionCount(global_state.account, 'pending');
-        console.log(nonce, 'nonce');
 
         var withdraw_transaction_obj = {
             gasLimit: dApp.web3_1_0_assurance.utils.toHex(Math.round(gas_cost_for_withdraw + (gas_cost_for_withdraw * 5/100))),
