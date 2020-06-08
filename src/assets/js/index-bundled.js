@@ -81417,20 +81417,27 @@ var pages_data = {
                                     if(error) {
                                         console.log(error);
                                     } else {
-                                        var eth_balance = parseFloat(utils.fromWei(result));
-                                        const on_page_load_gwei = ethgasstation_json.safeLow;
-                                        const on_page_load_gas_price = on_page_load_gwei * 100000000 + ((on_page_load_gwei * 100000000) * 10/100);
-
+                                        var balance = new BigNumber(result);
+                                        var newDecimal = new Decimal(utils.fromWei(result));
                                         var ethSendGasEstimation = await dApp.web3_1_0.eth.estimateGas({
                                             to: $('.section-amount-to .address-cell').attr('data-receiver')
                                         });
 
-                                        var eth_fee = utils.fromWei((on_page_load_gas_price * ethSendGasEstimation).toString(), 'ether');
+                                        var ethSendGasEstimationNumber = new BigNumber(ethSendGasEstimation);
+                                        //calculating the fee from the gas price and the estimated gas price
+                                        var on_popup_load_gwei = ethgasstation_json.safeLow;
+                                        //adding 10% of the outcome just in case transactions don't take so long
+                                        var on_popup_load_gas_price = on_popup_load_gwei * 100000000;
+                                        var cost = ethSendGasEstimationNumber * on_popup_load_gas_price;
 
-                                        if (parseFloat(eth_fee) < eth_balance) {
-                                            var availableEth = eth_balance - parseFloat(eth_fee);
-                                            $('.spendable-dcn-amount').attr('data-value', availableEth);
-                                            $('.spendable-amount .spendable-dcn-amount span').html(availableEth + ' ETH');
+
+                                        var eth_fee = utils.fromWei(cost.toString(), 'ether');
+                                        console.log(eth_fee, 'eth_fee');
+                                        var correctSendAmount = newDecimal.minus(eth_fee).toString();
+                                        console.log(correctSendAmount, 'correctSendAmount');
+                                        if (ethSendGasEstimationNumber < balance) {
+                                            $('.spendable-dcn-amount').attr('data-value', correctSendAmount);
+                                            $('.spendable-amount .spendable-dcn-amount span').html(correctSendAmount + ' ETH');
                                         } else {
                                             $('.spendable-dcn-amount').attr('data-value', 0);
                                             $('.spendable-amount .spendable-dcn-amount span').html('0 ETH');
@@ -81449,6 +81456,8 @@ var pages_data = {
                             var crypto_val = $('.section-amount-to input#crypto-amount').val().trim();
                             var usd_val = $('.section-amount-to input#usd-val').val().trim();
                             var sending_to_address = $('.section-amount-to .address-cell').attr('data-receiver');
+
+                            console.log(crypto_val, 'crypto_val');
 
                             console.log(parseFloat(crypto_val).countDecimals(), 'parseFloat(crypto_val).countDecimals()');
                             if (parseFloat(crypto_val).countDecimals() > 17) {
@@ -81518,27 +81527,33 @@ var pages_data = {
                                             var function_abi;
                                             var token_symbol;
                                             var rawGasEstimation;
+                                            var on_popup_load_gwei;
+                                            var on_popup_load_gas_price;
                                             if($('.section-amount-to #active-crypto').val() == 'dcn') {
                                                 token_symbol = 'DCN';
                                                 function_abi = DCNContract.methods.transfer(sending_to_address, crypto_val).encodeABI();
                                                 rawGasEstimation = 65000;
+
+                                                //calculating the fee from the gas price and the estimated gas price
+                                                on_popup_load_gwei = ethgasstation_json.safeLow;
+                                                //adding 10% of the outcome just in case transactions don't take so long
+                                                on_popup_load_gas_price = on_popup_load_gwei * 100000000 + ((on_popup_load_gwei * 100000000) * 10/100);
                                             } else if($('.section-amount-to #active-crypto').val() == 'eth') {
                                                 token_symbol = 'ETH';
                                                 rawGasEstimation = await dApp.web3_1_0.eth.estimateGas({
                                                     to: sending_to_address
                                                 });
+
+                                                //calculating the fee from the gas price and the estimated gas price
+                                                on_popup_load_gwei = ethgasstation_json.safeLow;
+                                                //adding 10% of the outcome just in case transactions don't take so long
+                                                on_popup_load_gas_price = on_popup_load_gwei * 100000000;
                                             }
 
                                             console.log(function_abi, 'function_abi');
                                             console.log(rawGasEstimation, 'rawGasEstimation');
-
-                                            //calculating the fee from the gas price and the estimated gas price
-                                            const on_popup_load_gwei = ethgasstation_json.safeLow;
-                                            //adding 10% of the outcome just in case transactions don't take so long
-                                            const on_popup_load_gas_price = on_popup_load_gwei * 100000000 + ((on_popup_load_gwei * 100000000) * 10/100);
-                                            //const on_popup_load_gas_price = gasPrice;
-
-                                            //using ethgasstation gas price and not dApp.helper.getGasPrice(), because its more accurate
+                                            console.log(on_popup_load_gwei, 'on_popup_load_gwei');
+                                            console.log(on_popup_load_gas_price, 'on_popup_load_gas_price');
 
                                             var eth_fee = utils.fromWei((on_popup_load_gas_price * rawGasEstimation).toString(), 'ether');
                                             console.log(eth_fee, 'eth_fee');

@@ -34,6 +34,8 @@
               "./node_modules/bootbox.js/bootbox.min.js",
               "./src/assets/libs/combobox/combobox.js",
               "./node_modules/clipboard/dist/clipboard.min.js",
+              "./node_modules/bignumber.js/bignumber.min.js",
+              "./node_modules/decimal.js/decimal.min.js",
               "./src/assets/libs/truffle-contract/truffle-contract-compiled.js",
               "./src/assets/libs/qrcode/qrcode.js",
               "./src/assets/js/basic.js",
