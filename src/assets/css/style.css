@@ -408,6 +408,7 @@ body {
   /*background-image: url(../images/background.png);
   background-repeat: no-repeat;
   background-size: cover;*/
+  position: relative;
   background-color: #2aa4c8;
   font-family: "Calibri-Regular"; }
   body.overflow-hidden {
@@ -4684,48 +4685,294 @@ input[type=file].hide-input {
     font-size: 100px;
     text-align: center; } }
 
-header .logo {
-  padding-top: 10px;
-  padding-bottom: 10px; }
-  header .logo img {
-    width: 130px; }
-header .nav-row {
-  background-color: white;
-  padding-top: 5px;
-  padding-bottom: 5px; }
-  header .nav-row nav {
-    text-align: center; }
-    header .nav-row nav ul li a {
-      font-size: 30px;
-      display: block;
+.text-decoration-underline {
+  text-decoration: underline; }
+
+.account-checker-container .account-checker-wrapper {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  top: 0;
+  left: 0;
+  z-index: 100; }
+  .account-checker-container .account-checker-wrapper .custom-auth-popup {
+    width: 95%;
+    max-width: 1100px;
+    background: white;
+    margin: 200px auto 0;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    -ms-border-radius: 10px;
+    border-radius: 10px;
+    -webkit-box-shadow: 0 8px 44px rgba(0, 0, 0, 0.2);
+    -moz-box-shadow: 0 8px 44px rgba(0, 0, 0, 0.2);
+    -ms-box-shadow: 0 8px 44px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 44px rgba(0, 0, 0, 0.2); }
+    .account-checker-container .account-checker-wrapper .custom-auth-popup #import-private-key {
+      resize: none;
+      height: 75px; }
+    .account-checker-container .account-checker-wrapper .custom-auth-popup .import-private-key {
+      width: 320px;
+      text-align: center;
+      padding: 10px 5px;
+      font-family: "Calibri-Regular"; }
+      @media screen and (max-width: 767px) {
+        .account-checker-container .account-checker-wrapper .custom-auth-popup .import-private-key {
+          width: 260px; } }
+    .account-checker-container .account-checker-wrapper .custom-auth-popup .import-private-key-field {
+      border: 1.5px solid #ff0046;
+      padding: 12px 10px;
+      text-align: center;
+      font-size: 14px;
+      overflow-x: auto;
       -webkit-border-radius: 4px;
       -moz-border-radius: 4px;
       -ms-border-radius: 4px;
-      border-radius: 4px;
-      -webkit-transition: 0.3s;
-      -moz-transition: 0.3s;
-      -o-transition: 0.3s;
-      -ms-transition: 0.3s;
-      transition: 0.3s; }
-      header .nav-row nav ul li a:hover {
-        background-color: #00b7e2;
-        color: white; }
-      header .nav-row nav ul li a.active, header .nav-row nav ul li a.custom-active {
-        background-color: #00b7e2;
-        color: white; }
+      border-radius: 4px; }
+    .account-checker-container .account-checker-wrapper .custom-auth-popup .bootbox-close-button {
+      margin-top: -10px;
+      margin-right: 10px;
+      font-size: 40px;
+      line-height: 20px; }
+    .account-checker-container .account-checker-wrapper .custom-auth-popup .title {
+      font-size: 30px;
+      padding: 0 15px 10px;
+      font-weight: normal;
+      text-align: center; }
+      @media screen and (max-width: 767px) {
+        .account-checker-container .account-checker-wrapper .custom-auth-popup .title {
+          font-size: 22px; } }
+    .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder {
+      position: relative; }
+      .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .auth-popup-faq-link {
+        bottom: -30px;
+        position: absolute;
+        left: 50%;
+        -webkit-transform: translateX(-50%);
+        -ms-transform: translateX(-50%);
+        transform: translateX(-50%); }
+        .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .auth-popup-faq-link a {
+          width: 45px;
+          height: 45px;
+          line-height: 45px;
+          font-size: 36px;
+          font-family: "Calibri-Bold";
+          text-align: center;
+          display: inline-block;
+          background-color: #00b7e2;
+          color: white;
+          -webkit-border-radius: 50%;
+          -moz-border-radius: 50%;
+          -ms-border-radius: 50%;
+          border-radius: 50%; }
+        @media screen and (max-width: 767px) {
+          .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .auth-popup-faq-link {
+            bottom: auto;
+            position: static;
+            -webkit-transform: none;
+            -moz-transform: none;
+            -ms-transform: none;
+            -o-transform: none;
+            transform: none; } }
+      .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-left, .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-right {
+        width: 50%;
+        font-size: 16px; }
+        .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-left .navigation-link a, .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-right .navigation-link a {
+          display: block;
+          padding-top: 5px;
+          padding-bottom: 5px;
+          text-align: center;
+          border-left: 1px solid #ddd;
+          border-top: 1px solid #ddd;
+          border-bottom: 1px solid #ddd;
+          font-size: 30px;
+          font-family: "Calibri-Bold"; }
+          .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-left .navigation-link a.active, .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-right .navigation-link a.active {
+            background-color: #00b7e2;
+            color: white; }
+        .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-left .popup-body, .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-right .popup-body {
+          font-size: 16px;
+          min-height: 350px;
+          padding-left: 30px;
+          padding-right: 30px; }
+          .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-left .popup-body.custom-hide, .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-right .popup-body.custom-hide {
+            visibility: hidden; }
+            @media screen and (max-width: 767px) {
+              .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-left .popup-body.custom-hide, .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-right .popup-body.custom-hide {
+                display: none; } }
+          .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-left .popup-body .row-with-image-and-text, .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-right .popup-body .row-with-image-and-text {
+            margin: 0 auto; }
+            .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-left .popup-body .row-with-image-and-text .text, .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-right .popup-body .row-with-image-and-text .text {
+              width: calc(100% - 80px); }
+          @media screen and (max-width: 767px) {
+            .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-left .popup-body, .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-right .popup-body {
+              padding-left: 10px;
+              padding-right: 10px; }
+              .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-left .popup-body .row-with-image-and-text .text, .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-right .popup-body .row-with-image-and-text .text {
+                text-align: left; } }
+      .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-left {
+        border-right: 1px solid #ddd; }
+        .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-left .navigation-link.mobile {
+          display: none; }
+        .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-left label.custom-label {
+          padding: 30px 10px 20px;
+          display: block;
+          text-align: center;
+          font-size: 16px; }
+        .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-left .private-key-holder {
+          border: 1.5px solid #ff0046;
+          padding: 12px 10px;
+          text-align: center;
+          font-size: 14px;
+          overflow-x: auto;
+          -webkit-border-radius: 4px;
+          -moz-border-radius: 4px;
+          -ms-border-radius: 4px;
+          border-radius: 4px; }
+          .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-left .private-key-holder ::-webkit-scrollbar {
+            -webkit-appearance: none; }
+          .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-left .private-key-holder ::-webkit-scrollbar:vertical {
+            width: 12px; }
+          .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-left .private-key-holder ::-webkit-scrollbar:horizontal {
+            height: 12px; }
+          .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-left .private-key-holder ::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            border: 2px solid white; }
+          .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-left .private-key-holder ::-webkit-scrollbar-track {
+            background-color: white;
+            -webkit-border-radius: 10px;
+            -moz-border-radius: 10px;
+            -ms-border-radius: 10px;
+            border-radius: 10px; }
+          .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-left .private-key-holder .scroll-content {
+            width: 460px; }
+        .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-left .creation-text {
+          font-size: 0;
+          margin: 0 auto; }
+          .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-left .creation-text svg {
+            width: 100px; }
+          .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-left .creation-text .text {
+            width: calc(100% - 100px); }
+        @media screen and (max-width: 767px) {
+          .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-left {
+            width: 100%;
+            font-size: 0; }
+            .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-left .navigation-link {
+              width: 50%;
+              display: inline-block;
+              vertical-align: top; }
+              .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-left .navigation-link.mobile {
+                display: inline-block; } }
+      .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-right .enter-pass-label {
+        padding-top: 20px;
+        padding-bottom: 15px;
+        display: block;
+        font-size: 16px; }
+      .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-right .btn-container {
+        padding-top: 20px;
+        padding-bottom: 20px; }
+      .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-right .camping-for-action {
+        text-align: center; }
+      .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-right .custom-upload-button a {
+        height: 45px;
+        -webkit-border-radius: 4px;
+        -moz-border-radius: 4px;
+        -ms-border-radius: 4px;
+        border-radius: 4px; }
+        .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-right .custom-upload-button a span {
+          height: 45px;
+          line-height: 45px; }
+      @media screen and (max-width: 767px) {
+        .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-right {
+          width: 100%; }
+          .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-right .navigation-link {
+            display: none; } }
   @media screen and (max-width: 767px) {
-    header .nav-row {
+    .account-checker-container .account-checker-wrapper {
+      z-index: 1050;
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      background: white;
+      -webkit-overflow-scrolling: touch;
+      overflow-x: hidden;
+      overflow-y: auto; }
+      .account-checker-container .account-checker-wrapper .custom-auth-popup {
+        width: 100%;
+        margin: 0;
+        padding-top: 50px;
+        -webkit-border-radius: 0;
+        -moz-border-radius: 0;
+        -ms-border-radius: 0;
+        border-radius: 0;
+        -webkit-box-shadow: none;
+        -moz-box-shadow: none;
+        -ms-box-shadow: none;
+        box-shadow: none; } }
+
+.mobile-app-banner {
+  background-image: url(../images/banner-bg.png);
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: bottom; }
+  @media screen and (max-width: 991px) {
+    .mobile-app-banner {
       display: none; } }
-header .currently-offline {
-  text-align: center;
-  background: red;
-  color: white;
-  padding: 5px;
-  font-size: 16px; }
+
+header {
+  position: relative;
+  z-index: 150;
+  background-color: #2aa4c8; }
+  header .logo {
+    padding-top: 10px;
+    padding-bottom: 10px; }
+    header .logo img {
+      width: 130px; }
+  header .nav-row {
+    background-color: white;
+    padding-top: 5px;
+    padding-bottom: 5px; }
+    header .nav-row nav {
+      text-align: center; }
+      header .nav-row nav ul li a {
+        font-size: 30px;
+        display: block;
+        -webkit-border-radius: 4px;
+        -moz-border-radius: 4px;
+        -ms-border-radius: 4px;
+        border-radius: 4px;
+        -webkit-transition: 0.3s;
+        -moz-transition: 0.3s;
+        -o-transition: 0.3s;
+        -ms-transition: 0.3s;
+        transition: 0.3s; }
+        header .nav-row nav ul li a:hover {
+          background-color: #00b7e2;
+          color: white; }
+        header .nav-row nav ul li a.active, header .nav-row nav ul li a.custom-active {
+          background-color: #00b7e2;
+          color: white; }
+    @media screen and (max-width: 767px) {
+      header .nav-row {
+        display: none; } }
+  header .currently-offline {
+    text-align: center;
+    background: red;
+    color: white;
+    padding: 5px;
+    font-size: 16px; }
 
 footer {
   color: white;
   padding-top: 100px; }
+  footer .mobile-app-banner {
+    margin-top: -70px; }
   footer .white-border {
     border-bottom: 2px solid white;
     margin-bottom: 15px; }
