@@ -1194,7 +1194,6 @@ var pages_data = {
                                         if(error) {
                                             console.log(error);
                                         } else {
-                                            var balance = new BigNumber(result);
                                             var newDecimal = new Decimal(utils.fromWei(result));
                                             var ethSendGasEstimation = await dApp.web3_1_0.eth.estimateGas({
                                                 to: $('.section-amount-to .address-cell').attr('data-receiver')
@@ -1207,10 +1206,9 @@ var pages_data = {
                                             var on_popup_load_gas_price = on_popup_load_gwei * 100000000;
                                             var cost = ethSendGasEstimationNumber * on_popup_load_gas_price;
 
-
                                             var eth_fee = utils.fromWei(cost.toString(), 'ether');
                                             var correctSendAmount = newDecimal.minus(eth_fee).toString();
-                                            if (ethSendGasEstimationNumber < balance) {
+                                            if (parseInt(result) > parseInt(ethSendGasEstimation)) {
                                                 $('.spendable-dcn-amount').attr('data-value', correctSendAmount);
                                                 $('.spendable-amount .spendable-dcn-amount span').html(correctSendAmount + ' ETH');
                                             } else {
@@ -3293,7 +3291,7 @@ $(document).on('click', '.open-settings', function() {
             } else if($('#generate-keystore-password').val().trim() != $('#generate-keystore-repeat-password').val().trim())  {
                 generate_error = true;
                 $('<div class="error-handle">Please make sure you entered same password in both fields.</div>').insertAfter(this_camping_row);
-            } else if($('#generate-keystore-password').val().trim() != 64)  {
+            } else if($('#generate-keystore-private-key').val().trim().length != 64)  {
                 generate_error = true;
                 $('<div class="error-handle">Wrong private key length.</div>').insertAfter(this_camping_row);
             }
