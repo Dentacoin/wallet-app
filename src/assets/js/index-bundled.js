@@ -81628,6 +81628,9 @@ var pages_data = {
             }, 500);
         }
     },
+    spend_page_dental_services: function() {
+        showMobileAppBannerForDesktopBrowsers();
+    },
     spend_page_gift_cards: function() {
         showMobileAppBannerForDesktopBrowsers();
 
@@ -82318,6 +82321,23 @@ window.getSendPageData = function(){
                 pages_data.send_page();
             });
         }
+    }
+};
+
+window.getSpendPageDentalServices = function(){
+    removeAccountChecker();
+
+    if(!dApp.loaded) {
+        dApp.init();
+    }
+    if($.isReady) {
+        //called on route change
+        pages_data.spend_page_dental_services();
+    } else {
+        //called on page init
+        $(document).ready(function() {
+            pages_data.spend_page_dental_services();
+        });
     }
 };
 
@@ -83759,7 +83779,7 @@ function router() {
         getSendPageData();
     } else if($('.main-holder app-spend-page-pay-for-dental-services').length) {
         current_route = 'pay-for-dental-services';
-        initdApp();
+        getSpendPageDentalServices();
     } else if($('.main-holder app-spend-page-gift-cards').length) {
         current_route = 'gift-cards';
         getSpendPageGiftCards();
@@ -83784,12 +83804,7 @@ function router() {
             getSendPageData();
         } else if($('.main-holder app-spend-page-pay-for-dental-services').length && current_route != 'pay-for-dental-services') {
             current_route = 'pay-for-dental-services';
-            initdApp();
-
-            $(document).ready(function() {
-                removeAccountChecker();
-                showMobileAppBannerForDesktopBrowsers();
-            });
+            getSpendPageDentalServices();
         } else if($('.main-holder app-spend-page-gift-cards').length && current_route != 'gift-cards') {
             current_route = 'gift-cards';
             getSpendPageGiftCards();
