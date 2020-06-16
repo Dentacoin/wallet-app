@@ -706,6 +706,8 @@ var pages_data = {
         }
     },
     buy_page: function() {
+        showMobileAppBannerForDesktopBrowsers();
+
         if(typeof(global_state.account) != 'undefined') {
             $('section.ready-to-purchase-with-external-api input#dcn_address').parent().find('label').addClass('active-label');
             $('section.ready-to-purchase-with-external-api input#dcn_address').val(utils.checksumAddress(global_state.account));
@@ -1399,6 +1401,8 @@ var pages_data = {
         }
     },
     spend_page_gift_cards: function() {
+        showMobileAppBannerForDesktopBrowsers();
+
         if(!bidali_lib_loaded) {
             //loading bidali lib for buying tickets with DCN api
             showLoader();
@@ -1431,6 +1435,7 @@ var pages_data = {
         }
     },
     spend_page_exchanges: function() {
+        showMobileAppBannerForDesktopBrowsers();
         showLoader();
 
         //getting exchanges from dentacoin.com DB
@@ -1454,6 +1459,8 @@ var pages_data = {
         });
     },
     spend_page_assurance_fees: function() {
+        showMobileAppBannerForDesktopBrowsers();
+
         if(is_hybrid/* || basic.isMobile()*/) {
             $('.camp-assurance-mobile-phone-scanning').html('<div class="padding-top-15 padding-bottom-20 fs-16 max-width-600 margin-0-auto">You can handle all Dentacoin Assurance contract actions - such as contract creation or cancellation for patients or contact approvals and withdrawals for dentists - directly from here!</div><div class="text-center padding-bottom-30"><a href="javascript:void(0)" class="light-blue-white-btn no-hover open-transaction-scanner min-width-270 margin-right-10 margin-bottom-10 width-xs-100 max-width-400 margin-right-xs-0 padding-left-5 padding-right-5 fs-18 text-center">SCAN TRANSACTION <figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block max-width-30 width-100 margin-left-5"><img src="assets/images/scan-qr-code-blue.svg" alt="Scan icon"/></figure></a></div>');
 
@@ -2047,7 +2054,6 @@ window.getHomepageData = function() {
 
 window.getBuyPageData = function(){
     removeAccountChecker();
-    showMobileAppBannerForDesktopBrowsers();
 
     if(!dApp.loaded) {
         dApp.init();
@@ -2089,7 +2095,6 @@ window.getSendPageData = function(){
 
 window.getSpendPageGiftCards = function(){
     removeAccountChecker();
-    showMobileAppBannerForDesktopBrowsers();
 
     if(!dApp.loaded) {
         dApp.init();
@@ -2107,7 +2112,6 @@ window.getSpendPageGiftCards = function(){
 
 window.getSpendPageExchanges = function(){
     removeAccountChecker();
-    showMobileAppBannerForDesktopBrowsers();
 
     if(!dApp.loaded) {
         dApp.init();
@@ -2125,7 +2129,6 @@ window.getSpendPageExchanges = function(){
 
 window.getSpendPageAssuranceFees = function(){
     removeAccountChecker();
-    showMobileAppBannerForDesktopBrowsers();
 
     if(!dApp.loaded) {
         dApp.init();
@@ -3553,9 +3556,12 @@ function router() {
             getSendPageData();
         } else if($('.main-holder app-spend-page-pay-for-dental-services').length && current_route != 'pay-for-dental-services') {
             current_route = 'pay-for-dental-services';
-            removeAccountChecker();
-            showMobileAppBannerForDesktopBrowsers();
             initdApp();
+
+            $(document).ready(function() {
+                removeAccountChecker();
+                showMobileAppBannerForDesktopBrowsers();
+            });
         } else if($('.main-holder app-spend-page-gift-cards').length && current_route != 'gift-cards') {
             current_route = 'gift-cards';
             getSpendPageGiftCards();
