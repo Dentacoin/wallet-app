@@ -1976,6 +1976,7 @@ window.refreshApp = function() {
 
 window.getHomepageData = function() {
     console.log('getHomepageData');
+    initAccountChecker();
 
     if(!dApp.loaded) {
         dApp.init(function() {
@@ -1988,12 +1989,10 @@ window.getHomepageData = function() {
     function loadHomepageData() {
         if($.isReady) {
             //called on route change
-            initAccountChecker();
             pages_data.homepage();
         } else {
             //called on page init
             $(document).ready(function() {
-                initAccountChecker();
                 pages_data.homepage();
             });
         }
@@ -2001,7 +2000,6 @@ window.getHomepageData = function() {
 };
 
 window.getBuyPageData = function(){
-    console.log('getBuyPageData');
     removeAccountChecker();
 
     if(!dApp.loaded) {
@@ -2019,7 +2017,7 @@ window.getBuyPageData = function(){
 };
 
 window.getSendPageData = function(){
-    console.log('getSendPageData');
+    initAccountChecker();
 
     if(!dApp.loaded) {
         dApp.init(function() {
@@ -2032,12 +2030,10 @@ window.getSendPageData = function(){
     function loadSendPageData() {
         if($.isReady) {
             //called on route change
-            initAccountChecker();
             pages_data.send_page();
         } else {
             //called on page init
             $(document).ready(function() {
-                initAccountChecker();
                 pages_data.send_page();
             });
         }
@@ -2045,7 +2041,6 @@ window.getSendPageData = function(){
 };
 
 window.getSpendPageDentalServices = function(){
-    console.log('getSpendPageDentalServices');
     removeAccountChecker();
 
     if(!dApp.loaded) {
@@ -2063,7 +2058,6 @@ window.getSpendPageDentalServices = function(){
 };
 
 window.getSpendPageGiftCards = function(){
-    console.log('getSpendPageGiftCards');
     removeAccountChecker();
 
     if(!dApp.loaded) {
@@ -2081,7 +2075,6 @@ window.getSpendPageGiftCards = function(){
 };
 
 window.getSpendPageExchanges = function(){
-    console.log('getSpendPageExchanges');
     removeAccountChecker();
 
     if(!dApp.loaded) {
@@ -2099,7 +2092,6 @@ window.getSpendPageExchanges = function(){
 };
 
 window.getSpendPageAssuranceFees = function(){
-    console.log('getSpendPageAssuranceFees');
     removeAccountChecker();
 
     if(!dApp.loaded) {
@@ -2184,11 +2176,6 @@ function initAccountChecker()  {
             cordova.InAppBrowser.open($(this).attr('href'), '_blank', 'location=yes,zoom=no,toolbarposition=top,closebuttoncaption=Back');
         });
     }
-
-    console.log(window.localStorage.getItem('current_account') == null, 'window.localStorage.getItem(\'current_account\') == null');
-    console.log(typeof(web3) === 'undefined', 'typeof(web3) === undefined)');
-    console.log(window.localStorage.getItem('current_account') == null, 'window.localStorage.getItem(\'current_account\') == null');
-    console.log(window.localStorage.getItem('custom_wallet_over_external_web3_provider') == 'true', 'window.localStorage.getItem(\'custom_wallet_over_external_web3_provider\') == \'true\'');
 
     if((window.localStorage.getItem('current_account') == null && typeof(web3) === 'undefined') || (window.localStorage.getItem('current_account') == null && window.localStorage.getItem('custom_wallet_over_external_web3_provider') == 'true')) {
         console.log(2, 'initAccountChecker');
@@ -3522,6 +3509,7 @@ function router() {
     } else if($('.main-holder app-spend-page-pay-assurance-fees').length) {
         current_route = 'pay-assurance-fees';
         getSpendPageAssuranceFees();
+        initdApp();
     }
 
     $('body').on('DOMSubtreeModified', '.main-holder', function() {
