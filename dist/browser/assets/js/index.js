@@ -1976,7 +1976,6 @@ window.refreshApp = function() {
 
 window.getHomepageData = function() {
     console.log('getHomepageData');
-    initAccountChecker();
 
     if(!dApp.loaded) {
         dApp.init(function() {
@@ -1989,10 +1988,12 @@ window.getHomepageData = function() {
     function loadHomepageData() {
         if($.isReady) {
             //called on route change
+            initAccountChecker();
             pages_data.homepage();
         } else {
             //called on page init
             $(document).ready(function() {
+                initAccountChecker();
                 pages_data.homepage();
             });
         }
@@ -2019,7 +2020,6 @@ window.getBuyPageData = function(){
 
 window.getSendPageData = function(){
     console.log('getSendPageData');
-    initAccountChecker();
 
     if(!dApp.loaded) {
         dApp.init(function() {
@@ -2032,10 +2032,12 @@ window.getSendPageData = function(){
     function loadSendPageData() {
         if($.isReady) {
             //called on route change
+            initAccountChecker();
             pages_data.send_page();
         } else {
             //called on page init
             $(document).ready(function() {
+                initAccountChecker();
                 pages_data.send_page();
             });
         }
