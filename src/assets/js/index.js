@@ -2000,6 +2000,7 @@ window.getHomepageData = function() {
 };
 
 window.getBuyPageData = function(){
+    console.log('getBuyPageData');
     removeAccountChecker();
 
     if(!dApp.loaded) {
@@ -2017,6 +2018,7 @@ window.getBuyPageData = function(){
 };
 
 window.getSendPageData = function(){
+    console.log('getSendPageData');
     initAccountChecker();
 
     if(!dApp.loaded) {
@@ -2041,6 +2043,7 @@ window.getSendPageData = function(){
 };
 
 window.getSpendPageDentalServices = function(){
+    console.log('getSpendPageDentalServices');
     removeAccountChecker();
 
     if(!dApp.loaded) {
@@ -2058,6 +2061,7 @@ window.getSpendPageDentalServices = function(){
 };
 
 window.getSpendPageGiftCards = function(){
+    console.log('getSpendPageGiftCards');
     removeAccountChecker();
 
     if(!dApp.loaded) {
@@ -2075,6 +2079,7 @@ window.getSpendPageGiftCards = function(){
 };
 
 window.getSpendPageExchanges = function(){
+    console.log('getSpendPageExchanges');
     removeAccountChecker();
 
     if(!dApp.loaded) {
@@ -2092,6 +2097,7 @@ window.getSpendPageExchanges = function(){
 };
 
 window.getSpendPageAssuranceFees = function(){
+    console.log('getSpendPageAssuranceFees');
     removeAccountChecker();
 
     if(!dApp.loaded) {
@@ -2432,6 +2438,7 @@ function initAccountChecker()  {
 }
 
 function removeAccountChecker() {
+    console.log('removeAccountChecker');
     $('.account-checker-container').html('');
 }
 
@@ -3513,7 +3520,6 @@ function router() {
     } else if($('.main-holder app-spend-page-pay-assurance-fees').length) {
         current_route = 'pay-assurance-fees';
         getSpendPageAssuranceFees();
-        initdApp();
     }
 
     $('body').on('DOMSubtreeModified', '.main-holder', function() {
@@ -3538,7 +3544,6 @@ function router() {
         } else if($('.main-holder app-spend-page-pay-assurance-fees').length && current_route != 'pay-assurance-fees') {
             current_route = 'pay-assurance-fees';
             getSpendPageAssuranceFees();
-            initdApp();
         }
 
         if(current_route != 'home' && !$('.camp-for-custom-popover').hasClass('hide')) {
