@@ -83685,7 +83685,6 @@ async function getDentacoinDataByExternalProvider(callback) {
             url: 'https://indacoin.com/api/GetCoinConvertAmount/USD/DCN/100/dentacoin',
             dataType: 'json',
             success: function(response) {
-                response = 0;
                 callback(response);
             }
         });
@@ -83814,7 +83813,7 @@ function getGETParameters() {
 function transformToAssocArray( prmstr ) {
     var params = {};
     var prmarr = prmstr.split("&");
-    for ( var i = 0; i < prmarr.length; i++) {
+    for (var i = 0; i < prmarr.length; i+=1) {
         var tmparr = prmarr[i].split("=");
         params[tmparr[0]] = tmparr[1];
     }
