@@ -120778,7 +120778,8 @@ var pages_data = {
                                                         patient_address: utils.checksumAddress(global_state.account),
                                                         dentist_address: utils.checksumAddress(response.data.dentist),
                                                         signedUnsubmittedTransactionApproval: signedUnsubmittedTransactionApproval,
-                                                        signedUnsubmittedTransaction: signedUnsubmittedTransaction
+                                                        signedUnsubmittedTransaction: signedUnsubmittedTransaction,
+                                                        wallet_signed: true
                                                     },
                                                     success: function(response) {
                                                         hideLoader();
@@ -120805,6 +120806,7 @@ var pages_data = {
                                                     patient_address: utils.checksumAddress(global_state.account),
                                                     dentist_address: utils.checksumAddress(response.data.dentist),
                                                     signedUnsubmittedTransaction: signedUnsubmittedTransaction,
+                                                    wallet_signed: true
                                                 },
                                                 success: function(response) {
                                                     hideLoader();
@@ -120829,7 +120831,8 @@ var pages_data = {
                                                     to_status: 'active',
                                                     patient_address: utils.checksumAddress(response.data.patient),
                                                     dentist_address: utils.checksumAddress(global_state.account),
-                                                    signedUnsubmittedTransaction: signedUnsubmittedTransaction
+                                                    signedUnsubmittedTransaction: signedUnsubmittedTransaction,
+                                                    wallet_signed: true
                                                 },
                                                 success: function(response) {
                                                     hideLoader();
@@ -120854,7 +120857,8 @@ var pages_data = {
                                                     to_status: 'active-withdraw',
                                                     patient_address: utils.checksumAddress(response.data.patient),
                                                     dentist_address: utils.checksumAddress(global_state.account),
-                                                    signedUnsubmittedTransaction: signedUnsubmittedTransaction
+                                                    signedUnsubmittedTransaction: signedUnsubmittedTransaction,
+                                                    wallet_signed: true
                                                 },
                                                 success: function(response) {
                                                     hideLoader();
@@ -120881,7 +120885,8 @@ var pages_data = {
                                                     dentist_address: utils.checksumAddress(response.data.dentist),
                                                     type: scanObject[5],
                                                     reason: scanObject[6],
-                                                    signedUnsubmittedTransaction: signedUnsubmittedTransaction
+                                                    signedUnsubmittedTransaction: signedUnsubmittedTransaction,
+                                                    wallet_signed: true
                                                 },
                                                 success: function(response) {
                                                     hideLoader();
