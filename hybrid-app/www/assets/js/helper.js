@@ -41,6 +41,7 @@ function importKeystoreFile(keystore, password, callback) {
             const public_key = EthCrypto.publicKeyByPrivateKey(private_key.toString('hex'));
             callback(keyObject, public_key, JSON.parse(keystore).address);
         } catch (e) {
+            console.log(e, 'e');
             callback(null, null, null, true, 'Wrong secret password.');
         }
     });
@@ -96,8 +97,5 @@ function generateKeystoreFromPrivateKey(private_key, password, callback) {
     }
 }
 
-function encryptString(string) {
-}
-
-module.exports = {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey, encryptString};
+module.exports = {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey};
 

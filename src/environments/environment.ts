@@ -4,7 +4,8 @@
 
 export const environment = {
   production: false,
-  hybrid: false
+  hybrid: false,
+  network: 'mainnet'
 };
 
 /*
