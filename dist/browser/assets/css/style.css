@@ -5344,14 +5344,14 @@ app-spend-page-pay-for-dental-services .mobile-nav a, app-spend-page-gift-cards 
     display: none; }
   app-spend-page-pay-for-dental-services .mobile-nav a, app-spend-page-gift-cards .mobile-nav a, app-spend-page-exchanges .mobile-nav a, app-spend-page-pay-assurance-fees .mobile-nav a {
     display: inline-block;
-    width: 20px;
+    width: 30px;
     vertical-align: middle; }
     app-spend-page-pay-for-dental-services .mobile-nav a img, app-spend-page-gift-cards .mobile-nav a img, app-spend-page-exchanges .mobile-nav a img, app-spend-page-pay-assurance-fees .mobile-nav a img {
-      max-width: 15px; }
+      max-width: 25px; }
   app-spend-page-pay-for-dental-services .mobile-nav h1, app-spend-page-gift-cards .mobile-nav h1, app-spend-page-exchanges .mobile-nav h1, app-spend-page-pay-assurance-fees .mobile-nav h1 {
     padding-left: 5px;
     padding-right: 5px;
-    width: calc(100% - 40px);
+    width: calc(100% - 60px);
     display: inline-block;
     vertical-align: middle; } }
 

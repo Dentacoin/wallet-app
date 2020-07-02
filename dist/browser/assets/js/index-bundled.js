@@ -80099,7 +80099,22 @@ function noop() {}
 },{"global/window":388,"is-function":408,"parse-headers":443,"xtend":573}],573:[function(require,module,exports){
 arguments[4][174][0].apply(exports,arguments)
 },{"dup":174}],574:[function(require,module,exports){
-var assurance_config = {
+var assurance_config_temp = {
+    infura_node: 'https://mainnet.infura.io/v3/c3a8017424324e47be615fb4028275bb',
+    dentacoins_to_approve: 10000000000000,
+    dummy_address: '0x32e4c8584f4357de80812b048734a0c2fe6e31ab',
+    chain_id: 1,
+    assurance_state_address: '0x50e8f6b27656fa373c4efbde51fe3517022006a5',
+    assurance_state_abi: [{"constant":false,"inputs":[{"name":"_patient_addr","type":"address"},{"name":"_dentist_addr","type":"address"},{"name":"_next_transfer","type":"uint256"}],"name":"updateNextTransferTime","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_patient_addr","type":"address"}],"name":"getDiscount","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_patient_addr","type":"address"},{"name":"_amount","type":"uint256"}],"name":"decreaseDiscount","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"getPeriodToWithdraw","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_patient_addr","type":"address"},{"name":"_dentist_addr","type":"address"}],"name":"getContractUsdValue","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"circuitBreaker","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_period_to_withdraw","type":"uint256"}],"name":"changePeriodToWithdraw","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_api_decimals","type":"uint256"}],"name":"changeApiDecimals","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_api_result_dcn_usd_price","type":"uint256"}],"name":"changeApiResultDcnUsdPrice","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_patient_addr","type":"address"},{"name":"_dentist_addr","type":"address"}],"name":"dentistApproveContract","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_patient_addr","type":"address"},{"name":"_dentist_addr","type":"address"}],"name":"breakContract","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_patient_addr","type":"address"}],"name":"getWaitingContractsForPatient","outputs":[{"name":"","type":"address[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_patient_addr","type":"address"},{"name":"_dentist_addr","type":"address"}],"name":"getContractNextTransfer","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getApiResultDcnUsdPrice","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getApiDecimals","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"api_result_dcn_usd_price","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_patient_addr","type":"address"},{"name":"_dentist_addr","type":"address"}],"name":"getContractApprovedByDentist","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"dentacoin_token_address","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_new_admin","type":"address"}],"name":"transferAdmin","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_patient_addr","type":"address"},{"name":"_dentist_addr","type":"address"}],"name":"getContractDcnValue","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_patient_addr","type":"address"},{"name":"_dentist_addr","type":"address"},{"name":"_amount","type":"uint256"}],"name":"dcnTransferFrom","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"AssuranceContract","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"usd_over_dcn","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getUsdOverDcn","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_patient_addr","type":"address"},{"name":"_dentist_addr","type":"address"}],"name":"updateValidationCheck","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_min_allowed_amount","type":"uint256"}],"name":"changeMinimumAllowedAmount","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_patient_addr","type":"address"},{"name":"_dentist_addr","type":"address"},{"name":"_date_start_contract","type":"uint256"},{"name":"_approved_by_dentist","type":"bool"},{"name":"_approved_by_patient","type":"bool"},{"name":"_validation_checked","type":"bool"},{"name":"_value_usd","type":"uint256"},{"name":"_value_dcn","type":"uint256"},{"name":"_contract_ipfs_hash","type":"string"}],"name":"registerContract","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_patient_addr","type":"address"},{"name":"_dentist_addr","type":"address"}],"name":"insertPatientContractHistory","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_patient_addr","type":"address"},{"name":"_amount","type":"uint256"}],"name":"registerDiscount","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_patient_addr","type":"address"},{"name":"_dentist_addr","type":"address"}],"name":"getContractApprovedByPatient","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"api_decimals","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"min_allowed_amount","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_proxy_contract","type":"address"}],"name":"changeProxyAddress","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"getDentistsArr","outputs":[{"name":"","type":"address[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"contract_paused","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_patient_addr","type":"address"},{"name":"_dentist_addr","type":"address"}],"name":"patientApproveContract","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_patient_addr","type":"address"},{"name":"_dentist_addr","type":"address"}],"name":"getPatient","outputs":[{"name":"","type":"uint256"},{"name":"","type":"bool"},{"name":"","type":"bool"},{"name":"","type":"bool"},{"name":"","type":"uint256"},{"name":"","type":"uint256"},{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"period_to_withdraw","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"proxy_contract","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_dentist_addr","type":"address"}],"name":"getDentist","outputs":[{"name":"","type":"bool"},{"name":"","type":"address[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getContractPaused","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_usd_over_dcn","type":"bool"}],"name":"changeUsdOverDcn","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_patient_addr","type":"address"},{"name":"_dentist_addr","type":"address"}],"name":"getContractValidationChecked","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getMinAllowedAmount","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_new_owner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"admin","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"}],
+    assurance_proxy_address: '0x12d7c276d90427dac55dbf1898e74375fe170931',
+    assurance_proxy_abi: [{"constant":false,"inputs":[{"name":"_patient_addr","type":"address"},{"name":"_dentist_addr","type":"address"}],"name":"breakContract","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_dentist_addr","type":"address"}],"name":"patientApproveContract","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"dentacoin_token_address","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_patient_addr","type":"address"}],"name":"dentistApproveContract","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"assurance_address","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_patient_addr","type":"address"},{"name":"_dentist_addr","type":"address"},{"name":"_value_usd","type":"uint256"},{"name":"_value_dcn","type":"uint256"},{"name":"_date_start_contract","type":"uint256"},{"name":"_contract_ipfs_hash","type":"string"}],"name":"registerContract","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_array","type":"address[]"}],"name":"multipleWithdraw","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_patient_addr","type":"address"}],"name":"singleWithdraw","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[{"name":"_assurance_address","type":"address"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_dentist_addr","type":"address"},{"indexed":true,"name":"_patient_addr","type":"address"},{"indexed":false,"name":"_value","type":"uint256"},{"indexed":false,"name":"_date","type":"uint256"}],"name":"logSuccessfulWithdraw","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_dentist_addr","type":"address"},{"indexed":false,"name":"_date","type":"uint256"}],"name":"logSuccessfulDentistRegistration","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_dentist_addr","type":"address"},{"indexed":true,"name":"_patient_addr","type":"address"},{"indexed":false,"name":"_date","type":"uint256"},{"indexed":false,"name":"_value_usd","type":"uint256"},{"indexed":false,"name":"_value_dcn","type":"uint256"}],"name":"logSuccessfulContractRegistration","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_dentist_addr","type":"address"},{"indexed":true,"name":"_patient_addr","type":"address"},{"indexed":false,"name":"_date","type":"uint256"}],"name":"logSuccessfulContractBreak","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_patient_addr","type":"address"},{"indexed":true,"name":"_dentist_addr","type":"address"}],"name":"logSuccessfulDentistApproval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_patient_addr","type":"address"},{"indexed":true,"name":"_dentist_addr","type":"address"}],"name":"logSuccessfulPatientApproval","type":"event"}],
+    dentacoin_token_address: '0x08d32b0da63e2C3bcF8019c9c5d849d7a9d791e6',
+    dentacoin_token_abi: [{"constant":true,"inputs":[],"name":"sellPriceEth","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"directTradeAllowed","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"minBalanceForAccounts","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"buyPriceEth","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"DentacoinAddress","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"DCNForGas","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"gasForDCN","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"remaining","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"gasReserve","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"payable":true,"stateMutability":"payable","type":"fallback"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_from","type":"address"},{"indexed":true,"name":"_to","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_owner","type":"address"},{"indexed":true,"name":"_spender","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],"name":"Approval","type":"event"},{"constant":false,"inputs":[{"name":"newBuyPriceEth","type":"uint256"},{"name":"newSellPriceEth","type":"uint256"}],"name":"setEtherPrices","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"newGasAmountInWei","type":"uint256"}],"name":"setGasForDCN","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"newDCNAmount","type":"uint256"}],"name":"setDCNForGas","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"newGasReserveInWei","type":"uint256"}],"name":"setGasReserve","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"minimumBalanceInWei","type":"uint256"}],"name":"setMinBalance","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"haltDirectTrade","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"unhaltDirectTrade","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"buyDentacoinsAgainstEther","outputs":[{"name":"amount","type":"uint256"}],"payable":true,"stateMutability":"payable","type":"function"},{"constant":false,"inputs":[{"name":"amount","type":"uint256"}],"name":"sellDentacoinsAgainstEther","outputs":[{"name":"revenue","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"amountOfEth","type":"uint256"},{"name":"dcn","type":"uint256"}],"name":"refundToOwner","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"}]
+};
+
+module.exports = {assurance_config_temp};
+},{}],575:[function(require,module,exports){
+var assurance_config_temp = {
     infura_node: 'https://rinkeby.infura.io/v3/c3a8017424324e47be615fb4028275bb',
     dentacoins_to_approve: 10000000000000,
     dummy_address: '0x32e4c8584f4357de80812b048734a0c2fe6e31ab',
@@ -80112,14 +80127,14 @@ var assurance_config = {
     dentacoin_token_abi: [{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"buyDentacoinsAgainstEther","outputs":[{"name":"amount","type":"uint256"}],"payable":true,"stateMutability":"payable","type":"function"},{"constant":false,"inputs":[],"name":"haltDirectTrade","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"amountOfEth","type":"uint256"},{"name":"dcn","type":"uint256"}],"name":"refundToOwner","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"amount","type":"uint256"}],"name":"sellDentacoinsAgainstEther","outputs":[{"name":"revenue","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"newDCNAmount","type":"uint256"}],"name":"setDCNForGas","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"newBuyPriceEth","type":"uint256"},{"name":"newSellPriceEth","type":"uint256"}],"name":"setEtherPrices","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"newGasAmountInWei","type":"uint256"}],"name":"setGasForDCN","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"newGasReserveInWei","type":"uint256"}],"name":"setGasReserve","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"minimumBalanceInWei","type":"uint256"}],"name":"setMinBalance","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"unhaltDirectTrade","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"payable":true,"stateMutability":"payable","type":"fallback"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_from","type":"address"},{"indexed":true,"name":"_to","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_owner","type":"address"},{"indexed":true,"name":"_spender","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],"name":"Approval","type":"event"},{"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"remaining","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"buyPriceEth","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"DCNForGas","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"DentacoinAddress","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"directTradeAllowed","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"gasForDCN","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"gasReserve","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"minBalanceForAccounts","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"sellPriceEth","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"}]
 };
 
-module.exports = {assurance_config};
-},{}],575:[function(require,module,exports){
+module.exports = {assurance_config_temp};
+},{}],576:[function(require,module,exports){
 var config_variable = {
     bidali_api_key: 'pk_n6mvpompwzm83egzrz2vnh'
 };
 
 module.exports = {config_variable};
-},{}],576:[function(require,module,exports){
+},{}],577:[function(require,module,exports){
 const Web3 = require('../../../node_modules/web3'); // import web3 v1.0 constructor
 const keythereum = require('../../../node_modules/keythereum');
 const EthCrypto = require('../../../node_modules/eth-crypto');
@@ -80163,6 +80178,7 @@ function importKeystoreFile(keystore, password, callback) {
             const public_key = EthCrypto.publicKeyByPrivateKey(private_key.toString('hex'));
             callback(keyObject, public_key, JSON.parse(keystore).address);
         } catch (e) {
+            console.log(e, 'e');
             callback(null, null, null, true, 'Wrong secret password.');
         }
     });
@@ -80218,22 +80234,21 @@ function generateKeystoreFromPrivateKey(private_key, password, callback) {
     }
 }
 
-function encryptString(string) {
-}
-
-module.exports = {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey, encryptString};
+module.exports = {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey};
 
 
-},{"../../../node_modules/eth-crypto":347,"../../../node_modules/keythereum":417,"../../../node_modules/web3":556}],577:[function(require,module,exports){
+},{"../../../node_modules/eth-crypto":347,"../../../node_modules/keythereum":417,"../../../node_modules/web3":556}],578:[function(require,module,exports){
 (function (Buffer){
 //importing methods for keystore import, export, decrypt
-var {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey, encryptString} = require('./helper');
+var {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey} = require('./helper');
+
 var {config_variable} = require('./config');
-var {assurance_config} = require('./assurance_config');
+var assurance_config;
 
 console.log("( ͡° ͜ʖ ͡°) I see you.");
 
 $(document).ready(function() {
+    console.log($('#main-container').attr('network'), 'networkdocument rdy');
     loadMobileBottomFixedNav();
 });
 
@@ -80585,6 +80600,16 @@ var dApp = {
                                             var next_transaction_history_html = '';
                                             function recursiveLoopForRestOfHistory(custom_iterator) {
                                                 if(custom_iterator < merged_events_arr.length) {
+                                                    if (custom_iterator > 5 && custom_iterator % 5 == 0) {
+                                                        $('.camping-transaction-history table tbody tr.loading-tr').before(next_transaction_history_html);
+                                                        next_transaction_history_html = '';
+                                                        updateExternalURLsForiOSDevice();
+
+                                                        if($('.camping-transaction-history .show-more').attr('show-all-transactions') == 'true') {
+                                                            $('.camping-transaction-history table tr').addClass('show-this');
+                                                        }
+                                                    }
+
                                                     if(basic.property_exists(merged_events_arr[custom_iterator], 'type') && merged_events_arr[custom_iterator].type == 'eth_transaction') {
                                                         //eth transaction
                                                         next_transaction_history_html+=buildEthereumHistoryTransaction(ethereum_data, utils.fromWei(merged_events_arr[custom_iterator].value, 'ether'), merged_events_arr[custom_iterator].to, merged_events_arr[custom_iterator].from, merged_events_arr[custom_iterator].timeStamp, merged_events_arr[custom_iterator].hash);
@@ -80733,7 +80758,24 @@ var dApp = {
 
 var utils = {
     convertUsdToDcn: async function(usd_val) {
-        return Math.floor((Math.floor(await getDentacoinDataByExternalProvider()) / 100) * usd_val);
+        var ajaxResponse = await $.ajax({
+            type: 'GET',
+            url: 'https://indacoin.com/api/GetCoinConvertAmount/USD/DCN/100/dentacoin',
+            dataType: 'json'
+        });
+
+        if (ajaxResponse > 0) {
+            return Math.floor((Math.floor(ajaxResponse) / 100) * usd_val);
+        } else {
+            // callback to coingecko price reader if indacoin fails
+            var coingeckoAjaxResponse = await $.ajax({
+                type: 'GET',
+                url: 'https://api.coingecko.com/api/v3/coins/dentacoin',
+                dataType: 'json'
+            });
+
+            return Math.floor((Math.floor(coingeckoAjaxResponse.market_data.current_price.usd) / 100) * usd_val);
+        }
     },
     innerAddressCheck: function(address) {
         return dApp.web3_1_0.utils.isAddress(address);
@@ -80786,6 +80828,9 @@ var utils = {
             replace.slice(length),
             str.slice(start + length)
         ].join('')
+    },
+    prepareDcnPrice: function(price) {
+        return 1 / parseInt(parseInt(price) / 100);
     }
 };
 
@@ -80794,6 +80839,8 @@ var bidali_lib_loaded = false;
 var pages_data = {
     homepage: function() {
         if(typeof(global_state.account) != 'undefined') {
+            showMobileAppBannerForDesktopBrowsers();
+
             function refreshAccountDataButtonLogic(init_loader) {
                 if(init_loader != undefined) {
                     showLoader();
@@ -80823,7 +80870,7 @@ var pages_data = {
                     getDentacoinDataByExternalProvider(function(request_response) {
                         var dentacoin_data = request_response;
                         if (dentacoin_data != 0) {
-                            $('.usd-amount').html((dcn_balance * prepareDcnPrice(dentacoin_data)).toFixed(2));
+                            $('.usd-amount').html((dcn_balance * dentacoin_data).toFixed(2));
                         } else {
                             $('.usd-amount-parent').hide();
                         }
@@ -80877,6 +80924,7 @@ var pages_data = {
                 });
             } else {
                 $('.eth-address-container').click(function() {
+                    basic.closeDialog();
                     basic.showDialog('<h2 class="fs-18">Your Dentacoin Address</h2><figure itemscope="" itemtype="http://schema.org/ImageObject" id="mobile-qrcode" class="padding-top-20 padding-bottom-20"></figure><a href="javascript:void(0)" class="mobile-copy-address text-center fs-0" data-toggle="tooltip" title="Copied." data-placement="bottom" data-clipboard-target="#mobile-copy-address"><figure class="inline-block mobile-copy-icon" itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/black-copy-icon.svg" class="max-width-20 width-100 margin-right-5" alt="Copy address to clipboard icon" itemprop="contentUrl"/></figure><input type="text" readonly class="address-value inline-block fs-18 fs-xs-10" id="mobile-copy-address"/></a>', 'mobile-dentacoin-address-and-qr', null);
 
                     $('.mobile-dentacoin-address-and-qr .address-value').val(utils.checksumAddress(global_state.account));
@@ -80902,7 +80950,7 @@ var pages_data = {
                     }
 
                     if (img.complete) {
-                        loaded()
+                        loaded();
                     } else {
                         img.addEventListener('load', loaded);
                     }
@@ -81064,6 +81112,8 @@ var pages_data = {
     },
     send_page: function() {
         if(typeof(global_state.account) != 'undefined') {
+            showMobileAppBannerForDesktopBrowsers();
+
             //reading all clinics/ dentists from the CoreDB EVERY 1h
             showLoader();
 
@@ -81093,10 +81143,11 @@ var pages_data = {
                 }
 
                 //search input validation for next button to become active
-                $('.search-field #search').on('change keyup focusout', function() {
+                $('.search-field #search').on('change keyup focusout paste', function() {
                     var input_value = $(this).val().trim();
                     if(input_value != '') {
                         if(utils.innerAddressCheck(input_value)) {
+                            $('.search-result').hide();
                             $('.next-send').removeClass('disabled');
                         } else {
                             $('.next-send').addClass('disabled');
@@ -81154,11 +81205,13 @@ var pages_data = {
                         });
 
                         $('.search-field #search').on('focus', function() {
-                            $('.search-result').show();
+                            if(!utils.innerAddressCheck($('.search-field #search').val().trim())) {
+                                $('.search-result').show();
+                            }
                         });
 
                         $('.search-field #search').on('input', function() {
-                            if($(this).val().trim() != '') {
+                            if($(this).val().trim() != '' && !utils.innerAddressCheck($(this).val().trim())) {
                                 $('.search-result').show();
 
                                 var value_to_check = $(this).val().trim().toLowerCase();
@@ -81360,12 +81413,10 @@ var pages_data = {
 
                                     var to_fixed_num = 2;
                                     if ($('.section-amount-to #active-crypto').val() == 'dcn') {
-                                        //if(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd) < 0.01) {
-                                        if(($('.section-amount-to input#crypto-amount').val().trim() * prepareDcnPrice(dentacoin_data)) < 0.01) {
+                                        if(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data) < 0.01) {
                                             to_fixed_num = 4;
                                         }
-                                        //$('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
-                                        $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * prepareDcnPrice(dentacoin_data)).toFixed(to_fixed_num)).trigger('change');
+                                        $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data).toFixed(to_fixed_num)).trigger('change');
                                     } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
                                         if(($('.section-amount-to input#crypto-amount').val().trim() * ethereum_data.market_data.current_price.usd) < 0.01) {
                                             to_fixed_num = 4;
@@ -81379,12 +81430,10 @@ var pages_data = {
                             $('.section-amount-to input#crypto-amount').on('input', function()  {
                                 var to_fixed_num = 2;
                                 if($('.section-amount-to #active-crypto').val() == 'dcn') {
-                                    //if(($(this).val().trim() * dentacoin_data.market_data.current_price.usd) < 0.01) {
-                                    if(($(this).val().trim() * prepareDcnPrice(dentacoin_data)) < 0.01) {
+                                    if(($(this).val().trim() * dentacoin_data) < 0.01) {
                                         to_fixed_num = 4;
                                     }
-                                    //$('.section-amount-to input#usd-val').val(($(this).val().trim() * dentacoin_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
-                                    $('.section-amount-to input#usd-val').val(($(this).val().trim() * prepareDcnPrice(dentacoin_data)).toFixed(to_fixed_num)).trigger('change');
+                                    $('.section-amount-to input#usd-val').val(($(this).val().trim() * dentacoin_data).toFixed(to_fixed_num)).trigger('change');
                                 } else if($('.section-amount-to #active-crypto').val() == 'eth') {
                                     if(($(this).val().trim() * ethereum_data.market_data.current_price.usd) < 0.01) {
                                         to_fixed_num = 4;
@@ -81396,8 +81445,7 @@ var pages_data = {
                             //on input in usd input change dcn/ eth input
                             $('.section-amount-to input#usd-val').on('input', function()  {
                                 if($('.section-amount-to #active-crypto').val() == 'dcn') {
-                                    //$('.section-amount-to input#crypto-amount').val(Math.floor($(this).val().trim() / dentacoin_data.market_data.current_price.usd)).trigger('change');
-                                    $('.section-amount-to input#crypto-amount').val(Math.floor($(this).val().trim() / prepareDcnPrice(dentacoin_data))).trigger('change');
+                                    $('.section-amount-to input#crypto-amount').val(Math.floor($(this).val().trim() / dentacoin_data)).trigger('change');
                                 } else if($('.section-amount-to #active-crypto').val() == 'eth') {
                                     $('.section-amount-to input#crypto-amount').val($(this).val().trim() / ethereum_data.market_data.current_price.usd).trigger('change');
                                 }
@@ -81413,10 +81461,10 @@ var pages_data = {
                                         $('.spendable-amount .spendable-dcn-amount span').html(dcn_balance + ' DCN');
                                     });
 
-                                    if(($('.section-amount-to input#crypto-amount').val().trim() * prepareDcnPrice(dentacoin_data)) < 0.01) {
+                                    if(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data) < 0.01) {
                                         to_fixed_num = 4;
                                     }
-                                    $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * prepareDcnPrice(dentacoin_data)).toFixed(to_fixed_num)).trigger('change');
+                                    $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data).toFixed(to_fixed_num)).trigger('change');
                                 } else if($(this).val() == 'eth') {
                                     dApp.web3_1_0.eth.getBalance(global_state.account, async function(error, result) {
                                         if(error) {
@@ -81696,37 +81744,80 @@ var pages_data = {
     spend_page_assurance_fees: function() {
         showMobileAppBannerForDesktopBrowsers();
 
-        if(is_hybrid/* || basic.isMobile()*/) {
+        if(is_hybrid) {
             $('.camp-assurance-mobile-phone-scanning').html('<div class="padding-top-15 padding-bottom-20 fs-16 max-width-600 margin-0-auto">You can handle all Dentacoin Assurance contract actions - such as contract creation or cancellation for patients or contact approvals and withdrawals for dentists - directly from here!</div><div class="text-center padding-bottom-30"><a href="javascript:void(0)" class="light-blue-white-btn no-hover open-transaction-scanner min-width-270 margin-right-10 margin-bottom-10 width-xs-100 max-width-400 margin-right-xs-0 padding-left-5 padding-right-5 fs-18 text-center">SCAN TRANSACTION <figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block max-width-30 width-100 margin-left-5"><img src="assets/images/scan-qr-code-blue.svg" alt="Scan icon"/></figure></a></div>');
 
-            initScan($('.open-transaction-scanner'), null, function(content) {
-                var content = decodeURIComponent(content);
+            if((window.localStorage.getItem('current_account') == null && typeof(web3) === 'undefined') || (window.localStorage.getItem('current_account') == null && window.localStorage.getItem('custom_wallet_over_external_web3_provider') == 'true')) {
+                $('.open-transaction-scanner').click(function() {
+                    window.scrollTo(0, 0);
+                    initAccountChecker();
 
-                if(basic.isJsonString(content)) {
-                    var scanObject = JSON.parse(content);
-
-                    if(utils.checksumAddress(global_state.account) != utils.checksumAddress(scanObject[2])) {
-                        basic.showAlert('You are trying to scan Assurance transaction which is not related to your Dentacoin Wallet Address.', '', true);
-                        return false
+                    if(!dApp.loaded) {
+                        dApp.init();
                     }
+                });
+            } else {
+                setGlobalVariables();
+                console.log(assurance_config.chain_id, 'assurance_confin.chain_id');
+                initScan($('.open-transaction-scanner'), null, function(content) {
+                    var content = decodeURIComponent(content);
 
-                    $.ajax({
-                        type: 'POST',
-                        url: 'https://assurance.dentacoin.com/get-scanning-data',
-                        data: {
-                            slug: scanObject[3]
-                        },
-                        dataType: 'json',
-                        success: async function(response) {
-                            if(response.success) {
-                                var dcnValue = await utils.convertUsdToDcn(response.data.usd);
-                                function scanningRouter(key) {
-                                    if(scanObject[4] == 'approval-creation') {
-                                        assuranceTransactions.approval(scanObject[1], key, function(signedUnsubmittedTransactionApproval) {
+                    if(basic.isJsonString(content)) {
+                        var scanObject = JSON.parse(content);
+
+                        console.log(scanObject, 'scanObject');
+
+                        if(utils.checksumAddress(global_state.account) != utils.checksumAddress(scanObject[2])) {
+                            basic.showAlert('You are trying to scan Assurance transaction which is not related to your Dentacoin Wallet Address.', '', true);
+                            return false
+                        }
+
+                        $.ajax({
+                            type: 'POST',
+                            url: 'https://assurance.dentacoin.com/get-scanning-data',
+                            data: {
+                                slug: scanObject[3]
+                            },
+                            dataType: 'json',
+                            success: async function(response) {
+                                if(response.success) {
+                                    var dcnValue = await utils.convertUsdToDcn(response.data.usd);
+                                    function scanningRouter(key) {
+                                        if(scanObject[4] == 'approval-creation') {
+                                            assuranceTransactions.approval(scanObject[1], key, function(signedUnsubmittedTransactionApproval) {
+                                                assuranceTransactions.creation(response.data.dentist, response.data.usd, dcnValue, response.data.next_transfer, response.data.ipfs_hash, scanObject[1], key, function(signedUnsubmittedTransaction) {
+                                                    console.log(signedUnsubmittedTransactionApproval, 'signedUnsubmittedTransactionApproval');
+                                                    console.log(signedUnsubmittedTransaction, 'signedUnsubmittedTransaction');
+
+                                                    $.ajax({
+                                                        type: 'POST',
+                                                        url: 'https://assurance.dentacoin.com/submit-assurance-transaction',
+                                                        dataType: 'json',
+                                                        data: {
+                                                            slug: scanObject[3],
+                                                            to_status: 'awaiting-approval',
+                                                            patient_address: utils.checksumAddress(global_state.account),
+                                                            dentist_address: utils.checksumAddress(response.data.dentist),
+                                                            signedUnsubmittedTransactionApproval: signedUnsubmittedTransactionApproval,
+                                                            signedUnsubmittedTransaction: signedUnsubmittedTransaction,
+                                                            wallet_signed: true,
+                                                            network: $('#main-container').attr('network')
+                                                        },
+                                                        success: function(response) {
+                                                            hideLoader();
+                                                            basic.closeDialog();
+                                                            if(response.success) {
+                                                                basic.showAlert('You have successfully signed your contract! Once your transaction is confirmed, your Assurance contract page will be updated.', '', true);
+                                                                firePushNotification('Assurance transaction', 'Contract created successfully.');
+                                                            } else {
+                                                                basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
+                                                            }
+                                                        }
+                                                    });
+                                                }, true);
+                                            });
+                                        } else if(scanObject[4] == 'creation') {
                                             assuranceTransactions.creation(response.data.dentist, response.data.usd, dcnValue, response.data.next_transfer, response.data.ipfs_hash, scanObject[1], key, function(signedUnsubmittedTransaction) {
-                                                console.log(signedUnsubmittedTransactionApproval, 'signedUnsubmittedTransactionApproval');
-                                                console.log(signedUnsubmittedTransaction, 'signedUnsubmittedTransaction');
-
                                                 $.ajax({
                                                     type: 'POST',
                                                     url: 'https://assurance.dentacoin.com/submit-assurance-transaction',
@@ -81736,222 +81827,200 @@ var pages_data = {
                                                         to_status: 'awaiting-approval',
                                                         patient_address: utils.checksumAddress(global_state.account),
                                                         dentist_address: utils.checksumAddress(response.data.dentist),
-                                                        signedUnsubmittedTransactionApproval: signedUnsubmittedTransactionApproval,
                                                         signedUnsubmittedTransaction: signedUnsubmittedTransaction,
-                                                        wallet_signed: true
+                                                        wallet_signed: true,
+                                                        network: $('#main-container').attr('network')
                                                     },
                                                     success: function(response) {
                                                         hideLoader();
                                                         basic.closeDialog();
                                                         if(response.success) {
-                                                            firePushNotification('Assurance transaction', 'Contract created successfully.');
                                                             basic.showAlert('You have successfully signed your contract! Once your transaction is confirmed, your Assurance contract page will be updated.', '', true);
+                                                            firePushNotification('Assurance transaction', 'Contract created successfully.');
                                                         } else {
                                                             basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
                                                         }
                                                     }
                                                 });
-                                            }, true);
-                                        });
-                                    } else if(scanObject[4] == 'creation') {
-                                        assuranceTransactions.creation(response.data.dentist, response.data.usd, dcnValue, response.data.next_transfer, response.data.ipfs_hash, scanObject[1], key, function(signedUnsubmittedTransaction) {
-                                            $.ajax({
-                                                type: 'POST',
-                                                url: 'https://assurance.dentacoin.com/submit-assurance-transaction',
-                                                dataType: 'json',
-                                                data: {
-                                                    slug: scanObject[3],
-                                                    to_status: 'awaiting-approval',
-                                                    patient_address: utils.checksumAddress(global_state.account),
-                                                    dentist_address: utils.checksumAddress(response.data.dentist),
-                                                    signedUnsubmittedTransaction: signedUnsubmittedTransaction,
-                                                    wallet_signed: true
-                                                },
-                                                success: function(response) {
-                                                    hideLoader();
-                                                    basic.closeDialog();
-                                                    if(response.success) {
-                                                        firePushNotification('Assurance transaction', 'Contract created successfully.');
-                                                        basic.showAlert('You have successfully signed your contract! Once your transaction is confirmed, your Assurance contract page will be updated.', '', true);
-                                                    } else {
-                                                        basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
-                                                    }
-                                                }
                                             });
-                                        });
-                                    } else if(scanObject[4] == 'dentist-approval') {
-                                        assuranceTransactions.dentist_approval(response.data.patient, scanObject[1], key, function(signedUnsubmittedTransaction) {
-                                            $.ajax({
-                                                type: 'POST',
-                                                url: 'https://assurance.dentacoin.com/submit-assurance-transaction',
-                                                dataType: 'json',
-                                                data: {
-                                                    slug: scanObject[3],
-                                                    to_status: 'active',
-                                                    patient_address: utils.checksumAddress(response.data.patient),
-                                                    dentist_address: utils.checksumAddress(global_state.account),
-                                                    signedUnsubmittedTransaction: signedUnsubmittedTransaction,
-                                                    wallet_signed: true
-                                                },
-                                                success: function(response) {
-                                                    hideLoader();
-                                                    basic.closeDialog();
-                                                    if(response.success) {
-                                                        firePushNotification('Assurance transaction', 'Contract approved successfully.');
-                                                        basic.showAlert('You have successfully signed your contract! Once your transaction is confirmed, your Assurance contract page will be updated.', '', true);
-                                                    } else {
-                                                        basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
-                                                    }
-                                                }
-                                            });
-                                        });
-                                    } else if(scanObject[4] == 'active-withdraw') {
-                                        assuranceTransactions.withdraw(response.data.patient, scanObject[1], key, function(signedUnsubmittedTransaction) {
-                                            $.ajax({
-                                                type: 'POST',
-                                                url: 'https://assurance.dentacoin.com/submit-assurance-transaction',
-                                                dataType: 'json',
-                                                data: {
-                                                    slug: scanObject[3],
-                                                    to_status: 'active-withdraw',
-                                                    patient_address: utils.checksumAddress(response.data.patient),
-                                                    dentist_address: utils.checksumAddress(global_state.account),
-                                                    signedUnsubmittedTransaction: signedUnsubmittedTransaction,
-                                                    wallet_signed: true
-                                                },
-                                                success: function(response) {
-                                                    hideLoader();
-                                                    basic.closeDialog();
-                                                    if(response.success) {
-                                                        firePushNotification('Assurance transaction', 'Successful withdraw.');
-                                                        basic.showAlert('You have successfully signed your contract! Once your transaction is confirmed, your Assurance contract page will be updated.', '', true);
-                                                    } else {
-                                                        basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
-                                                    }
-                                                }
-                                            });
-                                        });
-                                    } else if(scanObject[4] == 'cancel') {
-                                        assuranceTransactions.cancel(response.data.patient, response.data.dentist, scanObject[1], key, function(signedUnsubmittedTransaction) {
-                                            $.ajax({
-                                                type: 'POST',
-                                                url: 'https://assurance.dentacoin.com/submit-assurance-transaction',
-                                                dataType: 'json',
-                                                data: {
-                                                    slug: scanObject[3],
-                                                    to_status: 'cancelled',
-                                                    patient_address: utils.checksumAddress(response.data.patient),
-                                                    dentist_address: utils.checksumAddress(response.data.dentist),
-                                                    type: scanObject[5],
-                                                    reason: scanObject[6],
-                                                    signedUnsubmittedTransaction: signedUnsubmittedTransaction,
-                                                    wallet_signed: true
-                                                },
-                                                success: function(response) {
-                                                    hideLoader();
-                                                    basic.closeDialog();
-                                                    if(response.success) {
-                                                        firePushNotification('Assurance transaction', 'Contract cancelled successfully.');
-                                                        basic.showAlert('You have successfully signed your contract! Once your transaction is confirmed, your Assurance contract page will be updated.', '', true);
-                                                    } else {
-                                                        basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
-                                                    }
-                                                }
-                                            });
-                                        });
-                                    }
-                                }
-
-                                var transactionPopupTitle = '';
-                                var transactionPopupExtraHtml = '';
-                                if(scanObject[4] == 'approval-creation' || scanObject[4] == 'creation') {
-                                    transactionPopupTitle = 'Activate Autopayments';
-                                    transactionPopupExtraHtml = '<div class="dcn-amount">-'+dcnValue+' DCN</div><div class="usd-amount">=$'+response.data.usd+'</div>';
-                                } else if(scanObject[4] == 'dentist-approval') {
-                                    transactionPopupTitle = 'Approve Contract';
-                                } else if(scanObject[4] == 'active-withdraw') {
-                                    transactionPopupTitle = 'Withdraw Now';
-                                } else if(scanObject[4] == 'cancel') {
-                                    transactionPopupTitle = 'Cancel Contract';
-                                }
-
-                                var transaction_popup_html = '<div class="title">'+transactionPopupTitle+'</div><div class="pictogram-and-dcn-usd-price"><svg version="1.1" class="width-100 max-width-100 margin-bottom-10" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><style type="text/css">.st0-recipe{fill:#FFFFFF;}.st1-recipe{fill:#CA675A;}.st2-recipe{fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="100" width="105.7" x="-7.2" y="-6.4"></sliceSourceBounds></sfw></metadata><circle class="st0-recipe" cx="50" cy="50" r="50"/><g><g><g><path class="st1-recipe" d="M50.1,93.7c-18.7,0-36-12.4-41.3-31.3C2.4,39.6,15.8,16,38.5,9.6C48.9,6.7,60,7.8,69.6,12.8c1.2,0.6,1.6,2,1,3.2s-2,1.6-3.2,1c-8.6-4.4-18.4-5.4-27.7-2.8c-20.1,5.6-32,26.7-26.3,46.9s26.7,32.1,46.9,26.4s32.1-26.7,26.4-46.9c-1.1-3.9-2.8-7.6-5-10.9c-0.7-1.1-0.4-2.6,0.7-3.3c1.1-0.7,2.6-0.4,3.3,0.7c2.5,3.8,4.4,7.9,5.6,12.3c6.4,22.8-7,46.5-29.7,52.8C57.8,93.2,53.9,93.7,50.1,93.7z"/></g><g><path class="st1-recipe" d="M33.1,78.6c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.4l40.4-50.5c0.8-1,2.3-1.2,3.4-0.4c1,0.8,1.2,2.3,0.4,3.4L35,77.7C34.5,78.3,33.8,78.6,33.1,78.6z"/></g><g><g><path class="st2-recipe" d="M105.7,56.9"/></g></g></g><g><path class="st1-recipe" d="M73.7,54.2c-0.1,0-0.2,0-0.2,0c-1.3-0.2-2.3-1.4-2.2-2.7L74,23.9L47.6,39.8c-1.1,0.7-2.6,0.3-3.3-0.8c-0.7-1.1-0.3-2.6,0.8-3.3l34.5-20.8L76.1,52C76,53.2,74.9,54.2,73.7,54.2z"/></g></g></svg>'+transactionPopupExtraHtml+'</div></div><div class="confirm-row from"> <div class="label inline-block">From:</div><div class="value inline-block">'+global_state.account+'</div></div><div class="confirm-row free"> <div class="label inline-block">Ether fee:</div><div class="value inline-block">'+parseFloat(scanObject[0]).toFixed(8)+'</div></div>';
-
-                                if(window.localStorage.getItem('keystore_file') != null) {
-                                    //cached keystore path on mobile device or cached keystore file on browser
-                                    transaction_popup_html+='<div class="container-fluid"><div class="row padding-top-25 cached-keystore-file"><div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">Secret password:</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">Confirm</a></div></div></div>';
-                                    basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
-
-                                    $('.cached-keystore-file .confirm-transaction.keystore-file').click(function() {
-                                        if($('.cached-keystore-file #your-secret-key-password').val().trim() == '') {
-                                            basic.showAlert('Please enter valid secret file password.', '', true);
-                                        } else {
-                                            showLoader('Hold on...<br>Your transaction is being processed.');
-
-                                            setTimeout(function () {
-                                                decryptKeystore(window.localStorage.getItem('keystore_file'), $('.cached-keystore-file #your-secret-key-password').val().trim(), function(success, to_string, error, error_message) {
-                                                    if(success) {
-                                                        scanningRouter(success);
-                                                    } else if(error) {
-                                                        basic.showAlert(error_message, '', true);
+                                        } else if(scanObject[4] == 'dentist-approval') {
+                                            assuranceTransactions.dentist_approval(response.data.patient, scanObject[1], key, function(signedUnsubmittedTransaction) {
+                                                $.ajax({
+                                                    type: 'POST',
+                                                    url: 'https://assurance.dentacoin.com/submit-assurance-transaction',
+                                                    dataType: 'json',
+                                                    data: {
+                                                        slug: scanObject[3],
+                                                        to_status: 'active',
+                                                        patient_address: utils.checksumAddress(response.data.patient),
+                                                        dentist_address: utils.checksumAddress(global_state.account),
+                                                        signedUnsubmittedTransaction: signedUnsubmittedTransaction,
+                                                        wallet_signed: true,
+                                                        network: $('#main-container').attr('network')
+                                                    },
+                                                    success: function(response) {
                                                         hideLoader();
+                                                        basic.closeDialog();
+                                                        if(response.success) {
+                                                            basic.showAlert('You have successfully signed your contract! Once your transaction is confirmed, your Assurance contract page will be updated.', '', true);
+                                                            firePushNotification('Assurance transaction', 'Contract approved successfully.');
+                                                        } else {
+                                                            basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
+                                                        }
                                                     }
                                                 });
-                                            }, 2000);
+                                            });
+                                        } else if(scanObject[4] == 'active-withdraw') {
+                                            assuranceTransactions.withdraw(response.data.patient, scanObject[1], key, function(signedUnsubmittedTransaction) {
+                                                $.ajax({
+                                                    type: 'POST',
+                                                    url: 'https://assurance.dentacoin.com/submit-assurance-transaction',
+                                                    dataType: 'json',
+                                                    data: {
+                                                        slug: scanObject[3],
+                                                        to_status: 'active-withdraw',
+                                                        patient_address: utils.checksumAddress(response.data.patient),
+                                                        dentist_address: utils.checksumAddress(global_state.account),
+                                                        signedUnsubmittedTransaction: signedUnsubmittedTransaction,
+                                                        wallet_signed: true,
+                                                        network: $('#main-container').attr('network')
+                                                    },
+                                                    success: function(response) {
+                                                        hideLoader();
+                                                        basic.closeDialog();
+                                                        if(response.success) {
+                                                            basic.showAlert('You have successfully signed your contract! Once your transaction is confirmed, your Assurance contract page will be updated.', '', true);
+                                                            firePushNotification('Assurance transaction', 'Successful withdraw.');
+                                                        } else {
+                                                            basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
+                                                        }
+                                                    }
+                                                });
+                                            });
+                                        } else if(scanObject[4] == 'cancel') {
+                                            assuranceTransactions.cancel(response.data.patient, response.data.dentist, scanObject[1], key, function(signedUnsubmittedTransaction) {
+                                                $.ajax({
+                                                    type: 'POST',
+                                                    url: 'https://assurance.dentacoin.com/submit-assurance-transaction',
+                                                    dataType: 'json',
+                                                    data: {
+                                                        slug: scanObject[3],
+                                                        to_status: 'cancelled',
+                                                        patient_address: utils.checksumAddress(response.data.patient),
+                                                        dentist_address: utils.checksumAddress(response.data.dentist),
+                                                        type: scanObject[5],
+                                                        reason: scanObject[6],
+                                                        signedUnsubmittedTransaction: signedUnsubmittedTransaction,
+                                                        wallet_signed: true,
+                                                        network: $('#main-container').attr('network')
+                                                    },
+                                                    success: function(response) {
+                                                        hideLoader();
+                                                        basic.closeDialog();
+                                                        if(response.success) {
+                                                            basic.showAlert('You have successfully signed your contract! Once your transaction is confirmed, your Assurance contract page will be updated.', '', true);
+                                                            firePushNotification('Assurance transaction', 'Contract cancelled successfully.');
+                                                        } else {
+                                                            basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
+                                                        }
+                                                    }
+                                                });
+                                            });
                                         }
-                                    });
-                                } else {
-                                    //nothing is cached
-                                    transaction_popup_html+='<div class="container-fluid proof-of-address padding-top-20 padding-bottom-20"> <div class="row fs-0"> <div class="col-xs-12 col-sm-5 inline-block padding-left-30 padding-left-xs-15"> <a href="javascript:void(0)" class="light-blue-white-btn text-center enter-private-key display-block-important fs-18 line-height-18"><span>Enter your Private Key<div class="fs-16">(not recommended)</div></span></a> </div><div class="col-xs-12 col-sm-2 text-center calibri-bold fs-20 inline-block">or</div><div class="col-xs-12 col-sm-5 inline-block padding-right-30 padding-right-xs-15"> <div class="upload-file-container" data-id="upload-keystore-file" data-label="Upload your Backup file"> <input type="file" id="upload-keystore-file" class="custom-upload-keystore-file hide-input"/> <div class="btn-wrapper"></div></div></div></div><div class="row on-change-result"></div></div>';
-                                    basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
+                                    }
 
-                                    //init private key btn logic
-                                    $(document).on('click', '.enter-private-key', function() {
-                                        $('.proof-of-address #upload-keystore-file').val('');
-                                        $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-20"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-private-key">Your Private Key:</label><input type="text" id="your-private-key" maxlength="64" class="full-rounded"/></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction private-key">CONFIRM</a></div>');
+                                    var transactionPopupTitle = '';
+                                    var transactionPopupExtraHtml = '';
+                                    if(scanObject[4] == 'approval-creation' || scanObject[4] == 'creation') {
+                                        transactionPopupTitle = 'Activate Autopayments';
+                                        transactionPopupExtraHtml = '<div class="dcn-amount">-'+dcnValue+' DCN</div><div class="usd-amount">=$'+response.data.usd+'</div>';
+                                    } else if(scanObject[4] == 'dentist-approval') {
+                                        transactionPopupTitle = 'Approve Contract';
+                                    } else if(scanObject[4] == 'active-withdraw') {
+                                        transactionPopupTitle = 'Withdraw Now';
+                                    } else if(scanObject[4] == 'cancel') {
+                                        transactionPopupTitle = 'Cancel Contract';
+                                    }
 
-                                        $('#your-private-key').focus();
-                                        $('label[for="your-private-key"]').addClass('active-label');
+                                    var transaction_popup_html = '<div class="title">'+transactionPopupTitle+'</div><div class="pictogram-and-dcn-usd-price"><svg version="1.1" class="width-100 max-width-100 margin-bottom-10" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><style type="text/css">.st0-recipe{fill:#FFFFFF;}.st1-recipe{fill:#CA675A;}.st2-recipe{fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="100" width="105.7" x="-7.2" y="-6.4"></sliceSourceBounds></sfw></metadata><circle class="st0-recipe" cx="50" cy="50" r="50"/><g><g><g><path class="st1-recipe" d="M50.1,93.7c-18.7,0-36-12.4-41.3-31.3C2.4,39.6,15.8,16,38.5,9.6C48.9,6.7,60,7.8,69.6,12.8c1.2,0.6,1.6,2,1,3.2s-2,1.6-3.2,1c-8.6-4.4-18.4-5.4-27.7-2.8c-20.1,5.6-32,26.7-26.3,46.9s26.7,32.1,46.9,26.4s32.1-26.7,26.4-46.9c-1.1-3.9-2.8-7.6-5-10.9c-0.7-1.1-0.4-2.6,0.7-3.3c1.1-0.7,2.6-0.4,3.3,0.7c2.5,3.8,4.4,7.9,5.6,12.3c6.4,22.8-7,46.5-29.7,52.8C57.8,93.2,53.9,93.7,50.1,93.7z"/></g><g><path class="st1-recipe" d="M33.1,78.6c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.4l40.4-50.5c0.8-1,2.3-1.2,3.4-0.4c1,0.8,1.2,2.3,0.4,3.4L35,77.7C34.5,78.3,33.8,78.6,33.1,78.6z"/></g><g><g><path class="st2-recipe" d="M105.7,56.9"/></g></g></g><g><path class="st1-recipe" d="M73.7,54.2c-0.1,0-0.2,0-0.2,0c-1.3-0.2-2.3-1.4-2.2-2.7L74,23.9L47.6,39.8c-1.1,0.7-2.6,0.3-3.3-0.8c-0.7-1.1-0.3-2.6,0.8-3.3l34.5-20.8L76.1,52C76,53.2,74.9,54.2,73.7,54.2z"/></g></g></svg>'+transactionPopupExtraHtml+'</div></div><div class="confirm-row from"> <div class="label inline-block">From:</div><div class="value inline-block">'+global_state.account+'</div></div><div class="confirm-row free"> <div class="label inline-block">Ether fee:</div><div class="value inline-block">'+parseFloat(scanObject[0]).toFixed(8)+'</div></div>';
 
-                                        $('.confirm-transaction.private-key').click(function() {
-                                            if($('.proof-of-address #your-private-key').val().trim() == '') {
-                                                basic.showAlert('Please enter valid private key.', '', true);
+                                    if(window.localStorage.getItem('keystore_file') != null) {
+                                        //cached keystore path on mobile device or cached keystore file on browser
+                                        transaction_popup_html+='<div class="container-fluid"><div class="row padding-top-25 cached-keystore-file"><div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">Secret password:</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">Confirm</a></div></div></div>';
+                                        basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
+
+                                        $('.cached-keystore-file .confirm-transaction.keystore-file').click(function() {
+                                            if($('.cached-keystore-file #your-secret-key-password').val().trim() == '') {
+                                                basic.showAlert('Please enter valid secret file password.', '', true);
                                             } else {
                                                 showLoader('Hold on...<br>Your transaction is being processed.');
 
-                                                setTimeout(function() {
-                                                    var validating_private_key = validatePrivateKey($('.proof-of-address #your-private-key').val().trim());
-                                                    if(validating_private_key.success) {
-                                                        if(utils.checksumAddress(validating_private_key.success.address) == utils.checksumAddress(global_state.account)) {
-                                                            scanningRouter(new Buffer($('.proof-of-address #your-private-key').val().trim(), 'hex'));
-                                                        } else {
-                                                            basic.showAlert('Please enter private key related to your Wallet Address', '', true);
+                                                setTimeout(function () {
+                                                    decryptKeystore(window.localStorage.getItem('keystore_file'), $('.cached-keystore-file #your-secret-key-password').val().trim(), function(success, to_string, error, error_message) {
+                                                        if(success) {
+                                                            scanningRouter(success);
+                                                        } else if(error) {
+                                                            basic.showAlert(error_message, '', true);
                                                             hideLoader();
                                                         }
-                                                    } else if(validating_private_key.error) {
-                                                        basic.showAlert(validating_private_key.message, '', true);
-                                                        hideLoader();
-                                                    }
+                                                    });
                                                 }, 2000);
                                             }
                                         });
-                                    });
+                                    } else {
+                                        //nothing is cached
+                                        transaction_popup_html+='<div class="container-fluid proof-of-address padding-top-20 padding-bottom-20"> <div class="row fs-0"> <div class="col-xs-12 col-sm-5 inline-block padding-left-30 padding-left-xs-15"> <a href="javascript:void(0)" class="light-blue-white-btn text-center enter-private-key display-block-important fs-18 line-height-18"><span>Enter your Private Key<div class="fs-16">(not recommended)</div></span></a> </div><div class="col-xs-12 col-sm-2 text-center calibri-bold fs-20 inline-block">or</div><div class="col-xs-12 col-sm-5 inline-block padding-right-30 padding-right-xs-15"> <div class="upload-file-container" data-id="upload-keystore-file" data-label="Upload your Backup file"> <input type="file" id="upload-keystore-file" class="custom-upload-keystore-file hide-input"/> <div class="btn-wrapper"></div></div></div></div><div class="row on-change-result"></div></div>';
+                                        basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
+
+                                        //init private key btn logic
+                                        $(document).on('click', '.enter-private-key', function() {
+                                            $('.proof-of-address #upload-keystore-file').val('');
+                                            $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-20"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-private-key">Your Private Key:</label><input type="text" id="your-private-key" maxlength="64" class="full-rounded"/></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction private-key">CONFIRM</a></div>');
+
+                                            $('#your-private-key').focus();
+                                            $('label[for="your-private-key"]').addClass('active-label');
+
+                                            $('.confirm-transaction.private-key').click(function() {
+                                                if($('.proof-of-address #your-private-key').val().trim() == '') {
+                                                    basic.showAlert('Please enter valid private key.', '', true);
+                                                } else {
+                                                    showLoader('Hold on...<br>Your transaction is being processed.');
+
+                                                    setTimeout(function() {
+                                                        var validating_private_key = validatePrivateKey($('.proof-of-address #your-private-key').val().trim());
+                                                        if(validating_private_key.success) {
+                                                            if(utils.checksumAddress(validating_private_key.success.address) == utils.checksumAddress(global_state.account)) {
+                                                                scanningRouter(new Buffer($('.proof-of-address #your-private-key').val().trim(), 'hex'));
+                                                            } else {
+                                                                basic.showAlert('Please enter private key related to your Wallet Address', '', true);
+                                                                hideLoader();
+                                                            }
+                                                        } else if(validating_private_key.error) {
+                                                            basic.showAlert(validating_private_key.message, '', true);
+                                                            hideLoader();
+                                                        }
+                                                    }, 2000);
+                                                }
+                                            });
+                                        });
 
 
-                                    //init keystore btn logic
-                                    styleKeystoreUploadBtnForTx(function(key) {
-                                        scanningRouter(key);
-                                    });
+                                        //init keystore btn logic
+                                        styleKeystoreUploadBtnForTx(function(key) {
+                                            scanningRouter(key);
+                                        });
+                                    }
+                                } else {
+                                    basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
                                 }
-                            } else {
-                                basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
                             }
-                        }
-                    });
-                } else {
-                    basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
-                }
-            }, true, 'Assurance transactions signing via Dentacoin Wallet is currently in testing phase and running only on Rinkeby testnet. Are you sure you want to continue?');
+                        });
+                    } else {
+                        basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
+                    }
+                });
+            }
+
         }
     }
 };
@@ -82129,7 +82198,6 @@ function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver
                     pending_history_transaction += buildDentacoinHistoryTransaction(request_response, token_val, receiver, global_state.account, Math.round((new Date()).getTime() / 1000), transactionHash, true);
 
                     fireGoogleAnalyticsEvent('Pay', 'Next', 'DCN', token_val);
-                    firePushNotification('Dentacoin transaction', token_val + ' DCN sent successfully.');
                     displayMessageOnTransactionSend(token_label, transactionHash);
 
                     $('.transaction-history tbody').prepend(pending_history_transaction);
@@ -82138,13 +82206,14 @@ function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver
                     $('.section-amount-to').hide();
                     $('.section-send').fadeIn(500);
                     $('#search').val('');
+
+                    firePushNotification('Dentacoin transaction', token_val + ' DCN sent successfully.');
                 });
             } else if(symbol == 'ETH') {
                 getEthereumDataByCoingecko(function(request_response) {
                     pending_history_transaction += buildEthereumHistoryTransaction(request_response, token_val, receiver, global_state.account, Math.round((new Date()).getTime() / 1000), transactionHash, true);
 
                     fireGoogleAnalyticsEvent('Pay', 'Next', 'ETH in USD', Math.floor(parseFloat(token_val) * request_response.market_data.current_price.usd));
-                    firePushNotification('Ethereum transaction', token_val + ' ETH sent successfully.');
                     displayMessageOnTransactionSend(token_label, transactionHash);
 
                     $('.transaction-history tbody').prepend(pending_history_transaction);
@@ -82152,6 +82221,8 @@ function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver
                     $('.search-field #search').val('');
                     $('.section-amount-to').hide();
                     $('.section-send').fadeIn(500);
+
+                    firePushNotification('Ethereum transaction', token_val + ' ETH sent successfully.');
                 });
             }
         });
@@ -82202,6 +82273,7 @@ window.refreshApp = function() {
     DCNContract = undefined;
     getInstance = undefined;
 
+    setGlobalVariables();
     initAccountChecker();
 
     if($('.main-holder app-homepage').length) {
@@ -82215,6 +82287,7 @@ window.refreshApp = function() {
 
 window.getHomepageData = function() {
     console.log('getHomepageData');
+    setGlobalVariables();
     initAccountChecker();
 
     if(!dApp.loaded) {
@@ -82239,11 +82312,9 @@ window.getHomepageData = function() {
 };
 
 window.getBuyPageData = function(){
+    setGlobalVariables();
     removeAccountChecker();
 
-    if(!dApp.loaded) {
-        dApp.init();
-    }
     if($.isReady) {
         //called on route change
         pages_data.buy_page();
@@ -82256,6 +82327,7 @@ window.getBuyPageData = function(){
 };
 
 window.getSendPageData = function(){
+    setGlobalVariables();
     initAccountChecker();
 
     if(!dApp.loaded) {
@@ -82280,11 +82352,9 @@ window.getSendPageData = function(){
 };
 
 window.getSpendPageDentalServices = function(){
+    setGlobalVariables();
     removeAccountChecker();
 
-    if(!dApp.loaded) {
-        dApp.init();
-    }
     if($.isReady) {
         //called on route change
         pages_data.spend_page_dental_services();
@@ -82297,6 +82367,7 @@ window.getSpendPageDentalServices = function(){
 };
 
 window.getSpendPageGiftCards = function(){
+    setGlobalVariables();
     removeAccountChecker();
 
     if(!dApp.loaded) {
@@ -82314,11 +82385,9 @@ window.getSpendPageGiftCards = function(){
 };
 
 window.getSpendPageExchanges = function(){
+    setGlobalVariables();
     removeAccountChecker();
 
-    if(!dApp.loaded) {
-        dApp.init();
-    }
     if($.isReady) {
         //called on route change
         pages_data.spend_page_exchanges();
@@ -82331,11 +82400,9 @@ window.getSpendPageExchanges = function(){
 };
 
 window.getSpendPageAssuranceFees = function(){
+    setGlobalVariables();
     removeAccountChecker();
 
-    if(!dApp.loaded) {
-        dApp.init();
-    }
     if($.isReady) {
         //called on route change
         pages_data.spend_page_assurance_fees();
@@ -82396,18 +82463,26 @@ bindGoogleAlikeButtonsEvents();
 
 var mobileAppBannerForDesktopBrowsersHtml = '<div class="container-fluid"><div class="row"><figure itemscope="" itemtype="http://schema.org/ImageObject" class="col-xs-3 inline-block-bottom"><img src="assets/images/left-hand-with-phone.png" alt="Left hand holding phone"/></figure><div class="col-xs-6 inline-block-bottom text-center padding-bottom-30"><h3 class="fs-24 padding-bottom-5 color-white">ALSO AVAILABLE ON MOBILE:</h3><div><figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block padding-right-10"><a href="https://play.google.com/store/apps/details?id=wallet.dentacoin.com" target="_blank"><img src="assets/images/google-play-badge.svg" class="width-100 max-width-150" itemprop="logo" alt="Google play icon"/></a></figure><figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block padding-left-10"><a href="https://apps.apple.com/us/app/dentacoin-wallet/id1478732657" target="_blank"><img src="assets/images/app-store.svg" class="width-100 max-width-150" itemprop="logo" alt="App store icon"/></a></figure></div></div><figure itemscope="" itemtype="http://schema.org/ImageObject" class="col-xs-3 inline-block-bottom text-right"><img src="assets/images/right-hand-with-phone.png" alt="Right hand holding phone"/></figure></div></div>';
 
+function setGlobalVariables() {
+    if ($('#main-container').attr('network') == 'mainnet' && assurance_config == undefined) {
+        var {assurance_config_temp} = require('./assurance_config_mainnet');
+        assurance_config = assurance_config_temp;
+    } else if ($('#main-container').attr('network') == 'rinkeby' && assurance_config == undefined) {
+        var {assurance_config_temp} = require('./assurance_config_rinkeby');
+        assurance_config = assurance_config_temp;
+    }
+    // variable to track if the wallet is loaded as mobile application
+    is_hybrid = $('#main-container').attr('hybrid') == 'true';
+}
+
 //checking if metamask or if saved current_account in the local storage. If both are false then show custom login popup with CREATE / IMPORT logic
 function initAccountChecker()  {
-    console.log('initAccountChecker');
     if ($('.account-checker-container .account-checker-wrapper').length) {
         return;
     }
-    console.log(1, 'initAccountChecker');
 
     hideMobileAppBannerForDesktopBrowsers();
 
-    // variable to track if the wallet is loaded as mobile application
-    is_hybrid = $('#main-container').attr('hybrid') == 'true';
     if (is_hybrid) {
         // opening the external links in app browser
         $(document).on('click', '.data-external-link', function() {
@@ -82417,7 +82492,6 @@ function initAccountChecker()  {
     }
 
     if((window.localStorage.getItem('current_account') == null && typeof(web3) === 'undefined') || (window.localStorage.getItem('current_account') == null && window.localStorage.getItem('custom_wallet_over_external_web3_provider') == 'true')) {
-        console.log(2, 'initAccountChecker');
         //show custom authentication popup
         var popup_html = '<div class="popup-header padding-bottom-10 text-center"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/wallet-loading.png" class="max-width-80 width-100" alt="Dentacoin wallet logo"></figure></div><div class="left-right-side-holder fs-0"><div class="popup-left inline-block-top" data-step="first"><div class="navigation-link"><a href="javascript:void(0)" data-slug="first" class="active">CREATE</a></div><div class="navigation-link mobile"><a href="javascript:void(0)" data-slug="second">IMPORT</a></div><div class="popup-body first"><div class="creation-text max-width-400 padding-top-20 padding-bottom-20"><svg class="inline-block-top" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 63.3 64.1" style="enable-background:new 0 0 63.3 64.1;" xml:space="preserve"><style type="text/css">.keyholder-st0{fill:url(#SVGID_1_);}.keyholder-st1{fill:url(#SVGID_2_);}.keyholder-st2{fill:url(#SVGID_3_);}.keyholder-st3{fill:url(#SVGID_4_);}.keyholder-st4{fill:url(#SVGID_5_);}.keyholder-st5{fill:url(#SVGID_6_);}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="64.1" width="63.3" x="1.3" y="17.4"></sliceSourceBounds></sfw></metadata><g><g><linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="23.7" y1="8.35" x2="38.6" y2="8.35"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st0" d="M31.2,16.7c4.2,0,7.4-5.2,7.4-9.3S35.3,0,31.2,0s-7.5,3.3-7.5,7.4S27,16.7,31.2,16.7z"/></g><g><linearGradient id="SVGID_2_" gradientUnits="userSpaceOnUse" x1="15.6" y1="20.5" x2="46.8" y2="20.5"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st1" d="M19.1,27.9h3.4c0.3-1.4,0.3-1.5,0.3-1.7c0-0.3,0.5-0.3,0.5,0v1.7h15.8v-1.7c0-0.1,0.3-0.7,0.8,1.5c0,0.1,0,0.1,0.1,0.2h1.9v-2.3c0-1.7,1.3-3,3-3h1.9c-0.5-3.6-1.5-9.3-7.7-9.5c-1.7,3.1-4.5,5.6-7.9,5.6s-6.3-2.5-7.9-5.6c-6.4,0.2-7.3,6.2-7.7,10.7C17,24.9,18.3,26.3,19.1,27.9z"/></g><g><linearGradient id="SVGID_3_" gradientUnits="userSpaceOnUse" x1="17.6" y1="39.35" x2="20.5" y2="39.35"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st2" d="M17.6,40.5c0.3,0,0.5-0.1,0.7-0.2c1-0.4,1.8-1.1,2.2-2.1h-1.4C18.7,39.1,18.2,39.8,17.6,40.5z"/></g><g><linearGradient id="SVGID_4_" gradientUnits="userSpaceOnUse" x1="23.3" y1="51.2" x2="39.1" y2="51.2"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st3" d="M23.3,60.5c0,1.9,1.5,3.5,3.4,3.5c1.9,0,3.5-1.6,3.5-3.5V44.7c0-0.5,0.5-1,1-1s1,0.5,1,1v15.9c0,1.9,1.5,3.5,3.5,3.5c1.9,0,3.4-1.6,3.4-3.5V38.3H23.3V60.5z"/></g><g><linearGradient id="SVGID_5_" gradientUnits="userSpaceOnUse" x1="43" y1="39.4" x2="49.5" y2="39.4"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st4" d="M46.2,40.5c1.4,0,2.8-0.8,3.3-2.2H43C43.4,39.7,44.8,40.5,46.2,40.5z"/></g><g><linearGradient id="SVGID_6_" gradientUnits="userSpaceOnUse" x1="0" y1="32" x2="63.3129" y2="32"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><path class="keyholder-st5" d="M62.4,29.9h-2.7v-7.2c0-0.6-0.5-1-1-1h-4.4c-0.6,0-1,0.4-1,1v7.2h-3.1v-4.3c0-0.6-0.5-1-1-1h-4.4c-0.5,0-1,0.4-1,1v4.3h-26c-1.3-3.6-4.8-6-8.6-6C4.1,23.9,0,28,0,33.1s4.1,9.2,9.2,9.2c3.9,0,7.3-2.4,8.6-6h44.5c0.5,0,1-0.5,1-1v-4.4C63.4,30.3,62.9,29.9,62.4,29.9z M9.2,36.8c-2.1,0-3.7-1.7-3.7-3.7s1.7-3.7,3.7-3.7c2.1,0,3.7,1.7,3.7,3.7S11.3,36.8,9.2,36.8z"/></g></g></svg><div class="inline-block-top text padding-left-10 fs-xs-14 fs-16"><div class="lato-bold fs-18">Let\'s create a new wallet!</div>Please set a secure password to protect your Dentacoin Wallet.</div></div><div class="field-parent margin-bottom-15 max-width-300 margin-left-right-auto"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="keystore-file-pass">Enter password:</label><input type="password" maxlength="30" id="keystore-file-pass" class="full-rounded keystore-file-pass required-field"/></div></div><div class="field-parent max-width-300 margin-left-right-auto"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="second-pass">Repeat password:</label><input type="password" maxlength="30" id="second-pass" class="full-rounded second-pass required-field"/></div></div><div class="btn-container text-center padding-top-15 padding-bottom-15"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border login-into-wallet min-width-180">CREATE</a></div></div></div><div class="popup-right inline-block-top"><div class="navigation-link"><a href="javascript:void(0)" data-slug="second">IMPORT</a></div><div class="popup-body second custom-hide"><div class="padding-top-20 padding-bottom-30 fs-0 row-with-image-and-text max-width-400 max-width-xs-300"><svg class="max-width-80 inline-block" version="1.1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 70.1 86" style="enable-background:new 0 0 70.1 86;" xml:space="preserve"><style type="text/css">.st0-import{fill:url(#SVGID_1_import);}.st1-import{fill:url(#SVGID_2_import);}.st2-import{fill:#FFFFFF;}.st3-import{fill:url(#SVGID_3_import);stroke:#FFFFFF;stroke-width:0.75;stroke-miterlimit:10;}.st4-import{fill:#FFFFFF;stroke:#FFFFFF;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="86" width="70.1" x="16" y="29"></sliceSourceBounds></sfw></metadata><linearGradient id="SVGID_1_import" gradientUnits="userSpaceOnUse" x1="0" y1="43" x2="64" y2="43"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="st0-import" d="M44.7,0H3.1C1.4,0,0,1.3,0,3v80c0,1.6,1.4,3,3.1,3h57.9c1.7,0,3.1-1.3,3.1-3V18.8c0-0.9-0.4-1.8-1-2.5L47.2,1C46.5,0.4,45.6,0,44.7,0z"/><linearGradient id="SVGID_2_import" gradientUnits="userSpaceOnUse" x1="35.9571" y1="23.008" x2="69.6066" y2="23.008"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><circle class="st1-import" cx="52.8" cy="23" r="16.8"/><rect x="28" y="49" class="st2-import" width="8" height="37"/><path class="st2-import" d="M18.2,58.8l13.4-14.6c0.3-0.3,0.7-0.3,1,0l13.4,14.7c0.4,0.4,0.1,1.2-0.5,1.2H18.6C18.1,60,17.8,59.2,18.2,58.8z"/><g><linearGradient id="SVGID_3_import" gradientUnits="userSpaceOnUse" x1="34.8246" y1="23.1469" x2="69.7484" y2="23.1469"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><path class="st3-import" d="M52.3,6.5C61.5,6.5,69,14,69,23.1s-7.5,16.7-16.7,16.7s-16.7-7.5-16.7-16.7S43.1,6.5,52.3,6.5 M52.3,5.7c-9.7,0-17.5,7.8-17.5,17.5s7.8,17.5,17.5,17.5s17.5-7.8,17.5-17.5S61.9,5.7,52.3,5.7L52.3,5.7z"/></g><g><rect x="59" y="28.4" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -2.9698 50.8809)" class="st4-import" width="1.9" height="1.2"/><rect x="58.2" y="27.7" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -2.6509 50.155)" class="st4-import" width="1.9" height="1.2"/><g><polygon class="st4-import" points="60.7,30.7 59.7,31.8 50.9,22.9 51.9,21.9 "/><path class="st4-import" d="M45,16c-1.9,1.9-1.9,4.9,0,6.8c1.9,1.9,4.9,1.9,6.8,0c1.9-1.9,1.9-4.9,0-6.8C49.8,14.1,46.8,14.1,45,16z M50.9,21.9c-1.4,1.4-3.7,1.4-5.1,0c-1.4-1.4-1.4-3.7,0-5.1c1.4-1.4,3.7-1.4,5.1,0C52.3,18.2,52.3,20.5,50.9,21.9z"/></g></g></svg><div class="inline-block padding-left-10 fs-16 fs-xs-14 text"><div class="lato-bold fs-18">Welcome back!</div>To import an existing wallet, please upload your Backup File or enter/ scan your private key.</div></div><div class="text-center import-keystore-file-row">';
         if(is_hybrid) {
@@ -83685,20 +83759,41 @@ async function getDentacoinDataByExternalProvider(callback) {
             url: 'https://indacoin.com/api/GetCoinConvertAmount/USD/DCN/100/dentacoin',
             dataType: 'json',
             success: function(response) {
-                callback(response);
+                if (response > 0) {
+                    callback(utils.prepareDcnPrice(response));
+                } else {
+                    // callback to coingecko price reader if indacoin fails
+                    $.ajax({
+                        type: 'GET',
+                        url: 'https://api.coingecko.com/api/v3/coins/dentacoin',
+                        dataType: 'json',
+                        success: function(response) {
+                            callback(response.market_data.current_price.usd);
+                        }
+                    });
+                }
             }
         });
     } else {
-        return await $.ajax({
+        var ajaxResponse = await $.ajax({
             type: 'GET',
             url: 'https://indacoin.com/api/GetCoinConvertAmount/USD/DCN/100/dentacoin',
             dataType: 'json'
         });
-    }
-}
 
-function prepareDcnPrice(price) {
-    return 1 / parseInt(parseInt(price) / 100);
+        if (ajaxResponse > 0) {
+            return utils.prepareDcnPrice(ajaxResponse);
+        } else {
+            // callback to coingecko price reader if indacoin fails
+            var coingeckoAjaxResponse = await $.ajax({
+                type: 'GET',
+                url: 'https://api.coingecko.com/api/v3/coins/dentacoin',
+                dataType: 'json'
+            });
+
+            return coingeckoAjaxResponse.market_data.current_price.usd;
+        }
+    }
 }
 
 function getCryptoDataByIndacoin(cryptocurrency_symbol, callback) {
@@ -83899,7 +83994,6 @@ function buildDentacoinHistoryTransaction(dentacoin_data, value, to, from, times
     var other_address = '';
     var class_name = '';
     var label = '';
-    //var usd_amount = (parseInt(value) * dentacoin_data.market_data.current_price.usd).toFixed(2);
     if(utils.checksumAddress(to) == utils.checksumAddress(global_state.account)) {
         //IF THE CURRENT ACCOUNT IS RECEIVER
         other_address = from;
@@ -83947,7 +84041,7 @@ function buildDentacoinHistoryTransaction(dentacoin_data, value, to, from, times
 
     var pricesList = '';
     if (dentacoin_data != 0) {
-        var usd_amount = (parseInt(value) * prepareDcnPrice(dentacoin_data)).toFixed(2);
+        var usd_amount = (parseInt(value) * dentacoin_data).toFixed(2);
         pricesList = '<ul><li class="lato-bold dcn-amount">'+dcn_amount+'</li><li>'+usd_amount+' USD</li></ul>';
     } else {
         pricesList = '<ul><li class="lato-bold dcn-amount">'+dcn_amount+'</li></ul>';
@@ -84289,4 +84383,4 @@ function hideMobileAppBannerForDesktopBrowsers() {
     $('footer .mobile-app-banner').remove();
 }
 }).call(this,require("buffer").Buffer)
-},{"./assurance_config":574,"./config":575,"./helper":576,"buffer":52,"ethereumjs-tx":365}]},{},[577]);
+},{"./assurance_config_mainnet":574,"./assurance_config_rinkeby":575,"./config":576,"./helper":577,"buffer":52,"ethereumjs-tx":365}]},{},[578]);
