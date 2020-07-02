@@ -81143,7 +81143,7 @@ var pages_data = {
                 }
 
                 //search input validation for next button to become active
-                $('.search-field #search').on('change keyup focusout', function() {
+                $('.search-field #search').on('change keyup focusout paste', function() {
                     var input_value = $(this).val().trim();
                     if(input_value != '') {
                         if(utils.innerAddressCheck(input_value)) {
