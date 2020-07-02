@@ -119971,6 +119971,7 @@ var pages_data = {
                 });
             } else {
                 $('.eth-address-container').click(function() {
+                    basic.closeDialog();
                     basic.showDialog('<h2 class="fs-18">Your Dentacoin Address</h2><figure itemscope="" itemtype="http://schema.org/ImageObject" id="mobile-qrcode" class="padding-top-20 padding-bottom-20"></figure><a href="javascript:void(0)" class="mobile-copy-address text-center fs-0" data-toggle="tooltip" title="Copied." data-placement="bottom" data-clipboard-target="#mobile-copy-address"><figure class="inline-block mobile-copy-icon" itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/black-copy-icon.svg" class="max-width-20 width-100 margin-right-5" alt="Copy address to clipboard icon" itemprop="contentUrl"/></figure><input type="text" readonly class="address-value inline-block fs-18 fs-xs-10" id="mobile-copy-address"/></a>', 'mobile-dentacoin-address-and-qr', null);
 
                     $('.mobile-dentacoin-address-and-qr .address-value').val(utils.checksumAddress(global_state.account));
@@ -119996,7 +119997,7 @@ var pages_data = {
                     }
 
                     if (img.complete) {
-                        loaded()
+                        loaded();
                     } else {
                         img.addEventListener('load', loaded);
                     }
@@ -120193,6 +120194,7 @@ var pages_data = {
                     var input_value = $(this).val().trim();
                     if(input_value != '') {
                         if(utils.innerAddressCheck(input_value)) {
+                            $('.search-result').hide();
                             $('.next-send').removeClass('disabled');
                         } else {
                             $('.next-send').addClass('disabled');
@@ -120250,11 +120252,13 @@ var pages_data = {
                         });
 
                         $('.search-field #search').on('focus', function() {
-                            $('.search-result').show();
+                            if(!utils.innerAddressCheck($('.search-field #search').val().trim())) {
+                                $('.search-result').show();
+                            }
                         });
 
                         $('.search-field #search').on('input', function() {
-                            if($(this).val().trim() != '') {
+                            if($(this).val().trim() != '' && !utils.innerAddressCheck($(this).val().trim())) {
                                 $('.search-result').show();
 
                                 var value_to_check = $(this).val().trim().toLowerCase();
@@ -120850,8 +120854,8 @@ var pages_data = {
                                                             hideLoader();
                                                             basic.closeDialog();
                                                             if(response.success) {
-                                                                firePushNotification('Assurance transaction', 'Contract created successfully.');
                                                                 basic.showAlert('You have successfully signed your contract! Once your transaction is confirmed, your Assurance contract page will be updated.', '', true);
+                                                                firePushNotification('Assurance transaction', 'Contract created successfully.');
                                                             } else {
                                                                 basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
                                                             }
@@ -120878,8 +120882,8 @@ var pages_data = {
                                                         hideLoader();
                                                         basic.closeDialog();
                                                         if(response.success) {
-                                                            firePushNotification('Assurance transaction', 'Contract created successfully.');
                                                             basic.showAlert('You have successfully signed your contract! Once your transaction is confirmed, your Assurance contract page will be updated.', '', true);
+                                                            firePushNotification('Assurance transaction', 'Contract created successfully.');
                                                         } else {
                                                             basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
                                                         }
@@ -120905,8 +120909,8 @@ var pages_data = {
                                                         hideLoader();
                                                         basic.closeDialog();
                                                         if(response.success) {
-                                                            firePushNotification('Assurance transaction', 'Contract approved successfully.');
                                                             basic.showAlert('You have successfully signed your contract! Once your transaction is confirmed, your Assurance contract page will be updated.', '', true);
+                                                            firePushNotification('Assurance transaction', 'Contract approved successfully.');
                                                         } else {
                                                             basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
                                                         }
@@ -120932,8 +120936,8 @@ var pages_data = {
                                                         hideLoader();
                                                         basic.closeDialog();
                                                         if(response.success) {
-                                                            firePushNotification('Assurance transaction', 'Successful withdraw.');
                                                             basic.showAlert('You have successfully signed your contract! Once your transaction is confirmed, your Assurance contract page will be updated.', '', true);
+                                                            firePushNotification('Assurance transaction', 'Successful withdraw.');
                                                         } else {
                                                             basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
                                                         }
@@ -120961,8 +120965,8 @@ var pages_data = {
                                                         hideLoader();
                                                         basic.closeDialog();
                                                         if(response.success) {
-                                                            firePushNotification('Assurance transaction', 'Contract cancelled successfully.');
                                                             basic.showAlert('You have successfully signed your contract! Once your transaction is confirmed, your Assurance contract page will be updated.', '', true);
+                                                            firePushNotification('Assurance transaction', 'Contract cancelled successfully.');
                                                         } else {
                                                             basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
                                                         }
@@ -121241,7 +121245,6 @@ function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver
                     pending_history_transaction += buildDentacoinHistoryTransaction(request_response, token_val, receiver, global_state.account, Math.round((new Date()).getTime() / 1000), transactionHash, true);
 
                     fireGoogleAnalyticsEvent('Pay', 'Next', 'DCN', token_val);
-                    firePushNotification('Dentacoin transaction', token_val + ' DCN sent successfully.');
                     displayMessageOnTransactionSend(token_label, transactionHash);
 
                     $('.transaction-history tbody').prepend(pending_history_transaction);
@@ -121250,13 +121253,14 @@ function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver
                     $('.section-amount-to').hide();
                     $('.section-send').fadeIn(500);
                     $('#search').val('');
+
+                    firePushNotification('Dentacoin transaction', token_val + ' DCN sent successfully.');
                 });
             } else if(symbol == 'ETH') {
                 getEthereumDataByCoingecko(function(request_response) {
                     pending_history_transaction += buildEthereumHistoryTransaction(request_response, token_val, receiver, global_state.account, Math.round((new Date()).getTime() / 1000), transactionHash, true);
 
                     fireGoogleAnalyticsEvent('Pay', 'Next', 'ETH in USD', Math.floor(parseFloat(token_val) * request_response.market_data.current_price.usd));
-                    firePushNotification('Ethereum transaction', token_val + ' ETH sent successfully.');
                     displayMessageOnTransactionSend(token_label, transactionHash);
 
                     $('.transaction-history tbody').prepend(pending_history_transaction);
@@ -121264,6 +121268,8 @@ function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver
                     $('.search-field #search').val('');
                     $('.section-amount-to').hide();
                     $('.section-send').fadeIn(500);
+
+                    firePushNotification('Ethereum transaction', token_val + ' ETH sent successfully.');
                 });
             }
         });
