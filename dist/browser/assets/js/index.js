@@ -1258,6 +1258,12 @@ var pages_data = {
                                 var usd_val = $('.section-amount-to input#usd-val').val().trim();
                                 var sending_to_address = $('.section-amount-to .address-cell').attr('data-receiver');
 
+                                if (isNaN(crypto_val) || crypto_val == '' || crypto_val == 0 || ((isNaN(usd_val) || usd_val == '' || usd_val == 0) && dentacoin_data > 0)) {
+                                    //checking if not a number or empty values
+                                    basic.showAlert('Please make sure all values are numbers.', '', true);
+                                    return false;
+                                }
+
                                 if (parseFloat(crypto_val).countDecimals() > 17) {
                                     crypto_val = parseFloat(crypto_val).toFixedNoRounding(17).toString();
                                 }
@@ -1269,11 +1275,7 @@ var pages_data = {
                                         if(error) {
                                             console.log(error);
                                         } else {
-                                            if (isNaN(crypto_val) || crypto_val == '' || crypto_val == 0 || ((isNaN(usd_val) || usd_val == '' || usd_val == 0) && dentacoin_data > 0)) {
-                                                //checking if not a number or empty values
-                                                basic.showAlert('Please make sure all values are numbers.', '', true);
-                                                return false;
-                                            } else if (crypto_val < 0 || (usd_val < 0 && dentacoin_data > 0)) {
+                                            if (crypto_val < 0 || (usd_val < 0 && dentacoin_data > 0)) {
                                                 //checking if negative numbers
                                                 basic.showAlert('Please make sure all values are greater than 0.', '', true);
                                                 return false;
