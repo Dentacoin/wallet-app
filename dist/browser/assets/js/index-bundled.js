@@ -81121,7 +81121,7 @@ var pages_data = {
                 if(core_db_clinics == undefined || core_db_clinics_time_to_request < Date.now()) {
                     $.ajax({
                         type: 'POST',
-                        url: 'https://dentacoin.com/info/get-clinics-for-wallet',
+                        url: 'https://api.dentacoin.com/api/get-partners',
                         dataType: 'json',
                         success: function(response) {
                             core_db_clinics_time_to_request = Date.now() + 3600 * 1000;
