@@ -80892,16 +80892,11 @@ var pages_data = {
                             if(error) {
                                 console.log(error);
                             } else {
-                                /*if (parseFloat(crypto_val).countDecimals() > 17) {
-                                    crypto_val = parseFloat(crypto_val).toFixedNoRounding(17).toString();
-                                }
-*/
-
                                 if (parseFloat(utils.fromWei(result)).countDecimals() > 8) {
                                     if (parseFloat(utils.fromWei(result)).toFixed(8) != 0) {
                                         $('.eth-amount').html(parseFloat(utils.fromWei(result)).toFixedNoRounding(8));
                                     } else {
-                                        $('.eth-amount').html(0);
+                                        $('.eth-amount').html(0.00000000);
                                     }
                                 } else {
                                     $('.eth-amount').html(utils.fromWei(result));
