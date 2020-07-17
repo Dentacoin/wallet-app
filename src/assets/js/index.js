@@ -655,7 +655,7 @@ var pages_data = {
                                     if (parseFloat(utils.fromWei(result)).toFixed(8) != 0) {
                                         $('.eth-amount').html(parseFloat(utils.fromWei(result)).toFixedNoRounding(8));
                                     } else {
-                                        $('.eth-amount').html(0.00000000);
+                                        $('.eth-amount').html('0.00000000');
                                     }
                                 } else {
                                     $('.eth-amount').html(utils.fromWei(result));
