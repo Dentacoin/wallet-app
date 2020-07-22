@@ -2056,7 +2056,6 @@ window.refreshApp = function() {
 };
 
 window.getHomepageData = function() {
-    console.log('getHomepageData');
     setGlobalVariables();
     initAccountChecker();
 
@@ -2084,6 +2083,10 @@ window.getHomepageData = function() {
 window.getBuyPageData = function(){
     setGlobalVariables();
     removeAccountChecker();
+
+    if(!dApp.loaded) {
+        dApp.init();
+    }
 
     if($.isReady) {
         //called on route change
@@ -2125,6 +2128,10 @@ window.getSpendPageDentalServices = function(){
     setGlobalVariables();
     removeAccountChecker();
 
+    if(!dApp.loaded) {
+        dApp.init();
+    }
+
     if($.isReady) {
         //called on route change
         pages_data.spend_page_dental_services();
@@ -2143,6 +2150,7 @@ window.getSpendPageGiftCards = function(){
     if(!dApp.loaded) {
         dApp.init();
     }
+
     if($.isReady) {
         //called on route change
         pages_data.spend_page_gift_cards();
@@ -2158,6 +2166,10 @@ window.getSpendPageExchanges = function(){
     setGlobalVariables();
     removeAccountChecker();
 
+    if(!dApp.loaded) {
+        dApp.init();
+    }
+
     if($.isReady) {
         //called on route change
         pages_data.spend_page_exchanges();
@@ -2172,6 +2184,10 @@ window.getSpendPageExchanges = function(){
 window.getSpendPageAssuranceFees = function(){
     setGlobalVariables();
     removeAccountChecker();
+
+    if(!dApp.loaded) {
+        dApp.init();
+    }
 
     if($.isReady) {
         //called on route change
