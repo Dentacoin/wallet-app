@@ -81486,7 +81486,7 @@ var pages_data = {
 
                                             var ethSendGasEstimationNumber = new BigNumber(ethSendGasEstimation);
                                             //calculating the fee from the gas price and the estimated gas price
-                                            var on_popup_load_gwei = ethgasstation_json.safeLow;
+                                            var on_popup_load_gwei = ethgasstation_json.average;
                                             //adding 10% of the outcome just in case transactions don't take so long
                                             var on_popup_load_gas_price = on_popup_load_gwei * 100000000;
                                             var cost = ethSendGasEstimationNumber * on_popup_load_gas_price;
@@ -81590,7 +81590,7 @@ var pages_data = {
                                                     rawGasEstimation = 65000;
 
                                                     //calculating the fee from the gas price and the estimated gas price
-                                                    on_popup_load_gwei = ethgasstation_json.safeLow;
+                                                    on_popup_load_gwei = ethgasstation_json.average;
                                                     //adding 10% of the outcome just in case transactions don't take so long
                                                     on_popup_load_gas_price = on_popup_load_gwei * 100000000 + ((on_popup_load_gwei * 100000000) * 10/100);
                                                 } else if($('.section-amount-to #active-crypto').val() == 'eth') {
@@ -81600,7 +81600,7 @@ var pages_data = {
                                                     });
 
                                                     //calculating the fee from the gas price and the estimated gas price
-                                                    on_popup_load_gwei = ethgasstation_json.safeLow;
+                                                    on_popup_load_gwei = ethgasstation_json.average;
                                                     //adding 10% of the outcome just in case transactions don't take so long
                                                     on_popup_load_gas_price = on_popup_load_gwei * 100000000;
                                                 }

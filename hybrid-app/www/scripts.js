@@ -119422,11 +119422,18 @@ var dApp = {
             $(document).ready(async function() {
                 // sometimes for some reason window.ethereum comes as object with undefined properties, after refreshing its working as it should
                 if(window.ethereum.chainId == undefined || window.ethereum.networkVersion == undefined) {
-                    window.location.reload();
+                    console.log(window.ethereum.chainId, 'window.ethereum.chainId');
+                    console.log(window.ethereum.networkVersion, 'window.ethereum.networkVersion');
+                    console.log('RELOAD', 'window.ethereum.chainId == undefined || window.ethereum.networkVersion == undefined');
+                    // window.location.reload();
                 }
 
+                var accountsOnEnable = await ethereum.enable();
+                console.log(accountsOnEnable, 'accountsOnEnable');
+
                 //METAMASK INSTALLED
-                if(ethereum.selectedAddress == undefined || ethereum.selectedAddress == null) {
+                if(accountsOnEnable.length == 0 || accountsOnEnable[0] == undefined || accountsOnEnable[0] == null) {
+                    console.log(11111111111);
                     //if metamask is installed, but user not logged show login popup
                     basic.showDialog('<div class="popup-body"><div class="title">Sign in to MetaMask</div><div class="subtitle">Open up your browser\'s MetaMask extention and give approval if asked for it.</div><div class="separator"></div><figure class="gif"><img src="assets/images/metamask-animation.gif" alt="Login MetaMask animation"/> </figure><div class="padding-top-20 text-center"><a href="javascript:void(0);" class="fs-20 white-light-blue-btn light-blue-border proceed-without-using-metamask">OR PROCEED WITHOUT IT</a></div></div>', 'login-metamask-desktop');
 
@@ -119435,27 +119442,31 @@ var dApp = {
                         window.location.reload();
                     });
 
-                    await ethereum.enable();
-
-                    proceedWithMetaMaskWalletConnection();
+                    // proceedWithMetaMaskWalletConnection(accountsOnEnable[0]);
                 } else {
-                    proceedWithMetaMaskWalletConnection();
+                    console.log(2222222222222);
+                    proceedWithMetaMaskWalletConnection(accountsOnEnable[0]);
                 }
 
-                window.ethereum.on('accountsChanged', function () {
-                    if(ethereum.selectedAddress != null && ethereum.selectedAddress != undefined && !basic.property_exists(global_state, 'account')) {
-                        proceedWithMetaMaskWalletConnection();
-                    } else if((ethereum.selectedAddress == null || ethereum.selectedAddress == undefined) && basic.property_exists(global_state, 'account')) {
+                window.ethereum.on('accountsChanged', function (accounts) {
+                    console.log(accounts, 'accountsChanged');
+                    if(accounts[0] != null && accounts[0] != undefined && !basic.property_exists(global_state, 'account')) {
+                        console.log(1.1, 'accountsChanged');
+                        proceedWithMetaMaskWalletConnection(accounts[0]);
+                    } else if((accounts[0] == null || accounts[0] == undefined) && basic.property_exists(global_state, 'account')) {
+                        console.log(2.2, 'accountsChanged');
                         //if user logged in with metamask, but logging out or dissaproved wallet.dentacoin.com from metamask trusted domain
                         window.location.reload();
-                    } else if(ethereum.selectedAddress != null && ethereum.selectedAddress != undefined && basic.property_exists(global_state, 'account') && ethereum.selectedAddress != global_state.account) {
-                        //if user logged in with metamask, but trying to switch his active metamask accounti
+                    } else if(accounts[0] != null && accounts[0] != undefined && basic.property_exists(global_state, 'account') && accounts[0] != global_state.account) {
+                        console.log(3.3, 'accountsChanged');
+                        //if user logged in with metamask, but trying to switch his active metamask account
                         window.location.reload();
                     }
                 });
 
-                function proceedWithMetaMaskWalletConnection() {
-                    global_state.account = ethereum.selectedAddress;
+                function proceedWithMetaMaskWalletConnection(account) {
+                    console.log(account, 'proceedWithMetaMaskWalletConnection');
+                    global_state.account = account;
 
                     web3 = getWeb3(window['ethereum']);
                     dApp.web3_1_0 = web3;
@@ -119515,6 +119526,7 @@ var dApp = {
         }
     },
     buildTransactionHistory: function() {
+        console.log('buildTransactionHistory');
         //getting transactions data by etherscan
         $.ajax({
             type: 'GET',
@@ -119927,7 +119939,11 @@ var pages_data = {
                             if(error) {
                                 console.log(error);
                             } else {
-                                $('.eth-amount').html(parseFloat(utils.fromWei(result)).toFixedNoRounding(6));
+                                if (parseFloat(utils.fromWei(result)).toFixed(8) != 0) {
+                                    $('.eth-amount').html(parseFloat(utils.fromWei(result)).toFixedNoRounding(8));
+                                } else {
+                                    $('.eth-amount').html('0.00000000');
+                                }
 
                                 if(hide_loader != undefined) {
                                     hideLoader();
@@ -121328,7 +121344,6 @@ window.refreshApp = function() {
 };
 
 window.getHomepageData = function() {
-    console.log('getHomepageData');
     setGlobalVariables();
     initAccountChecker();
 
@@ -121356,6 +121371,10 @@ window.getHomepageData = function() {
 window.getBuyPageData = function(){
     setGlobalVariables();
     removeAccountChecker();
+
+    if(!dApp.loaded) {
+        dApp.init();
+    }
 
     if($.isReady) {
         //called on route change
@@ -121397,6 +121416,10 @@ window.getSpendPageDentalServices = function(){
     setGlobalVariables();
     removeAccountChecker();
 
+    if(!dApp.loaded) {
+        dApp.init();
+    }
+
     if($.isReady) {
         //called on route change
         pages_data.spend_page_dental_services();
@@ -121415,6 +121438,7 @@ window.getSpendPageGiftCards = function(){
     if(!dApp.loaded) {
         dApp.init();
     }
+
     if($.isReady) {
         //called on route change
         pages_data.spend_page_gift_cards();
@@ -121430,6 +121454,10 @@ window.getSpendPageExchanges = function(){
     setGlobalVariables();
     removeAccountChecker();
 
+    if(!dApp.loaded) {
+        dApp.init();
+    }
+
     if($.isReady) {
         //called on route change
         pages_data.spend_page_exchanges();
@@ -121444,6 +121472,10 @@ window.getSpendPageExchanges = function(){
 window.getSpendPageAssuranceFees = function(){
     setGlobalVariables();
     removeAccountChecker();
+
+    if(!dApp.loaded) {
+        dApp.init();
+    }
 
     if($.isReady) {
         //called on route change
