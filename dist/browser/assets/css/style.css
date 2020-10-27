@@ -248,21 +248,23 @@
   -o-transition: 0.3s;
   -ms-transition: 0.3s;
   transition: 0.3s; }
-  .white-light-blue-btn:hover {
-    color: #00b7e2;
-    background-color: white; }
+  @media screen and (min-width: 992px) {
+    .white-light-blue-btn:hover {
+      color: #00b7e2;
+      background-color: white; }
+    .white-light-blue-btn.no-hover:hover {
+      color: white;
+      background-color: #00b7e2; } }
   .white-light-blue-btn.light-blue-border {
     border-color: #00b7e2; }
   .white-light-blue-btn.disabled {
     color: white;
     background-color: #c5c5c5;
     border-color: #c5c5c5; }
-    .white-light-blue-btn.disabled:hover {
-      color: white;
-      background-color: #c5c5c5; }
-  .white-light-blue-btn.no-hover:hover {
-    color: white;
-    background-color: #00b7e2; }
+    @media screen and (min-width: 992px) {
+      .white-light-blue-btn.disabled:hover {
+        color: white;
+        background-color: #c5c5c5; } }
 
 .light-blue-white-btn {
   font-size: 20px;
@@ -661,6 +663,249 @@ body {
 .fs-80 {
   font-size: 80px !important; }
 
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-0 {
+    font-size: 0px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-1 {
+    font-size: 1px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-2 {
+    font-size: 2px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-3 {
+    font-size: 3px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-4 {
+    font-size: 4px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-5 {
+    font-size: 5px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-6 {
+    font-size: 6px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-7 {
+    font-size: 7px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-8 {
+    font-size: 8px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-9 {
+    font-size: 9px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-10 {
+    font-size: 10px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-11 {
+    font-size: 11px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-12 {
+    font-size: 12px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-13 {
+    font-size: 13px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-14 {
+    font-size: 14px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-15 {
+    font-size: 15px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-16 {
+    font-size: 16px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-17 {
+    font-size: 17px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-18 {
+    font-size: 18px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-19 {
+    font-size: 19px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-20 {
+    font-size: 20px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-21 {
+    font-size: 21px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-22 {
+    font-size: 22px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-23 {
+    font-size: 23px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-24 {
+    font-size: 24px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-25 {
+    font-size: 25px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-26 {
+    font-size: 26px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-27 {
+    font-size: 27px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-28 {
+    font-size: 28px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-29 {
+    font-size: 29px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-30 {
+    font-size: 30px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-31 {
+    font-size: 31px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-32 {
+    font-size: 32px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-33 {
+    font-size: 33px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-34 {
+    font-size: 34px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-35 {
+    font-size: 35px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-36 {
+    font-size: 36px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-37 {
+    font-size: 37px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-38 {
+    font-size: 38px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-39 {
+    font-size: 39px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-40 {
+    font-size: 40px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-41 {
+    font-size: 41px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-42 {
+    font-size: 42px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-43 {
+    font-size: 43px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-44 {
+    font-size: 44px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-45 {
+    font-size: 45px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-46 {
+    font-size: 46px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-47 {
+    font-size: 47px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-48 {
+    font-size: 48px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-49 {
+    font-size: 49px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-50 {
+    font-size: 50px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-51 {
+    font-size: 51px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-52 {
+    font-size: 52px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-53 {
+    font-size: 53px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-54 {
+    font-size: 54px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-55 {
+    font-size: 55px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-56 {
+    font-size: 56px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-57 {
+    font-size: 57px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-58 {
+    font-size: 58px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-59 {
+    font-size: 59px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-60 {
+    font-size: 60px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-61 {
+    font-size: 61px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-62 {
+    font-size: 62px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-63 {
+    font-size: 63px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-64 {
+    font-size: 64px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-65 {
+    font-size: 65px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-66 {
+    font-size: 66px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-67 {
+    font-size: 67px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-68 {
+    font-size: 68px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-69 {
+    font-size: 69px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-70 {
+    font-size: 70px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-71 {
+    font-size: 71px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-72 {
+    font-size: 72px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-73 {
+    font-size: 73px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-74 {
+    font-size: 74px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-75 {
+    font-size: 75px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-76 {
+    font-size: 76px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-77 {
+    font-size: 77px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-78 {
+    font-size: 78px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-79 {
+    font-size: 79px !important; } }
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .fs-md-80 {
+    font-size: 80px !important; } }
 @media screen and (max-width: 767px) {
   .fs-xs-0 {
     font-size: 0px !important; } }
@@ -4294,11 +4539,6 @@ img {
     max-width: 800px; }
     .bootbox.transaction-confirmation-popup .modal-dialog .modal-body {
       padding: 1rem 0; }
-      .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .bootbox-close-button {
-        margin-top: -10px;
-        margin-right: 10px;
-        font-size: 40px;
-        line-height: 20px; }
       .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .title {
         font-size: 28px;
         font-family: "Calibri-Bold";
@@ -4336,35 +4576,47 @@ img {
           text-align: right;
           width: calc(100% - 200px);
           padding-right: 100px; }
+        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row.fee {
+          font-size: 0; }
+          .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row.fee .value .eth-value {
+            font-size: 16px;
+            width: calc(100% - 40px); }
+          .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row.fee .value .tx-settings-icon {
+            width: 40px;
+            padding-left: 10px; }
+            .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row.fee .value .tx-settings-icon svg {
+              width: 100%; }
+          .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row.fee.changed-settings .value {
+            color: #00b7e2; }
+            .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row.fee.changed-settings .value .tx-settings-icon svg path {
+              fill: #00b7e2 !important; }
         @media screen and (max-width: 767px) {
           .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row .label {
             width: 100%;
             padding: 0 15px !important; }
           .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row .value {
-            font-size: 12px;
             text-align: left;
             width: 100%;
             padding: 0 15px !important; } }
-      .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .upload-file-container .btn-wrapper label {
+        @media screen and (max-width: 400px) {
+          .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row .value {
+            font-size: 14px; } }
+        @media screen and (max-width: 350px) {
+          .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row .value {
+            font-size: 12px; } }
+        @media screen and (max-width: 320px) {
+          .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row .value {
+            font-size: 11px; } }
+      .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .keystore-btn .upload-file-container .btn-wrapper label {
         width: 100%;
         display: block;
-        padding: 0;
+        padding: 10px 20px;
         margin: 0;
-        min-height: 65px;
-        position: relative;
         text-align: center; }
-        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .upload-file-container .btn-wrapper label span {
-          width: 95%;
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          -webkit-transform: translate(-50%, -50%);
-          -ms-transform: translate(-50%, -50%);
-          transform: translate(-50%, -50%); }
-      .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .enter-private-key {
+      .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .priv-key-btn .enter-private-key {
         min-height: 65px;
         position: relative; }
-        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .enter-private-key span {
+        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .priv-key-btn .enter-private-key span {
           width: 95%;
           position: absolute;
           top: 50%;
@@ -4388,12 +4640,28 @@ img {
             display: inline;
             padding-left: 5px; }
       @media screen and (max-width: 767px) {
-        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .enter-private-key {
-          margin: 0 auto 10px;
-          max-width: 280px; }
-        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .upload-file-container {
-          margin: 10px auto 0;
-          max-width: 280px; } }
+        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .priv-key-btn {
+          width: calc(50% - 15px) !important;
+          padding-right: 0 !important; }
+          .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .priv-key-btn .enter-private-key {
+            padding: 5px; }
+            .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .priv-key-btn .enter-private-key span {
+              width: 100%;
+              position: static;
+              -webkit-transform: none;
+              -moz-transform: none;
+              -ms-transform: none;
+              -o-transform: none;
+              transform: none; }
+        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .or-label {
+          width: 30px !important;
+          text-align: center;
+          padding: 0 !important; }
+        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .keystore-btn {
+          width: calc(50% - 15px) !important;
+          padding-left: 0 !important; }
+          .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .proof-of-address .keystore-btn .upload-file-container .btn-wrapper label {
+            padding: 5px; } }
       .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .btn-container {
         padding-top: 15px;
         padding-bottom: 20px;
@@ -4497,6 +4765,18 @@ img {
       .bootbox.settings-popup .modal-dialog {
         margin: 0 !important;
         width: 100%; } }
+  @media screen and (max-width: 767px) {
+    .bootbox.popup-save-to-address-book .modal-dialog, .bootbox.tx-settings-popup .modal-dialog {
+      margin: 0 !important;
+      height: 100%; }
+      .bootbox.popup-save-to-address-book .modal-dialog .modal-content, .bootbox.tx-settings-popup .modal-dialog .modal-content {
+        height: 100%; }
+        .bootbox.popup-save-to-address-book .modal-dialog .modal-content .modal-body, .bootbox.tx-settings-popup .modal-dialog .modal-content .modal-body {
+          padding: 50px 20px; } }
+  .bootbox.tx-settings-popup .modal-dialog {
+    max-width: 400px; }
+    .bootbox.tx-settings-popup .modal-dialog .reset-settings {
+      color: #888; }
   @media screen and (max-width: 991px) {
     .bootbox .modal-content {
       background-clip: border-box;
@@ -4672,6 +4952,21 @@ input[type=file].hide-input {
   -ms-border-radius: 4px;
   border-radius: 4px; }
   .error-handle.alert.alert-warning {
+    display: none; }
+
+.warning-handle {
+  color: #004085;
+  background-color: #cce5ff;
+  border: 1px solid #b8daff;
+  margin-top: 5px;
+  margin-bottom: 0;
+  font-size: 14px;
+  padding: 5px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  -ms-border-radius: 4px;
+  border-radius: 4px; }
+  .warning-handle.alert.alert-warning {
     display: none; }
 
 .container-404 .num-404 {
@@ -5191,6 +5486,9 @@ app-send-page .section-send {
     position: relative; }
     app-send-page .section-send .search-field #search-label span {
       display: none; }
+    @media screen and (max-width: 767px) {
+      app-send-page .section-send .search-field #search-label {
+        font-size: 14px !important; } }
     app-send-page .section-send .search-field #search {
       border-right: 0;
       -webkit-border-radius: 4px 0 0 4px;

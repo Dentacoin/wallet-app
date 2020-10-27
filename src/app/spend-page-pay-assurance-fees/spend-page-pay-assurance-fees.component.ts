@@ -1,6 +1,7 @@
 import {Component, AfterViewInit} from '@angular/core';
 import {Router} from '@angular/router';
 import {Meta, Title} from '@angular/platform-browser';
+import {RedirectsService} from '../_services/redirects.service';
 
 /*declare function initdApp(): any;*/
 
@@ -10,7 +11,7 @@ import {Meta, Title} from '@angular/platform-browser';
 })
 
 export class SpendPagePayAssuranceFeesComponent implements AfterViewInit {
-    constructor(private router: Router, private meta: Meta, private titleService: Title) {
+    constructor(private router: Router, private meta: Meta, private titleService: Title, public redirectsService: RedirectsService) {
         this.titleService.setTitle('Pay Dentacoin Assurance fees | Dentacoin Wallet DApp');
         this.meta.updateTag({name: 'description', content: 'Pay your Dentacoin Assurance monthly premium easily and securely and enjoy the benefits of a prevention-focused dental plan.'});
         this.meta.updateTag({name: 'keywords', content: 'dental plan payment, dental insurance, dentacoin assurance fee'});
@@ -22,15 +23,6 @@ export class SpendPagePayAssuranceFeesComponent implements AfterViewInit {
     }
 
     ngAfterViewInit() {
-        //initdApp();
-    }
 
-    toExchanges() {
-        this.router.navigateByUrl('spend-exchanges');
     }
-
-    toPayForDentalServices() {
-        this.router.navigateByUrl('spend-pay-for-dental-services');
-    }
-
 }

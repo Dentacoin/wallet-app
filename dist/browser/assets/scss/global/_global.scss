@@ -24,6 +24,14 @@ body {
 }
 
 @for $i from 0 through 80 {
+    @include breakpoint($md-only) {
+        .fs-md-#{$i} {
+            font-size: 0px + $i!important;
+        }
+    }
+}
+
+@for $i from 0 through 80 {
     @include breakpoint($xs)    {
         .fs-xs-#{$i} {
             font-size: 0px + $i!important;
@@ -964,12 +972,6 @@ img {
             max-width: 800px;
             .modal-body {
                 padding: 1rem 0;
-                .bootbox-close-button {
-                    margin-top: -10px;
-                    margin-right: 10px;
-                    font-size: 40px;
-                    line-height: 20px;
-                }
                 .title {
                     font-size: 28px;
                     font-family: "Calibri-Bold";
@@ -1013,43 +1015,83 @@ img {
                         width: calc(100% - 200px);
                         padding-right: 100px;
                     }
+                    &.fee {
+                        font-size: 0;
+                        .value {
+                            .eth-value {
+                                font-size: 16px;
+                                width: calc(100% - 40px);
+                            }
+                            .tx-settings-icon {
+                                width: 40px;
+                                padding-left: 10px;
+                                svg {
+                                    width: 100%;
+                                }
+                            }
+                        }
+                        &.changed-settings {
+                            .value {
+                                color: $light_blue;
+                                .tx-settings-icon {
+                                    svg {
+                                        path {
+                                            fill: $light_blue !important;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                     @include breakpoint($xs) {
                         .label {
                             width: 100%;
                             padding: 0 15px !important;
                         }
                         .value {
-                            font-size: 12px;
                             text-align: left;
                             width: 100%;
                             padding: 0 15px !important;
                         }
                     }
+                    @media screen and (max-width: 400px) {
+                        .value {
+                            font-size: 14px;
+                        }
+                    }
+                    @media screen and (max-width: 350px) {
+                        .value {
+                            font-size: 12px;
+                        }
+                    }
+                    @media screen and (max-width: 320px) {
+                        .value {
+                            font-size: 11px;
+                        }
+                    }
                 }
                 .proof-of-address {
-                    .upload-file-container {
-                        .btn-wrapper {
-                            label {
-                                width: 100%;
-                                display: block;
-                                padding: 0;
-                                margin: 0;
-                                min-height: 65px;
-                                position: relative;
-                                text-align: center;
-                                span {
-                                    width: 95%;
-                                    @include vertical-horizontal-align(absolute);
+                    .keystore-btn {
+                        .upload-file-container {
+                            .btn-wrapper {
+                                label {
+                                    width: 100%;
+                                    display: block;
+                                    padding: 10px 20px;
+                                    margin: 0;
+                                    text-align: center;
                                 }
                             }
                         }
                     }
-                    .enter-private-key {
-                        min-height: 65px;
-                        position: relative;
-                        span {
-                            width: 95%;
-                            @include vertical-horizontal-align(absolute);
+                    .priv-key-btn {
+                        .enter-private-key {
+                            min-height: 65px;
+                            position: relative;
+                            span {
+                                width: 95%;
+                                @include vertical-horizontal-align(absolute);
+                            }
                         }
                     }
                     .file-name {
@@ -1075,13 +1117,33 @@ img {
                         }
                     }
                     @include breakpoint($xs) {
-                        .enter-private-key {
-                            margin: 0 auto 10px;
-                            max-width: 280px;
+                        .priv-key-btn {
+                            width: calc(50% - 15px) !important;
+                            padding-right: 0 !important;
+                            .enter-private-key {
+                                padding: 5px;
+                                span {
+                                    width: 100%;
+                                    position: static;
+                                    @include clear_transform();
+                                }
+                            }
                         }
-                        .upload-file-container {
-                            margin: 10px auto 0;
-                            max-width: 280px;
+                        .or-label {
+                            width: 30px !important;
+                            text-align: center;
+                            padding: 0 !important;
+                        }
+                        .keystore-btn {
+                            width: calc(50% - 15px) !important;
+                            padding-left: 0 !important;
+                            .upload-file-container {
+                                .btn-wrapper {
+                                    label {
+                                        padding: 5px;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -1218,6 +1280,28 @@ img {
             @include breakpoint($xs) {
                 margin: 0 !important;
                 width: 100%;
+            }
+        }
+    }
+    &.popup-save-to-address-book, &.tx-settings-popup {
+        @include breakpoint($xs) {
+            .modal-dialog {
+                margin: 0 !important;
+                height: 100%;
+                .modal-content {
+                    height: 100%;
+                    .modal-body {
+                        padding: 50px 20px;
+                    }
+                }
+            }
+        }
+    }
+    &.tx-settings-popup {
+        .modal-dialog {
+            max-width: 400px;
+            .reset-settings {
+                color: #888;
             }
         }
     }
@@ -1378,18 +1462,32 @@ input[type=file].hide-input {
 }
 
 .error-handle{
-     color: #a94442;
-     background-color: #f2dede;
-     border: 1px solid #a94442;
-     margin-top: 5px;
-     margin-bottom: 0;
-     font-size: 14px;
-     padding: 5px;
-     @include rounded(4px);
-     &.alert.alert-warning {
-         display: none;
-     }
- }
+    color: #a94442;
+    background-color: #f2dede;
+    border: 1px solid #a94442;
+    margin-top: 5px;
+    margin-bottom: 0;
+    font-size: 14px;
+    padding: 5px;
+    @include rounded(4px);
+    &.alert.alert-warning {
+        display: none;
+    }
+}
+
+.warning-handle{
+    color: #004085;
+    background-color: #cce5ff;
+    border: 1px solid #b8daff;
+    margin-top: 5px;
+    margin-bottom: 0;
+    font-size: 14px;
+    padding: 5px;
+    @include rounded(4px);
+    &.alert.alert-warning {
+        display: none;
+    }
+}
 
 .container-404 {
     .num-404 {
