@@ -1887,7 +1887,7 @@ var projectData = {
                 });
 
                 $('.tx-settings-popup #edit-gas-price').on('input paste change', function() {
-                    if (!$.isNumeric($(this).val().trim())) {
+                    if (!$.isNumeric($(this).val().trim()) && $(this).val().trim() != '') {
                         $('.tx-settings-popup #edit-gas-price').val($('.tx-settings-popup #edit-gas-price').attr('data-value'));
                     } else {
                         console.log(parseFloat($('.tx-data-holder').attr('data-initial-visibleGasPriceNumber')), 'parseFloat($(\'.tx-data-holder\').attr(\'data-initial-visibleGasPriceNumber\'))');
@@ -1909,7 +1909,9 @@ var projectData = {
                 });
 
                 $('.tx-settings-popup .save-tx-settings').click(function() {
-                    if (parseInt($('.tx-settings-popup #edit-nonce').val().trim()) < parseInt($('.tx-settings-popup #edit-nonce').attr('data-min-value'))) {
+                    if ($('.tx-settings-popup #edit-gas-price').val().trim() == '') {
+                        customErrorHandle($('.tx-settings-popup #gas-price').closest('.form-row'), 'Please enter Gas Price.');
+                    } else if (parseInt($('.tx-settings-popup #edit-nonce').val().trim()) < parseInt($('.tx-settings-popup #edit-nonce').attr('data-min-value'))) {
                         customErrorHandle($('.tx-settings-popup #edit-nonce').closest('.form-row'), 'You cannot continue submitting transaction with this nonce, because you have successfully approved transaction with the same nonce.');
                     } else {
                         $('.transaction-confirmation-popup .on-change-result').html('');
