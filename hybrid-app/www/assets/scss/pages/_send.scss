@@ -15,6 +15,9 @@ app-send-page {
                 span {
                     display: none;
                 }
+                @include breakpoint($xs) {
+                    font-size: 14px !important;
+                }
             }
             #search {
                 border-right: 0;

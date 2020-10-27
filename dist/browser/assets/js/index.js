@@ -1417,7 +1417,7 @@ var projectData = {
                                                                     if ($('.section-amount-to #active-crypto').val() == 'dcn') {
                                                                         eth_fee_check = parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html());
                                                                     } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
-                                                                        var crypto_val_decimal = new Decimal(utils.fromWei(crypto_val));
+                                                                        var crypto_val_decimal = new Decimal(crypto_val);
                                                                         eth_fee_check = parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html()) + crypto_val_decimal;
                                                                     }
 
@@ -1456,7 +1456,7 @@ var projectData = {
                                                                     if ($('.section-amount-to #active-crypto').val() == 'dcn') {
                                                                         eth_fee_check = parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html());
                                                                     } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
-                                                                        var crypto_val_decimal = new Decimal(utils.fromWei(crypto_val));
+                                                                        var crypto_val_decimal = new Decimal(crypto_val);
                                                                         eth_fee_check = parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html()) + crypto_val_decimal;
                                                                     }
 
@@ -1502,7 +1502,7 @@ var projectData = {
                                                                     if ($('.section-amount-to #active-crypto').val() == 'dcn') {
                                                                         eth_fee_check = parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html());
                                                                     } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
-                                                                        var crypto_val_decimal = new Decimal(utils.fromWei(crypto_val));
+                                                                        var crypto_val_decimal = new Decimal(crypto_val);
                                                                         eth_fee_check = parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html()) + crypto_val_decimal;
                                                                     }
 
@@ -1890,8 +1890,7 @@ var projectData = {
                     if (!$.isNumeric($(this).val().trim()) && $(this).val().trim() != '') {
                         $('.tx-settings-popup #edit-gas-price').val($('.tx-settings-popup #edit-gas-price').attr('data-value'));
                     } else {
-                        console.log(parseFloat($('.tx-data-holder').attr('data-initial-visibleGasPriceNumber')), 'parseFloat($(\'.tx-data-holder\').attr(\'data-initial-visibleGasPriceNumber\'))');
-                        console.log(parseFloat($(this).val().trim()), 'parseFloat($(this).val().trim())');
+                        $('.tx-settings-popup #edit-nonce').closest('.form-row').find('.error-handle').remove();
                         if (parseFloat($('.tx-data-holder').attr('data-initial-visibleGasPriceNumber')) > parseFloat($(this).val().trim())) {
                             $('.tx-settings-popup #edit-gas-price').closest('.form-row').find('.warning-handle').remove();
                             customWarningHandle($('.tx-settings-popup #edit-gas-price').closest('.form-row'), 'Gas price is low. The transaction will take longer time to execute or might fail.')

@@ -10,9 +10,17 @@
     text-decoration: none !important;
     @include rounded(4px);
     @include simple_transition(.3s);
-    &:hover {
-        color: $light_blue;
-        background-color: white;
+    @include breakpoint($md) {
+        &:hover {
+            color: $light_blue;
+            background-color: white;
+        }
+        &.no-hover {
+            &:hover {
+                color: white;
+                background-color: $light_blue;
+            }
+        }
     }
     &.light-blue-border {
         border-color: $light_blue;
@@ -21,15 +29,11 @@
         color: white;
         background-color: #c5c5c5;
         border-color: #c5c5c5;
-        &:hover {
-            color: white;
-            background-color: #c5c5c5;
-        }
-    }
-    &.no-hover {
-        &:hover {
-            color: white;
-            background-color: $light_blue;
+        @include breakpoint($md) {
+            &:hover {
+                color: white;
+                background-color: #c5c5c5;
+            }
         }
     }
 }
