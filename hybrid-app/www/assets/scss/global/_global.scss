@@ -637,6 +637,9 @@ img {
         right: 5px;
         font-size: 40px;
         top: 5px;
+        @include breakpoint($xs) {
+            top: 10px;
+        }
     }
     &.download-mobile-app {
         .phone-container {

@@ -1165,6 +1165,7 @@ var projectData = {
                                     getDentacoinDataByExternalProvider(function (request_response) {
                                         $('.section-send').hide();
                                         $('.section-amount-to .address-cell').html($('.search-field #search').val().trim()).attr('data-receiver', $('.search-field #search').val().trim());
+                                        window.scrollTo(0, 0);
 
                                         // remove loader from send page when all external requests are made
                                         hideLoader();
@@ -1416,6 +1417,8 @@ var projectData = {
                                                                                 eth_fee_check = crypto_val_decimal.plus(parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html()));
                                                                             }
 
+                                                                            console.log(eth_fee_check.toString(), 'eth_fee_check');
+
                                                                             if (eth_balance.lessThan(eth_fee_check)) {
                                                                                 basic.showAlert('You don\'t have enough balance to sign this transaction.', '', true);
                                                                                 $('.transaction-confirmation-popup .on-change-result').html('');
@@ -1451,8 +1454,10 @@ var projectData = {
                                                                                 eth_fee_check = parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html());
                                                                             } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
                                                                                 var crypto_val_decimal = new Decimal(crypto_val);
-                                                                                eth_fee_check = parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html()) + crypto_val_decimal;
+                                                                                eth_fee_check = crypto_val_decimal.plus(parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html()));
                                                                             }
+
+                                                                            console.log(eth_fee_check.toString(), 'eth_fee_check');
 
                                                                             if (eth_balance.lessThan(eth_fee_check)) {
                                                                                 basic.showAlert('You don\'t have enough balance to sign this transaction.', '', true);
@@ -1496,8 +1501,10 @@ var projectData = {
                                                                                 eth_fee_check = parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html());
                                                                             } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
                                                                                 var crypto_val_decimal = new Decimal(crypto_val);
-                                                                                eth_fee_check = parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html()) + crypto_val_decimal;
+                                                                                eth_fee_check = crypto_val_decimal.plus(parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html()));
                                                                             }
+
+                                                                            console.log(eth_fee_check.toString(), 'eth_fee_check');
 
                                                                             if (eth_balance.lessThan(eth_fee_check)) {
                                                                                 basic.showAlert('You don\'t have enough balance to sign this transaction.', '', true);
@@ -1523,6 +1530,7 @@ var projectData = {
 
                         $('.section-amount-to .edit-address').click(function () {
                             $('.section-amount-to').hide();
+                            window.scrollTo(0, 0);
                             $('.section-send').fadeIn(500);
                         });
                     }
@@ -2168,6 +2176,7 @@ function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver
 }
 
 function displayMessageOnTransactionSend(token_label, tx_hash) {
+    window.scrollTo(0, 0);
     $('.section-amount-to #crypto-amount').val('').trigger('change');
     $('.section-amount-to #usd-val').val('').trigger('change');
     $('.section-amount-to #verified-receiver-address').prop('checked', false);
