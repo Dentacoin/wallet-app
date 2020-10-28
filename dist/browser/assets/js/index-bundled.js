@@ -80244,6 +80244,7 @@ var {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, dec
 
 var {config_variable} = require('./config');
 var assurance_config;
+var iframeHeightListenerInit = true;
 
 console.log("( ͡° ͜ʖ ͡°) I see you.");
 
@@ -81406,6 +81407,7 @@ var projectData = {
                                     getDentacoinDataByExternalProvider(function (request_response) {
                                         $('.section-send').hide();
                                         $('.section-amount-to .address-cell').html($('.search-field #search').val().trim()).attr('data-receiver', $('.search-field #search').val().trim());
+                                        window.scrollTo(0, 0);
 
                                         // remove loader from send page when all external requests are made
                                         hideLoader();
@@ -81770,6 +81772,7 @@ var projectData = {
 
                         $('.section-amount-to .edit-address').click(function () {
                             $('.section-amount-to').hide();
+                            window.scrollTo(0, 0);
                             $('.section-send').fadeIn(500);
                         });
                     }
@@ -81777,6 +81780,22 @@ var projectData = {
             }
         },
         spend_page_dental_services: function () {
+            console.log('spend_page_dental_services');
+            if (iframeHeightListenerInit) {
+                iframeHeightListenerInit = false;
+
+                console.log('iframeHeightListenerInit');
+
+                window.addEventListener('message', function(event) {
+                    var height = event.data.data.height;
+
+                    console.log(height, 'height');
+                    if(event.data.event_id === 'iframe_size_event' && (height != undefined && height > 0)){
+                        $('.main-wrapper iframe').height(height + 50);
+                    }
+                });
+            }
+
             showMobileAppBannerForDesktopBrowsers();
         },
         spend_page_gift_cards: function () {
@@ -82415,6 +82434,7 @@ function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver
 }
 
 function displayMessageOnTransactionSend(token_label, tx_hash) {
+    window.scrollTo(0, 0);
     $('.section-amount-to #crypto-amount').val('').trigger('change');
     $('.section-amount-to #usd-val').val('').trigger('change');
     $('.section-amount-to #verified-receiver-address').prop('checked', false);
@@ -82558,7 +82578,7 @@ window.getSpendPageDentalServices = function () {
     }
 };
 
-window.getSpendPageGiftCards = function () {
+/*window.getSpendPageGiftCards = function () {
     setGlobalVariables();
     removeAccountChecker();
 
@@ -82575,7 +82595,7 @@ window.getSpendPageGiftCards = function () {
             projectData.pages.spend_page_gift_cards();
         });
     }
-};
+};*/
 
 window.getSpendPageExchanges = function () {
     setGlobalVariables();

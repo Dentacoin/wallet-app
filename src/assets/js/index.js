@@ -3,6 +3,7 @@ var {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, dec
 
 var {config_variable} = require('./config');
 var assurance_config;
+var iframeHeightListenerInit = true;
 
 console.log("( ͡° ͜ʖ ͡°) I see you.");
 
@@ -1538,6 +1539,22 @@ var projectData = {
             }
         },
         spend_page_dental_services: function () {
+            console.log('spend_page_dental_services');
+            if (iframeHeightListenerInit) {
+                iframeHeightListenerInit = false;
+
+                console.log('iframeHeightListenerInit');
+
+                window.addEventListener('message', function(event) {
+                    var height = event.data.data.height;
+
+                    console.log(height, 'height');
+                    if(event.data.event_id === 'iframe_size_event' && (height != undefined && height > 0)){
+                        $('.main-wrapper iframe').height(height + 50);
+                    }
+                });
+            }
+
             showMobileAppBannerForDesktopBrowsers();
         },
         spend_page_gift_cards: function () {
@@ -2320,7 +2337,7 @@ window.getSpendPageDentalServices = function () {
     }
 };
 
-window.getSpendPageGiftCards = function () {
+/*window.getSpendPageGiftCards = function () {
     setGlobalVariables();
     removeAccountChecker();
 
@@ -2337,7 +2354,7 @@ window.getSpendPageGiftCards = function () {
             projectData.pages.spend_page_gift_cards();
         });
     }
-};
+};*/
 
 window.getSpendPageExchanges = function () {
     setGlobalVariables();
