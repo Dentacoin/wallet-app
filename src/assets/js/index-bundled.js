@@ -80367,7 +80367,6 @@ var dApp = {
     web3_0_2: null,
     web3_1_0: null,
     init: function (callback) {
-        console.log('dApp init');
         dApp.loaded = true;
 
         //init web3
@@ -81390,382 +81389,382 @@ var projectData = {
 
 
                     var ethgasstation_json = await $.getJSON('https://ethgasstation.info/json/ethgasAPI.json');
-                    var gasPrice = await dApp.web3_1_0.eth.getGasPrice();
+                    // var gasPrice = await dApp.web3_1_0.eth.getGasPrice();
 
                     function bindSendPageElementsEvents() {
+                        hideLoader();
+
                         $('.section-send .next-send').click(function () {
                             if (!$(this).hasClass('disabled')) {
                                 fireGoogleAnalyticsEvent('Pay', 'Next', 'DCN Address');
 
-                                $('.section-send').hide();
-                                $('.section-amount-to .address-cell').html($('.search-field #search').val().trim()).attr('data-receiver', $('.search-field #search').val().trim());
-                                $('.section-amount-to').fadeIn(500);
+                                showLoader();
+                                getEthereumDataByCoingecko(function (request_response) {
+                                    var ethereum_data = request_response;
+
+                                    //getting dentacoin data by Coingecko
+                                    getDentacoinDataByExternalProvider(function (request_response) {
+                                        $('.section-send').hide();
+                                        $('.section-amount-to .address-cell').html($('.search-field #search').val().trim()).attr('data-receiver', $('.search-field #search').val().trim());
+
+                                        // remove loader from send page when all external requests are made
+                                        hideLoader();
+
+                                        $('.section-amount-to').fadeIn(500);
+
+                                        var dentacoin_data = request_response;
+
+                                        // if user has enough dcn balance show maximum spending balance shortcut
+                                        dApp.methods.getDCNBalance(global_state.account, function (err, response) {
+                                            var dcn_balance = parseInt(response);
+
+                                            $('.spendable-amount').addClass('active').html('<div class="spendable-dcn-amount inline-block fs-18 fs-xs-16 lato-bold" data-value="' + dcn_balance + '"><label class="color-light-blue">Spendable amount: </label><span></span></div><div class="max-btn inline-block"><button class="white-light-blue-btn use-max-dcn-amount">Max</button></div>');
+                                            $('.spendable-amount .spendable-dcn-amount span').html(dcn_balance + ' DCN');
+                                            $('.section-amount-to #active-crypto').val('dcn');
+
+                                            $('.use-max-dcn-amount').click(function () {
+                                                $('.section-amount-to input#crypto-amount').val($('.spendable-dcn-amount').attr('data-value'));
+                                                $('.section-amount-to input#crypto-amount').closest('.custom-google-label-style').find('label').addClass('active-label');
+
+                                                var to_fixed_num = 2;
+                                                if ($('.section-amount-to #active-crypto').val() == 'dcn') {
+                                                    if (($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data) < 0.01) {
+                                                        to_fixed_num = 4;
+                                                    }
+                                                    $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data).toFixed(to_fixed_num)).trigger('change');
+                                                } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
+                                                    if (($('.section-amount-to input#crypto-amount').val().trim() * ethereum_data.market_data.current_price.usd) < 0.01) {
+                                                        to_fixed_num = 4;
+                                                    }
+                                                    $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * ethereum_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
+                                                }
+                                            });
+                                        });
+
+                                        //on input in dcn/ eth input change usd input
+                                        $('.section-amount-to input#crypto-amount').unbind().on('input', function () {
+                                            var to_fixed_num = 2;
+                                            if ($('.section-amount-to #active-crypto').val() == 'dcn') {
+                                                if (($(this).val().trim() * dentacoin_data) < 0.01) {
+                                                    to_fixed_num = 4;
+                                                }
+                                                $('.section-amount-to input#usd-val').val(($(this).val().trim() * dentacoin_data).toFixed(to_fixed_num)).trigger('change');
+                                            } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
+                                                if (($(this).val().trim() * ethereum_data.market_data.current_price.usd) < 0.01) {
+                                                    to_fixed_num = 4;
+                                                }
+                                                $('.section-amount-to input#usd-val').val(($(this).val().trim() * ethereum_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
+                                            }
+                                        });
+
+                                        //on input in usd input change dcn/ eth input
+                                        $('.section-amount-to input#usd-val').unbind().on('input', function () {
+                                            if ($('.section-amount-to #active-crypto').val() == 'dcn') {
+                                                $('.section-amount-to input#crypto-amount').val(Math.floor($(this).val().trim() / dentacoin_data)).trigger('change');
+                                            } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
+                                                $('.section-amount-to input#crypto-amount').val($(this).val().trim() / ethereum_data.market_data.current_price.usd).trigger('change');
+                                            }
+                                        });
+
+                                        //on select with cryptocurrencies options change
+                                        $('.section-amount-to #active-crypto').unbind().on('change', function () {
+                                            var to_fixed_num = 2;
+                                            if ($(this).val() == 'dcn') {
+                                                dApp.methods.getDCNBalance(global_state.account, function (err, response) {
+                                                    var dcn_balance = parseInt(response);
+                                                    $('.spendable-dcn-amount').attr('data-value', dcn_balance);
+                                                    $('.spendable-amount .spendable-dcn-amount span').html(dcn_balance + ' DCN');
+                                                });
+
+                                                if (($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data) < 0.01) {
+                                                    to_fixed_num = 4;
+                                                }
+                                                $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data).toFixed(to_fixed_num)).trigger('change');
+                                            } else if ($(this).val() == 'eth') {
+                                                dApp.web3_1_0.eth.getBalance(global_state.account, async function (error, eth_balance) {
+                                                    if (error) {
+                                                        console.log(error);
+                                                    } else {
+                                                        var newDecimal = new Decimal(utils.fromWei(eth_balance));
+                                                        var ethSendGasEstimation = await dApp.web3_1_0.eth.estimateGas({
+                                                            to: $('.section-amount-to .address-cell').attr('data-receiver')
+                                                        });
+
+                                                        var ethSendGasEstimationNumber = new BigNumber(ethSendGasEstimation);
+                                                        //calculating the fee from the gas price and the estimated gas price
+                                                        var on_popup_load_gwei = ethgasstation_json.average;
+                                                        //adding 10% of the outcome just in case transactions don't take so long
+                                                        var on_popup_load_gas_price = on_popup_load_gwei * 100000000 + ((on_popup_load_gwei * 100000000) * 0.1);
+                                                        var cost = ethSendGasEstimationNumber * on_popup_load_gas_price;
+
+                                                        var eth_fee = utils.fromWei(cost.toString(), 'ether');
+                                                        var correctSendAmount = newDecimal.minus(eth_fee).toString();
+                                                        if (parseInt(eth_balance) > parseInt(ethSendGasEstimation)) {
+                                                            $('.spendable-dcn-amount').attr('data-value', correctSendAmount);
+                                                            $('.spendable-amount .spendable-dcn-amount span').html(correctSendAmount + ' ETH');
+                                                        } else {
+                                                            $('.spendable-dcn-amount').attr('data-value', 0);
+                                                            $('.spendable-amount .spendable-dcn-amount span').html('0 ETH');
+                                                        }
+                                                    }
+                                                });
+
+                                                if (($('.section-amount-to input#crypto-amount').val().trim() * ethereum_data.market_data.current_price.usd) < 0.01) {
+                                                    to_fixed_num = 4;
+                                                }
+                                                $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * ethereum_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
+                                            }
+                                        });
+
+                                        $('.section-amount-to .open-transaction-recipe').unbind().click(function () {
+                                            var crypto_val = $('.section-amount-to input#crypto-amount').val().trim();
+                                            var usd_val = $('.section-amount-to input#usd-val').val().trim();
+                                            var sending_to_address = $('.section-amount-to .address-cell').attr('data-receiver');
+
+                                            if (isNaN(crypto_val) || crypto_val == '' || crypto_val == 0 || ((isNaN(usd_val) || usd_val == '' || usd_val == 0) && dentacoin_data > 0)) {
+                                                //checking if not a number or empty values
+                                                basic.showAlert('Please make sure all values are numbers.', '', true);
+                                                return false;
+                                            }
+
+                                            if (parseFloat(crypto_val).countDecimals() > 17) {
+                                                crypto_val = parseFloat(crypto_val).toFixedNoRounding(17).toString();
+                                            }
+
+                                            dApp.methods.getDCNBalance(global_state.account, function (err, response) {
+                                                var dcn_balance = parseInt(response);
+
+                                                dApp.web3_1_0.eth.getBalance(global_state.account, async function (error, eth_balance) {
+                                                    if (error) {
+                                                        console.log(error);
+                                                    } else {
+                                                        if (crypto_val < 0 || (usd_val < 0 && dentacoin_data > 0)) {
+                                                            //checking if negative numbers
+                                                            basic.showAlert('Please make sure all values are greater than 0.', '', true);
+                                                            return false;
+                                                        } else if (crypto_val < 10 && $('.section-amount-to #active-crypto').val() == 'dcn') {
+                                                            //checking if dcn value is lesser than 10 (contract condition)
+                                                            basic.showAlert('Please make sure DCN value is greater than 10. You cannot send less than 10 DCN.', '', true);
+                                                            return false;
+                                                        } else if (0.005 > parseFloat(utils.fromWei(eth_balance))) {
+                                                            //checking if current balance is lower than the desired value to send
+                                                            if ($('.section-amount-to #active-crypto').val() == 'dcn') {
+                                                                basic.showAlert('For sending Dentacoins you need at least 0.005 ETH. Please refill.', '', true);
+                                                            } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
+                                                                basic.showAlert('For sending Ethereum you need at least 0.005 ETH. Please refill.', '', true);
+                                                            }
+                                                            return false;
+                                                        } else if ($('.section-amount-to #active-crypto').val() == 'dcn' && crypto_val > parseInt(dcn_balance)) {
+                                                            basic.showAlert('The value you want to send is higher than your balance.', '', true);
+                                                            return false;
+                                                        } else if ($('.section-amount-to #active-crypto').val() == 'eth' && crypto_val > parseFloat(utils.fromWei(eth_balance))) {
+                                                            basic.showAlert('The value you want to send is higher than your balance.', '', true);
+                                                            return false;
+                                                        } else if (!utils.innerAddressCheck(sending_to_address)) {
+                                                            //checking again if valid address
+                                                            basic.showAlert('Please enter a valid wallet address. It should start with "0x" and be followed by 40 characters (numbers and letters).', '', true);
+                                                            return false;
+                                                        } else if (!$('.section-amount-to #verified-receiver-address').is(':checked')) {
+                                                            //checking again if valid address
+                                                            basic.showAlert('Please check the checkbox.', '', true);
+                                                            return false;
+                                                        }
+
+                                                        if (meta_mask_installed) {
+                                                            if ($('.section-amount-to #active-crypto').val() == 'dcn') {
+                                                                dApp.methods.transfer(sending_to_address, crypto_val);
+                                                            } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
+                                                                dApp.web3_1_0.eth.sendTransaction({
+                                                                    from: global_state.account,
+                                                                    to: sending_to_address,
+                                                                    value: utils.toWei(crypto_val)
+                                                                }).on('transactionHash', function (hash) {
+                                                                    displayMessageOnTransactionSend('Ethers', hash);
+                                                                }).catch(function (err) {
+                                                                    basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
+                                                                });
+                                                            }
+                                                        } else {
+                                                            showLoader();
+
+                                                            var function_abi;
+                                                            var token_symbol;
+                                                            var gasLimit;
+                                                            var on_popup_load_gwei;
+                                                            var on_popup_load_gas_price;
+                                                            var visibleGasPriceNumber;
+                                                            var nonce = await dApp.web3_1_0_assurance.eth.getTransactionCount(global_state.account);
+                                                            var pendingNonce = await dApp.web3_1_0_assurance.eth.getTransactionCount(global_state.account, 'pending');
+                                                            sending_to_address = utils.checksumAddress(sending_to_address);
+
+                                                            if ($('.section-amount-to #active-crypto').val() == 'dcn') {
+                                                                token_symbol = 'DCN';
+                                                                function_abi = DCNContract.methods.transfer(sending_to_address, crypto_val).encodeABI();
+
+                                                                //gasLimit = 65000;
+                                                                gasLimit = await DCNContract.methods.transfer(sending_to_address, crypto_val).estimateGas({
+                                                                    from: global_state.account
+                                                                });
+
+                                                                // adding 10 percent to the gas limit just in case
+                                                                gasLimit = Math.round(gasLimit + (gasLimit * 0.1));
+
+                                                                //calculating the fee from the gas price and the estimated gas price
+                                                                on_popup_load_gwei = ethgasstation_json.average;
+                                                                //adding 10% of the outcome just in case transactions don't take so long
+                                                                on_popup_load_gas_price = on_popup_load_gwei * 100000000 + ((on_popup_load_gwei * 100000000) * 10 / 100);
+                                                                visibleGasPriceNumber = on_popup_load_gas_price / 1000000000;
+                                                            } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
+                                                                token_symbol = 'ETH';
+                                                                gasLimit = await dApp.web3_1_0.eth.estimateGas({
+                                                                    to: sending_to_address
+                                                                });
+
+                                                                //calculating the fee from the gas price and the estimated gas price
+                                                                on_popup_load_gwei = ethgasstation_json.average;
+                                                                //adding 10% of the outcome just in case transactions don't take so long
+                                                                on_popup_load_gas_price = on_popup_load_gwei * 100000000 + ((on_popup_load_gwei * 100000000) * 10 / 100);
+                                                                visibleGasPriceNumber = on_popup_load_gas_price / 1000000000;
+                                                            }
+
+                                                            if (usd_val == '') {
+                                                                var usdHtml = '';
+                                                            } else {
+                                                                var usdHtml = '<div class="usd-amount">=$' + usd_val + '</div>';
+                                                            }
+
+                                                            var eth_fee = utils.fromWei((on_popup_load_gas_price * gasLimit).toString(), 'ether');
+                                                            var transaction_popup_html = '<div class="tx-data-holder" data-visibleGasPriceNumber="'+visibleGasPriceNumber+'" data-initial-visibleGasPriceNumber="'+visibleGasPriceNumber+'" data-gasLimit="'+gasLimit+'" data-nonce="'+pendingNonce+'" data-initial-nonce="'+pendingNonce+'" data-on_popup_load_gas_price="'+on_popup_load_gas_price+'"></div><div class="title">Send confirmation</div><div class="pictogram-and-dcn-usd-price"><svg version="1.1" class="width-100 max-width-100 margin-bottom-10" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><style type="text/css">.st0-recipe{fill:#FFFFFF;}.st1-recipe{fill:#CA675A;}.st2-recipe{fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="100" width="105.7" x="-7.2" y="-6.4"></sliceSourceBounds></sfw></metadata><circle class="st0-recipe" cx="50" cy="50" r="50"/><g><g><g><path class="st1-recipe" d="M50.1,93.7c-18.7,0-36-12.4-41.3-31.3C2.4,39.6,15.8,16,38.5,9.6C48.9,6.7,60,7.8,69.6,12.8c1.2,0.6,1.6,2,1,3.2s-2,1.6-3.2,1c-8.6-4.4-18.4-5.4-27.7-2.8c-20.1,5.6-32,26.7-26.3,46.9s26.7,32.1,46.9,26.4s32.1-26.7,26.4-46.9c-1.1-3.9-2.8-7.6-5-10.9c-0.7-1.1-0.4-2.6,0.7-3.3c1.1-0.7,2.6-0.4,3.3,0.7c2.5,3.8,4.4,7.9,5.6,12.3c6.4,22.8-7,46.5-29.7,52.8C57.8,93.2,53.9,93.7,50.1,93.7z"/></g><g><path class="st1-recipe" d="M33.1,78.6c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.4l40.4-50.5c0.8-1,2.3-1.2,3.4-0.4c1,0.8,1.2,2.3,0.4,3.4L35,77.7C34.5,78.3,33.8,78.6,33.1,78.6z"/></g><g><g><path class="st2-recipe" d="M105.7,56.9"/></g></g></g><g><path class="st1-recipe" d="M73.7,54.2c-0.1,0-0.2,0-0.2,0c-1.3-0.2-2.3-1.4-2.2-2.7L74,23.9L47.6,39.8c-1.1,0.7-2.6,0.3-3.3-0.8c-0.7-1.1-0.3-2.6,0.8-3.3l34.5-20.8L76.1,52C76,53.2,74.9,54.2,73.7,54.2z"/></g></g></svg><div class="dcn-amount">-' + crypto_val + ' ' + token_symbol + '</div>' + usdHtml + '</div><div class="confirm-row to"> <div class="label inline-block">To:</div><div class="value inline-block">' + utils.checksumAddress(sending_to_address) + '</div></div><div class="confirm-row from"> <div class="label inline-block">From:</div><div class="value inline-block">' + global_state.account + '</div></div><div class="confirm-row nonce"> <div class="label inline-block">Nonce:</div><div class="value inline-block">' + pendingNonce + '</div></div><div class="confirm-row fee"> <div class="label inline-block">Ether fee:</div><div class="value inline-block"><div class="inline-block eth-value">' + parseFloat(eth_fee).toFixed(8) + '</div><div class="inline-block tx-settings-icon"><a href="javascript:void(0);"><svg id="e68760ed-3659-43b9-ad7b-73b5b189fe7a" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 56.81 61"><defs><clipPath id="f9d5df6d-58de-4fe9-baeb-2948a9aeab40"><rect class="bb542d8f-936a-4524-831e-8152ec1848dd" x="-3.59" y="-1.5" width="64" height="64"/></clipPath></defs><g class="e20091d8-5cd8-4fc6-97bc-34f6a53a9fd6"><path style="fill:#888;" d="M28.29,61a25,25,0,0,1-4.05-.3,2.46,2.46,0,0,1-1.83-1.63L20.8,53.51a2.8,2.8,0,0,0-1.06-1.36l-5.86-3.38a2.67,2.67,0,0,0-1.69-.22L6.67,50a2.48,2.48,0,0,1-2.33-.73A28,28,0,0,1,.16,42.1a2.47,2.47,0,0,1,.5-2.39l4.15-4.33a2.76,2.76,0,0,0,.64-1.6V27a2.6,2.6,0,0,0-.65-1.57L.66,21.31a2.43,2.43,0,0,1-.52-2.38A31.86,31.86,0,0,1,2,15.27a30.47,30.47,0,0,1,2.33-3.49A2.48,2.48,0,0,1,6.61,11l5.9,1.45a2.69,2.69,0,0,0,1.7-.24l5.86-3.38a2.67,2.67,0,0,0,1-1.35L22.6,1.93A2.4,2.4,0,0,1,24.4.29a27.62,27.62,0,0,1,8.22,0A2.42,2.42,0,0,1,34.41,2L35.89,7.5a2.67,2.67,0,0,0,1,1.35l5.86,3.38a2.63,2.63,0,0,0,1.68.22L50,11a2.44,2.44,0,0,1,2.33.73,27.84,27.84,0,0,1,4.3,7.48,2.46,2.46,0,0,1-.54,2.39L52.2,25.45A2.66,2.66,0,0,0,51.55,27v6.76a2.72,2.72,0,0,0,.65,1.58l3.94,3.94a2.46,2.46,0,0,1,.54,2.38,29.28,29.28,0,0,1-2,4,29,29,0,0,1-2.32,3.5,2.44,2.44,0,0,1-2.33.73l-5.24-1.4a2.67,2.67,0,0,0-1.69.22l-5.86,3.38a2.71,2.71,0,0,0-1,1.35l-1.46,5.44A2.48,2.48,0,0,1,33,60.61h0A25.92,25.92,0,0,1,28.29,61ZM12.68,47.49a3.62,3.62,0,0,1,1.7.41l5.86,3.39a3.67,3.67,0,0,1,1.52,1.94l1.61,5.56a1.48,1.48,0,0,0,1,.92,27.08,27.08,0,0,0,8.38-.08h0a1.49,1.49,0,0,0,1-.94l1.46-5.45a3.65,3.65,0,0,1,1.5-2l5.86-3.39a3.64,3.64,0,0,1,2.45-.32L50.31,49a1.42,1.42,0,0,0,1.3-.41,29.64,29.64,0,0,0,2.23-3.36,30,30,0,0,0,1.9-3.87,1.5,1.5,0,0,0-.3-1.35l-3.95-3.94a3.6,3.6,0,0,1-.94-2.28V27a3.64,3.64,0,0,1,.94-2.28l3.89-3.88a1.48,1.48,0,0,0,.3-1.34,26.75,26.75,0,0,0-4.12-7.17,1.45,1.45,0,0,0-1.31-.41l-5.52,1.48a3.57,3.57,0,0,1-2.44-.33L36.43,9.71a3.59,3.59,0,0,1-1.5-2L33.45,2.24a1.43,1.43,0,0,0-1-.93,26.61,26.61,0,0,0-7.87,0,1.4,1.4,0,0,0-1,.92l-1.5,5.56a3.54,3.54,0,0,1-1.5,2l-5.86,3.38a3.68,3.68,0,0,1-2.44.35L6.37,12a1.5,1.5,0,0,0-1.32.43,31.07,31.07,0,0,0-2.22,3.35,29.61,29.61,0,0,0-1.75,3.51,1.41,1.41,0,0,0,.29,1.32l4.14,4.14A3.64,3.64,0,0,1,6.45,27v6.76a3.73,3.73,0,0,1-.92,2.29L1.38,40.4a1.47,1.47,0,0,0-.28,1.35,26.44,26.44,0,0,0,4,6.9,1.41,1.41,0,0,0,1.3.41l5.52-1.48A3,3,0,0,1,12.68,47.49Zm15.72-3a14,14,0,1,1,14-14A14,14,0,0,1,28.4,44.53Zm0-27.06a13,13,0,1,0,13,13A13,13,0,0,0,28.4,17.47Z"/><path style="fill:#888;" d="M28.29,60.87a25.85,25.85,0,0,1-4.11-.31,4.3,4.3,0,0,1-3.29-3l-1.51-5.17s-.07-.07-.12-.11l-5.37-3.1s0,0-.09,0L8.74,50.61A4.27,4.27,0,0,1,4.5,49.27,27.7,27.7,0,0,1,.26,42a4.32,4.32,0,0,1,.9-4.33l3.86-4s0-.1,0-.16V27.27s0,0-.06-.08L1.2,23.4a4.23,4.23,0,0,1-1-4.35,29.26,29.26,0,0,1,1.84-3.71A31.23,31.23,0,0,1,4.44,11.8a4.32,4.32,0,0,1,4.21-1.37l5.48,1.35s.1,0,.15,0l5.3-3.07a.41.41,0,0,0,.1-.13l1.37-5.1a4.24,4.24,0,0,1,3.3-3,27.69,27.69,0,0,1,8.33,0,4.26,4.26,0,0,1,3.27,3l1.36,5a.6.6,0,0,0,.09.13l5.32,3.07.16,0,5-1.36a4.28,4.28,0,0,1,4.24,1.33,28.05,28.05,0,0,1,4.36,7.58,4.31,4.31,0,0,1-1,4.34L52,27.19a.67.67,0,0,0-.07.18v6.18s0,0,.06.07l3.61,3.61a4.29,4.29,0,0,1,1,4.33,30.43,30.43,0,0,1-2,4.1,31.86,31.86,0,0,1-2.36,3.53A4.28,4.28,0,0,1,48,50.54l-4.8-1.29-.18,0-5.3,3.06-.1.15-1.33,5a4.31,4.31,0,0,1-3.23,3h0A26.57,26.57,0,0,1,28.29,60.87Zm-2.88-4a25.3,25.3,0,0,0,6.33-.07L33,52.05a5.63,5.63,0,0,1,2.46-3.2l5.69-3.28a5.59,5.59,0,0,1,4-.53l4.51,1.21c.39-.54,1-1.48,1.61-2.51a29.91,29.91,0,0,0,1.48-2.91l-3.42-3.42a5.61,5.61,0,0,1-1.54-3.72V27.12a5.61,5.61,0,0,1,1.54-3.72L52.7,20a25.27,25.27,0,0,0-3.08-5.36L44.82,16a5.6,5.6,0,0,1-4-.53l-5.69-3.29A5.61,5.61,0,0,1,32.68,9L31.4,4.15a24.46,24.46,0,0,0-5.8,0L24.31,9a5.64,5.64,0,0,1-2.45,3.2l-5.69,3.28a5.71,5.71,0,0,1-4,.56L7,14.72A28.64,28.64,0,0,0,5.4,17.26c-.57,1-1.05,2-1.33,2.55L7.66,23.4A5.59,5.59,0,0,1,9.2,27.12v6.57a5.77,5.77,0,0,1-1.48,3.7l-3.65,3.8a24.17,24.17,0,0,0,3,5.14L11.85,45a5.65,5.65,0,0,1,4,.53l5.69,3.28A5.7,5.7,0,0,1,24,52ZM25,55.63h0Zm12.64-3.26h0ZM7.45,15.28h0ZM8.27,15ZM19.65,8.62h0Zm0,0h0Zm17.66,0h0ZM28.4,44.85A14.35,14.35,0,1,1,42.75,30.5,14.37,14.37,0,0,1,28.4,44.85Zm0-24.42A10.07,10.07,0,1,0,38.47,30.5,10.08,10.08,0,0,0,28.4,20.43Z"/></g></svg></a></div></div></div>';
+
+                                                            dApp.web3_1_0.eth.getBalance(global_state.account, function (error, eth_balance) {
+                                                                if (error) {
+                                                                    console.log(error);
+                                                                } else {
+                                                                    eth_balance = new Decimal(utils.fromWei(eth_balance));
+
+                                                                    if (window.localStorage.getItem('keystore_file') != null) {
+                                                                        //cached keystore path on mobile device or cached keystore file on browser
+                                                                        transaction_popup_html += '<div class="container-fluid"><div class="row padding-top-25 cached-keystore-file"><div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">Secret password:</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">Confirm</a></div></div></div>';
+                                                                        basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
+                                                                        projectData.general_logic.bindTxSettings(visibleGasPriceNumber, nonce);
+
+                                                                        $('.cached-keystore-file .confirm-transaction.keystore-file').click(function () {
+                                                                            var eth_fee_check;
+                                                                            if ($('.section-amount-to #active-crypto').val() == 'dcn') {
+                                                                                eth_fee_check = parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html());
+                                                                            } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
+                                                                                var crypto_val_decimal = new Decimal(crypto_val);
+                                                                                eth_fee_check = crypto_val_decimal.plus(parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html()));
+                                                                            }
+
+                                                                            if (eth_balance.lessThan(eth_fee_check)) {
+                                                                                basic.showAlert('You don\'t have enough balance to sign this transaction.', '', true);
+                                                                                $('.transaction-confirmation-popup .on-change-result').html('');
+                                                                            } else {
+                                                                                if ($('.cached-keystore-file #your-secret-key-password').val().trim() == '') {
+                                                                                    basic.showAlert('Please enter valid secret file password.', '', true);
+                                                                                } else {
+                                                                                    showLoader('Hold on...<br>Your transaction is being processed.');
+
+                                                                                    setTimeout(function () {
+                                                                                        decryptKeystore(window.localStorage.getItem('keystore_file'), $('.cached-keystore-file #your-secret-key-password').val().trim(), function (success, to_string, error, error_message) {
+                                                                                            if (success) {
+                                                                                                submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, success);
+                                                                                            } else if (error) {
+                                                                                                basic.showAlert(error_message, '', true);
+                                                                                                hideLoader();
+                                                                                            }
+                                                                                        });
+                                                                                    }, 2000);
+                                                                                }
+                                                                            }
+                                                                        });
+                                                                    } else {
+                                                                        //nothing is cached
+                                                                        transaction_popup_html += '<div class="container-fluid proof-of-address padding-top-20 padding-bottom-20"> <div class="row fs-0"> <div class="col-xs-12 col-sm-5 inline-block padding-left-30 padding-left-xs-15 priv-key-btn"> <a href="javascript:void(0)" class="light-blue-white-btn text-center enter-private-key display-block-important fs-18 fs-xs-14 line-height-18"><span>Enter your<br class="show-on-xs"> Private Key<div class="fs-16 fs-xs-12">(not recommended)</div></span></a> </div><div class="col-xs-12 col-sm-2 text-center calibri-bold fs-20 fs-xs-16 inline-block or-label">or</div><div class="col-xs-12 col-sm-5 inline-block padding-right-30 padding-right-xs-15 keystore-btn"><div class="upload-file-container" data-id="upload-keystore-file"><input type="file" id="upload-keystore-file" class="custom-upload-keystore-file hide-input"/> <div class="btn-wrapper"></div></div></div></div><div class="row on-change-result"></div></div>';
+                                                                        basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
+                                                                        projectData.general_logic.bindTxSettings(visibleGasPriceNumber, nonce);
+
+                                                                        //init private key btn logic
+                                                                        $(document).on('click', '.enter-private-key', function () {
+                                                                            var eth_fee_check;
+                                                                            if ($('.section-amount-to #active-crypto').val() == 'dcn') {
+                                                                                eth_fee_check = parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html());
+                                                                            } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
+                                                                                var crypto_val_decimal = new Decimal(crypto_val);
+                                                                                eth_fee_check = parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html()) + crypto_val_decimal;
+                                                                            }
+
+                                                                            if (eth_balance.lessThan(eth_fee_check)) {
+                                                                                basic.showAlert('You don\'t have enough balance to sign this transaction.', '', true);
+                                                                                $('.transaction-confirmation-popup .on-change-result').html('');
+                                                                            } else {
+                                                                                $('.proof-of-address #upload-keystore-file').val('');
+                                                                                $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-20"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-private-key">Your Private Key:</label><input type="text" id="your-private-key" maxlength="64" class="full-rounded"/></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction private-key">CONFIRM</a></div>');
+
+                                                                                $('#your-private-key').focus();
+                                                                                $('label[for="your-private-key"]').addClass('active-label');
+
+                                                                                $('.confirm-transaction.private-key').click(function () {
+                                                                                    if ($('.proof-of-address #your-private-key').val().trim() == '') {
+                                                                                        basic.showAlert('Please enter valid private key.', '', true);
+                                                                                    } else {
+                                                                                        showLoader('Hold on...<br>Your transaction is being processed.');
+
+                                                                                        setTimeout(function () {
+                                                                                            var validating_private_key = validatePrivateKey($('.proof-of-address #your-private-key').val().trim());
+                                                                                            if (validating_private_key.success) {
+                                                                                                if (utils.checksumAddress(validating_private_key.success.address) == utils.checksumAddress(global_state.account)) {
+                                                                                                    submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, new Buffer($('.proof-of-address #your-private-key').val().trim(), 'hex'));
+                                                                                                } else {
+                                                                                                    basic.showAlert('Please enter private key related to your Wallet Address', '', true);
+                                                                                                    hideLoader();
+                                                                                                }
+                                                                                            } else if (validating_private_key.error) {
+                                                                                                basic.showAlert(validating_private_key.message, '', true);
+                                                                                                hideLoader();
+                                                                                            }
+                                                                                        }, 2000);
+                                                                                    }
+                                                                                });
+                                                                            }
+                                                                        });
+
+                                                                        //init keystore btn logic
+                                                                        styleKeystoreUploadBtnForTx(function (key) {
+                                                                            var eth_fee_check;
+                                                                            if ($('.section-amount-to #active-crypto').val() == 'dcn') {
+                                                                                eth_fee_check = parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html());
+                                                                            } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
+                                                                                var crypto_val_decimal = new Decimal(crypto_val);
+                                                                                eth_fee_check = parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html()) + crypto_val_decimal;
+                                                                            }
+
+                                                                            if (eth_balance.lessThan(eth_fee_check)) {
+                                                                                basic.showAlert('You don\'t have enough balance to sign this transaction.', '', true);
+                                                                                $('.transaction-confirmation-popup .on-change-result').html('');
+                                                                                hideLoader();
+                                                                            } else {
+                                                                                submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, key);
+                                                                            }
+                                                                        });
+                                                                    }
+                                                                    hideLoader();
+                                                                }
+                                                            });
+                                                        }
+                                                    }
+                                                });
+                                            });
+                                        });
+                                    });
+                                });
                             }
                         });
 
                         $('.section-amount-to .edit-address').click(function () {
                             $('.section-amount-to').hide();
                             $('.section-send').fadeIn(500);
-                        });
-
-                        getEthereumDataByCoingecko(function (request_response) {
-                            var ethereum_data = request_response;
-
-                            //getting dentacoin data by Coingecko
-                            getDentacoinDataByExternalProvider(function (request_response) {
-                                // remove loader from send page when all external requests are made
-                                hideLoader();
-
-                                var dentacoin_data = request_response;
-
-                                // if user has enough dcn balance show maximum spending balance shortcut
-                                dApp.methods.getDCNBalance(global_state.account, function (err, response) {
-                                    var dcn_balance = parseInt(response);
-
-                                    $('.spendable-amount').addClass('active').html('<div class="spendable-dcn-amount inline-block fs-18 fs-xs-16 lato-bold" data-value="' + dcn_balance + '"><label class="color-light-blue">Spendable amount: </label><span></span></div><div class="max-btn inline-block"><button class="white-light-blue-btn use-max-dcn-amount">Max</button></div>');
-                                    $('.spendable-amount .spendable-dcn-amount span').html(dcn_balance + ' DCN');
-
-                                    $('.use-max-dcn-amount').click(function () {
-                                        $('.section-amount-to input#crypto-amount').val($('.spendable-dcn-amount').attr('data-value'));
-                                        $('.section-amount-to input#crypto-amount').closest('.custom-google-label-style').find('label').addClass('active-label');
-
-                                        var to_fixed_num = 2;
-                                        if ($('.section-amount-to #active-crypto').val() == 'dcn') {
-                                            if (($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data) < 0.01) {
-                                                to_fixed_num = 4;
-                                            }
-                                            $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data).toFixed(to_fixed_num)).trigger('change');
-                                        } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
-                                            if (($('.section-amount-to input#crypto-amount').val().trim() * ethereum_data.market_data.current_price.usd) < 0.01) {
-                                                to_fixed_num = 4;
-                                            }
-                                            $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * ethereum_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
-                                        }
-                                    });
-                                });
-
-                                //on input in dcn/ eth input change usd input
-                                $('.section-amount-to input#crypto-amount').on('input', function () {
-                                    var to_fixed_num = 2;
-                                    if ($('.section-amount-to #active-crypto').val() == 'dcn') {
-                                        if (($(this).val().trim() * dentacoin_data) < 0.01) {
-                                            to_fixed_num = 4;
-                                        }
-                                        $('.section-amount-to input#usd-val').val(($(this).val().trim() * dentacoin_data).toFixed(to_fixed_num)).trigger('change');
-                                    } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
-                                        if (($(this).val().trim() * ethereum_data.market_data.current_price.usd) < 0.01) {
-                                            to_fixed_num = 4;
-                                        }
-                                        $('.section-amount-to input#usd-val').val(($(this).val().trim() * ethereum_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
-                                    }
-                                });
-
-                                //on input in usd input change dcn/ eth input
-                                $('.section-amount-to input#usd-val').on('input', function () {
-                                    if ($('.section-amount-to #active-crypto').val() == 'dcn') {
-                                        $('.section-amount-to input#crypto-amount').val(Math.floor($(this).val().trim() / dentacoin_data)).trigger('change');
-                                    } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
-                                        $('.section-amount-to input#crypto-amount').val($(this).val().trim() / ethereum_data.market_data.current_price.usd).trigger('change');
-                                    }
-                                });
-
-                                //on select with cryptocurrencies options change
-                                $('.section-amount-to #active-crypto').on('change', function () {
-                                    var to_fixed_num = 2;
-                                    if ($(this).val() == 'dcn') {
-                                        dApp.methods.getDCNBalance(global_state.account, function (err, response) {
-                                            var dcn_balance = parseInt(response);
-                                            $('.spendable-dcn-amount').attr('data-value', dcn_balance);
-                                            $('.spendable-amount .spendable-dcn-amount span').html(dcn_balance + ' DCN');
-                                        });
-
-                                        if (($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data) < 0.01) {
-                                            to_fixed_num = 4;
-                                        }
-                                        $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data).toFixed(to_fixed_num)).trigger('change');
-                                    } else if ($(this).val() == 'eth') {
-                                        dApp.web3_1_0.eth.getBalance(global_state.account, async function (error, eth_balance) {
-                                            if (error) {
-                                                console.log(error);
-                                            } else {
-                                                var newDecimal = new Decimal(utils.fromWei(eth_balance));
-                                                var ethSendGasEstimation = await dApp.web3_1_0.eth.estimateGas({
-                                                    to: $('.section-amount-to .address-cell').attr('data-receiver')
-                                                });
-
-                                                var ethSendGasEstimationNumber = new BigNumber(ethSendGasEstimation);
-                                                //calculating the fee from the gas price and the estimated gas price
-                                                var on_popup_load_gwei = ethgasstation_json.average;
-                                                //adding 10% of the outcome just in case transactions don't take so long
-                                                var on_popup_load_gas_price = on_popup_load_gwei * 100000000;
-                                                var cost = ethSendGasEstimationNumber * on_popup_load_gas_price;
-
-                                                var eth_fee = utils.fromWei(cost.toString(), 'ether');
-                                                var correctSendAmount = newDecimal.minus(eth_fee).toString();
-                                                if (parseInt(eth_balance) > parseInt(ethSendGasEstimation)) {
-                                                    $('.spendable-dcn-amount').attr('data-value', correctSendAmount);
-                                                    $('.spendable-amount .spendable-dcn-amount span').html(correctSendAmount + ' ETH');
-                                                } else {
-                                                    $('.spendable-dcn-amount').attr('data-value', 0);
-                                                    $('.spendable-amount .spendable-dcn-amount span').html('0 ETH');
-                                                }
-                                            }
-                                        });
-
-                                        if (($('.section-amount-to input#crypto-amount').val().trim() * ethereum_data.market_data.current_price.usd) < 0.01) {
-                                            to_fixed_num = 4;
-                                        }
-                                        $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * ethereum_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
-                                    }
-                                });
-
-                                $('.section-amount-to .open-transaction-recipe').click(function () {
-                                    var crypto_val = $('.section-amount-to input#crypto-amount').val().trim();
-                                    var usd_val = $('.section-amount-to input#usd-val').val().trim();
-                                    var sending_to_address = $('.section-amount-to .address-cell').attr('data-receiver');
-
-                                    if (isNaN(crypto_val) || crypto_val == '' || crypto_val == 0 || ((isNaN(usd_val) || usd_val == '' || usd_val == 0) && dentacoin_data > 0)) {
-                                        //checking if not a number or empty values
-                                        basic.showAlert('Please make sure all values are numbers.', '', true);
-                                        return false;
-                                    }
-
-                                    if (parseFloat(crypto_val).countDecimals() > 17) {
-                                        crypto_val = parseFloat(crypto_val).toFixedNoRounding(17).toString();
-                                    }
-
-                                    dApp.methods.getDCNBalance(global_state.account, function (err, response) {
-                                        var dcn_balance = parseInt(response);
-
-                                        dApp.web3_1_0.eth.getBalance(global_state.account, async function (error, eth_balance) {
-                                            if (error) {
-                                                console.log(error);
-                                            } else {
-                                                if (crypto_val < 0 || (usd_val < 0 && dentacoin_data > 0)) {
-                                                    //checking if negative numbers
-                                                    basic.showAlert('Please make sure all values are greater than 0.', '', true);
-                                                    return false;
-                                                } else if (crypto_val < 10 && $('.section-amount-to #active-crypto').val() == 'dcn') {
-                                                    //checking if dcn value is lesser than 10 (contract condition)
-                                                    basic.showAlert('Please make sure DCN value is greater than 10. You cannot send less than 10 DCN.', '', true);
-                                                    return false;
-                                                } else if (0.005 > parseFloat(utils.fromWei(eth_balance))) {
-                                                    //checking if current balance is lower than the desired value to send
-                                                    if ($('.section-amount-to #active-crypto').val() == 'dcn') {
-                                                        basic.showAlert('For sending Dentacoins you need at least 0.005 ETH. Please refill.', '', true);
-                                                    } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
-                                                        basic.showAlert('For sending Ethereum you need at least 0.005 ETH. Please refill.', '', true);
-                                                    }
-                                                    return false;
-                                                } else if ($('.section-amount-to #active-crypto').val() == 'dcn' && crypto_val > parseInt(dcn_balance)) {
-                                                    basic.showAlert('The value you want to send is higher than your balance.', '', true);
-                                                    return false;
-                                                } else if ($('.section-amount-to #active-crypto').val() == 'eth' && crypto_val > parseFloat(utils.fromWei(eth_balance))) {
-                                                    basic.showAlert('The value you want to send is higher than your balance.', '', true);
-                                                    return false;
-                                                } else if (!utils.innerAddressCheck(sending_to_address)) {
-                                                    //checking again if valid address
-                                                    basic.showAlert('Please enter a valid wallet address. It should start with "0x" and be followed by 40 characters (numbers and letters).', '', true);
-                                                    return false;
-                                                } else if (!$('.section-amount-to #verified-receiver-address').is(':checked')) {
-                                                    //checking again if valid address
-                                                    basic.showAlert('Please check the checkbox.', '', true);
-                                                    return false;
-                                                }
-
-                                                if (meta_mask_installed) {
-                                                    if ($('.section-amount-to #active-crypto').val() == 'dcn') {
-                                                        dApp.methods.transfer(sending_to_address, crypto_val);
-                                                    } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
-                                                        dApp.web3_1_0.eth.sendTransaction({
-                                                            from: global_state.account,
-                                                            to: sending_to_address,
-                                                            value: utils.toWei(crypto_val)
-                                                        }).on('transactionHash', function (hash) {
-                                                            displayMessageOnTransactionSend('Ethers', hash);
-                                                        }).catch(function (err) {
-                                                            basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
-                                                        });
-                                                    }
-                                                } else {
-                                                    showLoader();
-
-                                                    var function_abi;
-                                                    var token_symbol;
-                                                    var gasLimit;
-                                                    var on_popup_load_gwei;
-                                                    var on_popup_load_gas_price;
-                                                    var visibleGasPriceNumber;
-                                                    var nonce = await dApp.web3_1_0_assurance.eth.getTransactionCount(global_state.account);
-                                                    var pendingNonce = await dApp.web3_1_0_assurance.eth.getTransactionCount(global_state.account, 'pending');
-                                                    sending_to_address = utils.checksumAddress(sending_to_address);
-
-                                                    if ($('.section-amount-to #active-crypto').val() == 'dcn') {
-                                                        token_symbol = 'DCN';
-                                                        function_abi = DCNContract.methods.transfer(sending_to_address, crypto_val).encodeABI();
-
-                                                        //gasLimit = 65000;
-                                                        gasLimit = await DCNContract.methods.transfer(sending_to_address, crypto_val).estimateGas({
-                                                            from: global_state.account
-                                                        });
-
-                                                        // adding 10 percent to the gas limit just in case
-                                                        gasLimit = Math.round(gasLimit + (gasLimit * 0.1));
-
-                                                        //calculating the fee from the gas price and the estimated gas price
-                                                        on_popup_load_gwei = ethgasstation_json.average;
-                                                        //adding 10% of the outcome just in case transactions don't take so long
-                                                        on_popup_load_gas_price = on_popup_load_gwei * 100000000 + ((on_popup_load_gwei * 100000000) * 10 / 100);
-                                                        visibleGasPriceNumber = on_popup_load_gas_price / 1000000000;
-                                                    } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
-                                                        token_symbol = 'ETH';
-                                                        gasLimit = await dApp.web3_1_0.eth.estimateGas({
-                                                            to: sending_to_address
-                                                        });
-
-                                                        //calculating the fee from the gas price and the estimated gas price
-                                                        on_popup_load_gwei = ethgasstation_json.average;
-                                                        //adding 10% of the outcome just in case transactions don't take so long
-                                                        on_popup_load_gas_price = on_popup_load_gwei * 100000000 + ((on_popup_load_gwei * 100000000) * 10 / 100);
-                                                        visibleGasPriceNumber = on_popup_load_gas_price / 1000000000;
-                                                    }
-
-                                                    if (usd_val == '') {
-                                                        var usdHtml = '';
-                                                    } else {
-                                                        var usdHtml = '<div class="usd-amount">=$' + usd_val + '</div>';
-                                                    }
-
-                                                    var eth_fee = utils.fromWei((on_popup_load_gas_price * gasLimit).toString(), 'ether');
-                                                    var transaction_popup_html = '<div class="tx-data-holder" data-visibleGasPriceNumber="'+visibleGasPriceNumber+'" data-initial-visibleGasPriceNumber="'+visibleGasPriceNumber+'" data-gasLimit="'+gasLimit+'" data-nonce="'+pendingNonce+'" data-initial-nonce="'+pendingNonce+'" data-on_popup_load_gas_price="'+on_popup_load_gas_price+'"></div><div class="title">Send confirmation</div><div class="pictogram-and-dcn-usd-price"><svg version="1.1" class="width-100 max-width-100 margin-bottom-10" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><style type="text/css">.st0-recipe{fill:#FFFFFF;}.st1-recipe{fill:#CA675A;}.st2-recipe{fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="100" width="105.7" x="-7.2" y="-6.4"></sliceSourceBounds></sfw></metadata><circle class="st0-recipe" cx="50" cy="50" r="50"/><g><g><g><path class="st1-recipe" d="M50.1,93.7c-18.7,0-36-12.4-41.3-31.3C2.4,39.6,15.8,16,38.5,9.6C48.9,6.7,60,7.8,69.6,12.8c1.2,0.6,1.6,2,1,3.2s-2,1.6-3.2,1c-8.6-4.4-18.4-5.4-27.7-2.8c-20.1,5.6-32,26.7-26.3,46.9s26.7,32.1,46.9,26.4s32.1-26.7,26.4-46.9c-1.1-3.9-2.8-7.6-5-10.9c-0.7-1.1-0.4-2.6,0.7-3.3c1.1-0.7,2.6-0.4,3.3,0.7c2.5,3.8,4.4,7.9,5.6,12.3c6.4,22.8-7,46.5-29.7,52.8C57.8,93.2,53.9,93.7,50.1,93.7z"/></g><g><path class="st1-recipe" d="M33.1,78.6c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.4l40.4-50.5c0.8-1,2.3-1.2,3.4-0.4c1,0.8,1.2,2.3,0.4,3.4L35,77.7C34.5,78.3,33.8,78.6,33.1,78.6z"/></g><g><g><path class="st2-recipe" d="M105.7,56.9"/></g></g></g><g><path class="st1-recipe" d="M73.7,54.2c-0.1,0-0.2,0-0.2,0c-1.3-0.2-2.3-1.4-2.2-2.7L74,23.9L47.6,39.8c-1.1,0.7-2.6,0.3-3.3-0.8c-0.7-1.1-0.3-2.6,0.8-3.3l34.5-20.8L76.1,52C76,53.2,74.9,54.2,73.7,54.2z"/></g></g></svg><div class="dcn-amount">-' + crypto_val + ' ' + token_symbol + '</div>' + usdHtml + '</div><div class="confirm-row to"> <div class="label inline-block">To:</div><div class="value inline-block">' + utils.checksumAddress(sending_to_address) + '</div></div><div class="confirm-row from"> <div class="label inline-block">From:</div><div class="value inline-block">' + global_state.account + '</div></div><div class="confirm-row nonce"> <div class="label inline-block">Nonce:</div><div class="value inline-block">' + pendingNonce + '</div></div><div class="confirm-row fee"> <div class="label inline-block">Ether fee:</div><div class="value inline-block"><div class="inline-block eth-value">' + parseFloat(eth_fee).toFixed(8) + '</div><div class="inline-block tx-settings-icon"><a href="javascript:void(0);"><svg id="e68760ed-3659-43b9-ad7b-73b5b189fe7a" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 56.81 61"><defs><clipPath id="f9d5df6d-58de-4fe9-baeb-2948a9aeab40"><rect class="bb542d8f-936a-4524-831e-8152ec1848dd" x="-3.59" y="-1.5" width="64" height="64"/></clipPath></defs><g class="e20091d8-5cd8-4fc6-97bc-34f6a53a9fd6"><path style="fill:#888;" d="M28.29,61a25,25,0,0,1-4.05-.3,2.46,2.46,0,0,1-1.83-1.63L20.8,53.51a2.8,2.8,0,0,0-1.06-1.36l-5.86-3.38a2.67,2.67,0,0,0-1.69-.22L6.67,50a2.48,2.48,0,0,1-2.33-.73A28,28,0,0,1,.16,42.1a2.47,2.47,0,0,1,.5-2.39l4.15-4.33a2.76,2.76,0,0,0,.64-1.6V27a2.6,2.6,0,0,0-.65-1.57L.66,21.31a2.43,2.43,0,0,1-.52-2.38A31.86,31.86,0,0,1,2,15.27a30.47,30.47,0,0,1,2.33-3.49A2.48,2.48,0,0,1,6.61,11l5.9,1.45a2.69,2.69,0,0,0,1.7-.24l5.86-3.38a2.67,2.67,0,0,0,1-1.35L22.6,1.93A2.4,2.4,0,0,1,24.4.29a27.62,27.62,0,0,1,8.22,0A2.42,2.42,0,0,1,34.41,2L35.89,7.5a2.67,2.67,0,0,0,1,1.35l5.86,3.38a2.63,2.63,0,0,0,1.68.22L50,11a2.44,2.44,0,0,1,2.33.73,27.84,27.84,0,0,1,4.3,7.48,2.46,2.46,0,0,1-.54,2.39L52.2,25.45A2.66,2.66,0,0,0,51.55,27v6.76a2.72,2.72,0,0,0,.65,1.58l3.94,3.94a2.46,2.46,0,0,1,.54,2.38,29.28,29.28,0,0,1-2,4,29,29,0,0,1-2.32,3.5,2.44,2.44,0,0,1-2.33.73l-5.24-1.4a2.67,2.67,0,0,0-1.69.22l-5.86,3.38a2.71,2.71,0,0,0-1,1.35l-1.46,5.44A2.48,2.48,0,0,1,33,60.61h0A25.92,25.92,0,0,1,28.29,61ZM12.68,47.49a3.62,3.62,0,0,1,1.7.41l5.86,3.39a3.67,3.67,0,0,1,1.52,1.94l1.61,5.56a1.48,1.48,0,0,0,1,.92,27.08,27.08,0,0,0,8.38-.08h0a1.49,1.49,0,0,0,1-.94l1.46-5.45a3.65,3.65,0,0,1,1.5-2l5.86-3.39a3.64,3.64,0,0,1,2.45-.32L50.31,49a1.42,1.42,0,0,0,1.3-.41,29.64,29.64,0,0,0,2.23-3.36,30,30,0,0,0,1.9-3.87,1.5,1.5,0,0,0-.3-1.35l-3.95-3.94a3.6,3.6,0,0,1-.94-2.28V27a3.64,3.64,0,0,1,.94-2.28l3.89-3.88a1.48,1.48,0,0,0,.3-1.34,26.75,26.75,0,0,0-4.12-7.17,1.45,1.45,0,0,0-1.31-.41l-5.52,1.48a3.57,3.57,0,0,1-2.44-.33L36.43,9.71a3.59,3.59,0,0,1-1.5-2L33.45,2.24a1.43,1.43,0,0,0-1-.93,26.61,26.61,0,0,0-7.87,0,1.4,1.4,0,0,0-1,.92l-1.5,5.56a3.54,3.54,0,0,1-1.5,2l-5.86,3.38a3.68,3.68,0,0,1-2.44.35L6.37,12a1.5,1.5,0,0,0-1.32.43,31.07,31.07,0,0,0-2.22,3.35,29.61,29.61,0,0,0-1.75,3.51,1.41,1.41,0,0,0,.29,1.32l4.14,4.14A3.64,3.64,0,0,1,6.45,27v6.76a3.73,3.73,0,0,1-.92,2.29L1.38,40.4a1.47,1.47,0,0,0-.28,1.35,26.44,26.44,0,0,0,4,6.9,1.41,1.41,0,0,0,1.3.41l5.52-1.48A3,3,0,0,1,12.68,47.49Zm15.72-3a14,14,0,1,1,14-14A14,14,0,0,1,28.4,44.53Zm0-27.06a13,13,0,1,0,13,13A13,13,0,0,0,28.4,17.47Z"/><path style="fill:#888;" d="M28.29,60.87a25.85,25.85,0,0,1-4.11-.31,4.3,4.3,0,0,1-3.29-3l-1.51-5.17s-.07-.07-.12-.11l-5.37-3.1s0,0-.09,0L8.74,50.61A4.27,4.27,0,0,1,4.5,49.27,27.7,27.7,0,0,1,.26,42a4.32,4.32,0,0,1,.9-4.33l3.86-4s0-.1,0-.16V27.27s0,0-.06-.08L1.2,23.4a4.23,4.23,0,0,1-1-4.35,29.26,29.26,0,0,1,1.84-3.71A31.23,31.23,0,0,1,4.44,11.8a4.32,4.32,0,0,1,4.21-1.37l5.48,1.35s.1,0,.15,0l5.3-3.07a.41.41,0,0,0,.1-.13l1.37-5.1a4.24,4.24,0,0,1,3.3-3,27.69,27.69,0,0,1,8.33,0,4.26,4.26,0,0,1,3.27,3l1.36,5a.6.6,0,0,0,.09.13l5.32,3.07.16,0,5-1.36a4.28,4.28,0,0,1,4.24,1.33,28.05,28.05,0,0,1,4.36,7.58,4.31,4.31,0,0,1-1,4.34L52,27.19a.67.67,0,0,0-.07.18v6.18s0,0,.06.07l3.61,3.61a4.29,4.29,0,0,1,1,4.33,30.43,30.43,0,0,1-2,4.1,31.86,31.86,0,0,1-2.36,3.53A4.28,4.28,0,0,1,48,50.54l-4.8-1.29-.18,0-5.3,3.06-.1.15-1.33,5a4.31,4.31,0,0,1-3.23,3h0A26.57,26.57,0,0,1,28.29,60.87Zm-2.88-4a25.3,25.3,0,0,0,6.33-.07L33,52.05a5.63,5.63,0,0,1,2.46-3.2l5.69-3.28a5.59,5.59,0,0,1,4-.53l4.51,1.21c.39-.54,1-1.48,1.61-2.51a29.91,29.91,0,0,0,1.48-2.91l-3.42-3.42a5.61,5.61,0,0,1-1.54-3.72V27.12a5.61,5.61,0,0,1,1.54-3.72L52.7,20a25.27,25.27,0,0,0-3.08-5.36L44.82,16a5.6,5.6,0,0,1-4-.53l-5.69-3.29A5.61,5.61,0,0,1,32.68,9L31.4,4.15a24.46,24.46,0,0,0-5.8,0L24.31,9a5.64,5.64,0,0,1-2.45,3.2l-5.69,3.28a5.71,5.71,0,0,1-4,.56L7,14.72A28.64,28.64,0,0,0,5.4,17.26c-.57,1-1.05,2-1.33,2.55L7.66,23.4A5.59,5.59,0,0,1,9.2,27.12v6.57a5.77,5.77,0,0,1-1.48,3.7l-3.65,3.8a24.17,24.17,0,0,0,3,5.14L11.85,45a5.65,5.65,0,0,1,4,.53l5.69,3.28A5.7,5.7,0,0,1,24,52ZM25,55.63h0Zm12.64-3.26h0ZM7.45,15.28h0ZM8.27,15ZM19.65,8.62h0Zm0,0h0Zm17.66,0h0ZM28.4,44.85A14.35,14.35,0,1,1,42.75,30.5,14.37,14.37,0,0,1,28.4,44.85Zm0-24.42A10.07,10.07,0,1,0,38.47,30.5,10.08,10.08,0,0,0,28.4,20.43Z"/></g></svg></a></div></div></div>';
-
-                                                    console.log(crypto_val, 'crypto_val');
-
-                                                    dApp.web3_1_0.eth.getBalance(global_state.account, function (error, eth_balance) {
-                                                        if (error) {
-                                                            console.log(error);
-                                                        } else {
-                                                            eth_balance = new Decimal(utils.fromWei(eth_balance));
-
-                                                            if (window.localStorage.getItem('keystore_file') != null) {
-                                                                //cached keystore path on mobile device or cached keystore file on browser
-                                                                transaction_popup_html += '<div class="container-fluid"><div class="row padding-top-25 cached-keystore-file"><div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">Secret password:</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">Confirm</a></div></div></div>';
-                                                                basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
-                                                                projectData.general_logic.bindTxSettings(visibleGasPriceNumber, nonce);
-
-                                                                $('.cached-keystore-file .confirm-transaction.keystore-file').click(function () {
-                                                                    var eth_fee_check;
-                                                                    if ($('.section-amount-to #active-crypto').val() == 'dcn') {
-                                                                        eth_fee_check = parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html());
-                                                                    } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
-                                                                        var crypto_val_decimal = new Decimal(crypto_val);
-                                                                        eth_fee_check = parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html()) + crypto_val_decimal;
-                                                                    }
-
-                                                                    console.log(eth_fee_check, 'eth_fee_check');
-                                                                    if (eth_fee_check > eth_balance) {
-                                                                        basic.showAlert('You don\'t have enough balance to sign this transaction.', '', true);
-                                                                        $('.transaction-confirmation-popup .on-change-result').html('');
-                                                                    } else {
-                                                                        if ($('.cached-keystore-file #your-secret-key-password').val().trim() == '') {
-                                                                            basic.showAlert('Please enter valid secret file password.', '', true);
-                                                                        } else {
-                                                                            showLoader('Hold on...<br>Your transaction is being processed.');
-
-                                                                            setTimeout(function () {
-                                                                                decryptKeystore(window.localStorage.getItem('keystore_file'), $('.cached-keystore-file #your-secret-key-password').val().trim(), function (success, to_string, error, error_message) {
-                                                                                    if (success) {
-                                                                                        submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, success);
-                                                                                    } else if (error) {
-                                                                                        basic.showAlert(error_message, '', true);
-                                                                                        hideLoader();
-                                                                                    }
-                                                                                });
-                                                                            }, 2000);
-                                                                        }
-                                                                    }
-                                                                });
-                                                            } else {
-                                                                //nothing is cached
-                                                                transaction_popup_html += '<div class="container-fluid proof-of-address padding-top-20 padding-bottom-20"> <div class="row fs-0"> <div class="col-xs-12 col-sm-5 inline-block padding-left-30 padding-left-xs-15 priv-key-btn"> <a href="javascript:void(0)" class="light-blue-white-btn text-center enter-private-key display-block-important fs-18 fs-xs-14 line-height-18"><span>Enter your<br class="show-on-xs"> Private Key<div class="fs-16 fs-xs-12">(not recommended)</div></span></a> </div><div class="col-xs-12 col-sm-2 text-center calibri-bold fs-20 fs-xs-16 inline-block or-label">or</div><div class="col-xs-12 col-sm-5 inline-block padding-right-30 padding-right-xs-15 keystore-btn"><div class="upload-file-container" data-id="upload-keystore-file"><input type="file" id="upload-keystore-file" class="custom-upload-keystore-file hide-input"/> <div class="btn-wrapper"></div></div></div></div><div class="row on-change-result"></div></div>';
-                                                                basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
-                                                                projectData.general_logic.bindTxSettings(visibleGasPriceNumber, nonce);
-
-                                                                //init private key btn logic
-                                                                $(document).on('click', '.enter-private-key', function () {
-                                                                    var eth_fee_check;
-                                                                    if ($('.section-amount-to #active-crypto').val() == 'dcn') {
-                                                                        eth_fee_check = parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html());
-                                                                    } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
-                                                                        var crypto_val_decimal = new Decimal(crypto_val);
-                                                                        eth_fee_check = parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html()) + crypto_val_decimal;
-                                                                    }
-
-                                                                    console.log(eth_fee_check, 'eth_fee_check');
-                                                                    if (eth_fee_check > eth_balance) {
-                                                                        basic.showAlert('You don\'t have enough balance to sign this transaction.', '', true);
-                                                                        $('.transaction-confirmation-popup .on-change-result').html('');
-                                                                    } else {
-                                                                        $('.proof-of-address #upload-keystore-file').val('');
-                                                                        $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-20"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-private-key">Your Private Key:</label><input type="text" id="your-private-key" maxlength="64" class="full-rounded"/></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction private-key">CONFIRM</a></div>');
-
-                                                                        $('#your-private-key').focus();
-                                                                        $('label[for="your-private-key"]').addClass('active-label');
-
-                                                                        $('.confirm-transaction.private-key').click(function () {
-                                                                            if ($('.proof-of-address #your-private-key').val().trim() == '') {
-                                                                                basic.showAlert('Please enter valid private key.', '', true);
-                                                                            } else {
-                                                                                showLoader('Hold on...<br>Your transaction is being processed.');
-
-                                                                                setTimeout(function () {
-                                                                                    var validating_private_key = validatePrivateKey($('.proof-of-address #your-private-key').val().trim());
-                                                                                    if (validating_private_key.success) {
-                                                                                        if (utils.checksumAddress(validating_private_key.success.address) == utils.checksumAddress(global_state.account)) {
-                                                                                            submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, new Buffer($('.proof-of-address #your-private-key').val().trim(), 'hex'));
-                                                                                        } else {
-                                                                                            basic.showAlert('Please enter private key related to your Wallet Address', '', true);
-                                                                                            hideLoader();
-                                                                                        }
-                                                                                    } else if (validating_private_key.error) {
-                                                                                        basic.showAlert(validating_private_key.message, '', true);
-                                                                                        hideLoader();
-                                                                                    }
-                                                                                }, 2000);
-                                                                            }
-                                                                        });
-                                                                    }
-                                                                });
-
-                                                                //init keystore btn logic
-                                                                styleKeystoreUploadBtnForTx(function (key) {
-                                                                    var eth_fee_check;
-                                                                    if ($('.section-amount-to #active-crypto').val() == 'dcn') {
-                                                                        eth_fee_check = parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html());
-                                                                    } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
-                                                                        var crypto_val_decimal = new Decimal(crypto_val);
-                                                                        eth_fee_check = parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html()) + crypto_val_decimal;
-                                                                    }
-
-                                                                    console.log(eth_fee_check, 'eth_fee_check');
-                                                                    if (eth_fee_check > eth_balance) {
-                                                                        basic.showAlert('You don\'t have enough balance to sign this transaction.', '', true);
-                                                                        $('.transaction-confirmation-popup .on-change-result').html('');
-                                                                        hideLoader();
-                                                                    } else {
-                                                                        submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, key);
-                                                                    }
-                                                                });
-                                                            }
-                                                            hideLoader();
-                                                        }
-                                                    });
-                                                }
-                                            }
-                                        });
-                                    });
-                                });
-                            });
                         });
                     }
                 }, 500);
@@ -82113,8 +82112,6 @@ var projectData = {
     general_logic: {
         bindTxSettings: function(visibleGasPriceNumber, nonce) {
             $('.tx-settings-icon').click(async function () {
-                console.log(nonce, 'nonce');
-
                 basic.showDialog('<div class="lato-bold fs-22 text-center padding-top-30 padding-bottom-20">Advanced settings</div><div class="padding-bottom-15 form-row"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label class="active-label" for="edit-gas-price">Gas price:</label><input type="text" id="edit-gas-price" maxlength="5" class="full-rounded light-blue-border" value="'+$('.tx-data-holder').attr('data-visibleGasPriceNumber')+'" data-value="'+$('.tx-data-holder').attr('data-visibleGasPriceNumber')+'"/></div></div><div class="padding-bottom-20 form-row"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label class="active-label" for="edit-nonce">Nonce:</label><input type="text" id="edit-nonce" maxlength="10" class="full-rounded light-blue-border" value="'+$('.tx-data-holder').attr('data-nonce')+'" data-value="'+$('.tx-data-holder').attr('data-nonce')+'" data-min-value="'+nonce+'"/></div></div><div class="fs-0 btns-container"><div class="inline-block fs-18 lato-bold width-50"><a href="javascript:void(0);" class="reset-settings"><img alt="Reset icon" itemprop="contentUrl" src="assets/images/reset-icon.svg" class="width-100 max-width-20"/> reset</a></div><div class="inline-block text-right width-50"><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border save-tx-settings padding-left-30 padding-right-30">SAVE</a></div></div>', 'tx-settings-popup', null, true);
 
                 $('.tx-settings-popup #edit-nonce').on('input paste change', function() {
@@ -82372,7 +82369,6 @@ function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver
     tx.sign(key);
     //submit the transaction
     dApp.web3_1_0.eth.sendSignedTransaction('0x' + tx.serialize().toString('hex'), function (err, transactionHash) {
-        console.log(err, 'err');
         hideLoader();
         basic.closeDialog();
 
@@ -83430,11 +83426,15 @@ $(document).on('click', '.open-settings', function () {
     if ($(window).width() < 768) {
         settings_html += '<div class="option-row"><a href="https://dentacoin.com/how-to-create-wallet" target="_blank" class="display-block-important data-external-link"><svg class="margin-right-5 inline-block max-width-30" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 73.9 73.9" style="enable-background:new 0 0 73.9 73.9;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="74" width="74" x="0" y="-0.1"></sliceSourceBounds></sfw></metadata><circle style="fill:none;stroke:#00B7E2;stroke-width:3;stroke-miterlimit:10;" cx="37" cy="37" r="35.5"/><path d="M46,38.6"/><path style="fill:#00B7E2;" d="M36.8,17.1c-5.8,0-11.4,3.8-11.4,11c0,1.9,1.6,3.4,3.4,3.4c1.9,0,3.4-1.6,3.4-3.4c0-3.8,4.1-3.9,4.5-3.9s4.5,0.2,4.5,3.9v0.8c0,1.6-0.8,2.8-2.2,3.6l-3,1.7c-1.7,0.9-2.7,2.7-2.7,4.5v2.8c0,1.9,1.6,3.4,3.4,3.4s3.4-1.6,3.4-3.4v-1.7l2.2-1.1c3.6-1.9,5.8-5.6,5.8-9.7v-0.9C48.2,20.9,42.4,17.1,36.8,17.1z"/><path style="fill:#00B7E2;" d="M36.8,48.9c-5.6,0-5.6,8.8,0,8.8S42.4,48.9,36.8,48.9z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold">Help Center</span></a><div class="fs-14 option-description">Having difficulties? Check frequently asked questions or contact us at <a href="mailto:admin@dentacoin.com" class="color-light-blue">admin@dentacoin.com</a>.</div></div>';
 
-        settings_bottom_html = '<div class="padding-top-10 fs-14">Don\'t forget to download and save your Backup File - there is no other way to log in next time.</div><div class="text-center padding-top-20 fs-14"><a class="color-light-blue data-external-link" href="https://dentacoin.com/assets/uploads/dentacoin-foundation.pdf" target="_blank">2019 Dentacoin Foundation.</a> All rights reserved.</div><div class="text-center fs-14"><a class="color-light-blue data-external-link" href="https://dentacoin.com/privacy-policy" target="_blank">Privacy Policy</a></div>';
+        settings_bottom_html = '<div class="padding-top-10 fs-14">Don\'t forget to download and save your Backup File - there is no other way to log in next time.</div><div class="text-center padding-top-20 fs-14"><a class="color-light-blue data-external-link" href="https://dentacoin.com/assets/uploads/dentacoin-foundation.pdf" target="_blank"><span class="current-year"></span> Dentacoin Foundation.</a> All rights reserved.</div><div class="text-center fs-14"><a class="color-light-blue data-external-link" href="https://dentacoin.com/privacy-policy" target="_blank">Privacy Policy</a></div>';
     }
 
     settings_html += '</div><div class="popup-footer text-center"><div><a href="javascript:void(0)" class="log-out light-blue-white-btn min-width-220"><svg xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 18.4" style="enable-background:new 0 0 16 18.4;" xml:space="preserve" class="margin-right-5 inline-block max-width-20"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="18.4" width="16" x="1" y="8.4"/></sfw></metadata><g><path class="st0" d="M2.5,0h10.6c1.4,0,2.5,1.1,2.5,2.5v3.2h-1.5V2.5c0-0.5-0.4-1-1-1H2.5c-0.5,0-1,0.4-1,1v13.4c0,0.5,0.4,1,1,1 h10.6c0.5,0,1-0.4,1-1v-3.2h1.5v3.2c0,1.4-1.1,2.5-2.5,2.5H2.5c-1.4,0-2.5-1.1-2.5-2.5V2.5C0,1.1,1.1,0,2.5,0z M11,7.5H6.2v3.4H11 v1.9l5-3.5l-5-3.5V7.5L11,7.5z"/></g></svg><span class="inline-block">Log out</span></a></div>' + settings_bottom_html + '</div>';
     basic.showDialog(settings_html, 'settings-popup', null, true);
+
+    if ($('.settings-popup .current-year').length) {
+        $('.settings-popup .current-year').html(new Date().getFullYear());
+    }
 
     if ($('.settings-popup .download-keystore').length) {
         $('.settings-popup .download-keystore').click(function () {

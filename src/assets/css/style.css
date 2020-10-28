@@ -4257,6 +4257,9 @@ img {
     right: 5px;
     font-size: 40px;
     top: 5px; }
+    @media screen and (max-width: 767px) {
+      .bootbox .bootbox-close-button {
+        top: 10px; } }
   .bootbox.download-mobile-app .phone-container {
     position: relative; }
     .bootbox.download-mobile-app .phone-container .absolute-content {
