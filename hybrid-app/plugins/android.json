@@ -47,6 +47,9 @@
     },
     "cordova-plugin-local-notification": {
       "PACKAGE_NAME": "com.dentacoin.wallet"
+    },
+    "cordova-plugin-splashscreen": {
+      "PACKAGE_NAME": "wallet.dentacoin.com"
     }
   },
   "dependent_plugins": {

@@ -22,7 +22,6 @@
         <icon width="48" height="48" density="hdpi" src="/app-resources/images/wallet-app-icon-48x48px.png"/>
         <icon width="72" height="72" density="xhdpi" src="/app-resources/images/wallet-app-icon-72x72px.png"/>
         <icon width="144" height="144" density="xxhdpi" src="/app-resources/images/wallet-app-icon-144x144px.png"/>
-        <preference name="SplashScreenDelay" value="0" />
     </platform>
     <platform name="ios">
         <allow-intent href="itms:*" />
@@ -87,7 +86,6 @@
         <splash src="app-resources/images/splash-screens/Wallet-loading-screens-2208x1242.png" width="2208" height="1242"/>
         <splash src="app-resources/images/splash-screens/Wallet-loading-screens-2436x1125.png" width="2436" height="1125"/>
         <splash src="app-resources/images/splash-screens/Wallet-loading-screens-2688x1242.png" width="2688" height="1242"/>
-        <preference name="SplashScreenDelay" value="2000" />
     </platform><!-- for iOS -->
     <feature name="SocialSharing">
         <param name="ios-package" value="SocialSharing" />
@@ -97,6 +95,7 @@
         <param name="android-package" value="nl.xservices.plugins.SocialSharing" />
     </feature>
     <preference name="SplashScreen" value="none" />
+    <preference name="SplashScreenDelay" value="2000" />
     <preference name="StatusBarOverlaysWebView" value="false" />
     <preference name="StatusBarBackgroundColor" value="#000000" />
     <preference name="StatusBarStyle" value="lightcontent" />
