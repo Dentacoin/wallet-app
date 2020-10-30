@@ -32,11 +32,9 @@ app-spend-page-pay-for-dental-services, app-spend-page-exchanges, app-spend-page
 }
 
 app-spend-page-pay-for-dental-services {
-    .main-wrapper {
-        padding: 0;
-    }
     iframe {
-        width: 100%;
+        width: 0;
+        min-width: 100%;
         height: 500px;
         border: 0;
     }
