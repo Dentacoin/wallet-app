@@ -95,7 +95,7 @@
         <param name="android-package" value="nl.xservices.plugins.SocialSharing" />
     </feature>
     <preference name="SplashScreen" value="none" />
-    <preference name="SplashScreenDelay" value="2000" />
+    <preference name="SplashScreenDelay" value="0" />
     <preference name="StatusBarOverlaysWebView" value="false" />
     <preference name="StatusBarBackgroundColor" value="#000000" />
     <preference name="StatusBarStyle" value="lightcontent" />
