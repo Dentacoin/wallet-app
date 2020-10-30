@@ -337,6 +337,10 @@
       font-weight: bold;
       height: 20px;
       line-height: 20px; }
+    @media screen and (max-width: 767px) {
+      .module.custom-google-label-style label {
+        height: 42px;
+        line-height: 42px; } }
   .module.custom-google-label-style .left-side {
     width: calc(100% - 100px);
     position: relative; }
@@ -361,6 +365,10 @@
       border-radius: 4px; }
     .module.custom-google-label-style input.light-blue-border, .module.custom-google-label-style textarea.light-blue-border {
       border: 2px solid #00b7e2; }
+    @media screen and (max-width: 767px) {
+      .module.custom-google-label-style input, .module.custom-google-label-style textarea {
+        height: 52px;
+        padding: 10px; } }
   .module.custom-google-label-style .input-label {
     width: 100px;
     text-align-last: center;
@@ -4542,6 +4550,9 @@ img {
     max-width: 800px; }
     .bootbox.transaction-confirmation-popup .modal-dialog .modal-body {
       padding: 1rem 0; }
+      @media screen and (max-width: 767px) {
+        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .bootbox-body {
+          padding-bottom: 300px; } }
       .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .title {
         font-size: 28px;
         font-family: "Calibri-Bold";
@@ -5633,36 +5644,35 @@ app-send-page .section-amount-to {
       display: inline-block;
       text-align: left; } }
 
-app-spend-page-pay-for-dental-services .mobile-nav a, app-spend-page-gift-cards .mobile-nav a, app-spend-page-exchanges .mobile-nav a, app-spend-page-pay-assurance-fees .mobile-nav a {
+app-spend-page-pay-for-dental-services .mobile-nav a, app-spend-page-exchanges .mobile-nav a, app-spend-page-pay-assurance-fees .mobile-nav a {
   display: none; }
 @media screen and (max-width: 767px) {
-  app-spend-page-pay-for-dental-services .main-wrapper, app-spend-page-gift-cards .main-wrapper, app-spend-page-exchanges .main-wrapper, app-spend-page-pay-assurance-fees .main-wrapper {
+  app-spend-page-pay-for-dental-services .main-wrapper, app-spend-page-exchanges .main-wrapper, app-spend-page-pay-assurance-fees .main-wrapper {
     -webkit-border-radius: 0;
     -moz-border-radius: 0;
     -ms-border-radius: 0;
     border-radius: 0; }
-  app-spend-page-pay-for-dental-services .module.spend-navigation, app-spend-page-gift-cards .module.spend-navigation, app-spend-page-exchanges .module.spend-navigation, app-spend-page-pay-assurance-fees .module.spend-navigation {
+  app-spend-page-pay-for-dental-services .module.spend-navigation, app-spend-page-exchanges .module.spend-navigation, app-spend-page-pay-assurance-fees .module.spend-navigation {
     display: none; }
-  app-spend-page-pay-for-dental-services .mobile-nav a, app-spend-page-gift-cards .mobile-nav a, app-spend-page-exchanges .mobile-nav a, app-spend-page-pay-assurance-fees .mobile-nav a {
+  app-spend-page-pay-for-dental-services .mobile-nav a, app-spend-page-exchanges .mobile-nav a, app-spend-page-pay-assurance-fees .mobile-nav a {
     display: inline-block;
     width: 30px;
     vertical-align: middle; }
-    app-spend-page-pay-for-dental-services .mobile-nav a img, app-spend-page-gift-cards .mobile-nav a img, app-spend-page-exchanges .mobile-nav a img, app-spend-page-pay-assurance-fees .mobile-nav a img {
+    app-spend-page-pay-for-dental-services .mobile-nav a img, app-spend-page-exchanges .mobile-nav a img, app-spend-page-pay-assurance-fees .mobile-nav a img {
       max-width: 25px; }
-  app-spend-page-pay-for-dental-services .mobile-nav h1, app-spend-page-gift-cards .mobile-nav h1, app-spend-page-exchanges .mobile-nav h1, app-spend-page-pay-assurance-fees .mobile-nav h1 {
+  app-spend-page-pay-for-dental-services .mobile-nav h1, app-spend-page-exchanges .mobile-nav h1, app-spend-page-pay-assurance-fees .mobile-nav h1 {
     padding-left: 5px;
     padding-right: 5px;
     width: calc(100% - 60px);
     display: inline-block;
     vertical-align: middle; } }
 
+app-spend-page-pay-for-dental-services .main-wrapper {
+  padding: 0; }
 app-spend-page-pay-for-dental-services iframe {
   width: 100%;
-  height: 580px;
+  height: 500px;
   border: 0; }
-  @media screen and (max-width: 767px) {
-    app-spend-page-pay-for-dental-services iframe {
-      height: 630px; } }
 
 app-spend-page-exchanges .camping-for-exchanges {
   font-size: 0; }
@@ -5692,7 +5702,7 @@ app-spend-page-exchanges .camping-for-exchanges {
         display: block; } }
 
 @media screen and (max-width: 767px) {
-  app-spend-page-pay-assurance-fees video, app-spend-page-gift-cards video {
+  app-spend-page-pay-assurance-fees video {
     height: 220px; } }
 
 /*# sourceMappingURL=style.css.map */

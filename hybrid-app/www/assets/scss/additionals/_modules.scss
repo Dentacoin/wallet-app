@@ -104,6 +104,10 @@
                 height: 20px;
                 line-height: 20px;
             }
+            @include breakpoint($xs) {
+                height: 42px;
+                line-height: 42px;
+            }
         }
         .left-side {
             width: calc(100% - 100px);
@@ -128,6 +132,10 @@
             }
             &.light-blue-border {
                 border: 2px solid $light_blue;
+            }
+            @include breakpoint($xs) {
+                height: 52px;
+                padding: 10px;
             }
         }
         .input-label {
