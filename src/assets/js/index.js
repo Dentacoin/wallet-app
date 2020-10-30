@@ -1418,6 +1418,7 @@ var projectData = {
                                                                                 eth_fee_check = crypto_val_decimal.plus(parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html()));
                                                                             }
 
+                                                                            console.log(eth_balance, 'eth_balance');
                                                                             console.log(eth_fee_check.toString(), 'eth_fee_check');
 
                                                                             if (eth_balance.lessThan(eth_fee_check)) {
@@ -1458,6 +1459,7 @@ var projectData = {
                                                                                 eth_fee_check = crypto_val_decimal.plus(parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html()));
                                                                             }
 
+                                                                            console.log(eth_balance, 'eth_balance');
                                                                             console.log(eth_fee_check.toString(), 'eth_fee_check');
 
                                                                             if (eth_balance.lessThan(eth_fee_check)) {
@@ -1505,6 +1507,7 @@ var projectData = {
                                                                                 eth_fee_check = crypto_val_decimal.plus(parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html()));
                                                                             }
 
+                                                                            console.log(eth_balance, 'eth_balance');
                                                                             console.log(eth_fee_check.toString(), 'eth_fee_check');
 
                                                                             if (eth_balance.lessThan(eth_fee_check)) {

@@ -337,6 +337,10 @@
       font-weight: bold;
       height: 20px;
       line-height: 20px; }
+    @media screen and (max-width: 767px) {
+      .module.custom-google-label-style label {
+        height: 42px;
+        line-height: 42px; } }
   .module.custom-google-label-style .left-side {
     width: calc(100% - 100px);
     position: relative; }
@@ -361,6 +365,10 @@
       border-radius: 4px; }
     .module.custom-google-label-style input.light-blue-border, .module.custom-google-label-style textarea.light-blue-border {
       border: 2px solid #00b7e2; }
+    @media screen and (max-width: 767px) {
+      .module.custom-google-label-style input, .module.custom-google-label-style textarea {
+        height: 52px;
+        padding: 10px; } }
   .module.custom-google-label-style .input-label {
     width: 100px;
     text-align-last: center;
@@ -4542,6 +4550,9 @@ img {
     max-width: 800px; }
     .bootbox.transaction-confirmation-popup .modal-dialog .modal-body {
       padding: 1rem 0; }
+      @media screen and (max-width: 767px) {
+        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .bootbox-body {
+          padding-bottom: 300px; } }
       .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .title {
         font-size: 28px;
         font-family: "Calibri-Bold";

@@ -975,6 +975,11 @@ img {
             max-width: 800px;
             .modal-body {
                 padding: 1rem 0;
+                @include breakpoint($xs) {
+                    .bootbox-body {
+                        padding-bottom: 300px;
+                    }
+                }
                 .title {
                     font-size: 28px;
                     font-family: "Calibri-Bold";
