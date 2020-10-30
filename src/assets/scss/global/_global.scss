@@ -15,6 +15,22 @@ body {
     &.modal-open {
         overflow: hidden;
     }
+    &.hybrid-app {
+        * {
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        input, textarea {
+            -webkit-user-select: auto !important;
+            -khhybrtml-user-select: auto !important;
+            -moz-user-select: auto !important;
+            -ms-user-select: auto !important;
+            user-select: auto !important;
+        }
+    }
 }
 
 @for $i from 0 through 80 {

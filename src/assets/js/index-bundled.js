@@ -82698,6 +82698,7 @@ function setGlobalVariables() {
     }
     // variable to track if the wallet is loaded as mobile application
     is_hybrid = $('#main-container').attr('hybrid') == 'true';
+    $('body').addClass('hybrid-app');
 }
 
 //checking if metamask or if saved current_account in the local storage. If both are false then show custom login popup with CREATE / IMPORT logic

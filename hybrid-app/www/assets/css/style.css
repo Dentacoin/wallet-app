@@ -427,6 +427,18 @@ body {
     overflow: visible !important; }
   body.modal-open {
     overflow: hidden; }
+  body.hybrid-app * {
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none; }
+  body.hybrid-app input, body.hybrid-app textarea {
+    -webkit-user-select: auto !important;
+    -khhybrtml-user-select: auto !important;
+    -moz-user-select: auto !important;
+    -ms-user-select: auto !important;
+    user-select: auto !important; }
 
 .fs-0 {
   font-size: 0px !important; }
