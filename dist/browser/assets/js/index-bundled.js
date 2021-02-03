@@ -93822,7 +93822,7 @@ function initAccountChecker() {
             if (passwordWarningShow) {
                 passwordWarningShow = false;
 
-                $('.custom-auth-popup .popup-left .wallet-creation-warning').html('<div class="color-warning-red fs-14">Keep your password and backup file safe!</div><div class="padding-bottom-15 fs-14">NOBODY CAN RESET THEM IF LOST. To access your wallet, you need both the password and the backup file which will be automatically downloaded on your device.</div>');
+                $('.custom-auth-popup .popup-left .wallet-creation-warning').addClass('max-width-300 margin-left-right-auto').html('<div class="color-warning-red fs-14">Keep your password and backup file safe!</div><div class="padding-bottom-15 fs-14">NOBODY CAN RESET THEM IF LOST. To access your wallet, you need both the password and the backup file which will be automatically downloaded on your device.</div>');
             }
         });
 
