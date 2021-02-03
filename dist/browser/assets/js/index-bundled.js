@@ -80439,6 +80439,11 @@ var dApp = {
 
             dApp.web3_1_0 = getWeb3(new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/c6ab28412b494716bc5315550c0d4071'));
             dApp.web3_1_0_assurance = getWeb3(new Web3.providers.HttpProvider(assurance_config.infura_node));
+
+            dApp.web3_1_0.eth.getCode("0x08d32b0da63e2c3bcf8019c9c5d849d7a9d791e6", function(err, res) {
+                console.log(err, res);
+            });
+
             continueWithContractInstanceInit();
         }
 

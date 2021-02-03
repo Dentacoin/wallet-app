@@ -28,7 +28,13 @@
     "cordova-plugin-inappbrowser": {
       "PACKAGE_NAME": "wallet.dentacoin.com"
     },
+    "cordova-plugin-local-notification": {
+      "PACKAGE_NAME": "wallet.dentacoin.com"
+    },
     "cordova-plugin-network-information": {
+      "PACKAGE_NAME": "wallet.dentacoin.com"
+    },
+    "cordova-plugin-splashscreen": {
       "PACKAGE_NAME": "wallet.dentacoin.com"
     },
     "cordova-plugin-statusbar": {
@@ -44,20 +50,14 @@
     "phonegap-plugin-barcodescanner": {
       "ANDROID_SUPPORT_V4_VERSION": "27.+",
       "PACKAGE_NAME": "wallet.dentacoin.com"
-    },
-    "cordova-plugin-local-notification": {
-      "PACKAGE_NAME": "com.dentacoin.wallet"
-    },
-    "cordova-plugin-splashscreen": {
-      "PACKAGE_NAME": "wallet.dentacoin.com"
     }
   },
   "dependent_plugins": {
-    "es6-promise-plugin": {
+    "cordova-plugin-badge": {
       "PACKAGE_NAME": "wallet.dentacoin.com"
     },
-    "cordova-plugin-badge": {
-      "PACKAGE_NAME": "com.dentacoin.wallet"
+    "es6-promise-plugin": {
+      "PACKAGE_NAME": "wallet.dentacoin.com"
     }
   }
 }
