@@ -594,6 +594,9 @@ var utils = {
     },
     prepareDcnPrice: function (price) {
         return 1 / parseInt(parseInt(price) / 100);
+    },
+    getGasPrice: async function () {
+        return await $.getJSON('https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=' + config_variable.etherscan_api_key);
     }
 };
 
@@ -1150,7 +1153,8 @@ var projectData = {
                     }
 
 
-                    var ethgasstation_json = await $.getJSON('https://ethgasstation.info/json/ethgasAPI.json');
+                    var gasPriceObject = await projectData.utils.getGasPrice();
+                    // var ethgasstation_json = await $.getJSON('https://ethgasstation.info/json/ethgasAPI.json');
                     // var gasPrice = await dApp.web3_1_0.eth.getGasPrice();
 
                     function bindSendPageElementsEvents() {
@@ -1255,9 +1259,9 @@ var projectData = {
 
                                                         var ethSendGasEstimationNumber = new BigNumber(ethSendGasEstimation);
                                                         //calculating the fee from the gas price and the estimated gas price
-                                                        var on_popup_load_gwei = ethgasstation_json.average;
+                                                        var on_popup_load_gwei = gasPriceObject.result.SafeGasPrice;
                                                         //adding 10% of the outcome just in case transactions don't take so long
-                                                        var on_popup_load_gas_price = on_popup_load_gwei * 100000000 + ((on_popup_load_gwei * 100000000) * 0.1);
+                                                        var on_popup_load_gas_price = on_popup_load_gwei * 1000000000 + ((on_popup_load_gwei * 1000000000) * 0.1);
                                                         var cost = ethSendGasEstimationNumber * on_popup_load_gas_price;
 
                                                         var eth_fee = utils.fromWei(cost.toString(), 'ether');
@@ -1373,9 +1377,9 @@ var projectData = {
                                                                 gasLimit = Math.round(gasLimit + (gasLimit * 0.1));
 
                                                                 //calculating the fee from the gas price and the estimated gas price
-                                                                on_popup_load_gwei = ethgasstation_json.average;
+                                                                on_popup_load_gwei = gasPriceObject.result.SafeGasPrice;
                                                                 //adding 10% of the outcome just in case transactions don't take so long
-                                                                on_popup_load_gas_price = on_popup_load_gwei * 100000000 + ((on_popup_load_gwei * 100000000) * 10 / 100);
+                                                                on_popup_load_gas_price = on_popup_load_gwei * 1000000000 + ((on_popup_load_gwei * 1000000000) * 10 / 100);
                                                                 visibleGasPriceNumber = on_popup_load_gas_price / 1000000000;
                                                             } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
                                                                 token_symbol = 'ETH';
@@ -1384,9 +1388,9 @@ var projectData = {
                                                                 });
 
                                                                 //calculating the fee from the gas price and the estimated gas price
-                                                                on_popup_load_gwei = ethgasstation_json.average;
+                                                                on_popup_load_gwei = gasPriceObject.result.SafeGasPrice;
                                                                 //adding 10% of the outcome just in case transactions don't take so long
-                                                                on_popup_load_gas_price = on_popup_load_gwei * 100000000 + ((on_popup_load_gwei * 100000000) * 10 / 100);
+                                                                on_popup_load_gas_price = on_popup_load_gwei * 1000000000 + ((on_popup_load_gwei * 1000000000) * 10 / 100);
                                                                 visibleGasPriceNumber = on_popup_load_gas_price / 1000000000;
                                                             }
 
