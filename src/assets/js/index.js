@@ -677,6 +677,7 @@ var projectData = {
             projectData.requests.getMinimumUsdValueFromIndacoin(function (minimumIndacoinUsdForTransaction) {
                 // rounding to 5 or 0
                 minimumIndacoinUsdForTransaction = Math.ceil(minimumIndacoinUsdForTransaction / 5) * 5;
+                $('.min-usd-amount').html(minimumIndacoinUsdForTransaction);
 
                 showMobileAppBannerForDesktopBrowsers();
 
