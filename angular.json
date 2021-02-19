@@ -72,6 +72,10 @@
                 {
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.hybrid.ts"
+                },
+                {
+                  "replace": "src/index.html",
+                  "with": "src/index.hybrid.html"
                 }
               ]
             }

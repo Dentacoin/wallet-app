@@ -13,7 +13,11 @@
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
-        gtag('config', 'UA-108398439-3');
+        if (document.cookie.indexOf('performance_cookies') == -1) {
+            gtag('config', 'UA-108398439-3', {'anonymize_ip': true});
+        } else {
+            gtag('config', 'UA-108398439-3');
+        }
     </script>
 <link rel="stylesheet" href="styles.eeb1426d86481544f71d.css"></head>
 <body>
