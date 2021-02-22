@@ -36,11 +36,10 @@ public class NativeToJsMessageQueue {
     // exec() is asynchronous. Set this to true when running bridge benchmarks.
     static final boolean DISABLE_EXEC_CHAINING = false;
 
-    // A hopefully reasonable upper limit of how much combined payload data
-    // to send to the JavaScript in one shot.
-    // This currently only chops up on message boundaries.
-    // It may be useful to split and reassemble response messages someday.
-    private static int COMBINED_RESPONSE_CUTOFF = 16 * 1024 * 1024;
+    // Arbitrarily chosen upper limit for how much data to send to JS in one shot.
+    // This currently only chops up on message boundaries. It may be useful
+    // to allow it to break up messages.
+    private static int MAX_PAYLOAD_SIZE = 50 * 1024 * 10240;
 
     /**
      * When true, the active listener is not fired upon enqueue. When set to false,
@@ -125,10 +124,7 @@ public class NativeToJsMessageQueue {
 
     /**
      * Combines and returns queued messages combined into a single string.
-     *
-     * Combines as many messages as possible, without exceeding
-     * COMBINED_RESPONSE_CUTOFF in case of multiple response messages.
-     *
+     * Combines as many messages as possible, while staying under MAX_PAYLOAD_SIZE.
      * Returns null if the queue is empty.
      */
     public String popAndEncode(boolean fromOnlineEvent) {
@@ -144,10 +140,7 @@ public class NativeToJsMessageQueue {
             int numMessagesToSend = 0;
             for (JsMessage message : queue) {
                 int messageSize = calculatePackedMessageLength(message);
-                if (numMessagesToSend > 0 &&
-                    COMBINED_RESPONSE_CUTOFF > 0 &&
-                    totalPayloadLen + messageSize > COMBINED_RESPONSE_CUTOFF
-                   ) {
+                if (numMessagesToSend > 0 && totalPayloadLen + messageSize > MAX_PAYLOAD_SIZE && MAX_PAYLOAD_SIZE > 0) {
                     break;
                 }
                 totalPayloadLen += messageSize;
@@ -182,10 +175,7 @@ public class NativeToJsMessageQueue {
             int numMessagesToSend = 0;
             for (JsMessage message : queue) {
                 int messageSize = message.calculateEncodedLength() + 50; // overestimate.
-                if (numMessagesToSend > 0 &&
-                    COMBINED_RESPONSE_CUTOFF > 0 &&
-                    totalPayloadLen + messageSize > COMBINED_RESPONSE_CUTOFF
-                   ) {
+                if (numMessagesToSend > 0 && totalPayloadLen + messageSize > MAX_PAYLOAD_SIZE && MAX_PAYLOAD_SIZE > 0) {
                     break;
                 }
                 totalPayloadLen += messageSize;

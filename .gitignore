@@ -10,7 +10,13 @@
 /node_modules
 /src/assets/js/config.js
 /dist/browser/assets/js/config.js
-hybrid-app/platforms/
+/hybrid-app/google-services.json
+/hybrid-app/GoogleService-Info.plist
+
+
+hybrid-app/platforms
+/hybrid-app/plugins/cordova-plugin-firebase-lib
+/hybrid-app/plugins/cordova-plugin-fcm-with-dependecy-updated
 
 # profiling files
 chrome-profiler-events.json
