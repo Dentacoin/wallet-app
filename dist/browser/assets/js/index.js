@@ -31,10 +31,15 @@ window.addEventListener('load', function () {
 
 });
 
+// event called only on hybrid app
 document.addEventListener('deviceready', function () {
     console.log('================= deviceready ===================');
 
+    // overwrite window.open to work with inappbrowser
     window.open = cordova.InAppBrowser.open;
+
+    // start hybrid app analytics tracker
+    cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
 
     //=================================== internet connection check ONLY for MOBILE DEVICES ===================================
 
@@ -107,7 +112,7 @@ var custom_popover_interval;
 var request_response = {};
 var request_interval_for_rest_of_transaction_history;
 //by this variable we recognize is project is loaded from web browser or like hybrid app
-var is_hybrid;
+var is_hybrid = $('body').hasClass('hybrid-app');
 var meta_mask_installed = false;
 var temporally_timestamps = {};
 var global_state = {};
@@ -524,6 +529,10 @@ var bidali_lib_loaded = false;
 var projectData = {
     pages: {
         homepage: function () {
+            if (is_hybrid) {
+                cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
+            }
+
             if (typeof(global_state.account) != 'undefined') {
                 showMobileAppBannerForDesktopBrowsers();
 
@@ -674,6 +683,10 @@ var projectData = {
             }
         },
         buy_page: function () {
+            if (is_hybrid) {
+                cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
+            }
+
             projectData.requests.getMinimumUsdValueFromIndacoin(function (minimumIndacoinUsdForTransaction) {
                 // rounding to 5 or 0
                 minimumIndacoinUsdForTransaction = Math.ceil(minimumIndacoinUsdForTransaction / 5) * 5;
@@ -837,6 +850,10 @@ var projectData = {
             });
         },
         send_page: function () {
+            if (is_hybrid) {
+                cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
+            }
+
             if (typeof(global_state.account) != 'undefined') {
                 showMobileAppBannerForDesktopBrowsers();
 
@@ -1324,24 +1341,18 @@ var projectData = {
 
                                                                 // adding 10 percent to the gas limit just in case
                                                                 gasLimit = Math.round(gasLimit + (gasLimit * 0.1));
-
-                                                                //calculating the fee from the gas price and the estimated gas price
-                                                                on_popup_load_gwei = gasPriceObject.result.SafeGasPrice;
-                                                                //adding 10% of the outcome just in case transactions don't take so long
-                                                                on_popup_load_gas_price = on_popup_load_gwei * 1000000000 + ((on_popup_load_gwei * 1000000000) * 10 / 100);
-                                                                visibleGasPriceNumber = on_popup_load_gas_price / 1000000000;
                                                             } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
                                                                 token_symbol = 'ETH';
                                                                 gasLimit = await dApp.web3_1_0.eth.estimateGas({
                                                                     to: sending_to_address
                                                                 });
-
-                                                                //calculating the fee from the gas price and the estimated gas price
-                                                                on_popup_load_gwei = gasPriceObject.result.SafeGasPrice;
-                                                                //adding 10% of the outcome just in case transactions don't take so long
-                                                                on_popup_load_gas_price = on_popup_load_gwei * 1000000000 + ((on_popup_load_gwei * 1000000000) * 10 / 100);
-                                                                visibleGasPriceNumber = on_popup_load_gas_price / 1000000000;
                                                             }
+
+                                                            //calculating the fee from the gas price and the estimated gas price
+                                                            on_popup_load_gwei = gasPriceObject.result.SafeGasPrice;
+                                                            //adding 10% of the outcome just in case transactions don't take so long
+                                                            on_popup_load_gas_price = on_popup_load_gwei * 1000000000 + ((on_popup_load_gwei * 1000000000) * 10 / 100);
+                                                            visibleGasPriceNumber = on_popup_load_gas_price / 1000000000;
 
                                                             if (usd_val == '') {
                                                                 var usdHtml = '';
@@ -1497,7 +1508,10 @@ var projectData = {
             }
         },
         spend_page_dental_services: function () {
-            console.log('spend_page_dental_services');
+            if (is_hybrid) {
+                cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
+            }
+
             if (iframeHeightListenerInit) {
                 iframeHeightListenerInit = false;
 
@@ -1516,6 +1530,10 @@ var projectData = {
             showMobileAppBannerForDesktopBrowsers();
         },
         spend_page_gift_cards: function () {
+            if (is_hybrid) {
+                cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
+            }
+
             showMobileAppBannerForDesktopBrowsers();
 
             if (!bidali_lib_loaded) {
@@ -1550,6 +1568,10 @@ var projectData = {
             }
         },
         spend_page_exchanges: function () {
+            if (is_hybrid) {
+                cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
+            }
+
             showMobileAppBannerForDesktopBrowsers();
             showLoader();
 
@@ -1574,6 +1596,10 @@ var projectData = {
             });
         },
         spend_page_assurance_fees: function () {
+            if (is_hybrid) {
+                cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
+            }
+
             showMobileAppBannerForDesktopBrowsers();
 
             if (is_hybrid) {
@@ -2602,7 +2628,7 @@ function setGlobalVariables() {
         assurance_config = assurance_config_temp;
     }
     // variable to track if the wallet is loaded as mobile application
-    is_hybrid = $('#main-container').attr('hybrid') == 'true';
+    // is_hybrid = $('#main-container').attr('hybrid') == 'true';
     $('body').addClass('hybrid-app');
 }
 
@@ -3871,17 +3897,27 @@ function checkIfLoadingFromMobileBrowser() {
 
 //method to fire google analytics event
 function fireGoogleAnalyticsEvent(category, action, label, value) {
-    var event_obj = {
-        'event_action': action,
-        'event_category': category,
-        'event_label': label
-    };
+    console.log('fireGoogleAnalyticsEvent');
+    if (is_hybrid) {
+        if (value != undefined) {
+            valueProperty = value;
+            cordova.plugins.firebase.analytics.logEvent(category, {action: action, label: label, value: value});
+        } else {
+            cordova.plugins.firebase.analytics.logEvent(category, {action: action, label: label});
+        }
+    } else {
+        var event_obj = {
+            'event_action': action,
+            'event_category': category,
+            'event_label': label
+        };
 
-    if (value != undefined) {
-        event_obj.value = value;
+        if (value != undefined) {
+            event_obj.value = value;
+        }
+
+        gtag('event', label, event_obj);
     }
-
-    gtag('event', label, event_obj);
 }
 
 //custom router camping for html changes, because old Android versions do not recognize Angular router
