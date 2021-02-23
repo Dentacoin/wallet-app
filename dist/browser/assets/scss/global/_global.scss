@@ -568,6 +568,7 @@ img {
     position: fixed;
     bottom: 0;
     display: none;
+    z-index: 100;
     background-color: white;
     nav {
         ul {
@@ -656,6 +657,9 @@ img {
         @include breakpoint($xs) {
             top: 10px;
         }
+    }
+    &.overlap-loading-popup {
+        z-index: 10050;
     }
     &.download-mobile-app {
         .phone-container {

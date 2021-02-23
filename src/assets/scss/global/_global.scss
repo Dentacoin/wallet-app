@@ -568,6 +568,7 @@ img {
     position: fixed;
     bottom: 0;
     display: none;
+    z-index: 100;
     background-color: white;
     nav {
         ul {

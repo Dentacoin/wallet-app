@@ -4193,6 +4193,7 @@ img {
   position: fixed;
   bottom: 0;
   display: none;
+  z-index: 100;
   background-color: white; }
   .camp-for-fixed-mobile-nav nav ul li {
     width: 25%;
@@ -4280,6 +4281,8 @@ img {
     @media screen and (max-width: 767px) {
       .bootbox .bootbox-close-button {
         top: 10px; } }
+  .bootbox.overlap-loading-popup {
+    z-index: 10050; }
   .bootbox.download-mobile-app .phone-container {
     position: relative; }
     .bootbox.download-mobile-app .phone-container .absolute-content {
