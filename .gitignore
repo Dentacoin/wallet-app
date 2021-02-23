@@ -24,6 +24,7 @@ hybrid-app/platforms
 /hybrid-app/plugins/cordova-plugin-fcm-with-dependecy-updated
 /hybrid-app/plugins/cordova-plugin-androidx
 /hybrid-app/plugins/cordova-plugin-androidx-adapter
+/hybrid-app/plugins/cordova-support-android-plugin
 
 # profiling files
 chrome-profiler-events.json
