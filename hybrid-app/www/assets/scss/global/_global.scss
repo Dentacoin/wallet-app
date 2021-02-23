@@ -657,6 +657,9 @@ img {
             top: 10px;
         }
     }
+    &.overlap-loading-popup {
+        z-index: 10050;
+    }
     &.download-mobile-app {
         .phone-container {
             position: relative;

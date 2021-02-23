@@ -4280,6 +4280,8 @@ img {
     @media screen and (max-width: 767px) {
       .bootbox .bootbox-close-button {
         top: 10px; } }
+  .bootbox.overlap-loading-popup {
+    z-index: 10050; }
   .bootbox.download-mobile-app .phone-container {
     position: relative; }
     .bootbox.download-mobile-app .phone-container .absolute-content {
