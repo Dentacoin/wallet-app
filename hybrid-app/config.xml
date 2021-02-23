@@ -86,7 +86,8 @@
         <splash src="app-resources/images/splash-screens/Wallet-loading-screens-2208x1242.png" width="2208" height="1242"/>
         <splash src="app-resources/images/splash-screens/Wallet-loading-screens-2436x1125.png" width="2436" height="1125"/>
         <splash src="app-resources/images/splash-screens/Wallet-loading-screens-2688x1242.png" width="2688" height="1242"/>
-    </platform><!-- for iOS -->
+    </platform>
+    <!-- for iOS -->
     <feature name="SocialSharing">
         <param name="ios-package" value="SocialSharing" />
     </feature>
@@ -101,4 +102,6 @@
     <preference name="StatusBarStyle" value="lightcontent" />
     <access origin="*"/>
     <allow-navigation href="https://dentacoin.com/*"/>
+    <preference name="scheme" value="app" />
+    <preference name="hostname" value="localhost" />
 </widget>
