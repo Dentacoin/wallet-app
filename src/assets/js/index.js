@@ -3902,13 +3902,12 @@ function checkIfLoadingFromMobileBrowser() {
 
 //method to fire google analytics event
 function fireGoogleAnalyticsEvent(category, action, label, value) {
-    console.log('fireGoogleAnalyticsEvent');
+    console.log('fireGoogleAnalyticsEvent', category, action, label, value);
     if (is_hybrid) {
         if (value != undefined) {
-            valueProperty = value;
-            cordova.plugins.firebase.analytics.logEvent(category, {action: action, label: label, value: value});
+            cordova.plugins.firebase.analytics.logEvent('my_event', {category: category, action: action, label: label, value: value});
         } else {
-            cordova.plugins.firebase.analytics.logEvent(category, {action: action, label: label});
+            cordova.plugins.firebase.analytics.logEvent('my_event', {category: category, action: action, label: label});
         }
     } else {
         var event_obj = {
