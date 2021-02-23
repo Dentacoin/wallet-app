@@ -1,28 +1,28 @@
 {
-  "_from": "cordova-plugin-inappbrowser@3.1.0",
-  "_id": "cordova-plugin-inappbrowser@3.1.0",
+  "_from": "cordova-plugin-inappbrowser@5.0.0",
+  "_id": "cordova-plugin-inappbrowser@5.0.0",
   "_inBundle": false,
-  "_integrity": "sha512-YqrZfYgbGTS20SFID0mrRxud312VH072QVlFonCAkPgtGg1Svy7lELOCNFd+KU7t4mVtZeTEjZPEeefvjaetwQ==",
+  "_integrity": "sha512-MqnpmUQ/iy6hxtIGDdlIhy8aNi1pNanLATpbnkk7uCqW9YQ4rH/dGK9zESbZ50pUi2A2D2QMjBXNV175TJK5OQ==",
   "_location": "/cordova-plugin-inappbrowser",
   "_phantomChildren": {},
   "_requested": {
     "type": "version",
     "registry": true,
-    "raw": "cordova-plugin-inappbrowser@3.1.0",
+    "raw": "cordova-plugin-inappbrowser@5.0.0",
     "name": "cordova-plugin-inappbrowser",
     "escapedName": "cordova-plugin-inappbrowser",
-    "rawSpec": "3.1.0",
+    "rawSpec": "5.0.0",
     "saveSpec": null,
-    "fetchSpec": "3.1.0"
+    "fetchSpec": "5.0.0"
   },
   "_requiredBy": [
     "#USER",
     "/"
   ],
-  "_resolved": "https://registry.npmjs.org/cordova-plugin-inappbrowser/-/cordova-plugin-inappbrowser-3.1.0.tgz",
-  "_shasum": "61520b8de3eb75b37842d2340f5d90a84a073747",
-  "_spec": "cordova-plugin-inappbrowser@3.1.0",
-  "_where": "D:\\wamp\\www\\wallet-v2\\hybrid-app",
+  "_resolved": "https://registry.npmjs.org/cordova-plugin-inappbrowser/-/cordova-plugin-inappbrowser-5.0.0.tgz",
+  "_shasum": "2f1cf3ebfecf43bdd175a74743ee426832054951",
+  "_spec": "cordova-plugin-inappbrowser@5.0.0",
+  "_where": "/Users/dentacoin/Documents/projects/wallet-app/hybrid-app",
   "author": {
     "name": "Apache Software Foundation"
   },
@@ -43,13 +43,7 @@
   "deprecated": false,
   "description": "Cordova InAppBrowser Plugin",
   "devDependencies": {
-    "eslint": "^4.0.0",
-    "eslint-config-semistandard": "^11.0.0",
-    "eslint-config-standard": "^10.2.1",
-    "eslint-plugin-import": "^2.3.0",
-    "eslint-plugin-node": "^5.0.0",
-    "eslint-plugin-promise": "^3.5.0",
-    "eslint-plugin-standard": "^3.0.1"
+    "@cordova/eslint-config": "^3.0.0"
   },
   "engines": {
     "cordovaDependencies": {
@@ -57,6 +51,15 @@
         "cordova": ">=3.1.0"
       },
       "4.0.0": {
+        "cordova": ">=3.1.0",
+        "cordova-ios": ">=4.0.0"
+      },
+      "5.0.0": {
+        "cordova": ">=9.0.0",
+        "cordova-android": ">=9.0.0",
+        "cordova-ios": ">=6.0.0"
+      },
+      "6.0.0": {
         "cordova": ">100"
       }
     }
@@ -82,9 +85,9 @@
     "url": "git+https://github.com/apache/cordova-plugin-inappbrowser.git"
   },
   "scripts": {
-    "eslint": "node node_modules/eslint/bin/eslint www && node node_modules/eslint/bin/eslint src && node node_modules/eslint/bin/eslint tests",
-    "test": "npm run eslint"
+    "lint": "eslint .",
+    "test": "npm run lint"
   },
   "types": "./types/index.d.ts",
-  "version": "3.1.0"
+  "version": "5.0.0"
 }
