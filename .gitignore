@@ -8,6 +8,7 @@
 
 # dependencies
 /node_modules
+/hybrid-app/node_modules
 /src/assets/js/config.js
 /dist/browser/assets/js/config.js
 /hybrid-app/google-services.json
