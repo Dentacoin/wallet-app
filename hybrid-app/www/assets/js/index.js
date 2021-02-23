@@ -726,6 +726,10 @@ var projectData = {
                         $('section.ready-to-purchase-with-external-api #usd-value').val(minimumIndacoinUsdForTransaction);
                         $('section.ready-to-purchase-with-external-api #crypto-amount').val(Math.floor(minimumUsdValueOfDcn));
 
+                        if (Math.floor(minimumUsdValueOfDcn) == 0) {
+                            $('.camping-for-issue-with-the-external-provider').html('<div class="col-xs-12"><div class="alert alert-info">Something went wrong with our external provider. Please come back later and try again later.</div></div>');
+                        }
+
                         hideLoader();
 
                         // on currency switch from the dropdown
