@@ -4,6 +4,8 @@ var {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, dec
 var {config_variable} = require('./config');
 var assurance_config;
 var iframeHeightListenerInit = true;
+var isDeviceReady = false;
+var lastHybridScreen;
 
 console.log("( ͡° ͜ʖ ͡°) I see you.");
 
@@ -34,6 +36,7 @@ window.addEventListener('load', function () {
 // event called only on hybrid app
 document.addEventListener('deviceready', function () {
     console.log('================= deviceready ===================');
+    isDeviceReady = true;
 
     // overwrite window.open to work with inappbrowser
     window.open = cordova.InAppBrowser.open;
@@ -526,9 +529,7 @@ var bidali_lib_loaded = false;
 var projectData = {
     pages: {
         homepage: function () {
-            if (is_hybrid) {
-                cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
-            }
+            projectData.utils.saveHybridAppCurrentScreen();
 
             if (typeof(global_state.account) != 'undefined') {
                 showMobileAppBannerForDesktopBrowsers();
@@ -680,9 +681,7 @@ var projectData = {
             }
         },
         buy_page: function () {
-            if (is_hybrid) {
-                cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
-            }
+            projectData.utils.saveHybridAppCurrentScreen();
 
             projectData.requests.getMinimumUsdValueFromIndacoin(function (minimumIndacoinUsdForTransaction) {
                 // rounding to 5 or 0
@@ -847,9 +846,7 @@ var projectData = {
             });
         },
         send_page: function () {
-            if (is_hybrid) {
-                cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
-            }
+            projectData.utils.saveHybridAppCurrentScreen();
 
             if (typeof(global_state.account) != 'undefined') {
                 showMobileAppBannerForDesktopBrowsers();
@@ -1505,9 +1502,7 @@ var projectData = {
             }
         },
         spend_page_dental_services: function () {
-            if (is_hybrid) {
-                cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
-            }
+            projectData.utils.saveHybridAppCurrentScreen();
 
             if (iframeHeightListenerInit) {
                 iframeHeightListenerInit = false;
@@ -1527,9 +1522,7 @@ var projectData = {
             showMobileAppBannerForDesktopBrowsers();
         },
         spend_page_gift_cards: function () {
-            if (is_hybrid) {
-                cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
-            }
+            projectData.utils.saveHybridAppCurrentScreen();
 
             showMobileAppBannerForDesktopBrowsers();
 
@@ -1565,9 +1558,7 @@ var projectData = {
             }
         },
         spend_page_exchanges: function () {
-            if (is_hybrid) {
-                cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
-            }
+            projectData.utils.saveHybridAppCurrentScreen();
 
             showMobileAppBannerForDesktopBrowsers();
             showLoader();
@@ -1593,9 +1584,7 @@ var projectData = {
             });
         },
         spend_page_assurance_fees: function () {
-            if (is_hybrid) {
-                cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
-            }
+            projectData.utils.saveHybridAppCurrentScreen();
 
             showMobileAppBannerForDesktopBrowsers();
 
@@ -2156,6 +2145,13 @@ var projectData = {
         },
         prepareDcnPrice: function (price) {
             return 1 / parseInt(parseInt(price) / 100);
+        },
+        saveHybridAppCurrentScreen: function () {
+            if (is_hybrid && isDeviceReady && lastHybridScreen != $('title').html()) {
+                lastHybridScreen = $('title').html();
+                cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
+                console.log('cordova.plugins.firebase.analytics.setCurrentScreen', $('title').html());
+            }
         }
     }
 };
