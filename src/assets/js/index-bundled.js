@@ -95142,10 +95142,12 @@ function checkIfLoadingFromMobileBrowser() {
 function fireGoogleAnalyticsEvent(category, action, label, value) {
     //'Register', 'Create', 'Wallet'
     if (is_hybrid) {
+        var hybridEventName = 'app_' + label.replace(/\s+/g, '_').toLowerCase();
+        console.log(hybridEventName, 'hybridEventName', category, action, label, value);
         if (value != undefined) {
-            cordova.plugins.firebase.analytics.logEvent('App_' + label, {category: category, action: action, label: label, value: value});
+            cordova.plugins.firebase.analytics.logEvent(hybridEventName, {category: category, action: action, label: label, value: value});
         } else {
-            cordova.plugins.firebase.analytics.logEvent('App_' + label, {category: category, action: action, label: label});
+            cordova.plugins.firebase.analytics.logEvent(hybridEventName, {category: category, action: action, label: label});
         }
     } else {
         var event_obj = {
