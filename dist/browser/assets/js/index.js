@@ -4,6 +4,8 @@ var {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, dec
 var {config_variable} = require('./config');
 var assurance_config;
 var iframeHeightListenerInit = true;
+var isDeviceReady = false;
+var lastHybridScreen;
 
 console.log("( ͡° ͜ʖ ͡°) I see you.");
 
@@ -34,12 +36,10 @@ window.addEventListener('load', function () {
 // event called only on hybrid app
 document.addEventListener('deviceready', function () {
     console.log('================= deviceready ===================');
+    isDeviceReady = true;
 
     // overwrite window.open to work with inappbrowser
     window.open = cordova.InAppBrowser.open;
-
-    // start hybrid app analytics tracker
-    cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
 
     //=================================== internet connection check ONLY for MOBILE DEVICES ===================================
 
@@ -529,9 +529,7 @@ var bidali_lib_loaded = false;
 var projectData = {
     pages: {
         homepage: function () {
-            if (is_hybrid) {
-                cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
-            }
+            projectData.utils.saveHybridAppCurrentScreen();
 
             if (typeof(global_state.account) != 'undefined') {
                 showMobileAppBannerForDesktopBrowsers();
@@ -683,9 +681,7 @@ var projectData = {
             }
         },
         buy_page: function () {
-            if (is_hybrid) {
-                cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
-            }
+            projectData.utils.saveHybridAppCurrentScreen();
 
             projectData.requests.getMinimumUsdValueFromIndacoin(function (minimumIndacoinUsdForTransaction) {
                 // rounding to 5 or 0
@@ -729,6 +725,10 @@ var projectData = {
 
                         $('section.ready-to-purchase-with-external-api #usd-value').val(minimumIndacoinUsdForTransaction);
                         $('section.ready-to-purchase-with-external-api #crypto-amount').val(Math.floor(minimumUsdValueOfDcn));
+
+                        if (Math.floor(minimumUsdValueOfDcn) == 0) {
+                            $('.camping-for-issue-with-the-external-provider').html('<div class="col-xs-12"><div class="alert alert-info">Something went wrong with our external provider. Please come back later and try again later.</div></div>');
+                        }
 
                         hideLoader();
 
@@ -850,9 +850,7 @@ var projectData = {
             });
         },
         send_page: function () {
-            if (is_hybrid) {
-                cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
-            }
+            projectData.utils.saveHybridAppCurrentScreen();
 
             if (typeof(global_state.account) != 'undefined') {
                 showMobileAppBannerForDesktopBrowsers();
@@ -1508,9 +1506,7 @@ var projectData = {
             }
         },
         spend_page_dental_services: function () {
-            if (is_hybrid) {
-                cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
-            }
+            projectData.utils.saveHybridAppCurrentScreen();
 
             if (iframeHeightListenerInit) {
                 iframeHeightListenerInit = false;
@@ -1530,9 +1526,7 @@ var projectData = {
             showMobileAppBannerForDesktopBrowsers();
         },
         spend_page_gift_cards: function () {
-            if (is_hybrid) {
-                cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
-            }
+            projectData.utils.saveHybridAppCurrentScreen();
 
             showMobileAppBannerForDesktopBrowsers();
 
@@ -1568,9 +1562,7 @@ var projectData = {
             }
         },
         spend_page_exchanges: function () {
-            if (is_hybrid) {
-                cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
-            }
+            projectData.utils.saveHybridAppCurrentScreen();
 
             showMobileAppBannerForDesktopBrowsers();
             showLoader();
@@ -1596,9 +1588,7 @@ var projectData = {
             });
         },
         spend_page_assurance_fees: function () {
-            if (is_hybrid) {
-                cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
-            }
+            projectData.utils.saveHybridAppCurrentScreen();
 
             showMobileAppBannerForDesktopBrowsers();
 
@@ -2159,6 +2149,13 @@ var projectData = {
         },
         prepareDcnPrice: function (price) {
             return 1 / parseInt(parseInt(price) / 100);
+        },
+        saveHybridAppCurrentScreen: function () {
+            if (is_hybrid && isDeviceReady && lastHybridScreen != $('title').html()) {
+                lastHybridScreen = $('title').html();
+                cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
+                console.log('cordova.plugins.firebase.analytics.setCurrentScreen', $('title').html());
+            }
         }
     }
 };
@@ -2834,7 +2831,7 @@ function initAccountChecker() {
                             } else {
                                 if (basic.getMobileOperatingSystem() == 'iOS') {
                                     //mobile browser from iPhone
-                                    basic.showAlert('Backup File has been opened in new tab of your browser. Please make sure to share/ copy and keep it in a safe place. Only you are responsible for it!', 'mobile-safari-keystore-creation', true);
+                                    basic.showAlert('Backup File has been opened in new tab of your browser. Please make sure to share/ copy and keep it in a safe place. Only you are responsible for it!', 'mobile-safari-keystore-creation overlap-loading-popup', true);
 
                                     //mobile safari
                                     downloadFile(keystore_file_name, JSON.stringify(keystore));
@@ -2871,7 +2868,7 @@ function initAccountChecker() {
 
                             window.localStorage.setItem('current_account', localStorageAddress);
                             window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
-                            basic.showAlert('File ' + keystore_file_name + ' has been stored to the Downloads folder of your device and remembered for faster transactions.', '', true);
+                            basic.showAlert('File ' + keystore_file_name + ' has been stored to the internal Downloads folder of your device and remembered for faster transactions.', 'overlap-loading-popup', true);
 
                             setTimeout(function () {
                                 fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
@@ -3229,6 +3226,7 @@ function downloadFile(filename, text) {
 }
 
 //opening WALLET SETTINGS
+var forgetWalletLogicInitiated = false;
 $(document).on('click', '.open-settings', function () {
     basic.closeDialog();
     var settings_html = '<div class="text-center fs-0 color-white lato-bold popup-header"><a href="javascript:void(0)" class="custom-close-bootbox inline-block margin-right-5"><svg class="width-100" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 62 52.3" style="enable-background:new 0 0 62 52.3;" xml:space="preserve"><style type="text/css">.st1{fill:#FFFFFF;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="52.3" width="62" x="19" y="48.9"/></sfw></metadata><path class="st1" d="M62,26.2c0-2.2-1.8-4-4-4H14.2L30.4,7c1.7-1.4,1.8-4,0.4-5.6c-1.4-1.7-4-1.8-5.6-0.4C25.1,1,25,1.1,25,1.2 L1.3,23.2c-1.6,1.5-1.7,4-0.2,5.7C1.1,29,1.2,29,1.3,29.1L25,51.2c1.6,1.5,4.1,1.4,5.7-0.2c1.5-1.6,1.4-4.1-0.2-5.7L14.2,30.2H58 C60.2,30.2,62,28.4,62,26.2z"/></svg></a><span class="inline-block text-center fs-28 fs-xs-16">DENTACOIN WALLET SETTINGS</span></div><div class="popup-body">';
@@ -3374,20 +3372,24 @@ $(document).on('click', '.open-settings', function () {
         settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important forget-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M14,0H2C0.9,0,0,0.9,0,2v12c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V2C16,0.9,15.1,0,14,0z M15,14c0,0.6-0.4,1-1,1 H2c-0.6,0-1-0.4-1-1v-3h14V14z M15,10H1V6h14V10z M1,5V2c0-0.6,0.4-1,1-1h12c0.6,0,1,0.4,1,1v3H1z M14,3.5C14,3.8,13.8,4,13.5,4h-1 C12.2,4,12,3.8,12,3.5v-1C12,2.2,12.2,2,12.5,2h1C13.8,2,14,2.2,14,2.5V3.5z M14,8.5C14,8.8,13.8,9,13.5,9h-1C12.2,9,12,8.8,12,8.5 v-1C12,7.2,12.2,7,12.5,7h1C13.8,7,14,7.2,14,7.5V8.5z M14,13.5c0,0.3-0.2,0.5-0.5,0.5h-1c-0.3,0-0.5-0.2-0.5-0.5v-1 c0-0.3,0.2-0.5,0.5-0.5h1c0.3,0,0.5,0.2,0.5,0.5V13.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold">Forget Backup File</span></a><div class="fs-14 option-description">By doing so, you’ll be asked to upload it every time you want to access your wallet.</div></div>';
 
         //removing the cached keystore file from localstorage
-        $(document).on('click', '.settings-popup .forget-keystore', function () {
-            var forget_keystore_reminder_warning = {};
-            forget_keystore_reminder_warning.callback = function (result) {
-                if (result) {
-                    if (window.localStorage.getItem('keystore_file') != null) {
-                        window.localStorage.removeItem('keystore_file');
+        if (!forgetWalletLogicInitiated) {
+            forgetWalletLogicInitiated = true;
 
-                        basic.closeDialog();
-                        basic.showAlert('Your backup file cache was deleted successfully.', '', true);
+            $(document).on('click', '.settings-popup .forget-keystore', function () {
+                var forget_keystore_reminder_warning = {};
+                forget_keystore_reminder_warning.callback = function (result) {
+                    if (result) {
+                        if (window.localStorage.getItem('keystore_file') != null) {
+                            window.localStorage.removeItem('keystore_file');
+
+                            basic.closeDialog();
+                            basic.showAlert('Your backup file cache was deleted successfully.', '', true);
+                        }
                     }
-                }
-            };
-            basic.showConfirm('Are you sure you downloaded your Backup file? Once forgotten, you will not be able to send transactions with your Backup file.', '', forget_keystore_reminder_warning, true);
-        });
+                };
+                basic.showConfirm('Are you sure you downloaded your Backup file? Once forgotten, you will not be able to send transactions with your Backup file.', '', forget_keystore_reminder_warning, true);
+            });
+        }
     }
 
     var settings_bottom_html = '<div class="padding-top-10 fs-14">Don\'t forget to download and save your Backup File - there is no other way to log in next time.</div>';
@@ -3815,7 +3817,7 @@ function hybridAppFileDownload(file_name, file_content, callback, location, down
             }, function (err) {
                 console.log(err, 'err');
                 hideLoader();
-                alert('Seems like file with this name already exist in your root directory, move it or delete it and try again.');
+                alert('Seems like file with this name already exist in your internal download directory, move it or delete it and try again.');
             });
         }
     });
@@ -3897,13 +3899,13 @@ function checkIfLoadingFromMobileBrowser() {
 
 //method to fire google analytics event
 function fireGoogleAnalyticsEvent(category, action, label, value) {
-    console.log('fireGoogleAnalyticsEvent');
+    //'Register', 'Create', 'Wallet'
     if (is_hybrid) {
+        var hybridEventName = 'app_' + label.replace(/\s+/g, '_').toLowerCase();
         if (value != undefined) {
-            valueProperty = value;
-            cordova.plugins.firebase.analytics.logEvent(category, {action: action, label: label, value: value});
+            cordova.plugins.firebase.analytics.logEvent(hybridEventName, {category: category, action: action, label: label, value: value});
         } else {
-            cordova.plugins.firebase.analytics.logEvent(category, {action: action, label: label});
+            cordova.plugins.firebase.analytics.logEvent(hybridEventName, {category: category, action: action, label: label});
         }
     } else {
         var event_obj = {
