@@ -38,9 +38,6 @@ document.addEventListener('deviceready', function () {
     // overwrite window.open to work with inappbrowser
     window.open = cordova.InAppBrowser.open;
 
-    // start hybrid app analytics tracker
-    cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
-
     //=================================== internet connection check ONLY for MOBILE DEVICES ===================================
 
     var networkState = navigator.connection.type;
@@ -3905,7 +3902,6 @@ function fireGoogleAnalyticsEvent(category, action, label, value) {
     //'Register', 'Create', 'Wallet'
     if (is_hybrid) {
         var hybridEventName = 'app_' + label.replace(/\s+/g, '_').toLowerCase();
-        console.log(hybridEventName, 'hybridEventName', category, action, label, value);
         if (value != undefined) {
             cordova.plugins.firebase.analytics.logEvent(hybridEventName, {category: category, action: action, label: label, value: value});
         } else {
