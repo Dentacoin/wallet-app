@@ -6,6 +6,10 @@ var assurance_config;
 var iframeHeightListenerInit = true;
 var isDeviceReady = false;
 var lastHybridScreen;
+var inAppBrowserSettings = 'location=yes,zoom=no,toolbarposition=top,closebuttoncaption=Back,presentationstyle=fullscreen,fullscreen=yes';
+if (basic.getMobileOperatingSystem() == 'iOS') {
+    inAppBrowserSettings = 'location=no,hardwareback=no,zoom=no,toolbarposition=top,closebuttoncaption=Back,presentationstyle=fullscreen,fullscreen=yes';
+}
 
 console.log("( ͡° ͜ʖ ͡°) I see you.");
 
@@ -40,6 +44,9 @@ document.addEventListener('deviceready', function () {
 
     // overwrite window.open to work with inappbrowser
     window.open = cordova.InAppBrowser.open;
+
+    // start hybrid app analytics tracker
+    cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
 
     //=================================== internet connection check ONLY for MOBILE DEVICES ===================================
 
@@ -727,7 +734,7 @@ var projectData = {
                         $('section.ready-to-purchase-with-external-api #crypto-amount').val(Math.floor(minimumUsdValueOfDcn));
 
                         if (Math.floor(minimumUsdValueOfDcn) == 0) {
-                            $('.camping-for-issue-with-the-external-provider').html('<div class="col-xs-12"><div class="alert alert-info">Something went wrong with our external provider. Please come back later and try again later.</div></div>');
+                            $('.camping-for-issue-with-the-external-provider').html('<div class="col-xs-12"><div class="alert alert-info">Something went wrong with our external provider. Please try again later.</div></div>');
                         }
 
                         hideLoader();
@@ -2641,7 +2648,7 @@ function initAccountChecker() {
         // opening the external links in app browser
         $(document).on('click', '.data-external-link', function () {
             event.preventDefault();
-            cordova.InAppBrowser.open($(this).attr('href'), '_blank', 'location=yes,zoom=no,toolbarposition=top,closebuttoncaption=Back');
+            cordova.InAppBrowser.open($(this).attr('href'), '_blank', inAppBrowserSettings);
         });
     }
 
@@ -3783,17 +3790,17 @@ function hybridAppFileDownload(file_name, file_content, callback, location, down
     window.resolveLocalFileSystemURL(location, function (fileSystem) {
         if (download_folder) {
             fileSystem.getDirectory('Download', {create: true, exclusive: false}, function (dirEntry) {
-                proceedWithDownload(dirEntry);
+                proceedWithDownload(dirEntry, file_name);
             }, function (err) {
                 console.log(err, 'err');
                 hideLoader();
                 alert('Something went wrong with downloading your file (Core error 5). Please contact admin@dentacoin.com.');
             });
         } else {
-            proceedWithDownload(fileSystem);
+            proceedWithDownload(fileSystem, file_name);
         }
 
-        function proceedWithDownload(dirEntry) {
+        function proceedWithDownload(dirEntry, file_name) {
             dirEntry.getFile(file_name, {create: true, exclusive: true}, function (fileEntry) {
                 fileEntry.createWriter(function (fileWriter) {
                     fileWriter.onwriteend = function (e) {
@@ -3815,9 +3822,9 @@ function hybridAppFileDownload(file_name, file_content, callback, location, down
                     alert('Something went wrong with downloading your file (Core error 4). Please contact admin@dentacoin.com.');
                 });
             }, function (err) {
+                // if download fails, try to download again, but with new unique name
                 console.log(err, 'err');
-                hideLoader();
-                alert('Seems like file with this name already exist in your internal download directory, move it or delete it and try again.');
+                proceedWithDownload(dirEntry, file_name + ' (' + Math.floor(Date.now() / 1000) + ')');
             });
         }
     });
