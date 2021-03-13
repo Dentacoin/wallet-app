@@ -1797,3 +1797,27 @@ input[type=file].hide-input {
         display: none;
     }
 }
+
+#main-container {
+    position: relative;
+    &.full-visual-height {
+        height: 100vh;
+    }
+    .ios-camper {
+        .ios-reminder-for-downloading-keystore-file {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
+            background: rgba(0, 0, 0, 0.5);
+            .white-bg {
+                background-color: white;
+                .warning-icon {
+                    width: 20px;
+                    margin-right: 10px;
+                }
+            }
+        }
+    }
+}

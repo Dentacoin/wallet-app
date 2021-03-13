@@ -1612,7 +1612,7 @@ var projectData = {
                         }
                     });
                 } else {
-                    setGlobalVariables();
+                    executeGlobalLogic();
                     initScan($('.open-transaction-scanner'), null, function (content) {
                         var content = decodeURIComponent(content);
 
@@ -2416,7 +2416,7 @@ window.refreshApp = function () {
     DCNContract = undefined;
     getInstance = undefined;
 
-    setGlobalVariables();
+    executeGlobalLogic();
     initAccountChecker();
 
     if ($('.main-holder app-homepage').length) {
@@ -2429,7 +2429,7 @@ window.refreshApp = function () {
 };
 
 window.getHomepageData = function () {
-    setGlobalVariables();
+    executeGlobalLogic();
     initAccountChecker();
 
     if (!dApp.loaded) {
@@ -2454,7 +2454,7 @@ window.getHomepageData = function () {
 };
 
 window.getBuyPageData = function () {
-    setGlobalVariables();
+    executeGlobalLogic();
     removeAccountChecker();
 
     if (!dApp.loaded) {
@@ -2473,7 +2473,7 @@ window.getBuyPageData = function () {
 };
 
 window.getSendPageData = function () {
-    setGlobalVariables();
+    executeGlobalLogic();
     initAccountChecker();
 
     if (!dApp.loaded) {
@@ -2498,7 +2498,7 @@ window.getSendPageData = function () {
 };
 
 window.getSpendPageDentalServices = function () {
-    setGlobalVariables();
+    executeGlobalLogic();
     removeAccountChecker();
 
     if (!dApp.loaded) {
@@ -2517,7 +2517,7 @@ window.getSpendPageDentalServices = function () {
 };
 
 /*window.getSpendPageGiftCards = function () {
-    setGlobalVariables();
+    executeGlobalLogic();
     removeAccountChecker();
 
     if (!dApp.loaded) {
@@ -2536,7 +2536,7 @@ window.getSpendPageDentalServices = function () {
 };*/
 
 window.getSpendPageExchanges = function () {
-    setGlobalVariables();
+    executeGlobalLogic();
     removeAccountChecker();
 
     if (!dApp.loaded) {
@@ -2555,7 +2555,7 @@ window.getSpendPageExchanges = function () {
 };
 
 window.getSpendPageAssuranceFees = function () {
-    setGlobalVariables();
+    executeGlobalLogic();
     removeAccountChecker();
 
     if (!dApp.loaded) {
@@ -2623,7 +2623,8 @@ bindGoogleAlikeButtonsEvents();
 
 var mobileAppBannerForDesktopBrowsersHtml = '<div class="container-fluid"><div class="row"><figure itemscope="" itemtype="http://schema.org/ImageObject" class="col-xs-3 inline-block-bottom"><img src="assets/images/left-hand-with-phone.png" alt="Left hand holding phone"/></figure><div class="col-xs-6 inline-block-bottom text-center padding-bottom-20"><h3 class="fs-30 fs-md-24 padding-bottom-10 color-white">ALSO AVAILABLE ON MOBILE:</h3><div><figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block padding-right-10"><a href="https://play.google.com/store/apps/details?id=wallet.dentacoin.com" target="_blank"><img src="assets/images/google-play-badge.svg" class="width-100 max-width-150" itemprop="logo" alt="Google play icon"/></a></figure><figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block padding-left-10"><a href="https://apps.apple.com/us/app/dentacoin-wallet/id1478732657" target="_blank"><img src="assets/images/app-store.svg" class="width-100 max-width-150" itemprop="logo" alt="App store icon"/></a></figure></div></div><figure itemscope="" itemtype="http://schema.org/ImageObject" class="col-xs-3 inline-block-bottom text-right"><img src="assets/images/right-hand-with-phone.png" alt="Right hand holding phone"/></figure></div></div>';
 
-function setGlobalVariables() {
+function executeGlobalLogic() {
+    console.log('executeGlobalLogic');
     if ($('#main-container').attr('network') == 'mainnet' && assurance_config == undefined) {
         var {assurance_config_temp} = require('./assurance_config_mainnet');
         assurance_config = assurance_config_temp;
@@ -2634,6 +2635,41 @@ function setGlobalVariables() {
     // variable to track if the wallet is loaded as mobile application
     // is_hybrid = $('#main-container').attr('hybrid') == 'true';
     $('body').addClass('hybrid-app');
+
+    if (basic.getMobileOperatingSystem() == 'iOS' && window.localStorage.getItem('keystore_file_ios_saved') == null) {
+        console.log('show ios camper');
+        $('.ios-camper').html('<div class="ios-reminder-for-downloading-keystore-file"> <div class="white-bg container"> <div class="row"> <div class="col-xs-12"> <div class="padding-bottom-15 color-warning-red fs-16"><img src="assets/images/attention-icon.svg" alt="Warning icon" class="warning-icon"/> Export your backup file before proceeding. Otherwise, you may lose access to your assets when you close the app or your session expires.</div><div class="custom-google-label-style margin-bottom-15 margin-top-20 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="ios-camper-download-keystore-password">Password:</label><input type="password" id="ios-camper-download-keystore-password" class="full-rounded"></div><div class="text-center padding-top-10 padding-bottom-20"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 ios-camper-download-keystore-action">EXPORT</a></div><div style="display: none" class="text-center fs-16"><input type="checkbox" id="keystore-downloaded-verifier"> <label for="keystore-downloaded-verifier">I verify that I saved my backup file.</label></div></div></div></div></div>');
+        $('#main-container').addClass('full-visual-height');
+
+        $('.ios-camper #ios-camper-download-keystore-password').focus();
+        $('.ios-camper label[for="download-keystore-password"]').addClass('active-label');
+
+        $('.ios-camper .ios-camper-download-keystore-action').click(function () {
+            showLoader('Hold on...<br>It will take few seconds to decrypt your Backup file.');
+
+            setTimeout(function () {
+                importKeystoreFile(window.localStorage.getItem('keystore_file'), $('.ios-camper #ios-camper-download-keystore-password').val().trim(), function (success, public_key, address, error, error_message) {
+                    if (success) {
+                        hideLoader();
+                        window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
+                        $('#ios-camper-download-keystore-password').val('');
+
+                        $('#keystore-downloaded-verifier').fadeIn(500);
+                        $('#keystore-downloaded-verifier').change(function() {
+                            if($(this).is(':checked')) {
+                                window.localStorage.setItem('keystore_file_ios_saved', true);
+                                $('.ios-camper').html('');
+                                $('#main-container').removeClass('full-visual-height');
+                            }
+                        });
+                    } else if (error) {
+                        hideLoader();
+                        basic.showAlert(error_message, '', true);
+                    }
+                });
+            }, 2000);
+        });
+    }
 }
 
 //checking if metamask or if saved current_account in the local storage. If both are false then show custom login popup with CREATE / IMPORT logic
@@ -2732,6 +2768,10 @@ function initAccountChecker() {
                             fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
 
                             if (is_hybrid) {
+                                if (basic.getMobileOperatingSystem() == 'iOS') {
+                                    window.localStorage.setItem('keystore_file_ios_saved', true);
+                                }
+
                                 refreshApp();
                                 //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
                             } else {
@@ -2759,7 +2799,11 @@ function initAccountChecker() {
             if (passwordWarningShow) {
                 passwordWarningShow = false;
 
-                $('.custom-auth-popup .popup-left .wallet-creation-warning').addClass('max-width-300 margin-left-right-auto').html('<div class="color-warning-red fs-14">Keep your password and backup file safe!</div><div class="padding-bottom-15 fs-14">NOBODY CAN RESET THEM IF LOST. To access your wallet, you need both the password and the backup file which will be automatically downloaded on your device.</div>');
+                if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
+                    $('.custom-auth-popup .popup-left .wallet-creation-warning').addClass('max-width-300 margin-left-right-auto').html('<div class="color-warning-red fs-14 lato-bold">Keep your password and backup file safe!<br>NOBODY CAN RESET THEM IF LOST.</div><div class="padding-bottom-15 fs-14">To access your wallet, you need both the password and the backup file which will be automatically downloaded on your device.</div>');
+                } else {
+                    $('.custom-auth-popup .popup-left .wallet-creation-warning').addClass('max-width-300 margin-left-right-auto').html('<div class="color-warning-red fs-14 lato-bold">Keep your password and backup file safe!<br>NOBODY CAN RESET THEM IF LOST.</div><div class="padding-bottom-15 fs-14">To access your wallet, you need both the password and the backup file which you must export on the next step or from the Settings.</div>');
+                }
             }
         });
 
@@ -2968,6 +3012,10 @@ function styleKeystoreUploadBtn() {
                                             fileEntry.createWriter(function (fileWriter) {
                                                 fileWriter.onwriteend = function (e) {
                                                     fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
+
+                                                    if (basic.getMobileOperatingSystem() == 'iOS') {
+                                                        window.localStorage.setItem('keystore_file_ios_saved', true);
+                                                    }
 
                                                     var localStorageAddress = address;
                                                     if (localStorageAddress.length == 40) {
