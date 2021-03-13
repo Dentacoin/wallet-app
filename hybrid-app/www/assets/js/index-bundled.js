@@ -93656,6 +93656,7 @@ window.refreshApp = function () {
 
     executeGlobalLogic();
     initAccountChecker();
+    window.scrollTo(0, 0);
 
     if ($('.main-holder app-homepage').length) {
         dApp.init(function () {
@@ -93876,7 +93877,7 @@ function executeGlobalLogic() {
 
     if (basic.getMobileOperatingSystem() == 'iOS' && window.localStorage.getItem('keystore_file_ios_saved') == null) {
         console.log('show ios camper');
-        $('.ios-camper').html('<div class="ios-reminder-for-downloading-keystore-file"> <div class="white-bg container"> <div class="row"> <div class="col-xs-12"> <div class="padding-bottom-15 color-warning-red fs-16"><img src="assets/images/attention-icon.svg" alt="Warning icon" class="warning-icon"/> Export your backup file before proceeding. Otherwise, you may lose access to your assets when you close the app or your session expires.</div><div class="custom-google-label-style margin-bottom-15 margin-top-20 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="ios-camper-download-keystore-password">Password:</label><input type="password" id="ios-camper-download-keystore-password" class="full-rounded"></div><div class="text-center padding-top-10 padding-bottom-20"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 ios-camper-download-keystore-action">EXPORT</a></div><div style="display: none" class="text-center fs-16"><input type="checkbox" id="keystore-downloaded-verifier"> <label for="keystore-downloaded-verifier">I verify that I saved my backup file.</label></div></div></div></div></div>');
+        $('.ios-camper').html('<div class="ios-reminder-for-downloading-keystore-file"> <div class="white-bg container padding-top-30 padding-bottom-30"><div class="row"><div class="col-xs-12"> <div class="padding-bottom-15 color-warning-red fs-16"><img src="assets/images/attention-icon.svg" alt="Warning icon" class="warning-icon"/> Export your backup file before proceeding. Otherwise, you may lose access to your assets when you close the app or your session expires.</div><div class="custom-google-label-style margin-bottom-15 margin-top-20 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="ios-camper-download-keystore-password">Password:</label><input type="password" id="ios-camper-download-keystore-password" class="full-rounded"></div><div class="text-center padding-top-10 padding-bottom-20"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 ios-camper-download-keystore-action">EXPORT</a></div><div style="display: none" class="text-center fs-16 hidden-checkbox"><input type="checkbox" id="keystore-downloaded-verifier"> <label for="keystore-downloaded-verifier" class="lato-bold">I verify that I saved my backup file.</label></div></div></div></div></div>');
         $('#main-container').addClass('full-visual-height');
 
         $('.ios-camper #ios-camper-download-keystore-password').focus();
@@ -93892,7 +93893,7 @@ function executeGlobalLogic() {
                         window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
                         $('#ios-camper-download-keystore-password').val('');
 
-                        $('#keystore-downloaded-verifier').fadeIn(500);
+                        $('.ios-camper .hidden-checkbox').fadeIn(500);
                         $('#keystore-downloaded-verifier').change(function() {
                             if($(this).is(':checked')) {
                                 window.localStorage.setItem('keystore_file_ios_saved', true);
@@ -94038,9 +94039,9 @@ function initAccountChecker() {
                 passwordWarningShow = false;
 
                 if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
-                    $('.custom-auth-popup .popup-left .wallet-creation-warning').addClass('max-width-300 margin-left-right-auto').html('<div class="color-warning-red fs-14 lato-bold">Keep your password and backup file safe!<br>NOBODY CAN RESET THEM IF LOST.</div><div class="padding-bottom-15 fs-14">To access your wallet, you need both the password and the backup file which will be automatically downloaded on your device.</div>');
-                } else {
                     $('.custom-auth-popup .popup-left .wallet-creation-warning').addClass('max-width-300 margin-left-right-auto').html('<div class="color-warning-red fs-14 lato-bold">Keep your password and backup file safe!<br>NOBODY CAN RESET THEM IF LOST.</div><div class="padding-bottom-15 fs-14">To access your wallet, you need both the password and the backup file which you must export on the next step or from the Settings.</div>');
+                } else {
+                    $('.custom-auth-popup .popup-left .wallet-creation-warning').addClass('max-width-300 margin-left-right-auto').html('<div class="color-warning-red fs-14 lato-bold">Keep your password and backup file safe!<br>NOBODY CAN RESET THEM IF LOST.</div><div class="padding-bottom-15 fs-14">To access your wallet, you need both the password and the backup file which will be automatically downloaded on your device.</div>');
                 }
             }
         });

@@ -1810,12 +1810,13 @@ input[type=file].hide-input {
             height: 100%;
             left: 0;
             top: 0;
-            background: rgba(0, 0, 0, 0.5);
+            z-index: 90;
+            background: rgba(0, 0, 0, 0.75);
             .white-bg {
                 background-color: white;
                 .warning-icon {
                     width: 20px;
-                    margin-right: 10px;
+                    margin-right: 5px;
                 }
             }
         }
