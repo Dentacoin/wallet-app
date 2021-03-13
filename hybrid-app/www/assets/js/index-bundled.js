@@ -93877,11 +93877,8 @@ function executeGlobalLogic() {
 
     if (basic.getMobileOperatingSystem() == 'iOS' && window.localStorage.getItem('keystore_file_ios_saved') == null) {
         console.log('show ios camper');
-        $('.ios-camper').html('<div class="ios-reminder-for-downloading-keystore-file"> <div class="white-bg container padding-top-30 padding-bottom-30"><div class="row"><div class="col-xs-12"> <div class="padding-bottom-15 color-warning-red fs-16"><img src="assets/images/attention-icon.svg" alt="Warning icon" class="warning-icon"/> Export your backup file before proceeding. Otherwise, you may lose access to your assets when you close the app or your session expires.</div><div class="custom-google-label-style margin-bottom-15 margin-top-20 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="ios-camper-download-keystore-password">Password:</label><input type="password" id="ios-camper-download-keystore-password" class="full-rounded"></div><div class="text-center padding-top-10 padding-bottom-20"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 ios-camper-download-keystore-action">EXPORT</a></div><div style="display: none" class="text-center fs-16 hidden-checkbox"><input type="checkbox" id="keystore-downloaded-verifier"> <label for="keystore-downloaded-verifier" class="lato-bold">I verify that I saved my backup file.</label></div></div></div></div></div>');
+        $('.ios-camper').html('<div class="ios-reminder-for-downloading-keystore-file"> <div class="white-bg container padding-top-30 padding-bottom-30"><div class="row"><div class="col-xs-12"> <div class="padding-bottom-15 color-warning-red fs-16"><img src="assets/images/attention-icon.svg" alt="Warning icon" class="warning-icon"/> Export your backup file before proceeding. Otherwise, you may lose access to your assets when you close the app or your session expires.</div><div class="custom-google-label-style margin-bottom-15 margin-top-20 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="ios-camper-download-keystore-password">Password:</label><input type="password" id="ios-camper-download-keystore-password" class="full-rounded"></div><div class="text-center padding-top-10 padding-bottom-30"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 ios-camper-download-keystore-action">EXPORT</a></div><div style="display: none" class="text-center fs-18 hidden-checkbox"><input type="checkbox" id="keystore-downloaded-verifier"> <label for="keystore-downloaded-verifier" class="lato-bold">I verify that I saved my backup file.</label></div></div></div></div></div>');
         $('#main-container').addClass('full-visual-height');
-
-        $('.ios-camper #ios-camper-download-keystore-password').focus();
-        $('.ios-camper label[for="download-keystore-password"]').addClass('active-label');
 
         $('.ios-camper .ios-camper-download-keystore-action').click(function () {
             showLoader('Hold on...<br>It will take few seconds to decrypt your Backup file.');
@@ -94530,9 +94527,9 @@ $(document).on('click', '.open-settings', function () {
         var warning_html = '';
         if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
             download_btn_label = 'Export';
-            if (window.localStorage.getItem('keystore_file_ios_saved') == null) {
+            /*if (window.localStorage.getItem('keystore_file_ios_saved') == null) {
                 warning_html = '<div class="error-handle keystore-file-ios-saved">You have not saved your Backup file yet.</div>';
-            }
+            }*/
         }
 
         //if cached keystore file show the option for downloading it
@@ -94749,8 +94746,8 @@ $(document).on('click', '.open-settings', function () {
                                     //using export plugin, because in iOS there is no such thing as direct file download
                                     //window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
 
-                                    if (window.localStorage.getItem('keystore_file_ios_saved') == null) {
-                                        window.localStorage.setItem('keystore_file_ios_saved', true);
+                                    //if (window.localStorage.getItem('keystore_file_ios_saved') == null) {
+                                        //window.localStorage.setItem('keystore_file_ios_saved', true);
                                         /*var file_name = buildKeystoreFileName(global_state.account);
 
                                         window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function(rootEntry) {
@@ -94776,7 +94773,7 @@ $(document).on('click', '.open-settings', function () {
                                                 $('<div class="error-handle">Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.</div>').insertAfter(this_camping_row);
                                             });
                                         });*/
-                                    }
+                                    //}
 
                                     hideLoader();
                                     window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
