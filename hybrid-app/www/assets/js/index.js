@@ -2768,6 +2768,9 @@ function initAccountChecker() {
                             if (is_hybrid) {
                                 if (basic.getMobileOperatingSystem() == 'iOS') {
                                     window.localStorage.setItem('keystore_file_ios_saved', true);
+                                    if ($('.ios-camper .ios-reminder-for-downloading-keystore-file').length) {
+                                        $('.ios-camper .ios-reminder-for-downloading-keystore-file').remove();
+                                    }
                                 }
 
                                 refreshApp();
@@ -3013,6 +3016,9 @@ function styleKeystoreUploadBtn() {
 
                                                     if (basic.getMobileOperatingSystem() == 'iOS') {
                                                         window.localStorage.setItem('keystore_file_ios_saved', true);
+                                                        if ($('.ios-camper .ios-reminder-for-downloading-keystore-file').length) {
+                                                            $('.ios-camper .ios-reminder-for-downloading-keystore-file').remove();
+                                                        }
                                                     }
 
                                                     var localStorageAddress = address;
