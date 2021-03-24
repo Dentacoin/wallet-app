@@ -1822,3 +1822,15 @@ input[type=file].hide-input {
         }
     }
 }
+
+.tooltip {
+    .tooltip-inner {
+        padding: 9px 14px;
+        border: 1px solid rgba(0,0,0,.2);
+        background-color: #fff;
+        font-size: 14px;
+        border-radius: 6px;
+        color: #333;
+        @include box-shadow(0 5px 10px rgba(0,0,0,.2));
+    }
+}

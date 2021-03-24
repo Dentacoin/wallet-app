@@ -64,3 +64,13 @@
 .fade-in-animation-5 {
     @include animation(2.21s, 1s, fadeIn);
 }
+
+.blinking-animation {
+    animation: blinkingText 1s infinite;
+}
+
+@keyframes blinkingText {
+    0% {opacity: 1;}
+    50% {opacity: 0.2;}
+    100% {opacity: 1;}
+}

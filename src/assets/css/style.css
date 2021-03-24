@@ -196,6 +196,16 @@
   -o-animation-duration: 1s;
   -o-animation-name: fadeIn; }
 
+.blinking-animation {
+  animation: blinkingText 1s infinite; }
+
+@keyframes blinkingText {
+  0% {
+    opacity: 1; }
+  50% {
+    opacity: 0.2; }
+  100% {
+    opacity: 1; } }
 @media screen and (max-width: 450px) {
   .col-xxs-12 {
     width: 100%; }
@@ -5266,6 +5276,18 @@ input[type=file].hide-input {
       #main-container .ios-camper .ios-reminder-for-downloading-keystore-file .white-bg .warning-icon {
         width: 20px;
         margin-right: 5px; }
+
+.tooltip .tooltip-inner {
+  padding: 9px 14px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  background-color: #fff;
+  font-size: 14px;
+  border-radius: 6px;
+  color: #333;
+  -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  -ms-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); }
 
 header {
   position: relative;

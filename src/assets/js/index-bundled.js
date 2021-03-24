@@ -91520,7 +91520,7 @@ var dApp = {
 
                                     projectData.requests.getEthereumDataByCoingecko(function (ethereumResponse) {
                                         var ethereum_data = ethereumResponse;
-                                        projectData.requests.getDentacoinDataByExternalProvider(function (dentacoinResponse) {
+                                        projectData.requests.getDentacoinDataByCoingeckoProvider(function (dentacoinResponse) {
                                             var dentacoin_data = dentacoinResponse;
 
                                             $('.camping-transaction-history').html('<h2 class="lato-bold fs-25 text-center white-crossed-label color-white"><span>Transaction history</span></h2><div class="transaction-history container"><div class="row"><div class="col-xs-12 no-gutter-xs col-md-10 col-md-offset-1 padding-top-20"><table class="color-white"><tbody></tbody></table></div></div><div class="row camping-show-more"></div></div>');
@@ -91806,7 +91806,7 @@ var projectData = {
                         $('.main-wrapper .dcn-amount').html(dcn_balance);
 
                         //update usd amount (dentacoins in usd)
-                        projectData.requests.getDentacoinDataByExternalProvider(function (request_response) {
+                        projectData.requests.getDentacoinDataByCoingeckoProvider(function (request_response) {
                             var dentacoin_data = request_response;
                             if (dentacoin_data != 0) {
                                 $('.usd-amount').html((dcn_balance * dentacoin_data).toFixed(2));
@@ -91929,8 +91929,10 @@ var projectData = {
             projectData.utils.saveHybridAppCurrentScreen();
 
             projectData.requests.getMinimumUsdValueFromIndacoin(function (minimumIndacoinUsdForTransaction) {
+                console.log(minimumIndacoinUsdForTransaction, 'minimumIndacoinUsdForTransaction');
                 // rounding to 5 or 0
                 minimumIndacoinUsdForTransaction = Math.ceil(minimumIndacoinUsdForTransaction / 5) * 5;
+                console.log(minimumIndacoinUsdForTransaction, 'minimumIndacoinUsdForTransaction');
                 $('.min-usd-amount').html(minimumIndacoinUsdForTransaction);
 
                 showMobileAppBannerForDesktopBrowsers();
@@ -91970,6 +91972,10 @@ var projectData = {
 
                         $('section.ready-to-purchase-with-external-api #usd-value').val(minimumIndacoinUsdForTransaction);
                         $('section.ready-to-purchase-with-external-api #crypto-amount').val(Math.floor(minimumUsdValueOfDcn));
+
+                        if ($('[data-toggle="tooltip"]').length) {
+                            $('[data-toggle="tooltip"]').tooltip();
+                        }
 
                         if (Math.floor(minimumUsdValueOfDcn) == 0) {
                             $('.camping-for-issue-with-the-external-provider').html('<div class="col-xs-12"><div class="alert alert-info">Something went wrong with our external provider. Please try again later.</div></div>');
@@ -92378,7 +92384,7 @@ var projectData = {
                                     var ethereum_data = request_response;
 
                                     //getting dentacoin data by Coingecko
-                                    projectData.requests.getDentacoinDataByExternalProvider(function (request_response) {
+                                    projectData.requests.getDentacoinDataByCoingeckoProvider(function (request_response) {
                                         $('.section-send').hide();
                                         $('.section-amount-to .address-cell').html($('.search-field #search').val().trim()).attr('data-receiver', $('.search-field #search').val().trim());
                                         window.scrollTo(0, 0);
@@ -93209,15 +93215,29 @@ var projectData = {
         getGasPrice: async function () {
             return await $.getJSON('https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=' + config_variable.etherscan_api_key);
         },
-        getDentacoinDataByExternalProvider: async function (callback) {
-            /*$.ajax({
+        getDentacoinDataByCoingeckoProvider: async function (callback) {
+            $.ajax({
+                type: 'GET',
+                url: 'https://api.coingecko.com/api/v3/coins/dentacoin',
+                dataType: 'json',
+                success: function (response) {
+                    callback(response.market_data.current_price.usd);
+                },
+                error: function() {
+                    hideLoader();
+                    alert('Something went wrong, please try again later or contact admin@dentacoin.com. (Core error 10.0).');
+                }
+            });
+        },
+        /*getDentacoinDataByExternalProvider: async function (callback) {
+            /!*$.ajax({
                 type: 'GET',
                 url: 'https://api.coingecko.com/api/v3/coins/dentacoin',
                 dataType: 'json',
                 success: function(response) {
                     callback(response);
                 }
-            });*/
+            });*!/
 
             if (callback != undefined) {
                 $.ajax({
@@ -93264,7 +93284,7 @@ var projectData = {
                     return coingeckoAjaxResponse.market_data.current_price.usd;
                 }
             }
-        },
+        },*/
         getEthereumDataByCoingecko: function(callback) {
             $.ajax({
                 type: 'GET',
@@ -93321,12 +93341,18 @@ var projectData = {
         convertUsdToDcn: async function (usd_val) {
             var ajaxResponse = await $.ajax({
                 type: 'GET',
-                url: 'https://indacoin.com/api/GetCoinConvertAmount/USD/DCN/100/dentacoin',
+                url: 'https://api.coingecko.com/api/v3/coins/dentacoin',
                 dataType: 'json'
             });
 
+            /*var ajaxResponse = await $.ajax({
+                type: 'GET',
+                url: 'https://indacoin.com/api/GetCoinConvertAmount/USD/DCN/100/dentacoin',
+                dataType: 'json'
+            });*/
+
             if (ajaxResponse > 0) {
-                return Math.floor((Math.floor(ajaxResponse) / 100) * usd_val);
+                return Math.floor((Math.floor(ajaxResponse.market_data.current_price.usd) / 100) * usd_val);
             } else {
                 // callback to coingecko price reader if indacoin fails
                 var coingeckoAjaxResponse = await $.ajax({
@@ -93575,7 +93601,7 @@ function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver
 
         var pending_history_transaction;
         if (symbol == 'DCN') {
-            projectData.requests.getDentacoinDataByExternalProvider(function (request_response) {
+            projectData.requests.getDentacoinDataByCoingeckoProvider(function (request_response) {
                 pending_history_transaction += buildDentacoinHistoryTransaction(request_response, token_val, receiver, global_state.account, Math.round((new Date()).getTime() / 1000), transactionHash, true);
 
                 fireGoogleAnalyticsEvent('Pay', 'Next', 'DCN', token_val);
@@ -93877,7 +93903,7 @@ function executeGlobalLogic() {
 
     if (basic.getMobileOperatingSystem() == 'iOS' && window.localStorage.getItem('keystore_file_ios_saved') == null) {
         console.log('show ios camper');
-        $('.ios-camper').html('<div class="ios-reminder-for-downloading-keystore-file"> <div class="white-bg container padding-top-30 padding-bottom-30"><div class="row"><div class="col-xs-12"> <div class="padding-bottom-15 color-warning-red fs-16"><img src="assets/images/attention-icon.svg" alt="Warning icon" class="warning-icon"/> Export your backup file before proceeding. Otherwise, you may lose access to your assets when you close the app or your session expires.</div><div class="custom-google-label-style margin-bottom-15 margin-top-20 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="ios-camper-download-keystore-password">Password:</label><input type="password" id="ios-camper-download-keystore-password" class="full-rounded"></div><div class="text-center padding-top-10 padding-bottom-30"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 ios-camper-download-keystore-action">EXPORT</a></div><div style="display: none" class="text-center fs-18 hidden-checkbox"><input type="checkbox" id="keystore-downloaded-verifier"> <label for="keystore-downloaded-verifier" class="lato-bold">I verify that I saved my backup file.</label></div></div></div></div></div>');
+        $('.ios-camper').html('<div class="ios-reminder-for-downloading-keystore-file"> <div class="white-bg container padding-top-30 padding-bottom-30"><div class="row"><div class="col-xs-12"> <div class="padding-bottom-15 color-warning-red fs-16"><img src="assets/images/attention-icon.svg" alt="Warning icon" class="warning-icon"/> Export your backup file before proceeding. Otherwise, you may lose access to your assets when you close the app or your session expires.</div><div class="custom-google-label-style margin-bottom-15 margin-top-20 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="ios-camper-download-keystore-password">Password:</label><input type="password" id="ios-camper-download-keystore-password" class="full-rounded"></div><div class="text-center padding-top-10 padding-bottom-30"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 ios-camper-download-keystore-action">EXPORT</a></div><div style="display: none" class="text-center fs-18 hidden-checkbox"><input type="checkbox" id="keystore-downloaded-verifier"> <label for="keystore-downloaded-verifier" class="lato-bold blinking-animation">I verify that I saved my backup file.</label></div></div></div></div></div>');
         $('#main-container').addClass('full-visual-height');
 
         $('.ios-camper .ios-camper-download-keystore-action').click(function () {

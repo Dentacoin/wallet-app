@@ -6,6 +6,10 @@ var assurance_config;
 var iframeHeightListenerInit = true;
 var isDeviceReady = false;
 var lastHybridScreen;
+var inAppBrowserSettings = 'location=yes,zoom=no,toolbarposition=top,closebuttoncaption=Back,presentationstyle=fullscreen,fullscreen=yes';
+if (basic.getMobileOperatingSystem() == 'iOS') {
+    inAppBrowserSettings = 'location=no,hardwareback=no,zoom=no,toolbarposition=top,closebuttoncaption=Back,presentationstyle=fullscreen,fullscreen=yes';
+}
 
 console.log("( ͡° ͜ʖ ͡°) I see you.");
 
@@ -40,6 +44,9 @@ document.addEventListener('deviceready', function () {
 
     // overwrite window.open to work with inappbrowser
     window.open = cordova.InAppBrowser.open;
+
+    // start hybrid app analytics tracker
+    cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
 
     //=================================== internet connection check ONLY for MOBILE DEVICES ===================================
 
@@ -275,7 +282,7 @@ var dApp = {
 
                                     projectData.requests.getEthereumDataByCoingecko(function (ethereumResponse) {
                                         var ethereum_data = ethereumResponse;
-                                        projectData.requests.getDentacoinDataByExternalProvider(function (dentacoinResponse) {
+                                        projectData.requests.getDentacoinDataByCoingeckoProvider(function (dentacoinResponse) {
                                             var dentacoin_data = dentacoinResponse;
 
                                             $('.camping-transaction-history').html('<h2 class="lato-bold fs-25 text-center white-crossed-label color-white"><span>Transaction history</span></h2><div class="transaction-history container"><div class="row"><div class="col-xs-12 no-gutter-xs col-md-10 col-md-offset-1 padding-top-20"><table class="color-white"><tbody></tbody></table></div></div><div class="row camping-show-more"></div></div>');
@@ -561,7 +568,7 @@ var projectData = {
                         $('.main-wrapper .dcn-amount').html(dcn_balance);
 
                         //update usd amount (dentacoins in usd)
-                        projectData.requests.getDentacoinDataByExternalProvider(function (request_response) {
+                        projectData.requests.getDentacoinDataByCoingeckoProvider(function (request_response) {
                             var dentacoin_data = request_response;
                             if (dentacoin_data != 0) {
                                 $('.usd-amount').html((dcn_balance * dentacoin_data).toFixed(2));
@@ -684,8 +691,10 @@ var projectData = {
             projectData.utils.saveHybridAppCurrentScreen();
 
             projectData.requests.getMinimumUsdValueFromIndacoin(function (minimumIndacoinUsdForTransaction) {
+                console.log(minimumIndacoinUsdForTransaction, 'minimumIndacoinUsdForTransaction');
                 // rounding to 5 or 0
                 minimumIndacoinUsdForTransaction = Math.ceil(minimumIndacoinUsdForTransaction / 5) * 5;
+                console.log(minimumIndacoinUsdForTransaction, 'minimumIndacoinUsdForTransaction');
                 $('.min-usd-amount').html(minimumIndacoinUsdForTransaction);
 
                 showMobileAppBannerForDesktopBrowsers();
@@ -726,8 +735,12 @@ var projectData = {
                         $('section.ready-to-purchase-with-external-api #usd-value').val(minimumIndacoinUsdForTransaction);
                         $('section.ready-to-purchase-with-external-api #crypto-amount').val(Math.floor(minimumUsdValueOfDcn));
 
+                        if ($('[data-toggle="tooltip"]').length) {
+                            $('[data-toggle="tooltip"]').tooltip();
+                        }
+
                         if (Math.floor(minimumUsdValueOfDcn) == 0) {
-                            $('.camping-for-issue-with-the-external-provider').html('<div class="col-xs-12"><div class="alert alert-info">Something went wrong with our external provider. Please come back later and try again later.</div></div>');
+                            $('.camping-for-issue-with-the-external-provider').html('<div class="col-xs-12"><div class="alert alert-info">Something went wrong with our external provider. Please try again later.</div></div>');
                         }
 
                         hideLoader();
@@ -1133,7 +1146,7 @@ var projectData = {
                                     var ethereum_data = request_response;
 
                                     //getting dentacoin data by Coingecko
-                                    projectData.requests.getDentacoinDataByExternalProvider(function (request_response) {
+                                    projectData.requests.getDentacoinDataByCoingeckoProvider(function (request_response) {
                                         $('.section-send').hide();
                                         $('.section-amount-to .address-cell').html($('.search-field #search').val().trim()).attr('data-receiver', $('.search-field #search').val().trim());
                                         window.scrollTo(0, 0);
@@ -1605,7 +1618,7 @@ var projectData = {
                         }
                     });
                 } else {
-                    setGlobalVariables();
+                    executeGlobalLogic();
                     initScan($('.open-transaction-scanner'), null, function (content) {
                         var content = decodeURIComponent(content);
 
@@ -1964,15 +1977,29 @@ var projectData = {
         getGasPrice: async function () {
             return await $.getJSON('https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=' + config_variable.etherscan_api_key);
         },
-        getDentacoinDataByExternalProvider: async function (callback) {
-            /*$.ajax({
+        getDentacoinDataByCoingeckoProvider: async function (callback) {
+            $.ajax({
+                type: 'GET',
+                url: 'https://api.coingecko.com/api/v3/coins/dentacoin',
+                dataType: 'json',
+                success: function (response) {
+                    callback(response.market_data.current_price.usd);
+                },
+                error: function() {
+                    hideLoader();
+                    alert('Something went wrong, please try again later or contact admin@dentacoin.com. (Core error 10.0).');
+                }
+            });
+        },
+        /*getDentacoinDataByExternalProvider: async function (callback) {
+            /!*$.ajax({
                 type: 'GET',
                 url: 'https://api.coingecko.com/api/v3/coins/dentacoin',
                 dataType: 'json',
                 success: function(response) {
                     callback(response);
                 }
-            });*/
+            });*!/
 
             if (callback != undefined) {
                 $.ajax({
@@ -2019,7 +2046,7 @@ var projectData = {
                     return coingeckoAjaxResponse.market_data.current_price.usd;
                 }
             }
-        },
+        },*/
         getEthereumDataByCoingecko: function(callback) {
             $.ajax({
                 type: 'GET',
@@ -2076,12 +2103,18 @@ var projectData = {
         convertUsdToDcn: async function (usd_val) {
             var ajaxResponse = await $.ajax({
                 type: 'GET',
-                url: 'https://indacoin.com/api/GetCoinConvertAmount/USD/DCN/100/dentacoin',
+                url: 'https://api.coingecko.com/api/v3/coins/dentacoin',
                 dataType: 'json'
             });
 
+            /*var ajaxResponse = await $.ajax({
+                type: 'GET',
+                url: 'https://indacoin.com/api/GetCoinConvertAmount/USD/DCN/100/dentacoin',
+                dataType: 'json'
+            });*/
+
             if (ajaxResponse > 0) {
-                return Math.floor((Math.floor(ajaxResponse) / 100) * usd_val);
+                return Math.floor((Math.floor(ajaxResponse.market_data.current_price.usd) / 100) * usd_val);
             } else {
                 // callback to coingecko price reader if indacoin fails
                 var coingeckoAjaxResponse = await $.ajax({
@@ -2330,7 +2363,7 @@ function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver
 
         var pending_history_transaction;
         if (symbol == 'DCN') {
-            projectData.requests.getDentacoinDataByExternalProvider(function (request_response) {
+            projectData.requests.getDentacoinDataByCoingeckoProvider(function (request_response) {
                 pending_history_transaction += buildDentacoinHistoryTransaction(request_response, token_val, receiver, global_state.account, Math.round((new Date()).getTime() / 1000), transactionHash, true);
 
                 fireGoogleAnalyticsEvent('Pay', 'Next', 'DCN', token_val);
@@ -2409,8 +2442,9 @@ window.refreshApp = function () {
     DCNContract = undefined;
     getInstance = undefined;
 
-    setGlobalVariables();
+    executeGlobalLogic();
     initAccountChecker();
+    window.scrollTo(0, 0);
 
     if ($('.main-holder app-homepage').length) {
         dApp.init(function () {
@@ -2422,7 +2456,7 @@ window.refreshApp = function () {
 };
 
 window.getHomepageData = function () {
-    setGlobalVariables();
+    executeGlobalLogic();
     initAccountChecker();
 
     if (!dApp.loaded) {
@@ -2447,7 +2481,7 @@ window.getHomepageData = function () {
 };
 
 window.getBuyPageData = function () {
-    setGlobalVariables();
+    executeGlobalLogic();
     removeAccountChecker();
 
     if (!dApp.loaded) {
@@ -2466,7 +2500,7 @@ window.getBuyPageData = function () {
 };
 
 window.getSendPageData = function () {
-    setGlobalVariables();
+    executeGlobalLogic();
     initAccountChecker();
 
     if (!dApp.loaded) {
@@ -2491,7 +2525,7 @@ window.getSendPageData = function () {
 };
 
 window.getSpendPageDentalServices = function () {
-    setGlobalVariables();
+    executeGlobalLogic();
     removeAccountChecker();
 
     if (!dApp.loaded) {
@@ -2510,7 +2544,7 @@ window.getSpendPageDentalServices = function () {
 };
 
 /*window.getSpendPageGiftCards = function () {
-    setGlobalVariables();
+    executeGlobalLogic();
     removeAccountChecker();
 
     if (!dApp.loaded) {
@@ -2529,7 +2563,7 @@ window.getSpendPageDentalServices = function () {
 };*/
 
 window.getSpendPageExchanges = function () {
-    setGlobalVariables();
+    executeGlobalLogic();
     removeAccountChecker();
 
     if (!dApp.loaded) {
@@ -2548,7 +2582,7 @@ window.getSpendPageExchanges = function () {
 };
 
 window.getSpendPageAssuranceFees = function () {
-    setGlobalVariables();
+    executeGlobalLogic();
     removeAccountChecker();
 
     if (!dApp.loaded) {
@@ -2616,7 +2650,8 @@ bindGoogleAlikeButtonsEvents();
 
 var mobileAppBannerForDesktopBrowsersHtml = '<div class="container-fluid"><div class="row"><figure itemscope="" itemtype="http://schema.org/ImageObject" class="col-xs-3 inline-block-bottom"><img src="assets/images/left-hand-with-phone.png" alt="Left hand holding phone"/></figure><div class="col-xs-6 inline-block-bottom text-center padding-bottom-20"><h3 class="fs-30 fs-md-24 padding-bottom-10 color-white">ALSO AVAILABLE ON MOBILE:</h3><div><figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block padding-right-10"><a href="https://play.google.com/store/apps/details?id=wallet.dentacoin.com" target="_blank"><img src="assets/images/google-play-badge.svg" class="width-100 max-width-150" itemprop="logo" alt="Google play icon"/></a></figure><figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block padding-left-10"><a href="https://apps.apple.com/us/app/dentacoin-wallet/id1478732657" target="_blank"><img src="assets/images/app-store.svg" class="width-100 max-width-150" itemprop="logo" alt="App store icon"/></a></figure></div></div><figure itemscope="" itemtype="http://schema.org/ImageObject" class="col-xs-3 inline-block-bottom text-right"><img src="assets/images/right-hand-with-phone.png" alt="Right hand holding phone"/></figure></div></div>';
 
-function setGlobalVariables() {
+function executeGlobalLogic() {
+    console.log('executeGlobalLogic');
     if ($('#main-container').attr('network') == 'mainnet' && assurance_config == undefined) {
         var {assurance_config_temp} = require('./assurance_config_mainnet');
         assurance_config = assurance_config_temp;
@@ -2627,6 +2662,38 @@ function setGlobalVariables() {
     // variable to track if the wallet is loaded as mobile application
     // is_hybrid = $('#main-container').attr('hybrid') == 'true';
     $('body').addClass('hybrid-app');
+
+    if (basic.getMobileOperatingSystem() == 'iOS' && window.localStorage.getItem('keystore_file_ios_saved') == null) {
+        console.log('show ios camper');
+        $('.ios-camper').html('<div class="ios-reminder-for-downloading-keystore-file"> <div class="white-bg container padding-top-30 padding-bottom-30"><div class="row"><div class="col-xs-12"> <div class="padding-bottom-15 color-warning-red fs-16"><img src="assets/images/attention-icon.svg" alt="Warning icon" class="warning-icon"/> Export your backup file before proceeding. Otherwise, you may lose access to your assets when you close the app or your session expires.</div><div class="custom-google-label-style margin-bottom-15 margin-top-20 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="ios-camper-download-keystore-password">Password:</label><input type="password" id="ios-camper-download-keystore-password" class="full-rounded"></div><div class="text-center padding-top-10 padding-bottom-30"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 ios-camper-download-keystore-action">EXPORT</a></div><div style="display: none" class="text-center fs-18 hidden-checkbox"><input type="checkbox" id="keystore-downloaded-verifier"> <label for="keystore-downloaded-verifier" class="lato-bold blinking-animation">I verify that I saved my backup file.</label></div></div></div></div></div>');
+        $('#main-container').addClass('full-visual-height');
+
+        $('.ios-camper .ios-camper-download-keystore-action').click(function () {
+            showLoader('Hold on...<br>It will take few seconds to decrypt your Backup file.');
+
+            setTimeout(function () {
+                importKeystoreFile(window.localStorage.getItem('keystore_file'), $('.ios-camper #ios-camper-download-keystore-password').val().trim(), function (success, public_key, address, error, error_message) {
+                    if (success) {
+                        hideLoader();
+                        window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
+                        $('#ios-camper-download-keystore-password').val('');
+
+                        $('.ios-camper .hidden-checkbox').fadeIn(500);
+                        $('#keystore-downloaded-verifier').change(function() {
+                            if($(this).is(':checked')) {
+                                window.localStorage.setItem('keystore_file_ios_saved', true);
+                                $('.ios-camper').html('');
+                                $('#main-container').removeClass('full-visual-height');
+                            }
+                        });
+                    } else if (error) {
+                        hideLoader();
+                        basic.showAlert(error_message, '', true);
+                    }
+                });
+            }, 2000);
+        });
+    }
 }
 
 //checking if metamask or if saved current_account in the local storage. If both are false then show custom login popup with CREATE / IMPORT logic
@@ -2641,7 +2708,7 @@ function initAccountChecker() {
         // opening the external links in app browser
         $(document).on('click', '.data-external-link', function () {
             event.preventDefault();
-            cordova.InAppBrowser.open($(this).attr('href'), '_blank', 'location=yes,zoom=no,toolbarposition=top,closebuttoncaption=Back');
+            cordova.InAppBrowser.open($(this).attr('href'), '_blank', inAppBrowserSettings);
         });
     }
 
@@ -2725,6 +2792,13 @@ function initAccountChecker() {
                             fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
 
                             if (is_hybrid) {
+                                if (basic.getMobileOperatingSystem() == 'iOS') {
+                                    window.localStorage.setItem('keystore_file_ios_saved', true);
+                                    if ($('.ios-camper .ios-reminder-for-downloading-keystore-file').length) {
+                                        $('.ios-camper .ios-reminder-for-downloading-keystore-file').remove();
+                                    }
+                                }
+
                                 refreshApp();
                                 //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
                             } else {
@@ -2752,7 +2826,11 @@ function initAccountChecker() {
             if (passwordWarningShow) {
                 passwordWarningShow = false;
 
-                $('.custom-auth-popup .popup-left .wallet-creation-warning').addClass('max-width-300 margin-left-right-auto').html('<div class="color-warning-red fs-14">Keep your password and backup file safe!</div><div class="padding-bottom-15 fs-14">NOBODY CAN RESET THEM IF LOST. To access your wallet, you need both the password and the backup file which will be automatically downloaded on your device.</div>');
+                if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
+                    $('.custom-auth-popup .popup-left .wallet-creation-warning').addClass('max-width-300 margin-left-right-auto').html('<div class="color-warning-red fs-14 lato-bold">Keep your password and backup file safe!<br>NOBODY CAN RESET THEM IF LOST.</div><div class="padding-bottom-15 fs-14">To access your wallet, you need both the password and the backup file which you must export on the next step or from the Settings.</div>');
+                } else {
+                    $('.custom-auth-popup .popup-left .wallet-creation-warning').addClass('max-width-300 margin-left-right-auto').html('<div class="color-warning-red fs-14 lato-bold">Keep your password and backup file safe!<br>NOBODY CAN RESET THEM IF LOST.</div><div class="padding-bottom-15 fs-14">To access your wallet, you need both the password and the backup file which will be automatically downloaded on your device.</div>');
+                }
             }
         });
 
@@ -2961,6 +3039,13 @@ function styleKeystoreUploadBtn() {
                                             fileEntry.createWriter(function (fileWriter) {
                                                 fileWriter.onwriteend = function (e) {
                                                     fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
+
+                                                    if (basic.getMobileOperatingSystem() == 'iOS') {
+                                                        window.localStorage.setItem('keystore_file_ios_saved', true);
+                                                        if ($('.ios-camper .ios-reminder-for-downloading-keystore-file').length) {
+                                                            $('.ios-camper .ios-reminder-for-downloading-keystore-file').remove();
+                                                        }
+                                                    }
 
                                                     var localStorageAddress = address;
                                                     if (localStorageAddress.length == 40) {
@@ -3236,9 +3321,9 @@ $(document).on('click', '.open-settings', function () {
         var warning_html = '';
         if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
             download_btn_label = 'Export';
-            if (window.localStorage.getItem('keystore_file_ios_saved') == null) {
+            /*if (window.localStorage.getItem('keystore_file_ios_saved') == null) {
                 warning_html = '<div class="error-handle keystore-file-ios-saved">You have not saved your Backup file yet.</div>';
-            }
+            }*/
         }
 
         //if cached keystore file show the option for downloading it
@@ -3455,8 +3540,8 @@ $(document).on('click', '.open-settings', function () {
                                     //using export plugin, because in iOS there is no such thing as direct file download
                                     //window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
 
-                                    if (window.localStorage.getItem('keystore_file_ios_saved') == null) {
-                                        window.localStorage.setItem('keystore_file_ios_saved', true);
+                                    //if (window.localStorage.getItem('keystore_file_ios_saved') == null) {
+                                        //window.localStorage.setItem('keystore_file_ios_saved', true);
                                         /*var file_name = buildKeystoreFileName(global_state.account);
 
                                         window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function(rootEntry) {
@@ -3482,7 +3567,7 @@ $(document).on('click', '.open-settings', function () {
                                                 $('<div class="error-handle">Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.</div>').insertAfter(this_camping_row);
                                             });
                                         });*/
-                                    }
+                                    //}
 
                                     hideLoader();
                                     window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
@@ -3783,17 +3868,17 @@ function hybridAppFileDownload(file_name, file_content, callback, location, down
     window.resolveLocalFileSystemURL(location, function (fileSystem) {
         if (download_folder) {
             fileSystem.getDirectory('Download', {create: true, exclusive: false}, function (dirEntry) {
-                proceedWithDownload(dirEntry);
+                proceedWithDownload(dirEntry, file_name);
             }, function (err) {
                 console.log(err, 'err');
                 hideLoader();
                 alert('Something went wrong with downloading your file (Core error 5). Please contact admin@dentacoin.com.');
             });
         } else {
-            proceedWithDownload(fileSystem);
+            proceedWithDownload(fileSystem, file_name);
         }
 
-        function proceedWithDownload(dirEntry) {
+        function proceedWithDownload(dirEntry, file_name) {
             dirEntry.getFile(file_name, {create: true, exclusive: true}, function (fileEntry) {
                 fileEntry.createWriter(function (fileWriter) {
                     fileWriter.onwriteend = function (e) {
@@ -3815,9 +3900,9 @@ function hybridAppFileDownload(file_name, file_content, callback, location, down
                     alert('Something went wrong with downloading your file (Core error 4). Please contact admin@dentacoin.com.');
                 });
             }, function (err) {
+                // if download fails, try to download again, but with new unique name
                 console.log(err, 'err');
-                hideLoader();
-                alert('Seems like file with this name already exist in your internal download directory, move it or delete it and try again.');
+                proceedWithDownload(dirEntry, file_name + ' (' + Math.floor(Date.now() / 1000) + ')');
             });
         }
     });
