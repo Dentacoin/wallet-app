@@ -149,6 +149,7 @@
   "import-key" : "Import Private Key (not recommended)",
   "CONTINUE-btn" : "CONTINUE",
   "go-back" : "Go back",
+  "back" : "Back",
   "keep-file-safe" : "Keep your password and backup file safe!<br>NOBODY CAN RESET THEM IF LOST.",
   "access-wallet-error" : "To access your wallet, you need both the password and the backup file which you must export on the next step or from the Settings menu.",
   "access-wallet-error-two" : "To access your wallet, you need both the password and the backup file which will be automatically downloaded on your device.",

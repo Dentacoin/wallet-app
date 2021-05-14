@@ -2674,7 +2674,7 @@ function executeGlobalLogic() {
 
     if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS' && window.localStorage.getItem('keystore_file_ios_saved') == null) {
         setTimeout(function() {
-            $('.ios-camper').html('<div class="ios-reminder-for-downloading-keystore-file"> <div class="white-bg container padding-top-30 padding-bottom-30"><div class="row"><div class="col-xs-12"> <div class="padding-bottom-15 color-warning-red fs-16"><img src="assets/images/attention-icon.svg" alt="Warning icon" class="warning-icon renew-on-lang-switch" data-slug="export"/> '+$('.translates-holder').attr('export')+'</div><div class="custom-google-label-style margin-bottom-15 margin-top-20 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="ios-camper-download-keystore-password" class="renew-on-lang-switch" data-slug="pass-label">'+$('.translates-holder').attr('pass-label')+'</label><input type="password" id="ios-camper-download-keystore-password" class="full-rounded"></div><div class="text-center padding-top-10 padding-bottom-30"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 ios-camper-download-keystore-action renew-on-lang-switch" data-slug="export-btn">'+$('.translates-holder').attr('export-btn')+'</a></div><div style="display: none" class="text-center fs-18 hidden-checkbox"><input type="checkbox" id="keystore-downloaded-verifier"> <label for="keystore-downloaded-verifier" class="lato-bold blinking-animation renew-on-lang-switch" data-slug="i-verify">'+$('.translates-holder').attr('i-verify')+'</label></div></div></div></div></div>');
+            $('.ios-camper').html('<div class="ios-reminder-for-downloading-keystore-file"> <div class="white-bg container padding-top-30 padding-bottom-30"><div class="row"><div class="col-xs-12"> <div class="padding-bottom-15 color-warning-red fs-16"><img src="assets/images/attention-icon.svg" alt="Warning icon" class="warning-icon"/> <span class=" renew-on-lang-switch" data-slug="export">'+$('.translates-holder').attr('export')+'</span></div><div class="custom-google-label-style margin-bottom-15 margin-top-20 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="ios-camper-download-keystore-password" class="renew-on-lang-switch" data-slug="pass-label">'+$('.translates-holder').attr('pass-label')+'</label><input type="password" id="ios-camper-download-keystore-password" class="full-rounded"></div><div class="text-center padding-top-10 padding-bottom-30"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 ios-camper-download-keystore-action renew-on-lang-switch" data-slug="export-btn">'+$('.translates-holder').attr('export-btn')+'</a></div><div style="display: none" class="text-center fs-18 hidden-checkbox"><input type="checkbox" id="keystore-downloaded-verifier"> <label for="keystore-downloaded-verifier" class="lato-bold blinking-animation renew-on-lang-switch" data-slug="i-verify">'+$('.translates-holder').attr('i-verify')+'</label></div></div></div></div></div>');
             $('#main-container').addClass('full-visual-height');
 
             $('.ios-camper .ios-camper-download-keystore-action').click(function () {
@@ -2879,9 +2879,9 @@ function initAccountChecker() {
                     //MOBILE APP
                     if (basic.getMobileOperatingSystem() == 'Android') {
                         showLoader($('.translates-holder').attr('few-mins'));
-                    } else if (basic.getMobileOperatingSystem() == 'iOS') {
+                    }/* else if (basic.getMobileOperatingSystem() == 'iOS') {
                         showLoader($('.translates-holder').attr('few-mins-two'));
-                    }
+                    }*/
                 } else {
                     showLoader($('.translates-holder').attr('few-mins'));
                 }
@@ -2935,7 +2935,7 @@ function initAccountChecker() {
                                 //window.plugins.socialsharing.share(keystore);
 
                                 loginIntoWallet();
-                                hideLoader();
+                                //hideLoader();
 
                                 $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
                                 $('.custom-auth-popup .popup-left .popup-element.second').removeClass('hide');

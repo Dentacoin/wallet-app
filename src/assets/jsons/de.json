@@ -149,6 +149,7 @@
   "import-key" : "Importieren Sie Ihren Privaten Schlüssel (nicht empfohlen)",
   "CONTINUE-btn" : "FORTSETZEN",
   "go-back" : "Zurück",
+  "back" : "Zurück",
   "keep-file-safe" : "Bewahren Sie Ihr Passwort und Ihre Sicherungsdatei sicher auf! <br> Niemand kann sie zurücksetzen, wenn sie verloren gehen.",
   "access-wallet-error" : "Für den Zugriff auf Ihre Wallet benötigen Sie sowohl das Passwort als auch die Sicherungsdatei, die Sie im nächsten Schritt oder vom Einstellungen-Menu exportieren müssen.",
   "access-wallet-error-two" : "Für den Zugriff auf Ihre Wallet benötigen Sie sowohl das Passwort, als auch die Sicherungsdatei, die automatisch auf Ihr Gerät heruntergeladen werden.",
