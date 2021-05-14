@@ -1,4 +1,4 @@
-import { Component, AfterViewInit } from '@angular/core';
+import { Component } from '@angular/core';
 import {Meta, Title} from '@angular/platform-browser';
 
 /*declare function getSendPageData(): any;*/
@@ -8,7 +8,7 @@ import {Meta, Title} from '@angular/platform-browser';
   templateUrl: './send-page.component.html'
 })
 
-export class SendPageComponent implements AfterViewInit {
+export class SendPageComponent {
     constructor(private meta: Meta, private titleService: Title) {
         this.titleService.setTitle('Send Dentacoin (DCN) via Dentacoin Wallet App');
         this.meta.updateTag({name: 'description', content: 'Dentacoin Wallet App enables sending DCN tokens to any valid Ethereum address. Fast, secure and easier than ever!'});
@@ -18,9 +18,5 @@ export class SendPageComponent implements AfterViewInit {
         this.meta.updateTag({property: 'og:image', content: 'https://wallet.dentacoin.com/assets/images/send-dentacoin-wallet-app.png'});
         this.meta.updateTag({property: 'og:image:width', content: '1200'});
         this.meta.updateTag({property: 'og:image:height', content: '630'});
-    }
-
-    ngAfterViewInit() {
-        //getSendPageData();
     }
 }

@@ -8,26 +8,26 @@
                 <div class="col-xs-12 col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2 fs-0">
                     <div class="inline-block search-field">
                         <div class="custom-google-label-style module" data-input-light-blue-border="true">
-                            <label for="search" id="search-label">Enter address/ clinic name or scan QR</label>
+                            <label for="search" id="search-label">{{'enter-or-scan' | translate}}</label>
                             <input type="text" id="search" maxlength="42" autocomplete="off"/>
                         </div>
                         <div class="search-result">
                             <div class="search-header">
-                                <a class="inline-block active" data-type="clinics" href="javascript:void(0)">Clinics/ dentists</a>
-                                <a class="inline-block" data-type="address-book" href="javascript:void(0)">Address Book</a>
+                                <a class="inline-block active" data-type="clinics" href="javascript:void(0)">{{'clinics-dentists' | translate}}</a>
+                                <a class="inline-block" data-type="address-book" href="javascript:void(0)">{{'address-book' | translate}}</a>
                             </div>
                             <div class="search-body">
                                 <div class="clinics hideable-element">
                                     <ul class="clinics-list" id="clinics-list"></ul>
                                 </div>
-                                <div class="address-book hideable-element"><i class="display-block-important padding-top-15 padding-left-15 padding-bottom-15 padding-right-15">Empty Address Book</i></div>
+                                <div class="address-book hideable-element"><i class="display-block-important padding-top-15 padding-left-15 padding-bottom-15 padding-right-15">{{'empty-book' | translate}}</i></div>
                             </div>
                             <div class="search-footer">
-                                <a href="javascript:void(0)" class="add-to-address-book lato-bold">+ Add to Address Book</a>
+                                <a href="javascript:void(0)" class="add-to-address-book lato-bold">{{'add-to' | translate}}</a>
                             </div>
                         </div>
                     </div>
-                    <div class="calibri-light fs-14 color-solid-gray padding-bottom-xs-20 padding-top-5 show-on-xs">For payments to Dentacoin Partner Dentists, just type their name in the field above (Feature not supported yet).</div>
+                    <div class="calibri-light fs-14 color-solid-gray padding-bottom-xs-20 padding-top-5 show-on-xs">{{'for-payments' | translate}}</div>
                     <a href="javascript:void(0)" class="inline-block max-width-80 scan-qr-code">
                         <figure itemscope="" itemtype="http://schema.org/ImageObject">
                             <img src="assets/images/scan-qr-code.svg" class="width-100" alt="Scan QR code icon" itemprop="contentUrl"/>
@@ -36,11 +36,11 @@
                 </div>
             </div>
             <div class="row hide-xs">
-                <div class="col-xs-12 text-center calibri-light fs-16 color-solid-gray padding-top-40">For payments to Dentacoin Partner Dentists, just type their name in the field above.</div>
+                <div class="col-xs-12 text-center calibri-light fs-16 color-solid-gray padding-top-40">{{'for-partner-payments' | translate}}</div>
             </div>
         </div>
         <div class="bottom-absolute-btn text-center">
-            <a href="javascript:void(0)" class="white-light-blue-btn disabled light-blue-border next-send">NEXT</a>
+            <a href="javascript:void(0)" class="white-light-blue-btn disabled light-blue-border next-send">{{'next' | translate}}</a>
         </div>
     </section>
     <section class="padding-top-100 padding-bottom-100 padding-top-xs-0 padding-bottom-xs-50 section-amount-to">
@@ -53,7 +53,7 @@
                         </figure>
                     </a>
                     <div class="send-to text-center padding-top-10 padding-bottom-10">
-                        <span class="fs-16 lato-bold inline-block send-to-label">SEND TO:</span>
+                        <span class="fs-16 lato-bold inline-block send-to-label">{{'send-to' | translate}}</span>
                         <span class="inline-block fs-16 fs-xs-11 address-cell padding-right-10 padding-left-10 padding-left-xs-0 padding-right-xs-0"></span>
                         <a href="javascript:void(0)" class="inline-block edit-address hide-xs">
                             <figure itemscope="" itemtype="http://schema.org/ImageObject">
@@ -74,7 +74,7 @@
                 <div class="col-xs-12 col-sm-5 inline-block-top">
                     <div class="custom-google-label-style module fs-0 flex">
                         <div class="inline-block left-side">
-                            <label for="crypto-amount">Send amount:</label>
+                            <label for="crypto-amount">{{'send-amount' | translate}}</label>
                             <input type="number" id="crypto-amount"/>
                         </div>
                         <select class="inline-block crypto-label input-label" id="active-crypto">
@@ -82,7 +82,7 @@
                             <option value="eth">ETH</option>
                         </select>
                     </div>
-                    <div class="fs-14 padding-left-15 padding-left-xs-0 calibri-light">Enter the amount of Dentacoin / Ether tokens you want to send.</div>
+                    <div class="fs-14 padding-left-15 padding-left-xs-0 calibri-light">{{'enter-amount' | translate}}</div>
                 </div>
                 <figure itemscope="" itemtype="http://schema.org/ImageObject" class="col-xs-12 col-sm-2 inline-block-top padding-top-20 text-center hide-xs">
                     <img src="assets/images/equal-icon.svg" class="width-100 max-width-30" alt="Edit icon" itemprop="contentUrl"/>
@@ -90,23 +90,23 @@
                 <div class="col-xs-12 col-sm-5 inline-block-top padding-top-xs-20">
                     <div class="custom-google-label-style module fs-0 flex">
                         <div class="inline-block left-side">
-                            <label for="usd-val">Equal to:</label>
+                            <label for="usd-val">{{'equal-to' | translate}}</label>
                             <input type="number" id="usd-val"/>
                         </div>
                         <span class="inline-block input-label padding-top-10 padding-top-xs-15">USD</span>
                     </div>
-                    <div class="fs-14 padding-left-15 padding-left-xs-0 calibri-light">The exchange rate may change in the process.</div>
+                    <div class="fs-14 padding-left-15 padding-left-xs-0 calibri-light">{{'the-exchange' | translate}}</div>
                 </div>
             </div>
             <div class="row padding-top-60 padding-top-xs-20 text-center checkbox-row">
                 <div class="col-xs-12 fs-0">
                     <input type="checkbox" id="verified-receiver-address" class="zoom-checkbox inline-block"/>
-                    <label class="fs-16 calibri-light padding-left-5 cursor-pointer inline-block" for="verified-receiver-address">I have verified the Receiver’s wallet address and the amount of tokens I want to send.</label>
+                    <label class="fs-16 calibri-light padding-left-5 cursor-pointer inline-block" for="verified-receiver-address">{{'i-verified' | translate}}</label>
                 </div>
             </div>
         </div>
         <div class="bottom-absolute-btn text-center">
-            <a href="javascript:void(0)" class="white-light-blue-btn light-blue-border open-transaction-recipe">SEND</a>
+            <a href="javascript:void(0)" class="white-light-blue-btn light-blue-border open-transaction-recipe">{{'send-btn' | translate}}</a>
         </div>
     </section>
 </div>

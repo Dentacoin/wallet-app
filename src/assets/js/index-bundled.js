@@ -91164,7 +91164,7 @@ function generateKeystoreFile(password, callback) {
     }, function(result) {
         const public_key = EthCrypto.publicKeyByPrivateKey(dk.privateKey.toString('hex'));
 
-        callback(public_key, result);
+        callback(public_key, result, dk.privateKey.toString('hex'));
     });
 }
 
@@ -91244,6 +91244,12 @@ var assurance_config;
 var iframeHeightListenerInit = true;
 var isDeviceReady = false;
 var lastHybridScreen;
+var translates = {
+    defaultErrorMessage : $('.translates-holder').attr('smth-went-wrong'),
+    txOnHold : $('.translates-holder').attr('hold-on'),
+    successfullySigned : $('.translates-holder').attr('data-assurance-success'),
+    pleaseUpload : $('.translates-holder').attr('data-valid-keytore')
+};
 var inAppBrowserSettings = 'location=yes,zoom=no,toolbarposition=top,closebuttoncaption=Back,presentationstyle=fullscreen,fullscreen=yes';
 if (basic.getMobileOperatingSystem() == 'iOS') {
     inAppBrowserSettings = 'location=no,hardwareback=no,zoom=no,toolbarposition=top,closebuttoncaption=Back,presentationstyle=fullscreen,fullscreen=yes';
@@ -91278,6 +91284,7 @@ window.addEventListener('load', function () {
 // event called only on hybrid app
 document.addEventListener('deviceready', function () {
     console.log('================= deviceready ===================');
+    console.log(cordova.InAppBrowser, 'cordova.InAppBrowser');
     isDeviceReady = true;
 
     // overwrite window.open to work with inappbrowser
@@ -91294,13 +91301,13 @@ document.addEventListener('deviceready', function () {
 
     if (states[networkState] == 'no-internet') {
         console.log('===== we are offline =====');
-        $('header .camping-currently-offline').html('<div class="currently-offline">You are currently offline</div>');
+        $('header .camping-currently-offline').html('<div class="currently-offline">'+$('.translates-holder').attr('data-offline')+'</div>');
     }
 
     //event to track whenever device lose internet connection
     document.addEventListener('offline', function (e) {
         console.log('===== we are offline =====');
-        $('header .camping-currently-offline').html('<div class="currently-offline">You are currently offline</div>');
+        $('header .camping-currently-offline').html('<div class="currently-offline">'+$('.translates-holder').attr('data-offline')+'</div>');
     }, false);
 
     //event to track whenever device connect to internet
@@ -91324,7 +91331,7 @@ function checkIfInternetConnection() {
                     $('header .camping-currently-offline').html('');
                     internet_variable = navigator.onLine;
                 } else {
-                    $('header .camping-currently-offline').html('<div class="currently-offline">You are currently offline</div>');
+                    $('header .camping-currently-offline').html('<div class="currently-offline">'+$('.translates-holder').attr('data-offline')+'</div>');
                     internet_variable = navigator.onLine;
                 }
             }
@@ -91415,19 +91422,25 @@ var dApp = {
                     }
                 });
 
-                function proceedWithMetaMaskWalletConnection(account) {
-                    if (ethereum.isMetaMask) {
-                        projectData.general_logic.addDCNTokenToMetamask();
+                async function proceedWithMetaMaskWalletConnection(account) {
+                    var chainId = await ethereum.request({method: 'eth_chainId'});
+                    if (chainId != '0x1') {
+                        basic.showAlert($('.translates-holder').attr('data-wrong-chain'), '', true);
+                        return false;
+                    } else {
+                        if (ethereum.isMetaMask) {
+                            projectData.general_logic.addDCNTokenToMetamask();
+                        }
+
+                        global_state.account = account;
+
+                        web3 = getWeb3(window['ethereum']);
+                        dApp.web3_1_0 = web3;
+                        meta_mask_installed = true;
+
+                        basic.closeDialog();
+                        continueWithContractInstanceInit();
                     }
-
-                    global_state.account = account;
-
-                    web3 = getWeb3(window['ethereum']);
-                    dApp.web3_1_0 = web3;
-                    meta_mask_installed = true;
-
-                    basic.closeDialog();
-                    continueWithContractInstanceInit();
                 }
             });
         } else if (typeof(web3) !== 'undefined' && window.localStorage.getItem('custom_wallet_over_external_web3_provider') == null) {
@@ -91456,6 +91469,8 @@ var dApp = {
             if ((typeof(global_state.account) == 'undefined' || !projectData.utils.innerAddressCheck(global_state.account)) && typeof(web3) !== 'undefined' && window.localStorage.getItem('custom_wallet_over_external_web3_provider') == null) {
                 $('.logo-and-settings-row .open-settings-col').remove();
             }
+
+            // global_state.account = projectData.utils.checksumAddress(global_state.account);
 
             //init contract
             if (typeof(global_state.account) != 'undefined' && projectData.utils.innerAddressCheck(global_state.account)) {
@@ -91523,7 +91538,7 @@ var dApp = {
                                         projectData.requests.getDentacoinDataByCoingeckoProvider(function (dentacoinResponse) {
                                             var dentacoin_data = dentacoinResponse;
 
-                                            $('.camping-transaction-history').html('<h2 class="lato-bold fs-25 text-center white-crossed-label color-white"><span>Transaction history</span></h2><div class="transaction-history container"><div class="row"><div class="col-xs-12 no-gutter-xs col-md-10 col-md-offset-1 padding-top-20"><table class="color-white"><tbody></tbody></table></div></div><div class="row camping-show-more"></div></div>');
+                                            $('.camping-transaction-history').html('<h2 class="lato-bold fs-25 text-center white-crossed-label color-white"><span class="renew-on-lang-switch" data-slug="tx-history">'+$('.translates-holder').attr('tx-history')+'</span></h2><div class="transaction-history container"><div class="row"><div class="col-xs-12 no-gutter-xs col-md-10 col-md-offset-1 padding-top-20"><table class="color-white"><tbody></tbody></table></div></div><div class="row camping-show-more"></div></div>');
 
                                             $(document).on('click', '.camping-transaction-history .show-more', function () {
                                                 $(this).fadeOut();
@@ -91597,7 +91612,7 @@ var dApp = {
 
                                                     if (merged_events_arr.length > 5) {
                                                         transaction_history_html += '<tr class="loading-tr"><td class="text-center" colspan="5"><figure class="inline-block rotate-animation"><img src="assets/images/exchange.png" alt="Exchange icon"/></figure></td></tr>';
-                                                        $('.camping-transaction-history .camping-show-more').html('<div class="col-xs-12 text-center padding-top-30"><a href="javascript:void(0)" class="white-light-blue-btn show-more">Show more</a></div>');
+                                                        $('.camping-transaction-history .camping-show-more').html('<div class="col-xs-12 text-center padding-top-30"><a href="javascript:void(0)" class="white-light-blue-btn show-more renew-on-lang-switch" data-slug="show-more">'+$('.translates-holder').attr('show-more')+'</a></div>');
                                                         recursiveLoopForRestOfHistory(5);
                                                     }
 
@@ -91672,7 +91687,7 @@ var dApp = {
                                         });
                                     });
                                 } else {
-                                    $('.camping-transaction-history').html('<h2 class="lato-bold fs-16 text-center color-white"><span>No transactions yet</span></h2>');
+                                    $('.camping-transaction-history').html('<h2 class="lato-bold fs-16 text-center color-white"><span class="renew-on-lang-switch" data-slug="no-tx">'+$('.translates-holder').attr('no-tx')+'</span></h2>');
                                 }
                             }
                         });
@@ -91724,7 +91739,7 @@ var dApp = {
             }).on('transactionHash', function (hash) {
                 displayMessageOnTransactionSend('Dentacoin tokens', hash);
             }).catch(function (err) {
-                basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
+                basic.showAlert(translates.defaultErrorMessage, '', true);
             });
         }
     },
@@ -91868,7 +91883,7 @@ var projectData = {
                 } else {
                     $('.eth-address-container').click(function () {
                         basic.closeDialog();
-                        basic.showDialog('<h2 class="fs-18">Your Dentacoin Address</h2><figure itemscope="" itemtype="http://schema.org/ImageObject" id="mobile-qrcode" class="padding-top-20 padding-bottom-20"></figure><a href="javascript:void(0)" class="mobile-copy-address text-center fs-0" data-toggle="tooltip" title="Copied." data-placement="bottom" data-clipboard-target="#mobile-copy-address"><figure class="inline-block mobile-copy-icon" itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/black-copy-icon.svg" class="max-width-20 width-100 margin-right-5" alt="Copy address to clipboard icon" itemprop="contentUrl"/></figure><input type="text" readonly class="address-value inline-block fs-18 fs-xs-10" id="mobile-copy-address"/></a>', 'mobile-dentacoin-address-and-qr', null);
+                        basic.showDialog('<h2 class="renew-on-lang-switch fs-18" data-slug="dcn-address">'+$('.translates-holder').attr('dcn-address')+'</h2><figure itemscope="" itemtype="http://schema.org/ImageObject" id="mobile-qrcode" class="padding-top-20 padding-bottom-20"></figure><a href="javascript:void(0)" class="mobile-copy-address text-center fs-0" data-toggle="tooltip" title="Copied." data-placement="bottom" data-clipboard-target="#mobile-copy-address"><figure class="inline-block mobile-copy-icon" itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/black-copy-icon.svg" class="max-width-20 width-100 margin-right-5" alt="Copy address to clipboard icon" itemprop="contentUrl"/></figure><input type="text" readonly class="address-value inline-block fs-18 fs-xs-10" id="mobile-copy-address"/></a>', 'mobile-dentacoin-address-and-qr', null);
 
                         $('.mobile-dentacoin-address-and-qr .address-value').val(projectData.utils.checksumAddress(global_state.account));
 
@@ -91876,7 +91891,6 @@ var projectData = {
                             width: 180,
                             height: 180
                         });
-
                         qrcode.makeCode(projectData.utils.checksumAddress(global_state.account));
 
                         var clipboard = new ClipboardJS('.mobile-copy-address');
@@ -91929,10 +91943,8 @@ var projectData = {
             projectData.utils.saveHybridAppCurrentScreen();
 
             projectData.requests.getMinimumUsdValueFromIndacoin(function (minimumIndacoinUsdForTransaction) {
-                console.log(minimumIndacoinUsdForTransaction, 'minimumIndacoinUsdForTransaction');
                 // rounding to 5 or 0
                 minimumIndacoinUsdForTransaction = Math.ceil(minimumIndacoinUsdForTransaction / 5) * 5;
-                console.log(minimumIndacoinUsdForTransaction, 'minimumIndacoinUsdForTransaction');
                 $('.min-usd-amount').html(minimumIndacoinUsdForTransaction);
 
                 showMobileAppBannerForDesktopBrowsers();
@@ -91968,8 +91980,6 @@ var projectData = {
 
                     function passedGetETHDataRequest(indacoin_eth_data) {
                         //var eth_for_one_usd = parseFloat(indacoin_eth_data.eth.value) / 100;
-                        var minimumUsdValueOfEth = parseFloat(indacoin_eth_data.eth.value);
-
                         $('section.ready-to-purchase-with-external-api #usd-value').val(minimumIndacoinUsdForTransaction);
                         $('section.ready-to-purchase-with-external-api #crypto-amount').val(Math.floor(minimumUsdValueOfDcn));
 
@@ -91978,7 +91988,7 @@ var projectData = {
                         }
 
                         if (Math.floor(minimumUsdValueOfDcn) == 0) {
-                            $('.camping-for-issue-with-the-external-provider').html('<div class="col-xs-12"><div class="alert alert-info">Something went wrong with our external provider. Please try again later.</div></div>');
+                            $('.camping-for-issue-with-the-external-provider').html('<div class="col-xs-12"><div class="alert alert-info">'+$('.translates-holder').attr('smth-wrong')+'</div></div>');
                         }
 
                         hideLoader();
@@ -92038,60 +92048,20 @@ var projectData = {
                             }
                         });
 
-                        // on changing the crypto value
-                        /*$('section.ready-to-purchase-with-external-api #crypto-amount').on('input', function () {
-                            if ($(this).val().trim() <= 0) {
-                                $('section.ready-to-purchase-with-external-api #usd-value').val(minimumIndacoinUsdForTransaction);
-                                if ($('section.ready-to-purchase-with-external-api #active-crypto').val() == 'dcn') {
-                                    $(this).val(Math.floor(dcn_for_one_usd * parseFloat($('section.ready-to-purchase-with-external-api #usd-value').val().trim())));
-                                } else if ($('section.ready-to-purchase-with-external-api #active-crypto').val() == 'eth') {
-                                    $(this).val(eth_for_one_usd * parseFloat($('section.ready-to-purchase-with-external-api #usd-value').val().trim()));
-                                }
-                            } else {
-                                var divisor;
-                                if ($('section.ready-to-purchase-with-external-api #active-crypto').val() == 'dcn') {
-                                    divisor = dcn_for_one_usd;
-                                } else if ($('section.ready-to-purchase-with-external-api #active-crypto').val() == 'eth') {
-                                    divisor = eth_for_one_usd;
-                                }
-
-                                if (parseFloat($(this).val().trim()) / divisor > 6000) {
-                                    $(this).val(divisor * 6000);
-                                }
-                                $('section.ready-to-purchase-with-external-api #usd-value').val(parseFloat($(this).val().trim()) / divisor);
-
-                                if (parseInt($('section.ready-to-purchase-with-external-api #usd-value').val()) < minimumIndacoinUsdForTransaction) {
-                                    $('section.ready-to-purchase-with-external-api #usd-value').parent().addClass('error-field');
-                                } else {
-                                    $('section.ready-to-purchase-with-external-api #usd-value').parent().removeClass('error-field');
-                                }
-                            }
-                        });*/
-
                         //on BUY action button make few inputs validations and redirect to indacoin external link
                         $('.buy-crypto-btn').click(function () {
                             var currency = $('section.ready-to-purchase-with-external-api #active-crypto').val();
-                            /*var currency_amount_for_one_usd;
-                            if (currency == 'dcn') {
-                                currency_amount_for_one_usd = dcn_for_one_usd;
-                            } else if (currency == 'eth') {
-                                currency_amount_for_one_usd = eth_for_one_usd;
-                            }*/
 
                             if (parseFloat($('section.ready-to-purchase-with-external-api #usd-value').val().trim()) < minimumIndacoinUsdForTransaction) {
-                                basic.showAlert('The minimum transaction limit is '+minimumIndacoinUsdForTransaction+' USD.', '', true);
+                                basic.showAlert($('.translates-holder').attr('min-tx-limit') + ' ' + minimumIndacoinUsdForTransaction+' USD.', '', true);
                             } else if (parseFloat($('section.ready-to-purchase-with-external-api #usd-value').val().trim()) > 6000) {
-                                basic.showAlert('The maximum transaction limit is 6000 USD.', '', true);
-                            } /*else if (parseFloat($('section.ready-to-purchase-with-external-api #crypto-amount').val().trim()) < Math.floor(currency_amount_for_one_usd * minimumIndacoinUsdForTransaction)) {
-                                basic.showAlert('The minimum transaction limit is '+minimumIndacoinUsdForTransaction+' USD in ' + currency.toUpperCase() + '.', '', true);
-                            } else if (parseFloat($('section.ready-to-purchase-with-external-api #crypto-amount').val().trim()) > currency_amount_for_one_usd * 6000) {
-                                basic.showAlert('The maximum transaction limit is 6000 USD in ' + currency.toUpperCase() + '.', '', true);
-                            }*/ else if (!projectData.utils.innerAddressCheck($('section.ready-to-purchase-with-external-api input#dcn_address').val().trim())) {
-                                basic.showAlert('Please enter a valid wallet address. It should start with "0x" and be followed by 40 characters (numbers and letters).', '', true);
+                                basic.showAlert($('.translates-holder').attr('max-tx-limit'), '', true);
+                            } else if (!projectData.utils.innerAddressCheck($('section.ready-to-purchase-with-external-api input#dcn_address').val().trim())) {
+                                basic.showAlert($('.translates-holder').attr('valid-wallet'), '', true);
                             } else if (!basic.validateEmail($('section.ready-to-purchase-with-external-api input#email').val().trim())) {
-                                basic.showAlert('Please enter a valid email.', '', true);
+                                basic.showAlert($('.translates-holder').attr('valid-email'), '', true);
                             } else if (!$('section.ready-to-purchase-with-external-api #privacy-policy-agree').is(':checked')) {
-                                basic.showAlert('Please agree with our Privacy Policy.', '', true);
+                                basic.showAlert($('.translates-holder').attr('agree-policy'), '', true);
                             } else {
                                 window.open('https://indacoin.com/gw/payment_form?partner=dentacoin&cur_from=USD&cur_to=' + currency.toUpperCase() + '&amount=' + $('section.ready-to-purchase-with-external-api #usd-value').val().trim() + '&address=' + $('section.ready-to-purchase-with-external-api input#dcn_address').val().trim() + '&user_id=' + $('section.ready-to-purchase-with-external-api input#email').val().trim(), '_blank');
                             }
@@ -92210,7 +92180,7 @@ var projectData = {
                                         }
                                     });
                                 } else {
-                                    $('.search-field #search-label').html('Enter address/ clinic name or scan QR');
+                                    $('.search-field #search-label').html($('.translates-holder').attr('address-clinic-name'));
                                     $('.search-result .search-body ul li').removeClass('hide-this');
                                     $('.search-result').hide();
                                 }
@@ -92251,12 +92221,12 @@ var projectData = {
                                         updateAddressBooklocalStorageVariable();
                                     }
                                 };
-                                basic.showConfirm('Are you sure you want to remove this Wallet Address from Address Book?', '', delete_address_book_wallet_address, true);
+                                basic.showConfirm($('.translates-holder').attr('wallet-address'), '', delete_address_book_wallet_address, true);
                             });
 
                             $('.search-field .search-footer .add-to-address-book').click(function () {
                                 basic.closeDialog();
-                                basic.showDialog('<h2 class="fs-18 padding-bottom-20 text-center">Save to Address Book</h2><div class="custom-google-label-style module max-width-350 margin-0-auto margin-bottom-15" data-input-light-blue-border="true"><label for="contact-name">Name:</label><input type="text" id="contact-name" maxlength="100" class="full-rounded"></div><div class="custom-google-label-style module max-width-350 margin-0-auto" data-input-light-blue-border="true"><label for="wallet-address">Wallet Address:</label><input type="text" id="wallet-address" maxlength="42" class="full-rounded"></div><div class="padding-top-10"><a href="javascript:void(0)" class="display-block-important margin-0-auto max-width-80 add-to-address-book-scan-qr-code"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/scan-qr-code.svg" class="width-100" alt="Scan QR code icon" itemprop="contentUrl"/></figure></a></div><div class="padding-top-20 padding-bottom-15 text-center"><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border save-to-address-book min-width-160">Save</a></div>', 'popup-save-to-address-book', null, true);
+                                basic.showDialog('<h2 class="fs-18 padding-bottom-20 text-center">'+$('.translates-holder').attr('save-address-book')+'</h2><div class="custom-google-label-style module max-width-350 margin-0-auto margin-bottom-15" data-input-light-blue-border="true"><label for="contact-name">'+$('.translates-holder').attr('name-field')+'</label><input type="text" id="contact-name" maxlength="100" class="full-rounded"></div><div class="custom-google-label-style module max-width-350 margin-0-auto" data-input-light-blue-border="true"><label for="wallet-address">'+$('.translates-holder').attr('wallet-address-field')+'</label><input type="text" id="wallet-address" maxlength="42" class="full-rounded"></div><div class="padding-top-10"><a href="javascript:void(0)" class="display-block-important margin-0-auto max-width-80 add-to-address-book-scan-qr-code"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/scan-qr-code.svg" class="width-100" alt="Scan QR code icon" itemprop="contentUrl"/></figure></a></div><div class="padding-top-20 padding-bottom-15 text-center"><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border save-to-address-book min-width-160">'+$('.translates-holder').attr('save')+'</a></div>', 'popup-save-to-address-book', null, true);
 
                                 //open QR code reader to add new address to address book
                                 $('.add-to-address-book-scan-qr-code').click(function () {
@@ -92266,7 +92236,7 @@ var projectData = {
                                                 $('.popup-save-to-address-book #wallet-address').val(result.text).trigger('change');
                                             },
                                             function (error) {
-                                                alert('Scanning failed. Please go to Settings/ Permissions and allow Camera access to Dentacoin Wallet and try again.');
+                                                alert($('.translates-holder').attr('scanning-failed'));
                                             }
                                         );
                                     } else {
@@ -92318,7 +92288,7 @@ var projectData = {
                                     if ($('.popup-save-to-address-book #contact-name').val().trim() == '') {
                                         basic.showAlert('Please enter name.', '', true);
                                     } else if ($('.popup-save-to-address-book #wallet-address').val().trim() == '' || !projectData.utils.innerAddressCheck($('.popup-save-to-address-book #wallet-address').val().trim())) {
-                                        basic.showAlert('Please enter valid Wallet Address.', '', true);
+                                        basic.showAlert($('.translates-holder').attr('wallet-error'), '', true);
                                     } else {
                                         var address_book_list_in_storage = window.localStorage.getItem('address_book');
 
@@ -92330,7 +92300,7 @@ var projectData = {
 
                                             updateAddressBookHtml();
                                             basic.closeDialog();
-                                            basic.showAlert('Address book updated successfully.', '', true);
+                                            basic.showAlert($('.translates-holder').attr('address-book-response'), '', true);
                                         } else {
                                             if (basic.isJsonString(address_book_list_in_storage)) {
                                                 var object = JSON.parse(address_book_list_in_storage);
@@ -92343,7 +92313,7 @@ var projectData = {
 
                                                 updateAddressBookHtml();
                                                 basic.closeDialog();
-                                                basic.showAlert('Address book updated successfully.', '', true);
+                                                basic.showAlert($('.translates-holder').attr('address-book-response'), '', true);
                                             } else {
                                                 //if the local storage variable is not object remove it and recreate it with object
                                                 window.localStorage.removeItem('address_book');
@@ -92355,7 +92325,7 @@ var projectData = {
 
                                                 updateAddressBookHtml();
                                                 basic.closeDialog();
-                                                basic.showAlert('Address book updated successfully.', '', true);
+                                                basic.showAlert($('.translates-holder').attr('address-book-response'), '', true);
                                             }
                                         }
                                     }
@@ -92400,7 +92370,7 @@ var projectData = {
                                         dApp.methods.getDCNBalance(global_state.account, function (err, response) {
                                             var dcn_balance = parseInt(response);
 
-                                            $('.spendable-amount').addClass('active').html('<div class="spendable-dcn-amount inline-block fs-18 fs-xs-16 lato-bold" data-value="' + dcn_balance + '"><label class="color-light-blue">Spendable amount: </label><span></span></div><div class="max-btn inline-block"><button class="white-light-blue-btn use-max-dcn-amount">Max</button></div>');
+                                            $('.spendable-amount').addClass('active').html('<div class="spendable-dcn-amount inline-block fs-18 fs-xs-16 lato-bold" data-value="' + dcn_balance + '"><label class="color-light-blue renew-on-lang-switch" data-slug="spendable-amount">'+$('.translates-holder').attr('spendable-amount')+' </label><span></span></div><div class="max-btn inline-block"><button class="white-light-blue-btn use-max-dcn-amount renew-on-lang-switch" data-slug="max">'+$('.translates-holder').attr('max')+'</button></div>');
                                             $('.spendable-amount .spendable-dcn-amount span').html(dcn_balance + ' DCN');
                                             $('.section-amount-to #active-crypto').val('dcn');
 
@@ -92505,7 +92475,7 @@ var projectData = {
 
                                             if (isNaN(crypto_val) || crypto_val == '' || crypto_val == 0 || ((isNaN(usd_val) || usd_val == '' || usd_val == 0) && dentacoin_data > 0)) {
                                                 //checking if not a number or empty values
-                                                basic.showAlert('Please make sure all values are numbers.', '', true);
+                                                basic.showAlert($('.translates-holder').attr('ly-numbers'), '', true);
                                                 return false;
                                             }
 
@@ -92522,13 +92492,13 @@ var projectData = {
                                                     } else {
                                                         if (crypto_val < 0 || (usd_val < 0 && dentacoin_data > 0)) {
                                                             //checking if negative numbers
-                                                            basic.showAlert('Please make sure all values are greater than 0.', '', true);
+                                                            basic.showAlert($('.translates-holder').attr('greater-than-zero'), '', true);
                                                             return false;
                                                         } else if (crypto_val < 10 && $('.section-amount-to #active-crypto').val() == 'dcn') {
                                                             //checking if dcn value is lesser than 10 (contract condition)
-                                                            basic.showAlert('Please make sure DCN value is greater than 10. You cannot send less than 10 DCN.', '', true);
+                                                            basic.showAlert($('.translates-holder').attr('greater-dcn-value'), '', true);
                                                             return false;
-                                                        } else if (0.005 > parseFloat(projectData.utils.fromWei(eth_balance))) {
+                                                        }/* else if (0.005 > parseFloat(projectData.utils.fromWei(eth_balance))) {
                                                             //checking if current balance is lower than the desired value to send
                                                             if ($('.section-amount-to #active-crypto').val() == 'dcn') {
                                                                 basic.showAlert('For sending Dentacoins you need at least 0.005 ETH. Please refill.', '', true);
@@ -92536,19 +92506,19 @@ var projectData = {
                                                                 basic.showAlert('For sending Ethereum you need at least 0.005 ETH. Please refill.', '', true);
                                                             }
                                                             return false;
-                                                        } else if ($('.section-amount-to #active-crypto').val() == 'dcn' && crypto_val > parseInt(dcn_balance)) {
-                                                            basic.showAlert('The value you want to send is higher than your balance.', '', true);
+                                                        }*/ else if ($('.section-amount-to #active-crypto').val() == 'dcn' && crypto_val > parseInt(dcn_balance)) {
+                                                            basic.showAlert($('.translates-holder').attr('higher-than-balance'), '', true);
                                                             return false;
                                                         } else if ($('.section-amount-to #active-crypto').val() == 'eth' && crypto_val > parseFloat(projectData.utils.fromWei(eth_balance))) {
-                                                            basic.showAlert('The value you want to send is higher than your balance.', '', true);
+                                                            basic.showAlert($('.translates-holder').attr('higher-than-balance'), '', true);
                                                             return false;
                                                         } else if (!projectData.utils.innerAddressCheck(sending_to_address)) {
                                                             //checking again if valid address
-                                                            basic.showAlert('Please enter a valid wallet address. It should start with "0x" and be followed by 40 characters (numbers and letters).', '', true);
+                                                            basic.showAlert($('.translates-holder').attr('enter-valid-address'), '', true);
                                                             return false;
                                                         } else if (!$('.section-amount-to #verified-receiver-address').is(':checked')) {
                                                             //checking again if valid address
-                                                            basic.showAlert('Please check the checkbox.', '', true);
+                                                            basic.showAlert($('.translates-holder').attr('checkbox'), '', true);
                                                             return false;
                                                         }
 
@@ -92563,7 +92533,7 @@ var projectData = {
                                                                 }).on('transactionHash', function (hash) {
                                                                     displayMessageOnTransactionSend('Ethers', hash);
                                                                 }).catch(function (err) {
-                                                                    basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
+                                                                    basic.showAlert(translates.defaultErrorMessage, '', true);
                                                                 });
                                                             }
                                                         } else {
@@ -92610,7 +92580,7 @@ var projectData = {
                                                             }
 
                                                             var eth_fee = projectData.utils.fromWei((on_popup_load_gas_price * gasLimit).toString(), 'ether');
-                                                            var transaction_popup_html = '<div class="tx-data-holder" data-visibleGasPriceNumber="'+visibleGasPriceNumber+'" data-initial-visibleGasPriceNumber="'+visibleGasPriceNumber+'" data-gasLimit="'+gasLimit+'" data-nonce="'+pendingNonce+'" data-initial-nonce="'+pendingNonce+'" data-on_popup_load_gas_price="'+on_popup_load_gas_price+'"></div><div class="title">Send confirmation</div><div class="pictogram-and-dcn-usd-price"><svg version="1.1" class="width-100 max-width-100 margin-bottom-10" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><style type="text/css">.st0-recipe{fill:#FFFFFF;}.st1-recipe{fill:#CA675A;}.st2-recipe{fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="100" width="105.7" x="-7.2" y="-6.4"></sliceSourceBounds></sfw></metadata><circle class="st0-recipe" cx="50" cy="50" r="50"/><g><g><g><path class="st1-recipe" d="M50.1,93.7c-18.7,0-36-12.4-41.3-31.3C2.4,39.6,15.8,16,38.5,9.6C48.9,6.7,60,7.8,69.6,12.8c1.2,0.6,1.6,2,1,3.2s-2,1.6-3.2,1c-8.6-4.4-18.4-5.4-27.7-2.8c-20.1,5.6-32,26.7-26.3,46.9s26.7,32.1,46.9,26.4s32.1-26.7,26.4-46.9c-1.1-3.9-2.8-7.6-5-10.9c-0.7-1.1-0.4-2.6,0.7-3.3c1.1-0.7,2.6-0.4,3.3,0.7c2.5,3.8,4.4,7.9,5.6,12.3c6.4,22.8-7,46.5-29.7,52.8C57.8,93.2,53.9,93.7,50.1,93.7z"/></g><g><path class="st1-recipe" d="M33.1,78.6c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.4l40.4-50.5c0.8-1,2.3-1.2,3.4-0.4c1,0.8,1.2,2.3,0.4,3.4L35,77.7C34.5,78.3,33.8,78.6,33.1,78.6z"/></g><g><g><path class="st2-recipe" d="M105.7,56.9"/></g></g></g><g><path class="st1-recipe" d="M73.7,54.2c-0.1,0-0.2,0-0.2,0c-1.3-0.2-2.3-1.4-2.2-2.7L74,23.9L47.6,39.8c-1.1,0.7-2.6,0.3-3.3-0.8c-0.7-1.1-0.3-2.6,0.8-3.3l34.5-20.8L76.1,52C76,53.2,74.9,54.2,73.7,54.2z"/></g></g></svg><div class="dcn-amount">-' + crypto_val + ' ' + token_symbol + '</div>' + usdHtml + '</div><div class="confirm-row to"> <div class="label inline-block">To:</div><div class="value inline-block">' + projectData.utils.checksumAddress(sending_to_address) + '</div></div><div class="confirm-row from"> <div class="label inline-block">From:</div><div class="value inline-block">' + global_state.account + '</div></div><div class="confirm-row nonce"> <div class="label inline-block">Nonce:</div><div class="value inline-block">' + pendingNonce + '</div></div><div class="confirm-row fee"> <div class="label inline-block">Ether fee:</div><div class="value inline-block"><div class="inline-block eth-value">' + parseFloat(eth_fee).toFixed(8) + '</div><div class="inline-block tx-settings-icon"><a href="javascript:void(0);"><svg id="e68760ed-3659-43b9-ad7b-73b5b189fe7a" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 56.81 61"><defs><clipPath id="f9d5df6d-58de-4fe9-baeb-2948a9aeab40"><rect class="bb542d8f-936a-4524-831e-8152ec1848dd" x="-3.59" y="-1.5" width="64" height="64"/></clipPath></defs><g class="e20091d8-5cd8-4fc6-97bc-34f6a53a9fd6"><path style="fill:#888;" d="M28.29,61a25,25,0,0,1-4.05-.3,2.46,2.46,0,0,1-1.83-1.63L20.8,53.51a2.8,2.8,0,0,0-1.06-1.36l-5.86-3.38a2.67,2.67,0,0,0-1.69-.22L6.67,50a2.48,2.48,0,0,1-2.33-.73A28,28,0,0,1,.16,42.1a2.47,2.47,0,0,1,.5-2.39l4.15-4.33a2.76,2.76,0,0,0,.64-1.6V27a2.6,2.6,0,0,0-.65-1.57L.66,21.31a2.43,2.43,0,0,1-.52-2.38A31.86,31.86,0,0,1,2,15.27a30.47,30.47,0,0,1,2.33-3.49A2.48,2.48,0,0,1,6.61,11l5.9,1.45a2.69,2.69,0,0,0,1.7-.24l5.86-3.38a2.67,2.67,0,0,0,1-1.35L22.6,1.93A2.4,2.4,0,0,1,24.4.29a27.62,27.62,0,0,1,8.22,0A2.42,2.42,0,0,1,34.41,2L35.89,7.5a2.67,2.67,0,0,0,1,1.35l5.86,3.38a2.63,2.63,0,0,0,1.68.22L50,11a2.44,2.44,0,0,1,2.33.73,27.84,27.84,0,0,1,4.3,7.48,2.46,2.46,0,0,1-.54,2.39L52.2,25.45A2.66,2.66,0,0,0,51.55,27v6.76a2.72,2.72,0,0,0,.65,1.58l3.94,3.94a2.46,2.46,0,0,1,.54,2.38,29.28,29.28,0,0,1-2,4,29,29,0,0,1-2.32,3.5,2.44,2.44,0,0,1-2.33.73l-5.24-1.4a2.67,2.67,0,0,0-1.69.22l-5.86,3.38a2.71,2.71,0,0,0-1,1.35l-1.46,5.44A2.48,2.48,0,0,1,33,60.61h0A25.92,25.92,0,0,1,28.29,61ZM12.68,47.49a3.62,3.62,0,0,1,1.7.41l5.86,3.39a3.67,3.67,0,0,1,1.52,1.94l1.61,5.56a1.48,1.48,0,0,0,1,.92,27.08,27.08,0,0,0,8.38-.08h0a1.49,1.49,0,0,0,1-.94l1.46-5.45a3.65,3.65,0,0,1,1.5-2l5.86-3.39a3.64,3.64,0,0,1,2.45-.32L50.31,49a1.42,1.42,0,0,0,1.3-.41,29.64,29.64,0,0,0,2.23-3.36,30,30,0,0,0,1.9-3.87,1.5,1.5,0,0,0-.3-1.35l-3.95-3.94a3.6,3.6,0,0,1-.94-2.28V27a3.64,3.64,0,0,1,.94-2.28l3.89-3.88a1.48,1.48,0,0,0,.3-1.34,26.75,26.75,0,0,0-4.12-7.17,1.45,1.45,0,0,0-1.31-.41l-5.52,1.48a3.57,3.57,0,0,1-2.44-.33L36.43,9.71a3.59,3.59,0,0,1-1.5-2L33.45,2.24a1.43,1.43,0,0,0-1-.93,26.61,26.61,0,0,0-7.87,0,1.4,1.4,0,0,0-1,.92l-1.5,5.56a3.54,3.54,0,0,1-1.5,2l-5.86,3.38a3.68,3.68,0,0,1-2.44.35L6.37,12a1.5,1.5,0,0,0-1.32.43,31.07,31.07,0,0,0-2.22,3.35,29.61,29.61,0,0,0-1.75,3.51,1.41,1.41,0,0,0,.29,1.32l4.14,4.14A3.64,3.64,0,0,1,6.45,27v6.76a3.73,3.73,0,0,1-.92,2.29L1.38,40.4a1.47,1.47,0,0,0-.28,1.35,26.44,26.44,0,0,0,4,6.9,1.41,1.41,0,0,0,1.3.41l5.52-1.48A3,3,0,0,1,12.68,47.49Zm15.72-3a14,14,0,1,1,14-14A14,14,0,0,1,28.4,44.53Zm0-27.06a13,13,0,1,0,13,13A13,13,0,0,0,28.4,17.47Z"/><path style="fill:#888;" d="M28.29,60.87a25.85,25.85,0,0,1-4.11-.31,4.3,4.3,0,0,1-3.29-3l-1.51-5.17s-.07-.07-.12-.11l-5.37-3.1s0,0-.09,0L8.74,50.61A4.27,4.27,0,0,1,4.5,49.27,27.7,27.7,0,0,1,.26,42a4.32,4.32,0,0,1,.9-4.33l3.86-4s0-.1,0-.16V27.27s0,0-.06-.08L1.2,23.4a4.23,4.23,0,0,1-1-4.35,29.26,29.26,0,0,1,1.84-3.71A31.23,31.23,0,0,1,4.44,11.8a4.32,4.32,0,0,1,4.21-1.37l5.48,1.35s.1,0,.15,0l5.3-3.07a.41.41,0,0,0,.1-.13l1.37-5.1a4.24,4.24,0,0,1,3.3-3,27.69,27.69,0,0,1,8.33,0,4.26,4.26,0,0,1,3.27,3l1.36,5a.6.6,0,0,0,.09.13l5.32,3.07.16,0,5-1.36a4.28,4.28,0,0,1,4.24,1.33,28.05,28.05,0,0,1,4.36,7.58,4.31,4.31,0,0,1-1,4.34L52,27.19a.67.67,0,0,0-.07.18v6.18s0,0,.06.07l3.61,3.61a4.29,4.29,0,0,1,1,4.33,30.43,30.43,0,0,1-2,4.1,31.86,31.86,0,0,1-2.36,3.53A4.28,4.28,0,0,1,48,50.54l-4.8-1.29-.18,0-5.3,3.06-.1.15-1.33,5a4.31,4.31,0,0,1-3.23,3h0A26.57,26.57,0,0,1,28.29,60.87Zm-2.88-4a25.3,25.3,0,0,0,6.33-.07L33,52.05a5.63,5.63,0,0,1,2.46-3.2l5.69-3.28a5.59,5.59,0,0,1,4-.53l4.51,1.21c.39-.54,1-1.48,1.61-2.51a29.91,29.91,0,0,0,1.48-2.91l-3.42-3.42a5.61,5.61,0,0,1-1.54-3.72V27.12a5.61,5.61,0,0,1,1.54-3.72L52.7,20a25.27,25.27,0,0,0-3.08-5.36L44.82,16a5.6,5.6,0,0,1-4-.53l-5.69-3.29A5.61,5.61,0,0,1,32.68,9L31.4,4.15a24.46,24.46,0,0,0-5.8,0L24.31,9a5.64,5.64,0,0,1-2.45,3.2l-5.69,3.28a5.71,5.71,0,0,1-4,.56L7,14.72A28.64,28.64,0,0,0,5.4,17.26c-.57,1-1.05,2-1.33,2.55L7.66,23.4A5.59,5.59,0,0,1,9.2,27.12v6.57a5.77,5.77,0,0,1-1.48,3.7l-3.65,3.8a24.17,24.17,0,0,0,3,5.14L11.85,45a5.65,5.65,0,0,1,4,.53l5.69,3.28A5.7,5.7,0,0,1,24,52ZM25,55.63h0Zm12.64-3.26h0ZM7.45,15.28h0ZM8.27,15ZM19.65,8.62h0Zm0,0h0Zm17.66,0h0ZM28.4,44.85A14.35,14.35,0,1,1,42.75,30.5,14.37,14.37,0,0,1,28.4,44.85Zm0-24.42A10.07,10.07,0,1,0,38.47,30.5,10.08,10.08,0,0,0,28.4,20.43Z"/></g></svg></a></div></div></div>';
+                                                            var transaction_popup_html = '<div class="tx-data-holder" data-visibleGasPriceNumber="'+visibleGasPriceNumber+'" data-initial-visibleGasPriceNumber="'+visibleGasPriceNumber+'" data-gasLimit="'+gasLimit+'" data-nonce="'+pendingNonce+'" data-initial-nonce="'+pendingNonce+'" data-on_popup_load_gas_price="'+on_popup_load_gas_price+'"></div><div class="title">'+$('.translates-holder').attr('sending-conf')+'</div><div class="pictogram-and-dcn-usd-price"><svg version="1.1" class="width-100 max-width-100 margin-bottom-10" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><style type="text/css">.st0-recipe{fill:#FFFFFF;}.st1-recipe{fill:#CA675A;}.st2-recipe{fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="100" width="105.7" x="-7.2" y="-6.4"></sliceSourceBounds></sfw></metadata><circle class="st0-recipe" cx="50" cy="50" r="50"/><g><g><g><path class="st1-recipe" d="M50.1,93.7c-18.7,0-36-12.4-41.3-31.3C2.4,39.6,15.8,16,38.5,9.6C48.9,6.7,60,7.8,69.6,12.8c1.2,0.6,1.6,2,1,3.2s-2,1.6-3.2,1c-8.6-4.4-18.4-5.4-27.7-2.8c-20.1,5.6-32,26.7-26.3,46.9s26.7,32.1,46.9,26.4s32.1-26.7,26.4-46.9c-1.1-3.9-2.8-7.6-5-10.9c-0.7-1.1-0.4-2.6,0.7-3.3c1.1-0.7,2.6-0.4,3.3,0.7c2.5,3.8,4.4,7.9,5.6,12.3c6.4,22.8-7,46.5-29.7,52.8C57.8,93.2,53.9,93.7,50.1,93.7z"/></g><g><path class="st1-recipe" d="M33.1,78.6c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.4l40.4-50.5c0.8-1,2.3-1.2,3.4-0.4c1,0.8,1.2,2.3,0.4,3.4L35,77.7C34.5,78.3,33.8,78.6,33.1,78.6z"/></g><g><g><path class="st2-recipe" d="M105.7,56.9"/></g></g></g><g><path class="st1-recipe" d="M73.7,54.2c-0.1,0-0.2,0-0.2,0c-1.3-0.2-2.3-1.4-2.2-2.7L74,23.9L47.6,39.8c-1.1,0.7-2.6,0.3-3.3-0.8c-0.7-1.1-0.3-2.6,0.8-3.3l34.5-20.8L76.1,52C76,53.2,74.9,54.2,73.7,54.2z"/></g></g></svg><div class="dcn-amount">-' + crypto_val + ' ' + token_symbol + '</div>' + usdHtml + '</div><div class="confirm-row to"> <div class="label inline-block">'+$('.translates-holder').attr('to-label')+'</div><div class="value inline-block">' + projectData.utils.checksumAddress(sending_to_address) + '</div></div><div class="confirm-row from"> <div class="label inline-block">'+$('.translates-holder').attr('from-label')+'</div><div class="value inline-block">' + global_state.account + '</div></div><div class="confirm-row nonce"> <div class="label inline-block">'+$('.translates-holder').attr('nonce')+'</div><div class="value inline-block">' + pendingNonce + '</div></div><div class="confirm-row fee"> <div class="label inline-block">'+$('.translates-holder').attr('eth-fee')+'</div><div class="value inline-block"><div class="inline-block eth-value">' + parseFloat(eth_fee).toFixed(8) + '</div><div class="inline-block tx-settings-icon"><a href="javascript:void(0);"><svg id="e68760ed-3659-43b9-ad7b-73b5b189fe7a" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 56.81 61"><defs><clipPath id="f9d5df6d-58de-4fe9-baeb-2948a9aeab40"><rect class="bb542d8f-936a-4524-831e-8152ec1848dd" x="-3.59" y="-1.5" width="64" height="64"/></clipPath></defs><g class="e20091d8-5cd8-4fc6-97bc-34f6a53a9fd6"><path style="fill:#888;" d="M28.29,61a25,25,0,0,1-4.05-.3,2.46,2.46,0,0,1-1.83-1.63L20.8,53.51a2.8,2.8,0,0,0-1.06-1.36l-5.86-3.38a2.67,2.67,0,0,0-1.69-.22L6.67,50a2.48,2.48,0,0,1-2.33-.73A28,28,0,0,1,.16,42.1a2.47,2.47,0,0,1,.5-2.39l4.15-4.33a2.76,2.76,0,0,0,.64-1.6V27a2.6,2.6,0,0,0-.65-1.57L.66,21.31a2.43,2.43,0,0,1-.52-2.38A31.86,31.86,0,0,1,2,15.27a30.47,30.47,0,0,1,2.33-3.49A2.48,2.48,0,0,1,6.61,11l5.9,1.45a2.69,2.69,0,0,0,1.7-.24l5.86-3.38a2.67,2.67,0,0,0,1-1.35L22.6,1.93A2.4,2.4,0,0,1,24.4.29a27.62,27.62,0,0,1,8.22,0A2.42,2.42,0,0,1,34.41,2L35.89,7.5a2.67,2.67,0,0,0,1,1.35l5.86,3.38a2.63,2.63,0,0,0,1.68.22L50,11a2.44,2.44,0,0,1,2.33.73,27.84,27.84,0,0,1,4.3,7.48,2.46,2.46,0,0,1-.54,2.39L52.2,25.45A2.66,2.66,0,0,0,51.55,27v6.76a2.72,2.72,0,0,0,.65,1.58l3.94,3.94a2.46,2.46,0,0,1,.54,2.38,29.28,29.28,0,0,1-2,4,29,29,0,0,1-2.32,3.5,2.44,2.44,0,0,1-2.33.73l-5.24-1.4a2.67,2.67,0,0,0-1.69.22l-5.86,3.38a2.71,2.71,0,0,0-1,1.35l-1.46,5.44A2.48,2.48,0,0,1,33,60.61h0A25.92,25.92,0,0,1,28.29,61ZM12.68,47.49a3.62,3.62,0,0,1,1.7.41l5.86,3.39a3.67,3.67,0,0,1,1.52,1.94l1.61,5.56a1.48,1.48,0,0,0,1,.92,27.08,27.08,0,0,0,8.38-.08h0a1.49,1.49,0,0,0,1-.94l1.46-5.45a3.65,3.65,0,0,1,1.5-2l5.86-3.39a3.64,3.64,0,0,1,2.45-.32L50.31,49a1.42,1.42,0,0,0,1.3-.41,29.64,29.64,0,0,0,2.23-3.36,30,30,0,0,0,1.9-3.87,1.5,1.5,0,0,0-.3-1.35l-3.95-3.94a3.6,3.6,0,0,1-.94-2.28V27a3.64,3.64,0,0,1,.94-2.28l3.89-3.88a1.48,1.48,0,0,0,.3-1.34,26.75,26.75,0,0,0-4.12-7.17,1.45,1.45,0,0,0-1.31-.41l-5.52,1.48a3.57,3.57,0,0,1-2.44-.33L36.43,9.71a3.59,3.59,0,0,1-1.5-2L33.45,2.24a1.43,1.43,0,0,0-1-.93,26.61,26.61,0,0,0-7.87,0,1.4,1.4,0,0,0-1,.92l-1.5,5.56a3.54,3.54,0,0,1-1.5,2l-5.86,3.38a3.68,3.68,0,0,1-2.44.35L6.37,12a1.5,1.5,0,0,0-1.32.43,31.07,31.07,0,0,0-2.22,3.35,29.61,29.61,0,0,0-1.75,3.51,1.41,1.41,0,0,0,.29,1.32l4.14,4.14A3.64,3.64,0,0,1,6.45,27v6.76a3.73,3.73,0,0,1-.92,2.29L1.38,40.4a1.47,1.47,0,0,0-.28,1.35,26.44,26.44,0,0,0,4,6.9,1.41,1.41,0,0,0,1.3.41l5.52-1.48A3,3,0,0,1,12.68,47.49Zm15.72-3a14,14,0,1,1,14-14A14,14,0,0,1,28.4,44.53Zm0-27.06a13,13,0,1,0,13,13A13,13,0,0,0,28.4,17.47Z"/><path style="fill:#888;" d="M28.29,60.87a25.85,25.85,0,0,1-4.11-.31,4.3,4.3,0,0,1-3.29-3l-1.51-5.17s-.07-.07-.12-.11l-5.37-3.1s0,0-.09,0L8.74,50.61A4.27,4.27,0,0,1,4.5,49.27,27.7,27.7,0,0,1,.26,42a4.32,4.32,0,0,1,.9-4.33l3.86-4s0-.1,0-.16V27.27s0,0-.06-.08L1.2,23.4a4.23,4.23,0,0,1-1-4.35,29.26,29.26,0,0,1,1.84-3.71A31.23,31.23,0,0,1,4.44,11.8a4.32,4.32,0,0,1,4.21-1.37l5.48,1.35s.1,0,.15,0l5.3-3.07a.41.41,0,0,0,.1-.13l1.37-5.1a4.24,4.24,0,0,1,3.3-3,27.69,27.69,0,0,1,8.33,0,4.26,4.26,0,0,1,3.27,3l1.36,5a.6.6,0,0,0,.09.13l5.32,3.07.16,0,5-1.36a4.28,4.28,0,0,1,4.24,1.33,28.05,28.05,0,0,1,4.36,7.58,4.31,4.31,0,0,1-1,4.34L52,27.19a.67.67,0,0,0-.07.18v6.18s0,0,.06.07l3.61,3.61a4.29,4.29,0,0,1,1,4.33,30.43,30.43,0,0,1-2,4.1,31.86,31.86,0,0,1-2.36,3.53A4.28,4.28,0,0,1,48,50.54l-4.8-1.29-.18,0-5.3,3.06-.1.15-1.33,5a4.31,4.31,0,0,1-3.23,3h0A26.57,26.57,0,0,1,28.29,60.87Zm-2.88-4a25.3,25.3,0,0,0,6.33-.07L33,52.05a5.63,5.63,0,0,1,2.46-3.2l5.69-3.28a5.59,5.59,0,0,1,4-.53l4.51,1.21c.39-.54,1-1.48,1.61-2.51a29.91,29.91,0,0,0,1.48-2.91l-3.42-3.42a5.61,5.61,0,0,1-1.54-3.72V27.12a5.61,5.61,0,0,1,1.54-3.72L52.7,20a25.27,25.27,0,0,0-3.08-5.36L44.82,16a5.6,5.6,0,0,1-4-.53l-5.69-3.29A5.61,5.61,0,0,1,32.68,9L31.4,4.15a24.46,24.46,0,0,0-5.8,0L24.31,9a5.64,5.64,0,0,1-2.45,3.2l-5.69,3.28a5.71,5.71,0,0,1-4,.56L7,14.72A28.64,28.64,0,0,0,5.4,17.26c-.57,1-1.05,2-1.33,2.55L7.66,23.4A5.59,5.59,0,0,1,9.2,27.12v6.57a5.77,5.77,0,0,1-1.48,3.7l-3.65,3.8a24.17,24.17,0,0,0,3,5.14L11.85,45a5.65,5.65,0,0,1,4,.53l5.69,3.28A5.7,5.7,0,0,1,24,52ZM25,55.63h0Zm12.64-3.26h0ZM7.45,15.28h0ZM8.27,15ZM19.65,8.62h0Zm0,0h0Zm17.66,0h0ZM28.4,44.85A14.35,14.35,0,1,1,42.75,30.5,14.37,14.37,0,0,1,28.4,44.85Zm0-24.42A10.07,10.07,0,1,0,38.47,30.5,10.08,10.08,0,0,0,28.4,20.43Z"/></g></svg></a></div></div></div>';
 
                                                             dApp.web3_1_0.eth.getBalance(global_state.account, function (error, eth_balance) {
                                                                 if (error) {
@@ -92620,7 +92590,7 @@ var projectData = {
 
                                                                     if (window.localStorage.getItem('keystore_file') != null) {
                                                                         //cached keystore path on mobile device or cached keystore file on browser
-                                                                        transaction_popup_html += '<div class="container-fluid"><div class="row padding-top-25 cached-keystore-file"><div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">Secret password:</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">Confirm</a></div></div></div>';
+                                                                        transaction_popup_html += '<div class="container-fluid"><div class="row padding-top-25 cached-keystore-file"><div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">'+$('.translates-holder').attr('password-label')+'</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">'+$('.translates-holder').attr('confirm')+'</a></div></div></div>';
                                                                         basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
                                                                         projectData.general_logic.bindTxSettings(visibleGasPriceNumber, nonce);
 
@@ -92633,17 +92603,14 @@ var projectData = {
                                                                                 eth_fee_check = crypto_val_decimal.plus(parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html()));
                                                                             }
 
-                                                                            console.log(eth_balance, 'eth_balance');
-                                                                            console.log(eth_fee_check.toString(), 'eth_fee_check');
-
                                                                             if (eth_balance.lessThan(eth_fee_check)) {
-                                                                                basic.showAlert('You don\'t have enough balance to sign this transaction.', '', true);
+                                                                                basic.showAlert($('.translates-holder').attr('no-balance'), '', true);
                                                                                 $('.transaction-confirmation-popup .on-change-result').html('');
                                                                             } else {
                                                                                 if ($('.cached-keystore-file #your-secret-key-password').val().trim() == '') {
-                                                                                    basic.showAlert('Please enter valid secret file password.', '', true);
+                                                                                    basic.showAlert($('.translates-holder').attr('valid-password'), '', true);
                                                                                 } else {
-                                                                                    showLoader('Hold on...<br>Your transaction is being processed.');
+                                                                                    showLoader(translates.txOnHold);
 
                                                                                     setTimeout(function () {
                                                                                         decryptKeystore(window.localStorage.getItem('keystore_file'), $('.cached-keystore-file #your-secret-key-password').val().trim(), function (success, to_string, error, error_message) {
@@ -92660,7 +92627,7 @@ var projectData = {
                                                                         });
                                                                     } else {
                                                                         //nothing is cached
-                                                                        transaction_popup_html += '<div class="container-fluid proof-of-address padding-top-20 padding-bottom-20"> <div class="row fs-0"> <div class="col-xs-12 col-sm-5 inline-block padding-left-30 padding-left-xs-15 priv-key-btn"> <a href="javascript:void(0)" class="light-blue-white-btn text-center enter-private-key display-block-important fs-18 fs-xs-14 line-height-18"><span>Enter your<br class="show-on-xs"> Private Key<div class="fs-16 fs-xs-12">(not recommended)</div></span></a> </div><div class="col-xs-12 col-sm-2 text-center calibri-bold fs-20 fs-xs-16 inline-block or-label">or</div><div class="col-xs-12 col-sm-5 inline-block padding-right-30 padding-right-xs-15 keystore-btn"><div class="upload-file-container" data-id="upload-keystore-file"><input type="file" id="upload-keystore-file" class="custom-upload-keystore-file hide-input"/> <div class="btn-wrapper"></div></div></div></div><div class="row on-change-result"></div></div>';
+                                                                        transaction_popup_html += '<div class="container-fluid proof-of-address padding-top-20 padding-bottom-20"> <div class="row fs-0"> <div class="col-xs-12 col-sm-5 inline-block padding-left-30 padding-left-xs-15 priv-key-btn"> <a href="javascript:void(0)" class="light-blue-white-btn text-center enter-private-key display-block-important fs-18 fs-xs-14 line-height-18"><span>'+$('.translates-holder').attr('enter-priv-key')+'</span></a> </div><div class="col-xs-12 col-sm-2 text-center calibri-bold fs-20 fs-xs-16 inline-block or-label">or</div><div class="col-xs-12 col-sm-5 inline-block padding-right-30 padding-right-xs-15 keystore-btn"><div class="upload-file-container" data-id="upload-keystore-file"><input type="file" id="upload-keystore-file" class="custom-upload-keystore-file hide-input"/> <div class="btn-wrapper"></div></div></div></div><div class="row on-change-result"></div></div>';
                                                                         basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
                                                                         projectData.general_logic.bindTxSettings(visibleGasPriceNumber, nonce);
 
@@ -92674,24 +92641,21 @@ var projectData = {
                                                                                 eth_fee_check = crypto_val_decimal.plus(parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html()));
                                                                             }
 
-                                                                            console.log(eth_balance, 'eth_balance');
-                                                                            console.log(eth_fee_check.toString(), 'eth_fee_check');
-
                                                                             if (eth_balance.lessThan(eth_fee_check)) {
-                                                                                basic.showAlert('You don\'t have enough balance to sign this transaction.', '', true);
+                                                                                basic.showAlert($('.translates-holder').attr('no-balance'), '', true);
                                                                                 $('.transaction-confirmation-popup .on-change-result').html('');
                                                                             } else {
                                                                                 $('.proof-of-address #upload-keystore-file').val('');
-                                                                                $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-20"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-private-key">Your Private Key:</label><input type="text" id="your-private-key" maxlength="64" class="full-rounded"/></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction private-key">CONFIRM</a></div>');
+                                                                                $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-20"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-private-key">'+$('.translates-holder').attr('your-priv-key')+'</label><input type="text" id="your-private-key" maxlength="64" class="full-rounded"/></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction private-key">'+$('.translates-holder').attr('confirm-btn')+'</a></div>');
 
                                                                                 $('#your-private-key').focus();
                                                                                 $('label[for="your-private-key"]').addClass('active-label');
 
                                                                                 $('.confirm-transaction.private-key').click(function () {
                                                                                     if ($('.proof-of-address #your-private-key').val().trim() == '') {
-                                                                                        basic.showAlert('Please enter valid private key.', '', true);
+                                                                                        basic.showAlert($('.translates-holder').attr('enter-priv-key-error'), '', true);
                                                                                     } else {
-                                                                                        showLoader('Hold on...<br>Your transaction is being processed.');
+                                                                                        showLoader(translates.txOnHold);
 
                                                                                         setTimeout(function () {
                                                                                             var validating_private_key = validatePrivateKey($('.proof-of-address #your-private-key').val().trim());
@@ -92699,7 +92663,7 @@ var projectData = {
                                                                                                 if (projectData.utils.checksumAddress(validating_private_key.success.address) == projectData.utils.checksumAddress(global_state.account)) {
                                                                                                     submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, new Buffer($('.proof-of-address #your-private-key').val().trim(), 'hex'));
                                                                                                 } else {
-                                                                                                    basic.showAlert('Please enter private key related to your Wallet Address', '', true);
+                                                                                                    basic.showAlert($('.translates-holder').attr('key-related'), '', true);
                                                                                                     hideLoader();
                                                                                                 }
                                                                                             } else if (validating_private_key.error) {
@@ -92722,11 +92686,8 @@ var projectData = {
                                                                                 eth_fee_check = crypto_val_decimal.plus(parseFloat($('.transaction-confirmation-popup .confirm-row.fee .value .eth-value').html()));
                                                                             }
 
-                                                                            console.log(eth_balance, 'eth_balance');
-                                                                            console.log(eth_fee_check.toString(), 'eth_fee_check');
-
                                                                             if (eth_balance.lessThan(eth_fee_check)) {
-                                                                                basic.showAlert('You don\'t have enough balance to sign this transaction.', '', true);
+                                                                                basic.showAlert($('.translates-holder').attr('no-balance'), '', true);
                                                                                 $('.transaction-confirmation-popup .on-change-result').html('');
                                                                                 hideLoader();
                                                                             } else {
@@ -92758,11 +92719,8 @@ var projectData = {
         },
         spend_page_dental_services: function () {
             projectData.utils.saveHybridAppCurrentScreen();
-
             if (iframeHeightListenerInit) {
                 iframeHeightListenerInit = false;
-
-                console.log('iframeHeightListenerInit');
 
                 window.addEventListener('message', function(event) {
                     var height = event.data.data.height;
@@ -92843,7 +92801,7 @@ var projectData = {
 
             showMobileAppBannerForDesktopBrowsers();
 
-            if (is_hybrid) {
+            /*if (is_hybrid) {
                 $('.camp-assurance-mobile-phone-scanning').html('<div class="padding-top-15 padding-bottom-20 fs-16 max-width-600 margin-0-auto">You can handle all Dentacoin Assurance contract actions - such as contract creation or cancellation for patients or contact approvals and withdrawals for dentists - directly from here!</div><div class="text-center padding-bottom-30"><a href="javascript:void(0)" class="light-blue-white-btn no-hover open-transaction-scanner min-width-270 margin-right-10 margin-bottom-10 width-xs-100 max-width-400 margin-right-xs-0 padding-left-5 padding-right-5 fs-18 text-center">SCAN TRANSACTION <figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block max-width-30 width-100 margin-left-5"><img src="assets/images/scan-qr-code-blue.svg" alt="Scan icon"/></figure></a></div>');
 
                 if ((window.localStorage.getItem('current_account') == null && typeof(web3) === 'undefined') || (window.localStorage.getItem('current_account') == null && window.localStorage.getItem('custom_wallet_over_external_web3_provider') == 'true')) {
@@ -92902,10 +92860,10 @@ var projectData = {
                                                                 hideLoader();
                                                                 basic.closeDialog();
                                                                 if (response.success) {
-                                                                    basic.showAlert('You have successfully signed your contract! Once your transaction is confirmed, your Assurance contract page will be updated.', '', true);
+                                                                    basic.showAlert(translates.successfullySigned, '', true);
                                                                     firePushNotification('Assurance transaction', 'Contract created successfully.');
                                                                 } else {
-                                                                    basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
+                                                                    basic.showAlert(translates.defaultErrorMessage, '', true);
                                                                 }
                                                             }
                                                         });
@@ -92930,10 +92888,10 @@ var projectData = {
                                                             hideLoader();
                                                             basic.closeDialog();
                                                             if (response.success) {
-                                                                basic.showAlert('You have successfully signed your contract! Once your transaction is confirmed, your Assurance contract page will be updated.', '', true);
+                                                                basic.showAlert(translates.successfullySigned, '', true);
                                                                 firePushNotification('Assurance transaction', 'Contract created successfully.');
                                                             } else {
-                                                                basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
+                                                                basic.showAlert(translates.defaultErrorMessage, '', true);
                                                             }
                                                         }
                                                     });
@@ -92957,10 +92915,10 @@ var projectData = {
                                                             hideLoader();
                                                             basic.closeDialog();
                                                             if (response.success) {
-                                                                basic.showAlert('You have successfully signed your contract! Once your transaction is confirmed, your Assurance contract page will be updated.', '', true);
+                                                                basic.showAlert(translates.successfullySigned, '', true);
                                                                 firePushNotification('Assurance transaction', 'Contract approved successfully.');
                                                             } else {
-                                                                basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
+                                                                basic.showAlert(translates.defaultErrorMessage, '', true);
                                                             }
                                                         }
                                                     });
@@ -92984,10 +92942,10 @@ var projectData = {
                                                             hideLoader();
                                                             basic.closeDialog();
                                                             if (response.success) {
-                                                                basic.showAlert('You have successfully signed your contract! Once your transaction is confirmed, your Assurance contract page will be updated.', '', true);
+                                                                basic.showAlert(translates.successfullySigned, '', true);
                                                                 firePushNotification('Assurance transaction', 'Successful withdraw.');
                                                             } else {
-                                                                basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
+                                                                basic.showAlert(translates.defaultErrorMessage, '', true);
                                                             }
                                                         }
                                                     });
@@ -93013,10 +92971,10 @@ var projectData = {
                                                             hideLoader();
                                                             basic.closeDialog();
                                                             if (response.success) {
-                                                                basic.showAlert('You have successfully signed your contract! Once your transaction is confirmed, your Assurance contract page will be updated.', '', true);
+                                                                basic.showAlert(translates.successfullySigned, '', true);
                                                                 firePushNotification('Assurance transaction', 'Contract cancelled successfully.');
                                                             } else {
-                                                                basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
+                                                                basic.showAlert(translates.defaultErrorMessage, '', true);
                                                             }
                                                         }
                                                     });
@@ -93041,14 +92999,14 @@ var projectData = {
 
                                         if (window.localStorage.getItem('keystore_file') != null) {
                                             //cached keystore path on mobile device or cached keystore file on browser
-                                            transaction_popup_html += '<div class="container-fluid"><div class="row padding-top-25 cached-keystore-file"><div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">Secret password:</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">Confirm</a></div></div></div>';
+                                            transaction_popup_html += '<div class="container-fluid"><div class="row padding-top-25 cached-keystore-file"><div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">'+$('.translates-holder').attr('password-label')+'</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">Confirm</a></div></div></div>';
                                             basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
 
                                             $('.cached-keystore-file .confirm-transaction.keystore-file').click(function () {
                                                 if ($('.cached-keystore-file #your-secret-key-password').val().trim() == '') {
-                                                    basic.showAlert('Please enter valid secret file password.', '', true);
+                                                    basic.showAlert($('.translates-holder').attr('valid-password'), '', true);
                                                 } else {
-                                                    showLoader('Hold on...<br>Your transaction is being processed.');
+                                                    showLoader(translates.txOnHold);
 
                                                     setTimeout(function () {
                                                         decryptKeystore(window.localStorage.getItem('keystore_file'), $('.cached-keystore-file #your-secret-key-password').val().trim(), function (success, to_string, error, error_message) {
@@ -93064,22 +93022,22 @@ var projectData = {
                                             });
                                         } else {
                                             //nothing is cached
-                                            transaction_popup_html += '<div class="container-fluid proof-of-address padding-top-20 padding-bottom-20"> <div class="row fs-0"> <div class="col-xs-12 col-sm-5 inline-block padding-left-30 padding-left-xs-15 priv-key-btn"> <a href="javascript:void(0)" class="light-blue-white-btn text-center enter-private-key display-block-important fs-18 fs-xs-14 line-height-18"><span>Enter your<br class="show-on-xs"> Private Key<div class="fs-16 fs-xs-12">(not recommended)</div></span></a> </div><div class="col-xs-12 col-sm-2 text-center calibri-bold fs-20 inline-block">or</div><div class="col-xs-12 col-sm-5 inline-block padding-right-30 padding-right-xs-15 keystore-btn"> <div class="upload-file-container" data-id="upload-keystore-file"><input type="file" id="upload-keystore-file" class="custom-upload-keystore-file hide-input"/> <div class="btn-wrapper"></div></div></div></div><div class="row on-change-result"></div></div>';
+                                            transaction_popup_html += '<div class="container-fluid proof-of-address padding-top-20 padding-bottom-20"> <div class="row fs-0"> <div class="col-xs-12 col-sm-5 inline-block padding-left-30 padding-left-xs-15 priv-key-btn"> <a href="javascript:void(0)" class="light-blue-white-btn text-center enter-private-key display-block-important fs-18 fs-xs-14 line-height-18"><span>'+$('.translates-holder').attr('enter-priv-key')+'</span></a> </div><div class="col-xs-12 col-sm-2 text-center calibri-bold fs-20 inline-block">or</div><div class="col-xs-12 col-sm-5 inline-block padding-right-30 padding-right-xs-15 keystore-btn"> <div class="upload-file-container" data-id="upload-keystore-file"><input type="file" id="upload-keystore-file" class="custom-upload-keystore-file hide-input"/> <div class="btn-wrapper"></div></div></div></div><div class="row on-change-result"></div></div>';
                                             basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
 
                                             //init private key btn logic
                                             $(document).on('click', '.enter-private-key', function () {
                                                 $('.proof-of-address #upload-keystore-file').val('');
-                                                $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-20"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-private-key">Your Private Key:</label><input type="text" id="your-private-key" maxlength="64" class="full-rounded"/></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction private-key">CONFIRM</a></div>');
+                                                $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-20"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-private-key">'+$('.translates-holder').attr('your-priv-key')+'</label><input type="text" id="your-private-key" maxlength="64" class="full-rounded" maxlength="64"/></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction private-key">'+$('.translates-holder').attr('confirm-btn')+'</a></div>');
 
                                                 $('#your-private-key').focus();
                                                 $('label[for="your-private-key"]').addClass('active-label');
 
                                                 $('.confirm-transaction.private-key').click(function () {
                                                     if ($('.proof-of-address #your-private-key').val().trim() == '') {
-                                                        basic.showAlert('Please enter valid private key.', '', true);
+                                                        basic.showAlert($('.translates-holder').attr('enter-priv-key-error'), '', true);
                                                     } else {
-                                                        showLoader('Hold on...<br>Your transaction is being processed.');
+                                                        showLoader(translates.txOnHold);
 
                                                         setTimeout(function () {
                                                             var validating_private_key = validatePrivateKey($('.proof-of-address #your-private-key').val().trim());
@@ -93087,7 +93045,7 @@ var projectData = {
                                                                 if (projectData.utils.checksumAddress(validating_private_key.success.address) == projectData.utils.checksumAddress(global_state.account)) {
                                                                     scanningRouter(new Buffer($('.proof-of-address #your-private-key').val().trim(), 'hex'));
                                                                 } else {
-                                                                    basic.showAlert('Please enter private key related to your Wallet Address', '', true);
+                                                                    basic.showAlert('Please enter private key related to your Wallet Address.', '', true);
                                                                     hideLoader();
                                                                 }
                                                             } else if (validating_private_key.error) {
@@ -93105,23 +93063,23 @@ var projectData = {
                                             });
                                         }
                                     } else {
-                                        basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
+                                        basic.showAlert(translates.defaultErrorMessage, '', true);
                                     }
                                 }
                             });
                         } else {
-                            basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
+                            basic.showAlert(translates.defaultErrorMessage, '', true);
                         }
                     });
                 }
 
-            }
+            }*/
         }
     },
     general_logic: {
         bindTxSettings: function(visibleGasPriceNumber, nonce) {
             $('.tx-settings-icon').click(async function () {
-                basic.showDialog('<div class="lato-bold fs-22 text-center padding-top-30 padding-bottom-20">Advanced settings</div><div class="padding-bottom-15 form-row"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label class="active-label" for="edit-gas-price">Gas price:</label><input type="text" id="edit-gas-price" maxlength="5" class="full-rounded light-blue-border" value="'+$('.tx-data-holder').attr('data-visibleGasPriceNumber')+'" data-value="'+$('.tx-data-holder').attr('data-visibleGasPriceNumber')+'"/></div></div><div class="padding-bottom-20 form-row"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label class="active-label" for="edit-nonce">Nonce:</label><input type="text" id="edit-nonce" maxlength="10" class="full-rounded light-blue-border" value="'+$('.tx-data-holder').attr('data-nonce')+'" data-value="'+$('.tx-data-holder').attr('data-nonce')+'" data-min-value="'+nonce+'"/></div></div><div class="fs-0 btns-container"><div class="inline-block fs-18 lato-bold width-50"><a href="javascript:void(0);" class="reset-settings"><img alt="Reset icon" itemprop="contentUrl" src="assets/images/reset-icon.svg" class="width-100 max-width-20"/> reset</a></div><div class="inline-block text-right width-50"><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border save-tx-settings padding-left-30 padding-right-30">SAVE</a></div></div>', 'tx-settings-popup', null, true);
+                basic.showDialog('<div class="lato-bold fs-22 text-center padding-top-30 padding-bottom-20">'+$('.translates-holder').attr('advanced-settings')+'</div><div class="padding-bottom-15 form-row"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label class="active-label" for="edit-gas-price">'+$('.translates-holder').attr('gas-price')+'</label><input type="text" id="edit-gas-price" maxlength="5" class="full-rounded light-blue-border" value="'+$('.tx-data-holder').attr('data-visibleGasPriceNumber')+'" data-value="'+$('.tx-data-holder').attr('data-visibleGasPriceNumber')+'"/></div></div><div class="padding-bottom-20 form-row"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label class="active-label" for="edit-nonce">'+$('.translates-holder').attr('nonce')+'</label><input type="text" id="edit-nonce" maxlength="10" class="full-rounded light-blue-border" value="'+$('.tx-data-holder').attr('data-nonce')+'" data-value="'+$('.tx-data-holder').attr('data-nonce')+'" data-min-value="'+nonce+'"/></div></div><div class="fs-0 btns-container"><div class="inline-block fs-18 lato-bold width-50"><a href="javascript:void(0);" class="reset-settings"><img alt="Reset icon" itemprop="contentUrl" src="assets/images/reset-icon.svg" class="width-100 max-width-20"/> '+$('.translates-holder').attr('reset')+'</a></div><div class="inline-block text-right width-50"><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border save-tx-settings padding-left-30 padding-right-30">'+$('.translates-holder').attr('save-btn')+'</a></div></div>', 'tx-settings-popup', null, true);
 
                 $('.tx-settings-popup #edit-nonce').on('input paste change', function() {
                     if (!/^\d*$/.test($(this).val().trim())) {
@@ -93140,7 +93098,7 @@ var projectData = {
                         $('.tx-settings-popup #edit-nonce').closest('.form-row').find('.error-handle').remove();
                         if (parseFloat($('.tx-data-holder').attr('data-initial-visibleGasPriceNumber')) > parseFloat($(this).val().trim())) {
                             $('.tx-settings-popup #edit-gas-price').closest('.form-row').find('.warning-handle').remove();
-                            customWarningHandle($('.tx-settings-popup #edit-gas-price').closest('.form-row'), 'Gas price is low. The transaction will take longer time to execute or might fail.')
+                            customWarningHandle($('.tx-settings-popup #edit-gas-price').closest('.form-row'), $('.translates-holder').attr('low-gas'))
                         } else {
                             $('.tx-settings-popup #edit-gas-price').closest('.form-row').find('.warning-handle').remove();
                         }
@@ -93156,9 +93114,9 @@ var projectData = {
 
                 $('.tx-settings-popup .save-tx-settings').click(function() {
                     if ($('.tx-settings-popup #edit-gas-price').val().trim() == '') {
-                        customErrorHandle($('.tx-settings-popup #gas-price').closest('.form-row'), 'Please enter Gas Price.');
+                        customErrorHandle($('.tx-settings-popup #gas-price').closest('.form-row'), $('.translates-holder').attr('enter-gas'));
                     } else if (parseInt($('.tx-settings-popup #edit-nonce').val().trim()) < parseInt($('.tx-settings-popup #edit-nonce').attr('data-min-value'))) {
-                        customErrorHandle($('.tx-settings-popup #edit-nonce').closest('.form-row'), 'You cannot continue submitting transaction with this nonce, because you have successfully approved transaction with the same nonce.');
+                        customErrorHandle($('.tx-settings-popup #edit-nonce').closest('.form-row'), $('.translates-holder').attr('cant-submit'));
                     } else {
                         $('.transaction-confirmation-popup .on-change-result').html('');
 
@@ -93209,6 +93167,54 @@ var projectData = {
                     console.log(error, 'addDCNTokenToMetamask');
                 }
             }
+        },
+        generatePrivateKeyFile: async function(privateKey) {
+            var qrCodeBase64Data;
+            $('body').append('<div id="dummy-qr-code-image" class="hide"></div>');
+            var qrcode = new QRCode(document.getElementById('dummy-qr-code-image'), {
+                width: 180,
+                height: 180
+            });
+
+            await qrcode.makeCode(projectData.utils.checksumAddress(window.localStorage.getItem('current_account')));
+            var dummyQrCodeChecker = setInterval(function() {
+                if ($('#dummy-qr-code-image img').length) {
+                    clearInterval(dummyQrCodeChecker);
+
+                    qrCodeBase64Data = $('#dummy-qr-code-image img').attr('src');
+
+                    $('#dummy-qr-code-image').remove();
+
+                    var borderImage = '/assets/images/private-key-background.png';
+                    //var borderImage = 'https://dentacoin.com/assets/uploads/private-key-background.png';
+                    if (is_hybrid) {
+                        borderImage = 'assets/images/private-key-background.png';
+                    }
+                    var printingHtml = '<html><head><style>body, html {margin: 0; padding: 0;text-align: center;color: black;font-family: “Helvetica Neue”,Helvetica,Arial,sans-serif;} .border-parent{text-align: left;position:relative; display: inline-block;} img {height: 95vh} .absolute-content{position: absolute;z-index: 100;width: 80%;height: 80%;top: 0;left: 0;padding: 10%;}</style></head><body><div class="border-parent"><img src="'+borderImage+'"/><div class="absolute-content"><div style="text-align:center;"><i>'+$('.translates-holder').attr('confidential')+'</i><h1 style="margin-top: 25px;font-weight:bold;color: black; margin-bottom: 10px;">DENTACOIN</h1><div style="font-size: 18px;color: #2a3575;padding-bottom: 20px;"><b>'+$('.translates-holder').attr('unlock-funds')+'</b></div><div style="background-color: white;padding: 25px 10px;text-align: left;"><div style="color: #888888;padding-bottom: 5px;font-weight: bold;">'+$('.translates-holder').attr('pk-label')+':</div><div style="font-size: 15px;">'+privateKey+'</div></div><div style="font-size: 24px;padding: 30px 0 10px;"><b>'+$('.translates-holder').attr('pk-as-qr')+'</b></div><div><img src="'+qrCodeBase64Data+'" style=" height: auto; width: 180px;"></div><div style=" text-align: left; "><div style="font-size: 22px;color: #2a3575;padding-bottom: 15px;padding-top: 20px;font-weight: bold;">'+$('.translates-holder').attr('important')+'</div><div style=" padding-bottom: 15px;"><b>1.</b> '+$('.translates-holder').attr('provides')+'<div></div>'+projectData.utils.checksumAddress(window.localStorage.getItem('current_account'))+'</div><div style=" padding-bottom: 15px;"><b>2.</b> '+$('.translates-holder').attr('secure-place')+'</div><div style=" padding-bottom: 15px;"><b>3. '+$('.translates-holder').attr('never-share')+'</div><div><b>4.</b> '+$('.translates-holder').attr('to-unlock')+'</div></div></div></div></div></body></html>';
+
+                    window.localStorage.setItem('printed_private_key', true);
+
+                    if (is_hybrid) {
+                        cordova.plugins.printer.print(printingHtml, {
+                            paper: {
+                                name: 'IsoA4'
+                            }
+                        });
+                    } else {
+                        var mywindow = window.open('', 'PRINT');
+                        mywindow.document.write(printingHtml);
+
+                        mywindow.document.close(); // necessary for IE >= 10
+                        mywindow.focus(); // necessary for IE >= 10*/
+
+                        setTimeout(function() {
+                            mywindow.print();
+                            mywindow.close();
+                            return true;
+                        }, 1000);
+                    }
+                }
+            }, 300);
         }
     },
     requests: {
@@ -93225,7 +93231,7 @@ var projectData = {
                 },
                 error: function() {
                     hideLoader();
-                    alert('Something went wrong, please try again later or contact admin@dentacoin.com. (Core error 10.0).');
+                    alert($('.translates-holder').attr('smth-went-wrong') + ' (Code error 10.0).');
                 }
             });
         },
@@ -93258,7 +93264,7 @@ var projectData = {
                                 },
                                 error: function() {
                                     hideLoader();
-                                    alert('Something went wrong, please try again later or contact admin@dentacoin.com. (Core error 10.0).');
+                                    alert($('.translates-holder').attr('smth-went-wrong') + ' (Code error 10.0).');
                                 }
                             });
                         }
@@ -93295,7 +93301,7 @@ var projectData = {
                 },
                 error: function() {
                     hideLoader();
-                    alert('Something went wrong, please try again later or contact admin@dentacoin.com. (Core error 10.1).');
+                    alert($('.translates-holder').attr('smth-went-wrong') + ' (Code error 10.1).');
                 }
             });
         },
@@ -93320,7 +93326,7 @@ var projectData = {
                 },
                 error: function() {
                     hideLoader();
-                    alert('Something went wrong, please try again later or contact admin@dentacoin.com. (Core error 10.2).');
+                    alert($('.translates-holder').attr('smth-went-wrong') + ' (Code error 10.2).');
                 }
             });
         },
@@ -93334,7 +93340,7 @@ var projectData = {
                 },
                 error: function() {
                     hideLoader();
-                    alert('Something went wrong, please try again later or contact admin@dentacoin.com. (Core error 10.3).');
+                    alert($('.translates-holder').attr('smth-went-wrong') + ' (Code error 10.3).');
                 }
             });
         },
@@ -93425,7 +93431,6 @@ var projectData = {
             if (is_hybrid && isDeviceReady && lastHybridScreen != $('title').html()) {
                 lastHybridScreen = $('title').html();
                 cordova.plugins.firebase.analytics.setCurrentScreen($('title').html());
-                console.log('cordova.plugins.firebase.analytics.setCurrentScreen', $('title').html());
             }
         }
     }
@@ -93437,7 +93442,7 @@ function styleKeystoreUploadBtnForTx(callback) {
         var this_btn = $(this_btn_vanilla);
 
         var this_btn_parent = this_btn.closest('.upload-file-container');
-        this_btn_parent.find('.btn-wrapper').append("<label for='" + this_btn_parent.attr('data-id') + "'  role='button' class='light-blue-white-btn display-block-important custom-upload-keystore-file-label'><span class='display-block-important fs-18 fs-xs-14 text-center'>Upload your <br class='show-on-xs'> Backup file</span> <div class='fs-16 fs-xs-12'>(recommended)</div></label>");
+        this_btn_parent.find('.btn-wrapper').append("<label for='" + this_btn_parent.attr('data-id') + "'  role='button' class='light-blue-white-btn display-block-important custom-upload-keystore-file-label'><span class='display-block-important fs-18 fs-xs-14 text-center'>"+$('.translates-holder').attr('upload-backup')+"</span> <div class='fs-16 fs-xs-12'>"+$('.translates-holder').attr('recommended')+"</div></label>");
 
         if (is_hybrid) {
             // MOBILE APP
@@ -93456,7 +93461,8 @@ function styleKeystoreUploadBtnForTx(callback) {
                             reader.readAsText(file);
                         });
                     }, function (err) {
-                        alert('File upload failed, please try again with file inside your internal storage.');
+                        console.log(err);
+                        alert($('.translates-holder').attr('upload-failed'));
                     });
                 } else if (basic.getMobileOperatingSystem() == 'iOS') {
                     iOSFileUpload(function (keystore_string) {
@@ -93467,7 +93473,7 @@ function styleKeystoreUploadBtnForTx(callback) {
 
             function proceedWithTransactionFiringAfterHavingTheKeystoreFile(keystore_string) {
                 if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && projectData.utils.checksumAddress(JSON.parse(keystore_string).address) == projectData.utils.checksumAddress(global_state.account)) {
-                    $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="fs-14 light-gray-color text-center padding-bottom-10 padding-top-15 file-name">' + fileEntry.name + '</div><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">Secret password:</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"/></div></div><div class="col-xs-12"><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-tx-sign" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-tx-sign"><span class="padding-left-5 padding-right-5 inline-block">Remember backup file</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block tx-sign-more-info-keystore-remember fs-0" data-content="Remembering your backup file allows for easier and faster transactions. It is stored only in local device storage and nobody else has access to it."><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div></div><div class="btn-container col-xs-12 padding-top-25"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">Confirm</a></div>');
+                    $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="fs-14 light-gray-color text-center padding-bottom-10 padding-top-15 file-name">' + fileEntry.name + '</div><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">'+$('.translates-holder').attr('password-label')+'</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"/></div></div><div class="col-xs-12"><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-tx-sign" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-tx-sign"><span class="padding-left-5 padding-right-5 inline-block">'+$('.translates-holder').attr('remember-file')+'</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block tx-sign-more-info-keystore-remember fs-0" data-content="'+$('.translates-holder').attr('remembering-file')+'"><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div></div><div class="btn-container col-xs-12 padding-top-25"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">'+$('.translates-holder').attr('confirm')+'</a></div>');
 
                     $('.tx-sign-more-info-keystore-remember').popover({
                         trigger: 'click'
@@ -93475,9 +93481,9 @@ function styleKeystoreUploadBtnForTx(callback) {
 
                     $('.confirm-transaction.keystore-file').click(function () {
                         if ($('.proof-of-address #your-secret-key-password').val().trim() == '') {
-                            basic.showAlert('Please enter valid secret file password.', '', true);
+                            basic.showAlert($('.translates-holder').attr('valid-password'), '', true);
                         } else {
-                            showLoader('Hold on...<br>Your transaction is being processed.');
+                            showLoader(translates.txOnHold);
 
                             setTimeout(function () {
                                 decryptKeystore(keystore_string, $('.proof-of-address #your-secret-key-password').val().trim(), function (success, to_string, error, error_message) {
@@ -93496,7 +93502,7 @@ function styleKeystoreUploadBtnForTx(callback) {
                         }
                     });
                 } else {
-                    basic.showAlert('Please upload valid keystore file.', '', true);
+                    basic.showAlert('Please upload valid secret file.', '', true);
                 }
             }
         } else {
@@ -93515,7 +93521,7 @@ function styleKeystoreUploadBtnForTx(callback) {
                     reader.addEventListener('load', function (e) {
                         if (basic.isJsonString(e.target.result) && basic.property_exists(JSON.parse(e.target.result), 'address') && projectData.utils.checksumAddress(JSON.parse(e.target.result).address) == projectData.utils.checksumAddress(global_state.account)) {
                             var keystore_string = e.target.result;
-                            $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="fs-14 light-gray-color text-center padding-bottom-10 padding-top-15 file-name">' + fileName + '</div><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">Secret password:</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"/></div></div><div class="col-xs-12"><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-tx-sign" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-tx-sign"><span class="padding-left-5 padding-right-5 inline-block">Remember backup file</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block tx-sign-more-info-keystore-remember fs-0" data-content="Remembering your backup file allows for easier and faster transactions. It is stored only in local device storage and nobody else has access to it."><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div></div><div class="btn-container col-xs-12 padding-top-25"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">CONFIRM</a></div>');
+                            $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="fs-14 light-gray-color text-center padding-bottom-10 padding-top-15 file-name">' + fileName + '</div><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">'+$('.translates-holder').attr('password-label')+'</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"/></div></div><div class="col-xs-12"><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-tx-sign" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-tx-sign"><span class="padding-left-5 padding-right-5 inline-block">'+$('.translates-holder').attr('remember-file')+'</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block tx-sign-more-info-keystore-remember fs-0" data-content="'+$('.translates-holder').attr('remembering-file')+'"><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div></div><div class="btn-container col-xs-12 padding-top-25"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">'+$('.translates-holder').attr('confirm-btn')+'</a></div>');
 
                             $('.tx-sign-more-info-keystore-remember').popover({
                                 trigger: 'click'
@@ -93526,9 +93532,9 @@ function styleKeystoreUploadBtnForTx(callback) {
 
                             $('.confirm-transaction.keystore-file').click(function () {
                                 if ($('.proof-of-address #your-secret-key-password').val().trim() == '') {
-                                    basic.showAlert('Please enter valid secret file password.', '', true);
+                                    basic.showAlert($('.translates-holder').attr('valid-password'), '', true);
                                 } else {
-                                    showLoader('Hold on...<br>Your transaction is being processed.');
+                                    showLoader(translates.txOnHold);
 
                                     setTimeout(function () {
                                         decryptKeystore(keystore_string, $('.proof-of-address #your-secret-key-password').val().trim(), function (success, to_string, error, error_message) {
@@ -93548,7 +93554,7 @@ function styleKeystoreUploadBtnForTx(callback) {
                             });
                         } else {
                             $('#upload-keystore-file').val('');
-                            basic.showAlert('Please upload valid keystore file which is related to your Wallet Address.', '', true);
+                            basic.showAlert($('.translates-holder').attr('backup-for-wallet'), '', true);
                         }
                     });
                     reader.readAsBinaryString(uploaded_file);
@@ -93641,33 +93647,29 @@ function displayMessageOnTransactionSend(token_label, tx_hash) {
     $('.section-amount-to #usd-val').val('').trigger('change');
     $('.section-amount-to #verified-receiver-address').prop('checked', false);
 
-    basic.showAlert('<div class="padding-top-15 padding-bottom-10 fs-16">Your ' + token_label + ' are on their way to the Receiver\'s wallet. Check transaction status <a href="https://etherscan.io/tx/' + tx_hash + '" target="_blank" class="lato-bold color-light-blue data-external-link">Etherscan</a>.</div>', '', true);
+    basic.showAlert('<div class="padding-top-15 padding-bottom-10 fs-16">' + $('.translates-holder').attr('your') + token_label + $('.translates-holder').attr('the-way') + ' <a href="https://etherscan.io/tx/' + tx_hash + '" target="_blank" class="lato-bold color-light-blue data-external-link">Etherscan</a>.</div>', '', true);
     updateExternalURLsForiOSDevice();
 }
 
-//custom fix for parent menu active class
-setInterval(function () {
-    if ($('app-spend-page-exchanges').length || $('app-spend-page-pay-assurance-fees').length || $('app-spend-page-gift-cards').length || $('app-spend-page-pay-for-dental-services').length) {
-        if (is_hybrid || basic.isMobile()) {
-            $('.camp-for-fixed-mobile-nav .send').addClass('active');
-        } else {
-            $('.nav-link.spend').addClass('active');
-        }
-    } else {
-        ;
-        if (is_hybrid || basic.isMobile()) {
-            $('.camp-for-fixed-mobile-nav .send').removeClass('active');
-        } else {
-            $('.nav-link.spend').removeClass('active')
-        }
-    }
-}, 500);
-
 //method for 'refreshing' the mobile app
 window.refreshApp = function () {
-    $('.account-checker-container .account-checker-wrapper').remove();
+    $('.account-checker-container').addClass('hide').removeClass('visible');
     basic.closeDialog();
     hideLoader();
+
+    $('.custom-auth-popup .on-page-load').removeClass('hide');
+    $('.custom-auth-popup .on-option-selected').addClass('custom-hide');
+    $('.custom-auth-popup .nav-steps').addClass('custom-hide');
+    $('.custom-auth-popup .popup-body').addClass('hide');
+    $('.custom-auth-popup .popup-left .popup-element').removeClass('hide');
+    $('.custom-auth-popup .popup-left .popup-element.second').addClass('hide');
+    $('.custom-auth-popup .popup-left .popup-element.third').addClass('hide');
+    $('.custom-auth-popup .popup-header .nav-steps').removeClass('second-step third-step').addClass('first-step');
+
+    if (!$('.settings-popup').hasClass('hide')) {
+        $('body').removeClass('overflow-hidden');
+        $('.settings-popup').addClass('hide');
+    }
 
     custom_popover_interval = undefined;
     request_interval_for_rest_of_transaction_history = undefined;
@@ -93694,6 +93696,7 @@ window.refreshApp = function () {
 };
 
 window.getHomepageData = function () {
+    console.log('getHomepageData');
     executeGlobalLogic();
     initAccountChecker();
 
@@ -93846,10 +93849,7 @@ window.initdApp = function () {
 
 //loading mobile bottom fixed navigation IF mobile
 function loadMobileBottomFixedNav() {
-    $('body').addClass('overflow-hidden');
-    var window_width = $(window).width();
-    $('body').removeClass('overflow-hidden');
-    if (window_width < 768) {
+    if (basic.isMobile()) {
         //if iOS adding space to bottom fixed mobile nav, because iPhones X, XS and so on have their home button inside the screen
         if (basic.getMobileOperatingSystem() == 'iOS') {
             $('.camp-for-fixed-mobile-nav').addClass('padding-bottom-20');
@@ -93886,10 +93886,9 @@ function bindGoogleAlikeButtonsEvents() {
 
 bindGoogleAlikeButtonsEvents();
 
-var mobileAppBannerForDesktopBrowsersHtml = '<div class="container-fluid"><div class="row"><figure itemscope="" itemtype="http://schema.org/ImageObject" class="col-xs-3 inline-block-bottom"><img src="assets/images/left-hand-with-phone.png" alt="Left hand holding phone"/></figure><div class="col-xs-6 inline-block-bottom text-center padding-bottom-20"><h3 class="fs-30 fs-md-24 padding-bottom-10 color-white">ALSO AVAILABLE ON MOBILE:</h3><div><figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block padding-right-10"><a href="https://play.google.com/store/apps/details?id=wallet.dentacoin.com" target="_blank"><img src="assets/images/google-play-badge.svg" class="width-100 max-width-150" itemprop="logo" alt="Google play icon"/></a></figure><figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block padding-left-10"><a href="https://apps.apple.com/us/app/dentacoin-wallet/id1478732657" target="_blank"><img src="assets/images/app-store.svg" class="width-100 max-width-150" itemprop="logo" alt="App store icon"/></a></figure></div></div><figure itemscope="" itemtype="http://schema.org/ImageObject" class="col-xs-3 inline-block-bottom text-right"><img src="assets/images/right-hand-with-phone.png" alt="Right hand holding phone"/></figure></div></div>';
+var mobileAppBannerForDesktopBrowsersHtml = '<div class="container-fluid"><div class="row"><figure itemscope="" itemtype="http://schema.org/ImageObject" class="col-xs-3 inline-block-bottom"><img src="assets/images/left-hand-with-phone.png" alt="Left hand holding phone"/></figure><div class="col-xs-6 inline-block-bottom text-center padding-bottom-20"><h3 class="fs-30 fs-md-24 padding-bottom-10 color-white mobile-app-banner-title renew-on-lang-switch" data-slug="also-available"></h3><div><figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block padding-right-10"><a href="https://play.google.com/store/apps/details?id=wallet.dentacoin.com" target="_blank"><img src="assets/images/google-play-badge.svg" class="width-100 max-width-150" itemprop="logo" alt="Google play icon"/></a></figure><figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block padding-left-10"><a href="https://apps.apple.com/us/app/dentacoin-wallet/id1478732657" target="_blank"><img src="assets/images/app-store.svg" class="width-100 max-width-150" itemprop="logo" alt="App store icon"/></a></figure></div></div><figure itemscope="" itemtype="http://schema.org/ImageObject" class="col-xs-3 inline-block-bottom text-right"><img src="assets/images/right-hand-with-phone.png" alt="Right hand holding phone"/></figure></div></div>';
 
 function executeGlobalLogic() {
-    console.log('executeGlobalLogic');
     if ($('#main-container').attr('network') == 'mainnet' && assurance_config == undefined) {
         var {assurance_config_temp} = require('./assurance_config_mainnet');
         assurance_config = assurance_config_temp;
@@ -93901,13 +93900,15 @@ function executeGlobalLogic() {
     // is_hybrid = $('#main-container').attr('hybrid') == 'true';
     $('body').addClass('hybrid-app');
 
-    if (basic.getMobileOperatingSystem() == 'iOS' && window.localStorage.getItem('keystore_file_ios_saved') == null) {
-        console.log('show ios camper');
-        $('.ios-camper').html('<div class="ios-reminder-for-downloading-keystore-file"> <div class="white-bg container padding-top-30 padding-bottom-30"><div class="row"><div class="col-xs-12"> <div class="padding-bottom-15 color-warning-red fs-16"><img src="assets/images/attention-icon.svg" alt="Warning icon" class="warning-icon"/> Export your backup file before proceeding. Otherwise, you may lose access to your assets when you close the app or your session expires.</div><div class="custom-google-label-style margin-bottom-15 margin-top-20 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="ios-camper-download-keystore-password">Password:</label><input type="password" id="ios-camper-download-keystore-password" class="full-rounded"></div><div class="text-center padding-top-10 padding-bottom-30"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 ios-camper-download-keystore-action">EXPORT</a></div><div style="display: none" class="text-center fs-18 hidden-checkbox"><input type="checkbox" id="keystore-downloaded-verifier"> <label for="keystore-downloaded-verifier" class="lato-bold blinking-animation">I verify that I saved my backup file.</label></div></div></div></div></div>');
+    $('.nav-row .nav-link').removeClass('active');
+    $('.camp-for-fixed-mobile-nav a').removeClass('active');
+
+    if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS' && window.localStorage.getItem('keystore_file_ios_saved') == null) {
+        $('.ios-camper').html('<div class="ios-reminder-for-downloading-keystore-file"> <div class="white-bg container padding-top-30 padding-bottom-30"><div class="row"><div class="col-xs-12"> <div class="padding-bottom-15 color-warning-red fs-16"><img src="assets/images/attention-icon.svg" alt="Warning icon" class="warning-icon"/> '+$('.translates-holder').attr('export')+'</div><div class="custom-google-label-style margin-bottom-15 margin-top-20 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="ios-camper-download-keystore-password">'+$('.translates-holder').attr('pass-label')+'</label><input type="password" id="ios-camper-download-keystore-password" class="full-rounded"></div><div class="text-center padding-top-10 padding-bottom-30"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 ios-camper-download-keystore-action">'+$('.translates-holder').attr('export-btn')+'</a></div><div style="display: none" class="text-center fs-18 hidden-checkbox"><input type="checkbox" id="keystore-downloaded-verifier"> <label for="keystore-downloaded-verifier" class="lato-bold blinking-animation">'+$('.translates-holder').attr('i-verify')+'</label></div></div></div></div></div>');
         $('#main-container').addClass('full-visual-height');
 
         $('.ios-camper .ios-camper-download-keystore-action').click(function () {
-            showLoader('Hold on...<br>It will take few seconds to decrypt your Backup file.');
+            showLoader($('.translates-holder').attr('hold-on-decrypt'));
 
             setTimeout(function () {
                 importKeystoreFile(window.localStorage.getItem('keystore_file'), $('.ios-camper #ios-camper-download-keystore-password').val().trim(), function (success, public_key, address, error, error_message) {
@@ -93936,7 +93937,7 @@ function executeGlobalLogic() {
 
 //checking if metamask or if saved current_account in the local storage. If both are false then show custom login popup with CREATE / IMPORT logic
 function initAccountChecker() {
-    if ($('.account-checker-container .account-checker-wrapper').length) {
+    if ($('.account-checker-container').hasClass('visible')) {
         return;
     }
 
@@ -93951,16 +93952,7 @@ function initAccountChecker() {
     }
 
     if ((window.localStorage.getItem('current_account') == null && typeof(web3) === 'undefined') || (window.localStorage.getItem('current_account') == null && window.localStorage.getItem('custom_wallet_over_external_web3_provider') == 'true')) {
-        //show custom authentication popup
-        var popup_html = '<div class="popup-header padding-bottom-10 text-center"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/wallet-loading.png" class="max-width-80 width-100" alt="Dentacoin wallet logo"></figure></div><div class="left-right-side-holder fs-0"><div class="popup-left inline-block-top" data-step="first"><div class="navigation-link"><a href="javascript:void(0)" data-slug="first" class="active">CREATE</a></div><div class="navigation-link mobile"><a href="javascript:void(0)" data-slug="second">IMPORT</a></div><div class="popup-body first"><div class="creation-text max-width-400 padding-top-20 padding-bottom-20"><svg class="inline-block-top" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 63.3 64.1" style="enable-background:new 0 0 63.3 64.1;" xml:space="preserve"><style type="text/css">.keyholder-st0{fill:url(#SVGID_1_);}.keyholder-st1{fill:url(#SVGID_2_);}.keyholder-st2{fill:url(#SVGID_3_);}.keyholder-st3{fill:url(#SVGID_4_);}.keyholder-st4{fill:url(#SVGID_5_);}.keyholder-st5{fill:url(#SVGID_6_);}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="64.1" width="63.3" x="1.3" y="17.4"></sliceSourceBounds></sfw></metadata><g><g><linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="23.7" y1="8.35" x2="38.6" y2="8.35"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st0" d="M31.2,16.7c4.2,0,7.4-5.2,7.4-9.3S35.3,0,31.2,0s-7.5,3.3-7.5,7.4S27,16.7,31.2,16.7z"/></g><g><linearGradient id="SVGID_2_" gradientUnits="userSpaceOnUse" x1="15.6" y1="20.5" x2="46.8" y2="20.5"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st1" d="M19.1,27.9h3.4c0.3-1.4,0.3-1.5,0.3-1.7c0-0.3,0.5-0.3,0.5,0v1.7h15.8v-1.7c0-0.1,0.3-0.7,0.8,1.5c0,0.1,0,0.1,0.1,0.2h1.9v-2.3c0-1.7,1.3-3,3-3h1.9c-0.5-3.6-1.5-9.3-7.7-9.5c-1.7,3.1-4.5,5.6-7.9,5.6s-6.3-2.5-7.9-5.6c-6.4,0.2-7.3,6.2-7.7,10.7C17,24.9,18.3,26.3,19.1,27.9z"/></g><g><linearGradient id="SVGID_3_" gradientUnits="userSpaceOnUse" x1="17.6" y1="39.35" x2="20.5" y2="39.35"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st2" d="M17.6,40.5c0.3,0,0.5-0.1,0.7-0.2c1-0.4,1.8-1.1,2.2-2.1h-1.4C18.7,39.1,18.2,39.8,17.6,40.5z"/></g><g><linearGradient id="SVGID_4_" gradientUnits="userSpaceOnUse" x1="23.3" y1="51.2" x2="39.1" y2="51.2"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st3" d="M23.3,60.5c0,1.9,1.5,3.5,3.4,3.5c1.9,0,3.5-1.6,3.5-3.5V44.7c0-0.5,0.5-1,1-1s1,0.5,1,1v15.9c0,1.9,1.5,3.5,3.5,3.5c1.9,0,3.4-1.6,3.4-3.5V38.3H23.3V60.5z"/></g><g><linearGradient id="SVGID_5_" gradientUnits="userSpaceOnUse" x1="43" y1="39.4" x2="49.5" y2="39.4"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="keyholder-st4" d="M46.2,40.5c1.4,0,2.8-0.8,3.3-2.2H43C43.4,39.7,44.8,40.5,46.2,40.5z"/></g><g><linearGradient id="SVGID_6_" gradientUnits="userSpaceOnUse" x1="0" y1="32" x2="63.3129" y2="32"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><path class="keyholder-st5" d="M62.4,29.9h-2.7v-7.2c0-0.6-0.5-1-1-1h-4.4c-0.6,0-1,0.4-1,1v7.2h-3.1v-4.3c0-0.6-0.5-1-1-1h-4.4c-0.5,0-1,0.4-1,1v4.3h-26c-1.3-3.6-4.8-6-8.6-6C4.1,23.9,0,28,0,33.1s4.1,9.2,9.2,9.2c3.9,0,7.3-2.4,8.6-6h44.5c0.5,0,1-0.5,1-1v-4.4C63.4,30.3,62.9,29.9,62.4,29.9z M9.2,36.8c-2.1,0-3.7-1.7-3.7-3.7s1.7-3.7,3.7-3.7c2.1,0,3.7,1.7,3.7,3.7S11.3,36.8,9.2,36.8z"/></g></g></svg><div class="inline-block-top text padding-left-10 fs-xs-14 fs-16"><div class="lato-bold fs-18">Let\'s create a new wallet!</div>Please set a secure password to protect your Dentacoin Wallet.</div></div><div class="field-parent margin-bottom-15 max-width-300 margin-left-right-auto"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="keystore-file-pass">Enter password:</label><input type="password" maxlength="30" id="keystore-file-pass" class="full-rounded keystore-file-pass required-field"/></div></div><div class="field-parent max-width-300 margin-left-right-auto"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="second-pass">Repeat password:</label><input type="password" maxlength="30" id="second-pass" class="full-rounded second-pass required-field"/></div></div><div class="btn-container text-center padding-top-15 padding-bottom-15"><div class="wallet-creation-warning"></div><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border login-into-wallet min-width-180">CREATE</a></div></div></div><div class="popup-right inline-block-top"><div class="navigation-link"><a href="javascript:void(0)" data-slug="second">IMPORT</a></div><div class="popup-body second custom-hide"><div class="padding-top-20 padding-bottom-30 fs-0 row-with-image-and-text max-width-400 max-width-xs-300"><svg class="max-width-80 inline-block" version="1.1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 70.1 86" style="enable-background:new 0 0 70.1 86;" xml:space="preserve"><style type="text/css">.st0-import{fill:url(#SVGID_1_import);}.st1-import{fill:url(#SVGID_2_import);}.st2-import{fill:#FFFFFF;}.st3-import{fill:url(#SVGID_3_import);stroke:#FFFFFF;stroke-width:0.75;stroke-miterlimit:10;}.st4-import{fill:#FFFFFF;stroke:#FFFFFF;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="86" width="70.1" x="16" y="29"></sliceSourceBounds></sfw></metadata><linearGradient id="SVGID_1_import" gradientUnits="userSpaceOnUse" x1="0" y1="43" x2="64" y2="43"><stop offset="0" style="stop-color:#00A99D"/><stop offset="1" style="stop-color:#0071BC"/></linearGradient><path class="st0-import" d="M44.7,0H3.1C1.4,0,0,1.3,0,3v80c0,1.6,1.4,3,3.1,3h57.9c1.7,0,3.1-1.3,3.1-3V18.8c0-0.9-0.4-1.8-1-2.5L47.2,1C46.5,0.4,45.6,0,44.7,0z"/><linearGradient id="SVGID_2_import" gradientUnits="userSpaceOnUse" x1="35.9571" y1="23.008" x2="69.6066" y2="23.008"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><circle class="st1-import" cx="52.8" cy="23" r="16.8"/><rect x="28" y="49" class="st2-import" width="8" height="37"/><path class="st2-import" d="M18.2,58.8l13.4-14.6c0.3-0.3,0.7-0.3,1,0l13.4,14.7c0.4,0.4,0.1,1.2-0.5,1.2H18.6C18.1,60,17.8,59.2,18.2,58.8z"/><g><linearGradient id="SVGID_3_import" gradientUnits="userSpaceOnUse" x1="34.8246" y1="23.1469" x2="69.7484" y2="23.1469"><stop offset="0" style="stop-color:#32FFC2"/><stop offset="1" style="stop-color:#00A9EB"/></linearGradient><path class="st3-import" d="M52.3,6.5C61.5,6.5,69,14,69,23.1s-7.5,16.7-16.7,16.7s-16.7-7.5-16.7-16.7S43.1,6.5,52.3,6.5 M52.3,5.7c-9.7,0-17.5,7.8-17.5,17.5s7.8,17.5,17.5,17.5s17.5-7.8,17.5-17.5S61.9,5.7,52.3,5.7L52.3,5.7z"/></g><g><rect x="59" y="28.4" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -2.9698 50.8809)" class="st4-import" width="1.9" height="1.2"/><rect x="58.2" y="27.7" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -2.6509 50.155)" class="st4-import" width="1.9" height="1.2"/><g><polygon class="st4-import" points="60.7,30.7 59.7,31.8 50.9,22.9 51.9,21.9 "/><path class="st4-import" d="M45,16c-1.9,1.9-1.9,4.9,0,6.8c1.9,1.9,4.9,1.9,6.8,0c1.9-1.9,1.9-4.9,0-6.8C49.8,14.1,46.8,14.1,45,16z M50.9,21.9c-1.4,1.4-3.7,1.4-5.1,0c-1.4-1.4-1.4-3.7,0-5.1c1.4-1.4,3.7-1.4,5.1,0C52.3,18.2,52.3,20.5,50.9,21.9z"/></g></g></svg><div class="inline-block padding-left-10 fs-16 fs-xs-14 text"><div class="lato-bold fs-18">Welcome back!</div>To import an existing wallet, please upload your Backup File or enter/ scan your private key.</div></div><div class="text-center import-keystore-file-row">';
-        if (is_hybrid) {
-            popup_html += '<label class="button custom-upload-button">';
-        } else {
-            popup_html += '<input type="file" id="upload-keystore" class="hide-input upload-keystore"/><label for="upload-keystore" class="button custom-upload-button">';
-        }
-        popup_html += '<a><span>Upload your Backup File (recommended)</span><svg class="load" version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0 0 40 40" enable-background="new 0 0 40 40"><path opacity="0.3" fill="#fff" d="M20.201,5.169c-8.254,0-14.946,6.692-14.946,14.946c0,8.255,6.692,14.946,14.946,14.946s14.946-6.691,14.946-14.946C35.146,11.861,28.455,5.169,20.201,5.169z M20.201,31.749c-6.425,0-11.634-5.208-11.634-11.634c0-6.425,5.209-11.634,11.634-11.634c6.425,0,11.633,5.209,11.633,11.634C31.834,26.541,26.626,31.749,20.201,31.749z"/><path fill="#fff" d="M26.013,10.047l1.654-2.866c-2.198-1.272-4.743-2.012-7.466-2.012h0v3.312h0C22.32,8.481,24.301,9.057,26.013,10.047z"><animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 20 20" to="360 20 20" dur="0.5s" repeatCount="indefinite"/></path></svg><svg class="check" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></a><div><span></span></div></label></div><div class="camping-for-action"></div><div class="padding-top-10 text-center fs-14 lato-bold or-label">OR</div><div class="padding-top-10 text-center import-private-key-row"><a href="javascript:void(0);" class="import-private-key light-blue-white-btn fs-16 fs-xs-14">Import Private Key (not recommended)</a></div></div><div class="auth-popup-faq-link padding-top-20 text-center"><a href="https://dentacoin.com/how-to-create-wallet" target="_blank" class="data-external-link">?</a></div></div>';
-
-        $('.account-checker-container').html('<div class="account-checker-wrapper"><div class="custom-auth-popup">' + popup_html + '</div></div>');
+        $('.account-checker-container').addClass('visible').removeClass('hide');
 
         if (!is_hybrid) {
             if (!basic.isMobile()) {
@@ -93969,22 +93961,33 @@ function initAccountChecker() {
         }
         updateExternalURLsForiOSDevice();
 
-        setTimeout(function () {
-            $('#keystore-file-pass').focus();
-            $('label[for="keystore-file-pass"]').addClass('active-label');
-        }, 1000);
-
         $(window).on('load', function () {
             if ($('.custom-auth-popup .modal-content').height() > $('.custom-auth-popup .modal-dialog').height()) {
                 $('.custom-auth-popup .modal-content').addClass('clear-center-position');
             }
         });
 
-        $('.custom-auth-popup .navigation-link > a').click(function () {
-            $('.custom-auth-popup .navigation-link a').removeClass('active');
-            $(this).addClass('active');
-            $('.custom-auth-popup .popup-body').addClass('custom-hide');
-            $('.custom-auth-popup .popup-body.' + $(this).attr('data-slug')).removeClass('custom-hide');
+        $('.custom-auth-popup .navigation-link a').click(function () {
+            $('.custom-auth-popup .on-page-load').addClass('hide');
+            $('.custom-auth-popup .on-option-selected').removeClass('custom-hide');
+
+            if ($(this).attr('data-slug') == 'first') {
+                $('.custom-auth-popup .nav-steps').removeClass('custom-hide');
+
+                $('#keystore-file-pass').focus();
+                $('label[for="keystore-file-pass"]').addClass('active-label');
+            }
+
+            $('.custom-auth-popup .popup-body').addClass('hide');
+            $('.custom-auth-popup .popup-body.' + $(this).attr('data-slug')).removeClass('hide');
+        });
+
+        $('.custom-auth-popup .go-back-to-main-menu').click(function () {
+            $('.custom-auth-popup .on-page-load').removeClass('hide');
+            $('.custom-auth-popup .on-option-selected').addClass('custom-hide');
+            $('.custom-auth-popup .nav-steps').addClass('custom-hide');
+
+            $('.custom-auth-popup .popup-body').addClass('hide');
         });
 
         $('.more-info-keystore-remember').popover({
@@ -93997,7 +94000,7 @@ function initAccountChecker() {
             $('.import-keystore-file-row #upload-keystore').val('');
             $('.import-keystore-file-row').show();
             $('.or-label').show();
-            $('.import-private-key-row').html('<a href="javascript:void(0);" class="import-private-key light-blue-white-btn fs-16 fs-xs-14">Import Private Key (not recommended)</a>').show();
+            $('.import-private-key-row').html('<a href="javascript:void(0);" class="import-private-key light-blue-white-btn fs-16 fs-xs-14 renew-on-lang-switch" data-slug="import-key">'+$('.translates-holder').attr('import-key')+'</a>').show();
         });
 
         //importing with private key
@@ -94005,7 +94008,7 @@ function initAccountChecker() {
             $('.camping-for-action').hide();
             $('.import-keystore-file-row').hide();
             $('.or-label').hide();
-            $('.import-private-key-row').html('<div class="field-parent"><div class="custom-google-label-style module text-left" data-input-light-blue-border="true"><label for="import-private-key">Private key:</label><textarea id="import-private-key" maxlength="100" class="full-rounded"></textarea></div></div><div class="padding-top-10"><a class="inline-block max-width-80 scan-qr-code-importing-priv-key" href="javascript:void(0)"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img alt="Scan QR code icon" class="width-100" itemprop="contentUrl" src="assets/images/scan-qr-code.svg"></figure></a></div><div class="continue-btn-priv-key padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border">CONTINUE</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block">Go back</span></a></div>');
+            $('.import-private-key-row').html('<div class="field-parent"><div class="custom-google-label-style module text-left max-width-400 margin-0-auto" data-input-light-blue-border="true"><label for="import-private-key" class="renew-on-lang-switch" data-slug="priv-key">'+$('.translates-holder').attr('priv-key')+'</label><textarea id="import-private-key" maxlength="64" class="full-rounded"></textarea></div></div><div class="padding-top-10"><a class="inline-block max-width-80 scan-qr-code-importing-priv-key" href="javascript:void(0)"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img alt="Scan QR code icon" class="width-100" itemprop="contentUrl" src="assets/images/scan-qr-code.svg"></figure></a></div><div class="continue-btn-priv-key padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border renew-on-lang-switch" data-slug="CONTINUE-btn">'+$('.translates-holder').attr('CONTINUE-btn')+'</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block renew-on-lang-switch" data-slug="go-back">'+$('.translates-holder').attr('go-back')+'</span></a></div>');
             $('#import-private-key').focus();
             $('label[for="import-private-key"]').addClass('active-label');
 
@@ -94059,7 +94062,7 @@ function initAccountChecker() {
 
         // ================================= CREATING ==========================================
 
-        var passwordWarningShow = true;
+        /*var passwordWarningShow = true;
         $('.popup-left .required-field').on('change keyup focusout paste', function() {
             if (passwordWarningShow) {
                 passwordWarningShow = false;
@@ -94070,26 +94073,27 @@ function initAccountChecker() {
                     $('.custom-auth-popup .popup-left .wallet-creation-warning').addClass('max-width-300 margin-left-right-auto').html('<div class="color-warning-red fs-14 lato-bold">Keep your password and backup file safe!<br>NOBODY CAN RESET THEM IF LOST.</div><div class="padding-bottom-15 fs-14">To access your wallet, you need both the password and the backup file which will be automatically downloaded on your device.</div>');
                 }
             }
-        });
+        });*/
 
-        $('.custom-auth-popup .popup-left .login-into-wallet').click(function () {
-            var this_btn = this;
+        var tempPrivKey;
+        var tempAddress;
+        $('.custom-auth-popup .popup-left .download-login-file').click(function () {
             var login_errors = false;
             $('.popup-left .error-handle').remove();
             var login_fields = $('.popup-left .required-field');
 
             for (var i = 0, len = login_fields.length; i < len; i += 1) {
                 if (login_fields.eq(i).val().trim() == '') {
-                    customErrorHandle(login_fields.eq(i).closest('.field-parent'), 'Please enter password.');
+                    customErrorHandle(login_fields.eq(i).closest('.field-parent'), $('.translates-holder').attr('enter-pass'));
                     login_errors = true;
                 } else if (login_fields.eq(i).val().trim().length < 8 || login_fields.eq(i).val().trim().length > 30) {
-                    customErrorHandle(login_fields.eq(i).closest('.field-parent'), 'Password must be minimum 8 characters and max 30.');
+                    customErrorHandle(login_fields.eq(i).closest('.field-parent'), $('.translates-holder').attr('min-pass-error'));
                     login_errors = true;
                 }
             }
 
             if ($('.custom-auth-popup .keystore-file-pass').val().trim() != $('.custom-auth-popup .second-pass').val().trim()) {
-                customErrorHandle($('.custom-auth-popup .second-pass').closest('.field-parent'), 'Please enter same password in both fields.');
+                customErrorHandle($('.custom-auth-popup .second-pass').closest('.field-parent'), $('.translates-holder').attr('def-pass-error'));
                 login_errors = true;
             }
 
@@ -94097,83 +94101,96 @@ function initAccountChecker() {
                 if (is_hybrid) {
                     //MOBILE APP
                     if (basic.getMobileOperatingSystem() == 'Android') {
-                        showLoader('This might take a few minutes... <br>Please allow access to your device if asked for it.');
+                        showLoader($('.translates-holder').attr('few-mins'));
                     } else if (basic.getMobileOperatingSystem() == 'iOS') {
-                        showLoader('This might take a few minutes... <br>When asked, please make sure to share/ copy your Backup file and keep it in a safe place. Only you are responsible for it!');
+                        showLoader($('.translates-holder').attr('few-mins-two'));
                     }
                 } else {
-                    showLoader('This might take a few minutes... <br>Please allow access to your device if asked for it.');
+                    showLoader($('.translates-holder').attr('few-mins'));
                 }
 
                 setTimeout(function () {
-                    generateKeystoreFile($('.custom-auth-popup .keystore-file-pass').val().trim(), function (public_key, keystore) {
+                    generateKeystoreFile($('.custom-auth-popup .keystore-file-pass').val().trim(), function (public_key, keystore, private_key) {
                         var keystore_file_name = buildKeystoreFileName(keystore.address);
+                        tempPrivKey = private_key;
+                        tempAddress = '0x' + keystore.address;
 
-                        //save the public key to assurance
+                        // if internet connection save the public key to assurance
                         var internet = navigator.onLine;
                         if (internet) {
                             savePublicKeyToAssurance(keystore.address, public_key);
                         }
 
-                        setTimeout(function () {
-                            if (is_hybrid) {
-                                //MOBILE APP
-                                if (basic.getMobileOperatingSystem() == 'Android') {
-                                    //saving keystore file to Downloads folder
-                                    hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
-                                        //saving keystore file to App folder
-                                        hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
-                                            fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
-                                            loginIntoWallet();
-                                        }, cordova.file.externalDataDirectory, false);
-                                    }, cordova.file.externalRootDirectory, true);
-                                } else if (basic.getMobileOperatingSystem() == 'iOS') {
+                        if (is_hybrid) {
+                            //MOBILE APP
+                            if (basic.getMobileOperatingSystem() == 'Android') {
+                                //saving keystore file to Downloads folder
+                                hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
                                     //saving keystore file to App folder
                                     hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
-                                        var localStorageAddress = keystore.address;
-                                        if (localStorageAddress.length == 40) {
-                                            localStorageAddress = '0x' + localStorageAddress;
-                                        }
-                                        window.localStorage.setItem('current_account', localStorageAddress);
+                                        fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
+                                        loginIntoWallet();
 
-                                        //if ($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
-                                        window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
-                                        //}
+                                        basic.showAlert($('.translates-holder').attr('file') + keystore_file_name + $('.translates-holder').attr('has-been-stored'), 'overlap-loading-popup', true);
+                                        setTimeout(function () {
+                                            fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
+                                            basic.closeDialog();
+                                            hideLoader();
 
-                                        fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
-                                        refreshApp();
-                                    }, cordova.file.dataDirectory, false);
-                                }
-                            } else {
-                                if (basic.getMobileOperatingSystem() == 'iOS') {
-                                    //mobile browser from iPhone
-                                    basic.showAlert('Backup File has been opened in new tab of your browser. Please make sure to share/ copy and keep it in a safe place. Only you are responsible for it!', 'mobile-safari-keystore-creation overlap-loading-popup', true);
+                                            $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
+                                            $('.custom-auth-popup .popup-left .popup-element.second').removeClass('hide');
+                                            $('.custom-auth-popup .popup-header .nav-steps').removeClass('first-step').addClass('second-step');
+                                        }, 6000);
 
-                                    //mobile safari
-                                    downloadFile(keystore_file_name, JSON.stringify(keystore));
-
-                                    $('.mobile-safari-keystore-creation .modal-footer .btn.btn-primary, .mobile-safari-keystore-creation .bootbox-close-button.close').click(function () {
-                                        //if ($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
-                                        window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
-                                        //}
-
-                                        var localStorageAddress = keystore.address;
-                                        if (localStorageAddress.length == 40) {
-                                            localStorageAddress = '0x' + localStorageAddress;
-                                        }
-                                        window.localStorage.setItem('current_account', localStorageAddress);
-
-                                        fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
-                                        refreshApp();
-                                    });
-                                } else {
-                                    //BROWSER
-                                    downloadFile(keystore_file_name, JSON.stringify(keystore));
-                                    fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
+                                    }, cordova.file.externalDataDirectory, false);
+                                }, cordova.file.externalRootDirectory, true);
+                            } else if (basic.getMobileOperatingSystem() == 'iOS') {
+                                //saving keystore file to App folder
+                                hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
                                     loginIntoWallet();
-                                }
+                                    hideLoader();
+
+                                    $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
+                                    $('.custom-auth-popup .popup-left .popup-element.second').removeClass('hide');
+                                    $('.custom-auth-popup .popup-header .nav-steps').removeClass('first-step').addClass('second-step');
+                                }, cordova.file.dataDirectory, false);
                             }
-                        }, 500);
+                        } else {
+                            if (basic.getMobileOperatingSystem() == 'iOS') {
+                                //mobile browser from iPhone
+                                basic.showAlert($('.translates-holder').attr('opened-new-tab'), 'mobile-safari-keystore-creation overlap-loading-popup', true);
+
+                                //mobile safari
+                                downloadFile(keystore_file_name, JSON.stringify(keystore));
+
+                                $('.mobile-safari-keystore-creation .modal-footer .btn.btn-primary, .mobile-safari-keystore-creation .bootbox-close-button.close').click(function () {
+                                    fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
+                                    basic.closeDialog();
+                                    loginIntoWallet();
+                                    hideLoader();
+
+                                    $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
+                                    $('.custom-auth-popup .popup-left .popup-element.second').removeClass('hide');
+                                    $('.custom-auth-popup .popup-header .nav-steps').removeClass('first-step').addClass('second-step');
+                                });
+                            } else {
+                                //BROWSER
+                                downloadFile(keystore_file_name, JSON.stringify(keystore));
+                                fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
+                                loginIntoWallet();
+
+                                basic.showAlert($('.translates-holder').attr('file') +keystore_file_name + $('.translates-holder').attr('has-been-stored'), 'overlap-loading-popup', true);
+                                setTimeout(function () {
+                                    fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
+                                    basic.closeDialog();
+                                    hideLoader();
+
+                                    $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
+                                    $('.custom-auth-popup .popup-left .popup-element.second').removeClass('hide');
+                                    $('.custom-auth-popup .popup-header .nav-steps').removeClass('first-step').addClass('second-step');
+                                }, 6000);
+                            }
+                        }
 
                         function loginIntoWallet() {
                             //if ($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
@@ -94184,42 +94201,41 @@ function initAccountChecker() {
 
                             window.localStorage.setItem('current_account', localStorageAddress);
                             window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
-                            basic.showAlert('File ' + keystore_file_name + ' has been stored to the internal Downloads folder of your device and remembered for faster transactions.', 'overlap-loading-popup', true);
-
-                            setTimeout(function () {
-                                fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
-                                if (is_hybrid) {
-                                    refreshApp();
-                                } else {
-                                    window.location.reload();
-                                }
-                            }, 6000);
-                            /*} else {
-                                window.localStorage.setItem('current_account', '0x' + keystore.address);
-                                basic.showAlert('File ' + keystore_file_name + ' has been stored to the Downloads folder of your device.', '', true);
-
-                                setTimeout(function() {
-                                    if (is_hybrid) {
-                                        refreshApp();
-                                        //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
-                                    } else {
-                                        window.location.reload();
-                                    }
-                                }, 6000);
-                            }*/
                         }
                     });
-                }, 500);
+                }, 1000);
             }
         });
-        // ================================= /CREATING ==========================================
+
+        $('.custom-auth-popup .popup-left .print-pk').click(function () {
+            projectData.general_logic.generatePrivateKeyFile(tempPrivKey);
+
+            $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
+            $('.custom-auth-popup .popup-left .popup-element.third').removeClass('hide');
+            $('.custom-auth-popup .popup-header .nav-steps').removeClass('second-step').addClass('third-step');
+        });
+
+        $('.custom-auth-popup .popup-left .remind-me-later').click(function () {
+            $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
+            $('.custom-auth-popup .popup-left .popup-element.third').removeClass('hide');
+            $('.custom-auth-popup .popup-header .nav-steps').removeClass('second-step').addClass('third-step');
+        });
+
+        $('.custom-auth-popup .popup-left .login-into-wallet').click(function () {
+            if (is_hybrid) {
+                refreshApp();
+            } else {
+                window.location.reload();
+            }
+        });
     } else {
         checkIfLoadingFromMobileBrowser();
     }
 }
 
 function removeAccountChecker() {
-    $('.account-checker-container').html('');
+    console.log('removeAccountChecker');
+    $('.account-checker-container').addClass('hide').removeClass('visible');
 }
 
 //method that appends front end errors
@@ -94240,7 +94256,7 @@ function styleKeystoreUploadBtn() {
             $('.import-private-key-row').hide();
 
             //show continue button next step button
-            $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('<div class="enter-pass-label"><label>Please enter password for the secret key file.</label></div><div class="field-parent margin-bottom-15 max-width-300 margin-left-right-auto"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="import-keystore-password">Enter password:</label><input type="password" id="import-keystore-password" class="full-rounded import-keystore-password"/></div></div><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-import" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-import"><span class="padding-left-5 padding-right-5 inline-block">Remember backup file</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block import-more-info-keystore-remember fs-0" data-content="Remembering your backup file allows for easier and faster transactions. It is stored only in local device storage and nobody else has access to it."><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="continue-btn padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border">CONTINUE</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block">Go back</span></a></div>');
+            $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('<div class="enter-pass-label"><label class="renew-on-lang-switch" data-slug="enter-pass-secret">'+$('.translates-holder').attr('enter-pass-secret')+'</label></div><div class="field-parent margin-bottom-15 max-width-300 margin-left-right-auto"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="import-keystore-password" class="renew-on-lang-switch" data-slug="enter-pass-label">'+$('.translates-holder').attr('enter-pass-label')+'</label><input type="password" id="import-keystore-password" class="full-rounded import-keystore-password"/></div></div><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-import" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-import"><span class="padding-left-5 padding-right-5 inline-block renew-on-lang-switch" data-slug="remember-file">'+$('.translates-holder').attr('remember-file')+'</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block import-more-info-keystore-remember fs-0" data-content="'+$('.translates-holder').attr('remembering-file')+'"><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="continue-btn padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border renew-on-lang-switch" data-slug="CONTINUE-btn">'+$('.translates-holder').attr('CONTINUE-btn')+'</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block renew-on-lang-switch" data-slug="go-back">'+$('.translates-holder').attr('go-back')+'</span></a></div>');
 
             $('.import-more-info-keystore-remember').popover({
                 trigger: 'click'
@@ -94253,9 +94269,9 @@ function styleKeystoreUploadBtn() {
                 $('.custom-auth-popup .popup-right .error-handle').remove();
                 var keystore_password = $('.custom-auth-popup .popup-right .popup-body .import-keystore-password').val().trim();
                 if (keystore_password == '') {
-                    customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), 'Please enter your backup file password.');
+                    customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), $('.translates-holder').attr('enter-pass-secret'));
                 } else {
-                    showLoader('Hold on...<br>It may take up to 5 minutes to decrypt your Backup file.');
+                    showLoader($('.translates-holder').attr('hold-decrypt'));
 
                     setTimeout(function () {
                         importKeystoreFile(keystore_string, keystore_password, function (success, public_key, address, error, error_message) {
@@ -94266,7 +94282,6 @@ function styleKeystoreUploadBtn() {
                                 }
 
                                 var keystore_file_name = buildKeystoreFileName(address);
-
                                 setTimeout(function () {
                                     //saving keystore file to App folder
                                     window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function (dirEntry) {
@@ -94333,7 +94348,7 @@ function styleKeystoreUploadBtn() {
             });
         } else {
             $('.custom-auth-popup .popup-right .popup-body #upload-keystore').val('');
-            basic.showAlert('Please upload valid keystore file.', '', true);
+            basic.showAlert($('.translates-holder').attr('valid-backup'), '', true);
             $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('');
         }
     }
@@ -94346,6 +94361,7 @@ function styleKeystoreUploadBtn() {
                 var this_btn = $(this);
                 fileChooser.open(function (file_uri) {
                     androidFileUpload(file_uri, function (file) {
+                        console.log(file, 'file');
                         var reader = new FileReader();
 
                         if (this_btn != undefined) {
@@ -94353,6 +94369,7 @@ function styleKeystoreUploadBtn() {
                         }
 
                         reader.onloadend = function () {
+                            console.log(this, 'this');
                             var keystore_string = this.result;
                             setTimeout(function () {
                                 proceedWithImportingAfterKeystoreUploading(keystore_string);
@@ -94362,7 +94379,8 @@ function styleKeystoreUploadBtn() {
                         reader.readAsText(file);
                     });
                 }, function (err) {
-                    alert('File upload failed, please try again with file inside your internal storage.');
+                    console.log(err);
+                    alert($('.translates-holder').attr('upload-failed'));
                 });
             });
         } else if (basic.getMobileOperatingSystem() == 'iOS') {
@@ -94395,7 +94413,7 @@ function styleKeystoreUploadBtn() {
 
                         setTimeout(function () {
                             //show continue button next step button
-                            $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('<div class="enter-pass-label"><label>Please enter password for the secret key file.</label></div><div class="field-parent margin-bottom-15 max-width-300 margin-left-right-auto"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="import-keystore-password">Enter password:</label><input type="password" id="import-keystore-password" class="full-rounded import-keystore-password"/></div></div><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-import" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-import"><span class="padding-left-5 padding-right-5 inline-block">Remember backup file</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block import-more-info-keystore-remember fs-0" data-content="Remembering your backup file allows for easier and faster transactions. It is stored only in local device storage and nobody else has access to it."><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="continue-btn padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border">CONTINUE</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block">Go back</span></a></div>');
+                            $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('<div class="enter-pass-label"><label class="renew-on-lang-switch" data-slug="enter-pass-secret">'+$('.translates-holder').attr('enter-pass-secret')+'</label></div><div class="field-parent margin-bottom-15 max-width-300 margin-left-right-auto"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="import-keystore-password" class="renew-on-lang-switch" data-slug="enter-pass-label">'+$('.translates-holder').attr('enter-pass-label')+'</label><input type="password" id="import-keystore-password" class="full-rounded import-keystore-password"/></div></div><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-import" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-import"><span class="padding-left-5 padding-right-5 inline-block renew-on-lang-switch" data-slug="remember-file">'+$('.translates-holder').attr('remember-file')+'</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block import-more-info-keystore-remember fs-0" data-content="'+$('.translates-holder').attr('remembering-file')+'"><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="continue-btn padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border renew-on-lang-switch" data-slug="CONTINUE-btn">'+$('.translates-holder').attr('CONTINUE-btn')+'</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block renew-on-lang-switch" data-slug="wrong-key-length">'+$('.go-back').attr('go-back')+'</span></a></div>');
 
                             $('.import-more-info-keystore-remember').popover({
                                 trigger: 'click'
@@ -94409,9 +94427,9 @@ function styleKeystoreUploadBtn() {
                                 $('.custom-auth-popup .popup-right .error-handle').remove();
                                 var keystore_password = $('.custom-auth-popup .popup-right .popup-body .import-keystore-password').val().trim();
                                 if (keystore_password == '') {
-                                    customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), 'Please enter your backup file password.');
+                                    customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), $('.translates-holder').attr('enter-pass-secret'));
                                 } else {
-                                    showLoader('Hold on...<br>It may take up to 5 minutes to decrypt your Backup file.');
+                                    showLoader($('.translates-holder').attr('hold-decrypt'));
 
                                     setTimeout(function () {
                                         importKeystoreFile(keystore_string, keystore_password, function (success, public_key, address, error, error_message) {
@@ -94449,7 +94467,7 @@ function styleKeystoreUploadBtn() {
                         }, 500);
                     } else {
                         $('.custom-auth-popup .popup-right .popup-body #upload-keystore').val('');
-                        basic.showAlert('Please upload valid keystore file.', '', true);
+                        basic.showAlert($('.translates-holder').attr('valid-backup'), '', true);
                         $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('');
                     }
                 });
@@ -94552,23 +94570,25 @@ function downloadFile(filename, text) {
 var forgetWalletLogicInitiated = false;
 $(document).on('click', '.open-settings', function () {
     basic.closeDialog();
-    var settings_html = '<div class="text-center fs-0 color-white lato-bold popup-header"><a href="javascript:void(0)" class="custom-close-bootbox inline-block margin-right-5"><svg class="width-100" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 62 52.3" style="enable-background:new 0 0 62 52.3;" xml:space="preserve"><style type="text/css">.st1{fill:#FFFFFF;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="52.3" width="62" x="19" y="48.9"/></sfw></metadata><path class="st1" d="M62,26.2c0-2.2-1.8-4-4-4H14.2L30.4,7c1.7-1.4,1.8-4,0.4-5.6c-1.4-1.7-4-1.8-5.6-0.4C25.1,1,25,1.1,25,1.2 L1.3,23.2c-1.6,1.5-1.7,4-0.2,5.7C1.1,29,1.2,29,1.3,29.1L25,51.2c1.6,1.5,4.1,1.4,5.7-0.2c1.5-1.6,1.4-4.1-0.2-5.7L14.2,30.2H58 C60.2,30.2,62,28.4,62,26.2z"/></svg></a><span class="inline-block text-center fs-28 fs-xs-16">DENTACOIN WALLET SETTINGS</span></div><div class="popup-body">';
+    var settings_html = '';
 
     if (window.localStorage.getItem('keystore_file') != null/* || (is_hybrid && basic.getMobileOperatingSystem() == 'iOS' && window.localStorage.getItem('keystore_file_ios_saved') == null)*/) {
-        var download_btn_label = 'Download';
+        var download_btn_label = $('.translates-holder').attr('download');
+        var slug_attr = 'download';
         var warning_html = '';
         if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
-            download_btn_label = 'Export';
+            download_btn_label = $('.translates-holder').attr('export-btn');
+            slug_attr = 'export-btn';
             /*if (window.localStorage.getItem('keystore_file_ios_saved') == null) {
                 warning_html = '<div class="error-handle keystore-file-ios-saved">You have not saved your Backup file yet.</div>';
             }*/
         }
 
         //if cached keystore file show the option for downloading it
-        settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important download-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M14.4,10.4v3.2c0,0.1,0,0.2-0.1,0.3c0,0.1-0.1,0.2-0.2,0.3c-0.1,0.1-0.2,0.1-0.3,0.2c-0.1,0-0.2,0.1-0.3,0.1 H2.4c-0.1,0-0.2,0-0.3-0.1c-0.1,0-0.2-0.1-0.3-0.2S1.7,14,1.7,13.9c0-0.1-0.1-0.2-0.1-0.3v-3.2c0-0.4-0.4-0.8-0.8-0.8S0,10,0,10.4 v3.2c0,0.3,0.1,0.6,0.2,0.9c0.1,0.3,0.3,0.6,0.5,0.8c0.2,0.2,0.5,0.4,0.8,0.5C1.8,15.9,2.1,16,2.4,16h11.2c0.3,0,0.6-0.1,0.9-0.2 c0.3-0.1,0.6-0.3,0.8-0.5c0.2-0.2,0.4-0.5,0.5-0.8c0.1-0.3,0.2-0.6,0.2-0.9v-3.2c0-0.4-0.4-0.8-0.8-0.8S14.4,10,14.4,10.4z M8.8,8.5 V0.8C8.8,0.4,8.4,0,8,0C7.6,0,7.2,0.4,7.2,0.8v7.7L4.6,5.8c-0.3-0.3-0.8-0.3-1.1,0C3.1,6.1,3.1,6.7,3.4,7l4,4c0,0,0,0,0,0 c0.1,0.1,0.2,0.1,0.3,0.2c0.1,0,0.2,0.1,0.3,0.1c0,0,0,0,0,0c0.1,0,0.2,0,0.3-0.1c0.1,0,0.2-0.1,0.3-0.2l4-4c0.3-0.3,0.3-0.8,0-1.1 s-0.8-0.3-1.1,0L8.8,8.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold">' + download_btn_label + ' Backup File</span></a><div class="fs-14 option-description">It\'s very important to make a Backup, in order to protect your funds even if you lose your phone.</div><div class="camping-for-action"></div>' + warning_html + '</div>';
+        settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important download-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M14.4,10.4v3.2c0,0.1,0,0.2-0.1,0.3c0,0.1-0.1,0.2-0.2,0.3c-0.1,0.1-0.2,0.1-0.3,0.2c-0.1,0-0.2,0.1-0.3,0.1 H2.4c-0.1,0-0.2,0-0.3-0.1c-0.1,0-0.2-0.1-0.3-0.2S1.7,14,1.7,13.9c0-0.1-0.1-0.2-0.1-0.3v-3.2c0-0.4-0.4-0.8-0.8-0.8S0,10,0,10.4 v3.2c0,0.3,0.1,0.6,0.2,0.9c0.1,0.3,0.3,0.6,0.5,0.8c0.2,0.2,0.5,0.4,0.8,0.5C1.8,15.9,2.1,16,2.4,16h11.2c0.3,0,0.6-0.1,0.9-0.2 c0.3-0.1,0.6-0.3,0.8-0.5c0.2-0.2,0.4-0.5,0.5-0.8c0.1-0.3,0.2-0.6,0.2-0.9v-3.2c0-0.4-0.4-0.8-0.8-0.8S14.4,10,14.4,10.4z M8.8,8.5 V0.8C8.8,0.4,8.4,0,8,0C7.6,0,7.2,0.4,7.2,0.8v7.7L4.6,5.8c-0.3-0.3-0.8-0.3-1.1,0C3.1,6.1,3.1,6.7,3.4,7l4,4c0,0,0,0,0,0 c0.1,0.1,0.2,0.1,0.3,0.2c0.1,0,0.2,0.1,0.3,0.1c0,0,0,0,0,0c0.1,0,0.2,0,0.3-0.1c0.1,0,0.2-0.1,0.3-0.2l4-4c0.3-0.3,0.3-0.8,0-1.1 s-0.8-0.3-1.1,0L8.8,8.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="'+slug_attr+'">' + download_btn_label + ' <span class="renew-on-lang-switch" data-slug="backupfile">'+$('.translates-holder').attr('backupfile')+'</span></span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="very-important">'+$('.translates-holder').attr('very-important')+'</div><div class="camping-for-action"></div>' + warning_html + '</div>';
     } else if (window.localStorage.getItem('keystore_file') == null) {
         //if not cached keystore file show the option for caching it
-        settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important remember-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M14,0H2C0.9,0,0,0.9,0,2v12c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V2C16,0.9,15.1,0,14,0z M15,14c0,0.6-0.4,1-1,1 H2c-0.6,0-1-0.4-1-1v-3h14V14z M15,10H1V6h14V10z M1,5V2c0-0.6,0.4-1,1-1h12c0.6,0,1,0.4,1,1v3H1z M14,3.5C14,3.8,13.8,4,13.5,4h-1 C12.2,4,12,3.8,12,3.5v-1C12,2.2,12.2,2,12.5,2h1C13.8,2,14,2.2,14,2.5V3.5z M14,8.5C14,8.8,13.8,9,13.5,9h-1C12.2,9,12,8.8,12,8.5 v-1C12,7.2,12.2,7,12.5,7h1C13.8,7,14,7.2,14,7.5V8.5z M14,13.5c0,0.3-0.2,0.5-0.5,0.5h-1c-0.3,0-0.5-0.2-0.5-0.5v-1 c0-0.3,0.2-0.5,0.5-0.5h1c0.3,0,0.5,0.2,0.5,0.5V13.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold">Remember Backup File</span></a><div class="fs-14 option-description">By doing so, you will not be asked to upload it every time you want to access your wallet.</div><div class="camping-for-action"></div></div>';
+        settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important remember-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M14,0H2C0.9,0,0,0.9,0,2v12c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V2C16,0.9,15.1,0,14,0z M15,14c0,0.6-0.4,1-1,1 H2c-0.6,0-1-0.4-1-1v-3h14V14z M15,10H1V6h14V10z M1,5V2c0-0.6,0.4-1,1-1h12c0.6,0,1,0.4,1,1v3H1z M14,3.5C14,3.8,13.8,4,13.5,4h-1 C12.2,4,12,3.8,12,3.5v-1C12,2.2,12.2,2,12.5,2h1C13.8,2,14,2.2,14,2.5V3.5z M14,8.5C14,8.8,13.8,9,13.5,9h-1C12.2,9,12,8.8,12,8.5 v-1C12,7.2,12.2,7,12.5,7h1C13.8,7,14,7.2,14,7.5V8.5z M14,13.5c0,0.3-0.2,0.5-0.5,0.5h-1c-0.3,0-0.5-0.2-0.5-0.5v-1 c0-0.3,0.2-0.5,0.5-0.5h1c0.3,0,0.5,0.2,0.5,0.5V13.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="remember-file">'+$('.translates-holder').attr('remember-file')+'</span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="by-doing-so">'+$('.translates-holder').attr('by-doing-so')+'</div><div class="camping-for-action"></div></div>';
 
         $(document).on('click', '.settings-popup .remember-keystore', function () {
             $('.settings-popup .camping-for-action').html('');
@@ -94576,9 +94596,9 @@ $(document).on('click', '.open-settings', function () {
 
             var remember_keystore_html;
             if (is_hybrid) {
-                remember_keystore_html = '<div class="text-center import-keystore-file-row margin-top-20"><label class="button remember-keystore-upload custom-upload-button"><a><span class="fs-xs-16 fs-20 lato-bold">Upload your Backup File</span><svg class="load" version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0 0 40 40" enable-background="new 0 0 40 40"><path opacity="0.3" fill="#fff" d="M20.201,5.169c-8.254,0-14.946,6.692-14.946,14.946c0,8.255,6.692,14.946,14.946,14.946s14.946-6.691,14.946-14.946C35.146,11.861,28.455,5.169,20.201,5.169z M20.201,31.749c-6.425,0-11.634-5.208-11.634-11.634c0-6.425,5.209-11.634,11.634-11.634c6.425,0,11.633,5.209,11.633,11.634C31.834,26.541,26.626,31.749,20.201,31.749z"/><path fill="#fff" d="M26.013,10.047l1.654-2.866c-2.198-1.272-4.743-2.012-7.466-2.012h0v3.312h0C22.32,8.481,24.301,9.057,26.013,10.047z"><animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 20 20" to="360 20 20" dur="0.5s" repeatCount="indefinite"/></path></svg><svg class="check" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></a><div><span></span></div></label></div>';
+                remember_keystore_html = '<div class="text-center import-keystore-file-row margin-top-20"><label class="button remember-keystore-upload custom-upload-button"><a><span class="fs-xs-16 fs-20 lato-bold renew-on-lang-switch" data-slug="renew-on-lang-switch">'+$('.translates-holder').attr('upload-backup-file-label')+'</span><img src="assets/images/loader-circle.png" class="load width-100 max-width-30"/><img src="assets/images/check.png" class="check width-100 max-width-30"/></a><div><span></span></div></label></div>';
             } else {
-                remember_keystore_html = '<div class="text-center import-keystore-file-row margin-top-20"><input type="file" id="remember-keystore-upload" class="hide-input remember-keystore-upload"/><label for="remember-keystore-upload" class="button custom-upload-button"><a><span class="fs-xs-16 fs-20 lato-bold">Upload your Backup File</span><svg class="load" version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0 0 40 40" enable-background="new 0 0 40 40"><path opacity="0.3" fill="#fff" d="M20.201,5.169c-8.254,0-14.946,6.692-14.946,14.946c0,8.255,6.692,14.946,14.946,14.946s14.946-6.691,14.946-14.946C35.146,11.861,28.455,5.169,20.201,5.169z M20.201,31.749c-6.425,0-11.634-5.208-11.634-11.634c0-6.425,5.209-11.634,11.634-11.634c6.425,0,11.633,5.209,11.633,11.634C31.834,26.541,26.626,31.749,20.201,31.749z"/><path fill="#fff" d="M26.013,10.047l1.654-2.866c-2.198-1.272-4.743-2.012-7.466-2.012h0v3.312h0C22.32,8.481,24.301,9.057,26.013,10.047z"><animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 20 20" to="360 20 20" dur="0.5s" repeatCount="indefinite"/></path></svg><svg class="check" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></a><div><span></span></div></label></div>';
+                remember_keystore_html = '<div class="text-center import-keystore-file-row margin-top-20"><input type="file" id="remember-keystore-upload" class="hide-input remember-keystore-upload"/><label for="remember-keystore-upload" class="button custom-upload-button"><a><span class="fs-xs-16 fs-20 lato-bold renew-on-lang-switch" data-slug="upload-backup-file-label">'+$('.translates-holder').attr('upload-backup-file-label')+'</span><img src="assets/images/loader-circle.png" class="load width-100 max-width-30"/><img src="assets/images/check.png" class="check width-100 max-width-30"/></a><div><span></span></div></label></div>';
             }
 
             var this_row = $(this).closest('.option-row');
@@ -94604,14 +94624,15 @@ $(document).on('click', '.open-settings', function () {
                                     if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && projectData.utils.checksumAddress(JSON.parse(keystore_string).address) == projectData.utils.checksumAddress(global_state.account)) {
                                         validateKeystoreFileAndPasswordForCachingKeystoreFile(this_camping_row, keystore_string, this_row);
                                     } else {
-                                        $('<div class="error-handle">Please upload valid keystore file which is related to your Dentacoin Wallet address.</div>').insertAfter(this_camping_row);
+                                        $(translates.pleaseUpload).insertAfter(this_camping_row);
                                     }
                                 };
 
                                 reader.readAsText(file);
                             });
                         }, function (err) {
-                            $('<div class="error-handle">File upload failed, please try again with file inside your internal storage.</div>').insertAfter(this_camping_row);
+                            console.log(err);
+                            $('<div class="error-handle renew-on-lang-switch" data-slug="upload-failed">'+$('.translates-holder').attr('upload-failed')+'</div>').insertAfter(this_camping_row);
                         });
                     });
                 } else if (basic.getMobileOperatingSystem() == 'iOS') {
@@ -94626,7 +94647,7 @@ $(document).on('click', '.open-settings', function () {
                             if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && projectData.utils.checksumAddress(JSON.parse(keystore_string).address) == projectData.utils.checksumAddress(global_state.account)) {
                                 validateKeystoreFileAndPasswordForCachingKeystoreFile(this_camping_row, keystore_string, this_row);
                             } else {
-                                $('<div class="error-handle">Please upload valid keystore file which is related to your Dentacoin Wallet address.</div>').insertAfter(this_camping_row);
+                                $(translates.pleaseUpload).insertAfter(this_camping_row);
                             }
                         });
                     });
@@ -94648,7 +94669,7 @@ $(document).on('click', '.open-settings', function () {
 
                                 validateKeystoreFileAndPasswordForCachingKeystoreFile(this_camping_row, keystore_string, this_row);
                             } else {
-                                $('<div class="error-handle">Please upload valid keystore file which is related to your Dentacoin Wallet address.</div>').insertAfter(this_camping_row);
+                                $(translates.pleaseUpload).insertAfter(this_camping_row);
                             }
                         });
 
@@ -94660,7 +94681,7 @@ $(document).on('click', '.open-settings', function () {
 
         function validateKeystoreFileAndPasswordForCachingKeystoreFile(this_camping_row, keystore_string, this_row) {
             $('.settings-popup .continue-with-keystore-validation').remove();
-            this_camping_row.append('<div class="continue-with-keystore-validation"><div class="custom-google-label-style margin-top-25 margin-bottom-15 max-width-300 margin-left-right-auto module" data-input-light-blue-border="true"><label for="cache-keystore-password">Backup Password:</label><input type="password" id="cache-keystore-password" class="full-rounded"/></div><div class="padding-bottom-10 text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border continue-caching">CONTINUE</a></div></div>');
+            this_camping_row.append('<div class="continue-with-keystore-validation"><div class="custom-google-label-style margin-top-25 margin-bottom-15 max-width-300 margin-left-right-auto module" data-input-light-blue-border="true"><label for="cache-keystore-password" class="renew-on-lang-switch" data-slug="upload-failed">'+$('.translates-holder').attr('backup-pass')+'</label><input type="password" id="cache-keystore-password" class="full-rounded"/></div><div class="padding-bottom-10 text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border continue-caching renew-on-lang-switch" data-slug="CONTINUE-btn">'+$('.translates-holder').attr('CONTINUE-btn')+'</a></div></div>');
 
             $('#cache-keystore-password').focus();
             $('label[for="cache-keystore-password"]').addClass('active-label');
@@ -94668,16 +94689,16 @@ $(document).on('click', '.open-settings', function () {
             $('.settings-popup .continue-caching').click(function () {
                 this_row.find('.error-handle').remove();
                 if ($('.settings-popup #cache-keystore-password').val().trim() == '') {
-                    $('<div class="error-handle">Please enter password for your backup file.</div>').insertAfter(this_camping_row);
+                    $('<div class="error-handle renew-on-lang-switch" data-slug="enter-backup-pass">'+$('.translates-holder').attr('enter-backup-pass')+'</div>').insertAfter(this_camping_row);
                 } else {
-                    showLoader('Hold on...<br>Caching your Backup File.');
+                    showLoader($('.translates-holder').attr('hold-on-caching'));
                     setTimeout(function () {
                         importKeystoreFile(keystore_string, $('.settings-popup #cache-keystore-password').val().trim(), function (success, public_key, address, error, error_message) {
                             if (success) {
                                 window.localStorage.setItem('keystore_file', keystore_string);
 
                                 basic.closeDialog();
-                                basic.showAlert('Your backup file has been cached successfully.', '', true);
+                                basic.showAlert($('.translates-holder').attr('your-backup'), '', true);
                             } else if (error) {
                                 $('<div class="error-handle">' + error_message + '</div>').insertAfter(this_camping_row);
                             }
@@ -94689,10 +94710,15 @@ $(document).on('click', '.open-settings', function () {
         }
     }
 
-    settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important generate-keystore"><svg class="margin-right-5 inline-block max-width-30" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 66.3 74.8" style="enable-background:new 0 0 66.3 74.8;" xml:space="preserve"><style type="text/css">.st0-generate-keystore-file{fill:#00B5E2;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="74.8" width="66.3" x="16.6" y="37.3"></sliceSourceBounds></sfw></metadata><path class="st0-generate-keystore-file" d="M66.3,37.4c0-13.7-8.6-26.1-21.4-31c-0.8-0.3-1.6,0.1-1.9,0.9c-0.3,0.8,0.1,1.6,0.9,1.9c11.6,4.4,19.5,15.7,19.5,28.2c0,15.5-11.8,28.3-26.8,29.9l2.1-2.6c0.5-0.6,0.4-1.6-0.2-2.1c-0.6-0.5-1.6-0.4-2.1,0.2l-4.1,5.1c-0.3,0.2-0.4,0.6-0.5,1c0,0,0,0.1,0,0.1c0,0,0,0,0,0.1c0,0,0,0,0,0.1c0,0.1,0,0.2,0,0.2c0,0,0,0,0,0c0.1,0.3,0.2,0.7,0.5,0.9l5.3,4.3c0.3,0.2,0.6,0.3,0.9,0.3c0.4,0,0.9-0.2,1.2-0.6c0.5-0.6,0.4-1.6-0.2-2.1L37,70.3C53.5,68.3,66.3,54.3,66.3,37.4z M34.3,6.7c0.1-0.1,0.1-0.1,0.1-0.2c0,0,0,0,0,0c0-0.1,0.1-0.1,0.1-0.2c0,0,0-0.1,0-0.1c0-0.1,0-0.1,0-0.2c0,0,0-0.1,0-0.1c0,0,0,0,0-0.1c0,0,0,0,0-0.1c0-0.1,0-0.1,0-0.2c0,0,0-0.1,0-0.1c0-0.1,0-0.1-0.1-0.2c0,0,0,0,0-0.1c0-0.1-0.1-0.1-0.1-0.2c0,0,0,0,0,0c0-0.1-0.1-0.1-0.2-0.2c0,0,0,0,0,0c0,0-0.1-0.1-0.1-0.1l-5.3-4.3c-0.6-0.5-1.6-0.4-2.1,0.2c-0.5,0.6-0.4,1.6,0.2,2.1l2.3,1.8C12.8,6.5,0,20.5,0,37.4c0,13.8,8.7,26.3,21.6,31.1c0.2,0.1,0.3,0.1,0.5,0.1c0.6,0,1.2-0.4,1.4-1c0.3-0.8-0.1-1.6-0.9-1.9C10.9,61.3,3,49.9,3,37.4C3,21.9,14.8,9.1,29.8,7.5l-2.1,2.6c-0.5,0.6-0.4,1.6,0.2,2.1c0.3,0.2,0.6,0.3,0.9,0.3c0.4,0,0.9-0.2,1.2-0.6L34.3,6.7C34.3,6.7,34.3,6.7,34.3,6.7z"/><g transform="translate(0,-952.36218)"><path class="st0-generate-keystore-file" d="M31.6,974.2c3,3,3.3,7.8,0.9,11.2l16.5,16.5c0.5,0.5,0.5,1.4,0,1.9l-3.7,3.7c-0.5,0.5-1.4,0.5-1.9,0c-0.5-0.5-0.5-1.4,0-1.9l2.7-2.7l-3.9-3.9l-4.2,4.2c-0.5,0.5-1.4,0.5-1.9,0c-0.5-0.5-0.5-1.4,0-1.9l4.2-4.2l-9.7-9.7c-3.4,2.4-8.2,2.2-11.2-0.9c-3.4-3.4-3.4-8.9,0-12.2C22.7,970.8,28.2,970.8,31.6,974.2z M29.7,976.1c-2.3-2.3-6.1-2.3-8.4,0c-2.3,2.3-2.3,6.1,0,8.4c2.3,2.3,6.1,2.3,8.4,0C32,982.2,32,978.4,29.7,976.1L29.7,976.1z"/></g></svg><span class="inline-block color-light-blue fs-18 lato-bold">Generate Backup File</span></a><div class="fs-14 option-description">Create an easy-to-use wallet access file from your private key and secure it with a password.</div><div class="camping-for-action"></div></div><div class="option-row"><a href="javascript:void(0)" class="display-block-important show-private-key"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 21.3" style="enable-background:new 0 0 16 21.3;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="21.3" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M5.3,0C5.1,0,5,0.1,4.9,0.2L0.2,4.9C0.1,5,0,5.2,0,5.3v13.9c0,1.1,0.9,2.1,2.1,2.1h11.8c1.1,0,2.1-0.9,2.1-2.1 V2.1C16,0.9,15.1,0,13.9,0H5.3C5.3,0,5.3,0,5.3,0z M6.2,1.2h7.7c0.5,0,0.9,0.4,0.9,0.9v17.2c0,0.5-0.4,0.9-0.9,0.9H2.1 c-0.5,0-0.9-0.4-0.9-0.9v-13h4.4C6,6.2,6.2,6,6.2,5.6V1.2z M5,1.7V5H1.7L5,1.7z M4.4,9.8c-1.1,0-2.1,0.9-2.1,2.1s0.9,2.1,2.1,2.1 c0.9,0,1.7-0.6,2-1.5h3.6v0.9c0,0.3,0.3,0.6,0.6,0.6c0.3,0,0.6-0.3,0.6-0.6c0,0,0,0,0,0v-0.9h1.2v0.9c0,0.3,0.3,0.6,0.6,0.6 c0.3,0,0.6-0.3,0.6-0.6c0,0,0,0,0,0v-1.5c0-0.3-0.3-0.6-0.6-0.6H6.4C6.2,10.4,5.4,9.8,4.4,9.8L4.4,9.8z M4.4,11 c0.5,0,0.9,0.4,0.9,0.9c0,0.5-0.4,0.9-0.9,0.9c-0.5,0-0.9-0.4-0.9-0.9C3.6,11.3,3.9,11,4.4,11z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold">Display Private Key</span></a><div class="fs-14 option-description">Upload your backup file and the secret password to decrypt and show the private key.</div><div class="camping-for-action"></div></div>';
+    var display_pk_error = '';
+    if (window.localStorage.getItem('printed_private_key') == null) {
+        display_pk_error = $('.translates-holder').attr('upload-to-show-second-option');
+    }
+
+    settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important generate-keystore"><svg class="margin-right-5 inline-block max-width-30" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 66.3 74.8" style="enable-background:new 0 0 66.3 74.8;" xml:space="preserve"><style type="text/css">.st0-generate-keystore-file{fill:#00B5E2;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="74.8" width="66.3" x="16.6" y="37.3"></sliceSourceBounds></sfw></metadata><path class="st0-generate-keystore-file" d="M66.3,37.4c0-13.7-8.6-26.1-21.4-31c-0.8-0.3-1.6,0.1-1.9,0.9c-0.3,0.8,0.1,1.6,0.9,1.9c11.6,4.4,19.5,15.7,19.5,28.2c0,15.5-11.8,28.3-26.8,29.9l2.1-2.6c0.5-0.6,0.4-1.6-0.2-2.1c-0.6-0.5-1.6-0.4-2.1,0.2l-4.1,5.1c-0.3,0.2-0.4,0.6-0.5,1c0,0,0,0.1,0,0.1c0,0,0,0,0,0.1c0,0,0,0,0,0.1c0,0.1,0,0.2,0,0.2c0,0,0,0,0,0c0.1,0.3,0.2,0.7,0.5,0.9l5.3,4.3c0.3,0.2,0.6,0.3,0.9,0.3c0.4,0,0.9-0.2,1.2-0.6c0.5-0.6,0.4-1.6-0.2-2.1L37,70.3C53.5,68.3,66.3,54.3,66.3,37.4z M34.3,6.7c0.1-0.1,0.1-0.1,0.1-0.2c0,0,0,0,0,0c0-0.1,0.1-0.1,0.1-0.2c0,0,0-0.1,0-0.1c0-0.1,0-0.1,0-0.2c0,0,0-0.1,0-0.1c0,0,0,0,0-0.1c0,0,0,0,0-0.1c0-0.1,0-0.1,0-0.2c0,0,0-0.1,0-0.1c0-0.1,0-0.1-0.1-0.2c0,0,0,0,0-0.1c0-0.1-0.1-0.1-0.1-0.2c0,0,0,0,0,0c0-0.1-0.1-0.1-0.2-0.2c0,0,0,0,0,0c0,0-0.1-0.1-0.1-0.1l-5.3-4.3c-0.6-0.5-1.6-0.4-2.1,0.2c-0.5,0.6-0.4,1.6,0.2,2.1l2.3,1.8C12.8,6.5,0,20.5,0,37.4c0,13.8,8.7,26.3,21.6,31.1c0.2,0.1,0.3,0.1,0.5,0.1c0.6,0,1.2-0.4,1.4-1c0.3-0.8-0.1-1.6-0.9-1.9C10.9,61.3,3,49.9,3,37.4C3,21.9,14.8,9.1,29.8,7.5l-2.1,2.6c-0.5,0.6-0.4,1.6,0.2,2.1c0.3,0.2,0.6,0.3,0.9,0.3c0.4,0,0.9-0.2,1.2-0.6L34.3,6.7C34.3,6.7,34.3,6.7,34.3,6.7z"/><g transform="translate(0,-952.36218)"><path class="st0-generate-keystore-file" d="M31.6,974.2c3,3,3.3,7.8,0.9,11.2l16.5,16.5c0.5,0.5,0.5,1.4,0,1.9l-3.7,3.7c-0.5,0.5-1.4,0.5-1.9,0c-0.5-0.5-0.5-1.4,0-1.9l2.7-2.7l-3.9-3.9l-4.2,4.2c-0.5,0.5-1.4,0.5-1.9,0c-0.5-0.5-0.5-1.4,0-1.9l4.2-4.2l-9.7-9.7c-3.4,2.4-8.2,2.2-11.2-0.9c-3.4-3.4-3.4-8.9,0-12.2C22.7,970.8,28.2,970.8,31.6,974.2z M29.7,976.1c-2.3-2.3-6.1-2.3-8.4,0c-2.3,2.3-2.3,6.1,0,8.4c2.3,2.3,6.1,2.3,8.4,0C32,982.2,32,978.4,29.7,976.1L29.7,976.1z"/></g></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="generate-backup">'+$('.translates-holder').attr('generate-backup')+'</span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="easy-to-easy">'+$('.translates-holder').attr('easy-to-easy')+'</div><div class="camping-for-action"></div></div><div class="option-row"><a href="javascript:void(0)" class="display-block-important show-private-key"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 21.3" style="enable-background:new 0 0 16 21.3;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="21.3" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M5.3,0C5.1,0,5,0.1,4.9,0.2L0.2,4.9C0.1,5,0,5.2,0,5.3v13.9c0,1.1,0.9,2.1,2.1,2.1h11.8c1.1,0,2.1-0.9,2.1-2.1 V2.1C16,0.9,15.1,0,13.9,0H5.3C5.3,0,5.3,0,5.3,0z M6.2,1.2h7.7c0.5,0,0.9,0.4,0.9,0.9v17.2c0,0.5-0.4,0.9-0.9,0.9H2.1 c-0.5,0-0.9-0.4-0.9-0.9v-13h4.4C6,6.2,6.2,6,6.2,5.6V1.2z M5,1.7V5H1.7L5,1.7z M4.4,9.8c-1.1,0-2.1,0.9-2.1,2.1s0.9,2.1,2.1,2.1 c0.9,0,1.7-0.6,2-1.5h3.6v0.9c0,0.3,0.3,0.6,0.6,0.6c0.3,0,0.6-0.3,0.6-0.6c0,0,0,0,0,0v-0.9h1.2v0.9c0,0.3,0.3,0.6,0.6,0.6 c0.3,0,0.6-0.3,0.6-0.6c0,0,0,0,0,0v-1.5c0-0.3-0.3-0.6-0.6-0.6H6.4C6.2,10.4,5.4,9.8,4.4,9.8L4.4,9.8z M4.4,11 c0.5,0,0.9,0.4,0.9,0.9c0,0.5-0.4,0.9-0.9,0.9c-0.5,0-0.9-0.4-0.9-0.9C3.6,11.3,3.9,11,4.4,11z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="display-key">'+$('.translates-holder').attr('display-key')+'</span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="upload-to-show">'+$('.translates-holder').attr('upload-to-show')+'</div><div class="camping-for-action"></div>'+display_pk_error+'</div>';
 
     if (window.localStorage.getItem('keystore_file') != null) {
-        settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important forget-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M14,0H2C0.9,0,0,0.9,0,2v12c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V2C16,0.9,15.1,0,14,0z M15,14c0,0.6-0.4,1-1,1 H2c-0.6,0-1-0.4-1-1v-3h14V14z M15,10H1V6h14V10z M1,5V2c0-0.6,0.4-1,1-1h12c0.6,0,1,0.4,1,1v3H1z M14,3.5C14,3.8,13.8,4,13.5,4h-1 C12.2,4,12,3.8,12,3.5v-1C12,2.2,12.2,2,12.5,2h1C13.8,2,14,2.2,14,2.5V3.5z M14,8.5C14,8.8,13.8,9,13.5,9h-1C12.2,9,12,8.8,12,8.5 v-1C12,7.2,12.2,7,12.5,7h1C13.8,7,14,7.2,14,7.5V8.5z M14,13.5c0,0.3-0.2,0.5-0.5,0.5h-1c-0.3,0-0.5-0.2-0.5-0.5v-1 c0-0.3,0.2-0.5,0.5-0.5h1c0.3,0,0.5,0.2,0.5,0.5V13.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold">Forget Backup File</span></a><div class="fs-14 option-description">By doing so, you’ll be asked to upload it every time you want to access your wallet.</div></div>';
+        settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important forget-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M14,0H2C0.9,0,0,0.9,0,2v12c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V2C16,0.9,15.1,0,14,0z M15,14c0,0.6-0.4,1-1,1 H2c-0.6,0-1-0.4-1-1v-3h14V14z M15,10H1V6h14V10z M1,5V2c0-0.6,0.4-1,1-1h12c0.6,0,1,0.4,1,1v3H1z M14,3.5C14,3.8,13.8,4,13.5,4h-1 C12.2,4,12,3.8,12,3.5v-1C12,2.2,12.2,2,12.5,2h1C13.8,2,14,2.2,14,2.5V3.5z M14,8.5C14,8.8,13.8,9,13.5,9h-1C12.2,9,12,8.8,12,8.5 v-1C12,7.2,12.2,7,12.5,7h1C13.8,7,14,7.2,14,7.5V8.5z M14,13.5c0,0.3-0.2,0.5-0.5,0.5h-1c-0.3,0-0.5-0.2-0.5-0.5v-1 c0-0.3,0.2-0.5,0.5-0.5h1c0.3,0,0.5,0.2,0.5,0.5V13.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="forget-file">'+$('.translates-holder').attr('forget-file')+'</span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="you-will-be-asked">'+$('.translates-holder').attr('you-will-be-asked')+'</div></div>';
 
         //removing the cached keystore file from localstorage
         if (!forgetWalletLogicInitiated) {
@@ -94706,26 +94732,30 @@ $(document).on('click', '.open-settings', function () {
                             window.localStorage.removeItem('keystore_file');
 
                             basic.closeDialog();
-                            basic.showAlert('Your backup file cache was deleted successfully.', '', true);
+                            basic.showAlert($('.translates-holder').attr('forget-file-succ'), '', true);
                         }
                     }
                 };
-                basic.showConfirm('Are you sure you downloaded your Backup file? Once forgotten, you will not be able to send transactions with your Backup file.', '', forget_keystore_reminder_warning, true);
+                basic.showConfirm($('.translates-holder').attr('are-you-sure'), '', forget_keystore_reminder_warning, true);
             });
         }
     }
 
-    var settings_bottom_html = '<div class="padding-top-10 fs-14">Don\'t forget to download and save your Backup File - there is no other way to log in next time.</div>';
+    var settings_bottom_html = '<div class="padding-top-10 padding-left-15 padding-right-15 fs-14 renew-on-lang-switch" data-slug="dont-forget">'+$('.translates-holder').attr('dont-forget')+'</div>';
 
     //shop Help center menu element (FAQ) only on mobile
-    if ($(window).width() < 768) {
-        settings_html += '<div class="option-row"><a href="https://dentacoin.com/how-to-create-wallet" target="_blank" class="display-block-important data-external-link"><svg class="margin-right-5 inline-block max-width-30" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 73.9 73.9" style="enable-background:new 0 0 73.9 73.9;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="74" width="74" x="0" y="-0.1"></sliceSourceBounds></sfw></metadata><circle style="fill:none;stroke:#00B7E2;stroke-width:3;stroke-miterlimit:10;" cx="37" cy="37" r="35.5"/><path d="M46,38.6"/><path style="fill:#00B7E2;" d="M36.8,17.1c-5.8,0-11.4,3.8-11.4,11c0,1.9,1.6,3.4,3.4,3.4c1.9,0,3.4-1.6,3.4-3.4c0-3.8,4.1-3.9,4.5-3.9s4.5,0.2,4.5,3.9v0.8c0,1.6-0.8,2.8-2.2,3.6l-3,1.7c-1.7,0.9-2.7,2.7-2.7,4.5v2.8c0,1.9,1.6,3.4,3.4,3.4s3.4-1.6,3.4-3.4v-1.7l2.2-1.1c3.6-1.9,5.8-5.6,5.8-9.7v-0.9C48.2,20.9,42.4,17.1,36.8,17.1z"/><path style="fill:#00B7E2;" d="M36.8,48.9c-5.6,0-5.6,8.8,0,8.8S42.4,48.9,36.8,48.9z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold">Help Center</span></a><div class="fs-14 option-description">Having difficulties? Check frequently asked questions or contact us at <a href="mailto:admin@dentacoin.com" class="color-light-blue">admin@dentacoin.com</a>.</div></div>';
+    if (basic.isMobile()) {
+        settings_html += '<div class="option-row"><a href="https://dentacoin.com/how-to-create-wallet" target="_blank" class="display-block-important data-external-link"><svg class="margin-right-5 inline-block max-width-30" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 73.9 73.9" style="enable-background:new 0 0 73.9 73.9;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="74" width="74" x="0" y="-0.1"></sliceSourceBounds></sfw></metadata><circle style="fill:none;stroke:#00B7E2;stroke-width:3;stroke-miterlimit:10;" cx="37" cy="37" r="35.5"/><path d="M46,38.6"/><path style="fill:#00B7E2;" d="M36.8,17.1c-5.8,0-11.4,3.8-11.4,11c0,1.9,1.6,3.4,3.4,3.4c1.9,0,3.4-1.6,3.4-3.4c0-3.8,4.1-3.9,4.5-3.9s4.5,0.2,4.5,3.9v0.8c0,1.6-0.8,2.8-2.2,3.6l-3,1.7c-1.7,0.9-2.7,2.7-2.7,4.5v2.8c0,1.9,1.6,3.4,3.4,3.4s3.4-1.6,3.4-3.4v-1.7l2.2-1.1c3.6-1.9,5.8-5.6,5.8-9.7v-0.9C48.2,20.9,42.4,17.1,36.8,17.1z"/><path style="fill:#00B7E2;" d="M36.8,48.9c-5.6,0-5.6,8.8,0,8.8S42.4,48.9,36.8,48.9z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="help-center">'+$('.translates-holder').attr('help-center')+'</span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="having-diff">'+$('.translates-holder').attr('having-diff')+' <a href="mailto:admin@dentacoin.com" class="color-light-blue">admin@dentacoin.com</a>.</div></div>';
 
-        settings_bottom_html = '<div class="padding-top-10 fs-14">Don\'t forget to download and save your Backup File - there is no other way to log in next time.</div><div class="text-center padding-top-20 fs-14"><a class="color-light-blue data-external-link" href="https://dentacoin.com/assets/uploads/dentacoin-foundation.pdf" target="_blank"><span class="current-year"></span> Dentacoin Foundation.</a> All rights reserved.</div><div class="text-center fs-14"><a class="color-light-blue data-external-link" href="https://dentacoin.com/privacy-policy" target="_blank">Privacy Policy</a></div>';
+        settings_bottom_html = '<div class="padding-top-10 padding-left-15 padding-right-15 fs-14 renew-on-lang-switch" data-slug="dont-forget">'+$('.translates-holder').attr('dont-forget')+'</div><div class="text-center padding-top-20 fs-14"><a class="color-light-blue data-external-link" href="https://dentacoin.com/assets/uploads/dentacoin-foundation.pdf" target="_blank"><span class="current-year"></span> Dentacoin Foundation.</a> <span class="renew-on-lang-switch" data-slug="all-rights">'+$('.translates-holder').attr('all-rights')+'</span></div><div class="text-center fs-14"><a class="color-light-blue data-external-link renew-on-lang-switch" data-slug="menu-privacy-policy" href="https://dentacoin.com/privacy-policy" target="_blank">'+$('.translates-holder').attr('menu-privacy-policy')+'</a></div>';
     }
 
-    settings_html += '</div><div class="popup-footer text-center"><div><a href="javascript:void(0)" class="log-out light-blue-white-btn min-width-220"><svg xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 18.4" style="enable-background:new 0 0 16 18.4;" xml:space="preserve" class="margin-right-5 inline-block max-width-20"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="18.4" width="16" x="1" y="8.4"/></sfw></metadata><g><path class="st0" d="M2.5,0h10.6c1.4,0,2.5,1.1,2.5,2.5v3.2h-1.5V2.5c0-0.5-0.4-1-1-1H2.5c-0.5,0-1,0.4-1,1v13.4c0,0.5,0.4,1,1,1 h10.6c0.5,0,1-0.4,1-1v-3.2h1.5v3.2c0,1.4-1.1,2.5-2.5,2.5H2.5c-1.4,0-2.5-1.1-2.5-2.5V2.5C0,1.1,1.1,0,2.5,0z M11,7.5H6.2v3.4H11 v1.9l5-3.5l-5-3.5V7.5L11,7.5z"/></g></svg><span class="inline-block">Log out</span></a></div>' + settings_bottom_html + '</div>';
-    basic.showDialog(settings_html, 'settings-popup', null, true);
+    $('.settings-popup .popup-body').html(settings_html);
+    $('.settings-popup .popup-footer').html('<div><a href="javascript:void(0)" class="log-out light-blue-white-btn min-width-220"><svg xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 18.4" style="enable-background:new 0 0 16 18.4;" xml:space="preserve" class="margin-right-5 inline-block max-width-20"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="18.4" width="16" x="1" y="8.4"/></sfw></metadata><g><path class="st0" d="M2.5,0h10.6c1.4,0,2.5,1.1,2.5,2.5v3.2h-1.5V2.5c0-0.5-0.4-1-1-1H2.5c-0.5,0-1,0.4-1,1v13.4c0,0.5,0.4,1,1,1 h10.6c0.5,0,1-0.4,1-1v-3.2h1.5v3.2c0,1.4-1.1,2.5-2.5,2.5H2.5c-1.4,0-2.5-1.1-2.5-2.5V2.5C0,1.1,1.1,0,2.5,0z M11,7.5H6.2v3.4H11 v1.9l5-3.5l-5-3.5V7.5L11,7.5z"/></g></svg><span class="inline-block renew-on-lang-switch renew-on-lang-switch" data-slug="log-out" data-slug="log-out">'+$('.translates-holder').attr('log-out')+'</span></a></div>' + settings_bottom_html);
+    $('body').addClass('overflow-hidden');
+    $('.settings-popup').removeClass('hide');
+
+    //basic.showDialog(settings_html, 'settings-popup', null, true);
 
     if ($('.settings-popup .current-year').length) {
         $('.settings-popup .current-year').html(new Date().getFullYear());
@@ -94736,12 +94766,14 @@ $(document).on('click', '.open-settings', function () {
             $('.settings-popup .camping-for-action').html('');
             $('.settings-popup .error-handle').remove();
 
-            var downloadBtnLabel = 'DOWNLOAD';
+            var downloadBtnLabel = $('.translates-holder').attr('download');
+            var attrSlug = 'download';
             if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
-                downloadBtnLabel = 'EXPORT';
+                downloadBtnLabel = $('.translates-holder').attr('export-btn');
+                attrSlug = 'export-btn';
             }
 
-            var enterKeystorePasswordHtml = '<div class="custom-google-label-style margin-bottom-15 margin-top-20 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="download-keystore-password">Password:</label><input type="password" id="download-keystore-password" class="full-rounded"></div><div class="text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 download-keystore-action">' + downloadBtnLabel + '</a></div>';
+            var enterKeystorePasswordHtml = '<div class="custom-google-label-style margin-bottom-15 margin-top-20 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="download-keystore-password" class="renew-on-lang-switch" data-slug="pass-label">'+$('.translates-holder').attr('pass-label')+'</label><input type="password" id="download-keystore-password" class="full-rounded"></div><div class="text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 download-keystore-action renew-on-lang-switch text-uppercase" data-slug="'+attrSlug+'">' + downloadBtnLabel + '</a></div>';
 
             var this_row = $(this).closest('.option-row');
             var this_camping_row = this_row.find('.camping-for-action');
@@ -94751,7 +94783,7 @@ $(document).on('click', '.open-settings', function () {
             $('label[for="download-keystore-password"]').addClass('active-label');
 
             $('.download-keystore-action').click(function () {
-                showLoader('Hold on...<br>It will take few seconds to decrypt your Backup file.');
+                showLoader($('.translates-holder').attr('hold-on-decrypt'));
                 this_row.find('.error-handle').remove();
 
                 setTimeout(function () {
@@ -94761,52 +94793,20 @@ $(document).on('click', '.open-settings', function () {
                                 //MOBILE APP
                                 if (basic.getMobileOperatingSystem() == 'Android') {
                                     //getting the file content by it path saved in localstorage
-                                    showLoader('Downloading ... <br> Please allow access to your device if asked for it.');
+                                    showLoader($('.translates-holder').attr('downloading'));
 
                                     setTimeout(function () {
                                         var keystore_file_name = buildKeystoreFileName(global_state.account);
                                         //downloading the file in mobile device file system
                                         hybridAppFileDownload(keystore_file_name, window.localStorage.getItem('keystore_file'), function () {
                                             basic.closeDialog();
-                                            basic.showAlert('File ' + keystore_file_name + ' has been downloaded to the top-level directory of your device file system.', '', true);
+                                            basic.showAlert($('.translates-holder').attr('file') +keystore_file_name + $('.translates-holder').attr('has-been-downloaded'), '', true);
 
                                             $('#download-keystore-password').val('');
                                             hideLoader();
                                         }, cordova.file.externalRootDirectory, true);
                                     }, 500);
                                 } else if (basic.getMobileOperatingSystem() == 'iOS') {
-                                    //using export plugin, because in iOS there is no such thing as direct file download
-                                    //window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
-
-                                    //if (window.localStorage.getItem('keystore_file_ios_saved') == null) {
-                                        //window.localStorage.setItem('keystore_file_ios_saved', true);
-                                        /*var file_name = buildKeystoreFileName(global_state.account);
-
-                                        window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function(rootEntry) {
-                                            rootEntry.getFile(file_name, {create: false}, function (fileEntry) {
-                                                fileEntry.file(function (file) {
-                                                    var reader = new FileReader();
-
-                                                    reader.onloadend = function () {
-                                                        hideLoader();
-
-                                                        var keystore_string = this.result;
-                                                        window.plugins.socialsharing.share(keystore_string);
-                                                        window.localStorage.setItem('keystore_file_ios_saved', true);
-                                                        if ($('.keystore-file-ios-saved').length) {
-                                                            $('.keystore-file-ios-saved').remove();
-                                                        }
-                                                    };
-
-                                                    reader.readAsText(file);
-                                                });
-                                            }, function (err) {
-                                                hideLoader();
-                                                $('<div class="error-handle">Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.</div>').insertAfter(this_camping_row);
-                                            });
-                                        });*/
-                                    //}
-
                                     hideLoader();
                                     window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
                                     $('#download-keystore-password').val('');
@@ -94817,10 +94817,10 @@ $(document).on('click', '.open-settings', function () {
 
                                 if (basic.getMobileOperatingSystem() == 'iOS' && basic.isMobile()) {
                                     // mobile ios device
-                                    basic.showAlert('Backup File has been opened in new tab of your browser. Please make sure to share/ copy and keep it in a safe place. Only you are responsible for it!', '', true);
+                                    basic.showAlert($('.translates-holder').attr('opened-new-tab'), '', true);
                                 } else {
                                     // BROWSER
-                                    basic.showAlert('File ' + buildKeystoreFileName(global_state.account) + ' has been downloaded to the top-level directory of your device file system.', '', true);
+                                    basic.showAlert($('.translates-holder').attr('file') +buildKeystoreFileName(global_state.account) + $('.translates-holder').attr('has-been-downloaded'), '', true);
 
 
                                 }
@@ -94839,8 +94839,9 @@ $(document).on('click', '.open-settings', function () {
 
     updateExternalURLsForiOSDevice();
 
-    $('.settings-popup .custom-close-bootbox').click(function () {
-        basic.closeDialog();
+    $('.settings-popup .custom-close-settings-popup').click(function () {
+        $('body').removeClass('overflow-hidden');
+        $('.settings-popup').addClass('hide');
     });
 
     //logging out of the application
@@ -94857,7 +94858,7 @@ $(document).on('click', '.open-settings', function () {
                 }
             }
         };
-        basic.showConfirm('Are you sure you downloaded your Backup file? Once logged out, you will not be able to access your wallet without it.', '', log_out_reminder_warning, true);
+        basic.showConfirm($('.translates-holder').attr('are-you-downloaded'), '', log_out_reminder_warning, true);
     });
 
     //showing private key
@@ -94867,7 +94868,7 @@ $(document).on('click', '.open-settings', function () {
         var show_private_key_html = '';
         if (window.localStorage.getItem('keystore_file') != null) {
             //cached keystore path on mobile device or cached keystore file on browser
-            show_private_key_html += '<div class="custom-google-label-style margin-bottom-15 margin-top-20 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="show-private-key-password">Password:</label><input type="password" id="show-private-key-password" class="full-rounded"></div><div class="text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 show-private-key-action">DISPLAY PRIVATE KEY</a></div>';
+            show_private_key_html += '<div class="custom-google-label-style margin-bottom-15 margin-top-20 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="show-private-key-password" class="renew-on-lang-switch" data-slug="pass-label">'+$('.translates-holder').attr('pass-label')+'</label><input type="password" id="show-private-key-password" class="full-rounded"></div><div class="text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 show-private-key-action renew-on-lang-switch" data-slug="display-priv-key">'+$('.translates-holder').attr('display-priv-key')+'</a></div>';
 
             var this_row = $(this).closest('.option-row');
             var this_camping_row = this_row.find('.camping-for-action');
@@ -94879,14 +94880,18 @@ $(document).on('click', '.open-settings', function () {
             $('.show-private-key-action').click(function () {
                 this_row.find('.error-handle').remove();
                 if ($('#show-private-key-password').val().trim() == '') {
-                    $('<div class="error-handle">Please enter password for your backup file.</div>').insertAfter(this_camping_row);
+                    $('<div class="error-handle renew-on-lang-switch" data-slug="enter-backup-pass">'+$('.translates-holder').attr('enter-backup-pass')+'</div>').insertAfter(this_camping_row);
                 } else {
-                    showLoader('Hold on...<br>Decrypting your Backup File.');
+                    showLoader($('.translates-holder').attr('hold-decrypt'));
 
                     setTimeout(function () {
                         decryptKeystore(window.localStorage.getItem('keystore_file'), $('#show-private-key-password').val().trim(), function (success, to_string, error, error_message) {
                             if (success) {
-                                this_camping_row.html('<div class="private-key-holder"><div class="scroll-content"><a href="javascript:void(0);" class="copy-private-key inline-block padding-right-5" data-toggle="tooltip" title="Copied." data-placement="right" data-clipboard-target="#copy-private-key"><svg class="width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 19.8 24" style="enable-background:new 0 0 19.8 24;" xml:space="preserve"><style type="text/css">.st0{fill:#303030;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="24" width="19.8" x="1.2" y="0"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M19.8,2.9c0,4.9,0,9.9,0,14.8c0,0.1,0,0.1,0,0.2c-0.2,1.4-1.2,2.4-2.6,2.7c-0.2,0-0.2,0.1-0.2,0.3c0,1.3-0.6,2.2-1.8,2.8c-0.3,0.2-0.7,0.2-1,0.3c-3.8,0-7.5,0-11.3,0c0,0-0.1,0-0.1,0c-1.3-0.3-2.2-1-2.6-2.3C0.1,21.4,0,21.3,0,21.1c0-4.9,0-9.9,0-14.8c0,0,0-0.1,0-0.1c0.3-1.6,1.6-2.7,3.2-2.7c2.5,0,5.1,0,7.6,0c0.7,0,1.3,0.3,1.9,0.8c1.1,1.1,2.3,2.3,3.4,3.4c0.5,0.5,0.8,1.1,0.8,1.9c0,3,0,6.1,0,9.1c0,0.1,0,0.2,0,0.3c0.2-0.1,0.3-0.1,0.4-0.2c0.6-0.3,0.8-0.9,0.8-1.6c0-4.2,0-8.4,0-12.6c0-0.4,0-0.9,0-1.3c0-1-0.7-1.7-1.7-1.7c-3.7,0-7.3,0-11,0c-0.5,0-1,0.2-1.3,0.6c0,0.1-0.1,0.1-0.2,0.1c-0.5,0-1.1,0-1.6,0c0,0,0-0.1,0-0.1c0-0.1,0-0.1,0.1-0.2c0.3-0.9,0.9-1.5,1.8-1.8C4.5,0.1,4.7,0.1,5,0c4,0,8,0,11.9,0c0,0,0.1,0,0.1,0c1.4,0.2,2.3,1.2,2.6,2.5C19.7,2.7,19.7,2.8,19.8,2.9z M1.6,13.7c0,2.3,0,4.6,0,6.9c0,1.1,0.7,1.7,1.7,1.7c3.4,0,6.8,0,10.2,0c1.1,0,1.8-0.7,1.8-1.8c0-3.7,0-7.3,0-11c0-0.1,0-0.1,0-0.2c0-0.2-0.1-0.2-0.3-0.2c-0.6,0-1.1,0-1.7,0c-1.4,0-2.3-1-2.3-2.4c0-0.5,0-1,0-1.5C11,5.1,11,5,10.8,5c-2.5,0-5,0-7.5,0C3,5,2.8,5.1,2.5,5.2C1.9,5.5,1.6,6.1,1.6,6.8C1.6,9.1,1.6,11.4,1.6,13.7z"/><path class="st0" d="M8.5,17.5c1.4,0,2.8,0,4.1,0c0.6,0,0.9,0.3,1,0.8c0.1,0.5-0.2,1-0.7,1.1c-0.1,0-0.2,0-0.3,0c-2.8,0-5.5,0-8.3,0c-0.6,0-1.1-0.4-1.1-0.9c0-0.5,0.4-0.9,1-0.9c0.6,0,1.3,0,1.9,0C6.9,17.5,7.7,17.5,8.5,17.5z"/><path class="st0" d="M8.4,15.3c-1.4,0-2.8,0-4.2,0c-0.4,0-0.8-0.2-0.9-0.6c-0.1-0.4,0-0.8,0.3-1c0.2-0.1,0.4-0.2,0.6-0.2c2.8,0,5.7,0,8.5,0c0.5,0,0.9,0.4,0.9,0.9c0,0.5-0.4,0.9-0.9,1c-0.6,0-1.2,0-1.8,0C10.1,15.3,9.3,15.3,8.4,15.3z"/><path class="st0" d="M6.7,11.2c-0.8,0-1.6,0-2.4,0c-0.4,0-0.7-0.2-0.9-0.6c-0.2-0.3-0.1-0.7,0.1-1c0.2-0.2,0.4-0.3,0.7-0.3c1.6,0,3.2,0,4.9,0c0.6,0,1,0.4,1,1c0,0.5-0.4,0.9-1,0.9C8.3,11.2,7.5,11.2,6.7,11.2z"/></g></svg></a><textarea readonly="" class="inline-block" id="copy-private-key">' + to_string + '</textarea></div></div><div class="padding-top-10 padding-bottom-15 fs-14 color-warning-red">This is NOT a recommended way of accessing your wallet. The information is highly sensitive and should therefore be used in offline settings by experienced crypto users.</div><div class="padding-top-10 padding-bottom-10 padding-left-70 padding-right-70 padding-left-xs-10 padding-right-xs-10 text-left fs-14 color-white row-with-warning-red-background"><div>*Do not lose it! It cannot be recovered if you lose it.</div><div>*Do not share it! Your funds will be stolen if you use this file on a malicious/phishing site.</div><div>*Make a backup! Secure it like the millions of dollars it may one day be worth.</div></div>');
+                                this_camping_row.html('<a href="javascript:void(0);" data-key="'+to_string+'" class="margin-top-10 fs-20 color-light-blue print-private-key inline-block"><?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/"><!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/"><!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/"><!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/"><!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/"><!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/"><!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/"><!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/"><svg version="1.1" style="width: 30px; display: inline-block; vertical-align: middle;" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 28 28.1" style="enable-background:new 0 0 28 28.1;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="28.1" width="28" x="0" y="0"></sliceSourceBounds></sfw></metadata><path style="fill:#00B7E2;" d="M25,6h-3V2c0-1.1-0.9-2-2-2H8C6.9,0,6,0.9,6,2v4H3C1.3,6,0,7.3,0,9c0,0,0,0,0,0.1V19c0,1.7,1.3,3,2.9,3.1c0,0,0,0,0.1,0h3v4c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2v-4h3c1.7,0,3-1.3,3-3c0,0,0,0,0-0.1V9.1C28,7.4,26.7,6,25,6L25,6z M8,2h12v4H8V2z M20,26H8v-9h12V26z M26,18.9c0,0.6-0.4,1-0.9,1.1c0,0,0,0-0.1,0h-3v-3c0-1.1-0.9-2-2-2H8c-1.1,0-2,0.9-2,2v3H3c-0.6,0-1-0.4-1-1c0,0,0,0,0-0.1V9c0-0.6,0.4-1,0.9-1.1c0,0,0,0,0.1,0h22c0.6,0,1,0.4,1,1c0,0,0,0,0,0.1V18.9z M18,23c0,0.6-0.4,1-1,1h-6c-0.6,0-1-0.4-1-1s0.4-1,1-1h6C17.6,22,18,22.4,18,23z M18,20c0,0.6-0.4,1-1,1h-6c-0.6,0-1-0.4-1-1s0.4-1,1-1h6C17.6,19,18,19.4,18,20z M24,11c0,0.6-0.4,1-1,1h-2c-0.6,0-1-0.4-1-1s0.4-1,1-1h2C23.6,10,24,10.4,24,11z"/></svg> <span class="inline-block renew-on-lang-switch" data-slug="print-pk-text">'+$('.translates-holder').attr('print-pk-text')+'</span></a><div class="private-key-holder"><div class="scroll-content"><a href="javascript:void(0);" class="copy-private-key inline-block padding-right-5" data-toggle="tooltip" title="Copied." data-placement="right" data-clipboard-target="#copy-private-key"><svg class="width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 19.8 24" style="enable-background:new 0 0 19.8 24;" xml:space="preserve"><style type="text/css">.st0{fill:#303030;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="24" width="19.8" x="1.2" y="0"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M19.8,2.9c0,4.9,0,9.9,0,14.8c0,0.1,0,0.1,0,0.2c-0.2,1.4-1.2,2.4-2.6,2.7c-0.2,0-0.2,0.1-0.2,0.3c0,1.3-0.6,2.2-1.8,2.8c-0.3,0.2-0.7,0.2-1,0.3c-3.8,0-7.5,0-11.3,0c0,0-0.1,0-0.1,0c-1.3-0.3-2.2-1-2.6-2.3C0.1,21.4,0,21.3,0,21.1c0-4.9,0-9.9,0-14.8c0,0,0-0.1,0-0.1c0.3-1.6,1.6-2.7,3.2-2.7c2.5,0,5.1,0,7.6,0c0.7,0,1.3,0.3,1.9,0.8c1.1,1.1,2.3,2.3,3.4,3.4c0.5,0.5,0.8,1.1,0.8,1.9c0,3,0,6.1,0,9.1c0,0.1,0,0.2,0,0.3c0.2-0.1,0.3-0.1,0.4-0.2c0.6-0.3,0.8-0.9,0.8-1.6c0-4.2,0-8.4,0-12.6c0-0.4,0-0.9,0-1.3c0-1-0.7-1.7-1.7-1.7c-3.7,0-7.3,0-11,0c-0.5,0-1,0.2-1.3,0.6c0,0.1-0.1,0.1-0.2,0.1c-0.5,0-1.1,0-1.6,0c0,0,0-0.1,0-0.1c0-0.1,0-0.1,0.1-0.2c0.3-0.9,0.9-1.5,1.8-1.8C4.5,0.1,4.7,0.1,5,0c4,0,8,0,11.9,0c0,0,0.1,0,0.1,0c1.4,0.2,2.3,1.2,2.6,2.5C19.7,2.7,19.7,2.8,19.8,2.9z M1.6,13.7c0,2.3,0,4.6,0,6.9c0,1.1,0.7,1.7,1.7,1.7c3.4,0,6.8,0,10.2,0c1.1,0,1.8-0.7,1.8-1.8c0-3.7,0-7.3,0-11c0-0.1,0-0.1,0-0.2c0-0.2-0.1-0.2-0.3-0.2c-0.6,0-1.1,0-1.7,0c-1.4,0-2.3-1-2.3-2.4c0-0.5,0-1,0-1.5C11,5.1,11,5,10.8,5c-2.5,0-5,0-7.5,0C3,5,2.8,5.1,2.5,5.2C1.9,5.5,1.6,6.1,1.6,6.8C1.6,9.1,1.6,11.4,1.6,13.7z"/><path class="st0" d="M8.5,17.5c1.4,0,2.8,0,4.1,0c0.6,0,0.9,0.3,1,0.8c0.1,0.5-0.2,1-0.7,1.1c-0.1,0-0.2,0-0.3,0c-2.8,0-5.5,0-8.3,0c-0.6,0-1.1-0.4-1.1-0.9c0-0.5,0.4-0.9,1-0.9c0.6,0,1.3,0,1.9,0C6.9,17.5,7.7,17.5,8.5,17.5z"/><path class="st0" d="M8.4,15.3c-1.4,0-2.8,0-4.2,0c-0.4,0-0.8-0.2-0.9-0.6c-0.1-0.4,0-0.8,0.3-1c0.2-0.1,0.4-0.2,0.6-0.2c2.8,0,5.7,0,8.5,0c0.5,0,0.9,0.4,0.9,0.9c0,0.5-0.4,0.9-0.9,1c-0.6,0-1.2,0-1.8,0C10.1,15.3,9.3,15.3,8.4,15.3z"/><path class="st0" d="M6.7,11.2c-0.8,0-1.6,0-2.4,0c-0.4,0-0.7-0.2-0.9-0.6c-0.2-0.3-0.1-0.7,0.1-1c0.2-0.2,0.4-0.3,0.7-0.3c1.6,0,3.2,0,4.9,0c0.6,0,1,0.4,1,1c0,0.5-0.4,0.9-1,0.9C8.3,11.2,7.5,11.2,6.7,11.2z"/></g></svg></a><textarea readonly="" class="inline-block" id="copy-private-key">' + to_string + '</textarea></div></div><div class="padding-top-10 padding-bottom-15 fs-14 color-warning-red renew-on-lang-switch" data-slug="not-recomm">'+$('.translates-holder').attr('not-recomm')+'</div><div class="padding-top-10 padding-bottom-10 padding-left-70 padding-right-70 padding-left-xs-10 padding-right-xs-10 text-left fs-14 color-white row-with-warning-red-background renew-on-lang-switch" data-slug="dont-lose-it"><div>'+$('.translates-holder').attr('dont-lose-it')+'</div><div class="renew-on-lang-switch" data-slug="make-backup">'+$('.translates-holder').attr('make-backup')+'</div></div>');
+
+                                $('.print-private-key').click(function() {
+                                    projectData.general_logic.generatePrivateKeyFile($(this).attr('data-key'));
+                                });
 
                                 //init copy button event
                                 var clipboard = new ClipboardJS('.copy-private-key');
@@ -94908,14 +94913,14 @@ $(document).on('click', '.open-settings', function () {
             });
         } else {
             if (is_hybrid) {
-                show_private_key_html = '<div class="text-center import-keystore-file-row margin-top-20"><label class="button show-private-key-keystore-upload custom-upload-button"><a><span class="fs-xs-16 fs-20 lato-bold">Upload your Backup File</span><svg class="load" version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0 0 40 40" enable-background="new 0 0 40 40"><path opacity="0.3" fill="#fff" d="M20.201,5.169c-8.254,0-14.946,6.692-14.946,14.946c0,8.255,6.692,14.946,14.946,14.946s14.946-6.691,14.946-14.946C35.146,11.861,28.455,5.169,20.201,5.169z M20.201,31.749c-6.425,0-11.634-5.208-11.634-11.634c0-6.425,5.209-11.634,11.634-11.634c6.425,0,11.633,5.209,11.633,11.634C31.834,26.541,26.626,31.749,20.201,31.749z"/><path fill="#fff" d="M26.013,10.047l1.654-2.866c-2.198-1.272-4.743-2.012-7.466-2.012h0v3.312h0C22.32,8.481,24.301,9.057,26.013,10.047z"><animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 20 20" to="360 20 20" dur="0.5s" repeatCount="indefinite"/></path></svg><svg class="check" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></a><div><span></span></div></label></div>';
+                show_private_key_html = '<div class="text-center import-keystore-file-row margin-top-20"><label class="button show-private-key-keystore-upload custom-upload-button"><a><span class="fs-xs-16 fs-20 lato-bold renew-on-lang-switch" data-slug="upload-backup-file-label">'+$('.translates-holder').attr('upload-backup-file-label')+'</span><img src="assets/images/loader-circle.png" class="load width-100 max-width-30"/><img src="assets/images/check.png" class="check width-100 max-width-30"/></a><div><span></span></div></label></div>';
             } else {
-                show_private_key_html = '<div class="text-center import-keystore-file-row margin-top-20"><input type="file" id="show-private-key-keystore-upload" class="hide-input show-private-key-keystore-upload"/><label for="show-private-key-keystore-upload" class="button custom-upload-button"><a><span class="fs-xs-16 fs-20 lato-bold">Upload your Backup File</span><svg class="load" version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0 0 40 40" enable-background="new 0 0 40 40"><path opacity="0.3" fill="#fff" d="M20.201,5.169c-8.254,0-14.946,6.692-14.946,14.946c0,8.255,6.692,14.946,14.946,14.946s14.946-6.691,14.946-14.946C35.146,11.861,28.455,5.169,20.201,5.169z M20.201,31.749c-6.425,0-11.634-5.208-11.634-11.634c0-6.425,5.209-11.634,11.634-11.634c6.425,0,11.633,5.209,11.633,11.634C31.834,26.541,26.626,31.749,20.201,31.749z"/><path fill="#fff" d="M26.013,10.047l1.654-2.866c-2.198-1.272-4.743-2.012-7.466-2.012h0v3.312h0C22.32,8.481,24.301,9.057,26.013,10.047z"><animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 20 20" to="360 20 20" dur="0.5s" repeatCount="indefinite"/></path></svg><svg class="check" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></a><div><span></span></div></label></div>';
+                show_private_key_html = '<div class="text-center import-keystore-file-row margin-top-20"><input type="file" id="show-private-key-keystore-upload" class="hide-input show-private-key-keystore-upload"/><label for="show-private-key-keystore-upload" class="button custom-upload-button"><a><span class="fs-xs-16 fs-20 lato-bold renew-on-lang-switch" data-slug="upload-backup-file-label">'+$('.translates-holder').attr('upload-backup-file-label')+'</span><img src="assets/images/loader-circle.png" class="load width-100 max-width-30"/><img src="assets/images/check.png" class="check width-100 max-width-30"/></a><div><span></span></div></label></div>';
             }
 
             function decryptKeystoreFileAndShowPrivateKey(this_camping_row, keystore_string, this_row) {
                 $('.settings-popup .continue-with-keystore-validation').remove();
-                this_camping_row.append('<div class="continue-with-keystore-validation"><div class="custom-google-label-style margin-top-25 margin-bottom-15 max-width-300 margin-left-right-auto module" data-input-light-blue-border="true"><label for="show-private-key-password">Backup Password:</label><input type="password" id="show-private-key-password" class="full-rounded"/></div><div class="padding-bottom-10 text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border continue-to-private-key">CONTINUE</a></div></div>');
+                this_camping_row.append('<div class="continue-with-keystore-validation"><div class="custom-google-label-style margin-top-25 margin-bottom-15 max-width-300 margin-left-right-auto module" data-input-light-blue-border="true"><label for="show-private-key-password" class="renew-on-lang-switch" data-slug="backup-pass">'+$('.translates-holder').attr('backup-pass')+'</label><input type="password" id="show-private-key-password" class="full-rounded"/></div><div class="padding-bottom-10 text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border continue-to-private-key renew-on-lang-switch" data-slug="CONTINUE-btn">'+$('.translates-holder').attr('CONTINUE-btn')+'</a></div></div>');
 
                 $('#show-private-key-password').focus();
                 $('label[for="show-private-key-password"]').addClass('active-label');
@@ -94923,13 +94928,17 @@ $(document).on('click', '.open-settings', function () {
                 $('.settings-popup .continue-to-private-key').click(function () {
                     this_row.find('.error-handle').remove();
                     if ($('.settings-popup #show-private-key-password').val().trim() == '') {
-                        $('<div class="error-handle">Please enter password for your backup file.</div>').insertAfter(this_camping_row);
+                        $('<div class="error-handle renew-on-lang-switch" data-slug="enter-backup-pass">'+$('.translates-holder').attr('enter-backup-pass')+'</div>').insertAfter(this_camping_row);
                     } else {
-                        showLoader('Hold on...<br>Decrypting your Backup File.');
+                        showLoader($('.translates-holder').attr('hold-decrypt'));
                         setTimeout(function () {
                             decryptKeystore(keystore_string, $('.settings-popup #show-private-key-password').val().trim(), function (success, to_string, error, error_message) {
                                 if (success) {
-                                    this_camping_row.html('<div class="private-key-holder"><div class="scroll-content"><a href="javascript:void(0);" class="copy-private-key inline-block padding-right-5" data-toggle="tooltip" title="Copied." data-placement="right" data-clipboard-target="#copy-private-key"><svg class="width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 19.8 24" style="enable-background:new 0 0 19.8 24;" xml:space="preserve"><style type="text/css">.st0{fill:#303030;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="24" width="19.8" x="1.2" y="0"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M19.8,2.9c0,4.9,0,9.9,0,14.8c0,0.1,0,0.1,0,0.2c-0.2,1.4-1.2,2.4-2.6,2.7c-0.2,0-0.2,0.1-0.2,0.3c0,1.3-0.6,2.2-1.8,2.8c-0.3,0.2-0.7,0.2-1,0.3c-3.8,0-7.5,0-11.3,0c0,0-0.1,0-0.1,0c-1.3-0.3-2.2-1-2.6-2.3C0.1,21.4,0,21.3,0,21.1c0-4.9,0-9.9,0-14.8c0,0,0-0.1,0-0.1c0.3-1.6,1.6-2.7,3.2-2.7c2.5,0,5.1,0,7.6,0c0.7,0,1.3,0.3,1.9,0.8c1.1,1.1,2.3,2.3,3.4,3.4c0.5,0.5,0.8,1.1,0.8,1.9c0,3,0,6.1,0,9.1c0,0.1,0,0.2,0,0.3c0.2-0.1,0.3-0.1,0.4-0.2c0.6-0.3,0.8-0.9,0.8-1.6c0-4.2,0-8.4,0-12.6c0-0.4,0-0.9,0-1.3c0-1-0.7-1.7-1.7-1.7c-3.7,0-7.3,0-11,0c-0.5,0-1,0.2-1.3,0.6c0,0.1-0.1,0.1-0.2,0.1c-0.5,0-1.1,0-1.6,0c0,0,0-0.1,0-0.1c0-0.1,0-0.1,0.1-0.2c0.3-0.9,0.9-1.5,1.8-1.8C4.5,0.1,4.7,0.1,5,0c4,0,8,0,11.9,0c0,0,0.1,0,0.1,0c1.4,0.2,2.3,1.2,2.6,2.5C19.7,2.7,19.7,2.8,19.8,2.9z M1.6,13.7c0,2.3,0,4.6,0,6.9c0,1.1,0.7,1.7,1.7,1.7c3.4,0,6.8,0,10.2,0c1.1,0,1.8-0.7,1.8-1.8c0-3.7,0-7.3,0-11c0-0.1,0-0.1,0-0.2c0-0.2-0.1-0.2-0.3-0.2c-0.6,0-1.1,0-1.7,0c-1.4,0-2.3-1-2.3-2.4c0-0.5,0-1,0-1.5C11,5.1,11,5,10.8,5c-2.5,0-5,0-7.5,0C3,5,2.8,5.1,2.5,5.2C1.9,5.5,1.6,6.1,1.6,6.8C1.6,9.1,1.6,11.4,1.6,13.7z"/><path class="st0" d="M8.5,17.5c1.4,0,2.8,0,4.1,0c0.6,0,0.9,0.3,1,0.8c0.1,0.5-0.2,1-0.7,1.1c-0.1,0-0.2,0-0.3,0c-2.8,0-5.5,0-8.3,0c-0.6,0-1.1-0.4-1.1-0.9c0-0.5,0.4-0.9,1-0.9c0.6,0,1.3,0,1.9,0C6.9,17.5,7.7,17.5,8.5,17.5z"/><path class="st0" d="M8.4,15.3c-1.4,0-2.8,0-4.2,0c-0.4,0-0.8-0.2-0.9-0.6c-0.1-0.4,0-0.8,0.3-1c0.2-0.1,0.4-0.2,0.6-0.2c2.8,0,5.7,0,8.5,0c0.5,0,0.9,0.4,0.9,0.9c0,0.5-0.4,0.9-0.9,1c-0.6,0-1.2,0-1.8,0C10.1,15.3,9.3,15.3,8.4,15.3z"/><path class="st0" d="M6.7,11.2c-0.8,0-1.6,0-2.4,0c-0.4,0-0.7-0.2-0.9-0.6c-0.2-0.3-0.1-0.7,0.1-1c0.2-0.2,0.4-0.3,0.7-0.3c1.6,0,3.2,0,4.9,0c0.6,0,1,0.4,1,1c0,0.5-0.4,0.9-1,0.9C8.3,11.2,7.5,11.2,6.7,11.2z"/></g></svg></a><textarea readonly="" class="inline-block" id="copy-private-key">' + to_string + '</textarea></div></div><div class="padding-top-10 padding-bottom-15 fs-14 color-warning-red">This is NOT a recommended way of accessing your wallet. The information is highly sensitive and should therefore be used in offline settings by experienced crypto users.</div><div class="padding-top-10 padding-bottom-10 padding-left-70 padding-right-70 padding-left-xs-10 padding-right-xs-10 text-left fs-14 color-white row-with-warning-red-background"><div>*Do not lose it! It cannot be recovered if you lose it.</div><div>*Do not share it! Your funds will be stolen if you use this file on a malicious/phishing site.</div><div>*Make a backup! Secure it like the millions of dollars it may one day be worth.</div></div>');
+                                    this_camping_row.html('<a href="javascript:void(0);" data-key="'+to_string+'" class="margin-top-10 fs-20 color-light-blue print-private-key inline-block"><?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/"><!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/"><!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/"><!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/"><!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/"><!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/"><!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/"><!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/"><svg version="1.1" style="width: 30px; display: inline-block; vertical-align: middle;" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 28 28.1" style="enable-background:new 0 0 28 28.1;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="28.1" width="28" x="0" y="0"></sliceSourceBounds></sfw></metadata><path style="fill:#00B7E2;" d="M25,6h-3V2c0-1.1-0.9-2-2-2H8C6.9,0,6,0.9,6,2v4H3C1.3,6,0,7.3,0,9c0,0,0,0,0,0.1V19c0,1.7,1.3,3,2.9,3.1c0,0,0,0,0.1,0h3v4c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2v-4h3c1.7,0,3-1.3,3-3c0,0,0,0,0-0.1V9.1C28,7.4,26.7,6,25,6L25,6z M8,2h12v4H8V2z M20,26H8v-9h12V26z M26,18.9c0,0.6-0.4,1-0.9,1.1c0,0,0,0-0.1,0h-3v-3c0-1.1-0.9-2-2-2H8c-1.1,0-2,0.9-2,2v3H3c-0.6,0-1-0.4-1-1c0,0,0,0,0-0.1V9c0-0.6,0.4-1,0.9-1.1c0,0,0,0,0.1,0h22c0.6,0,1,0.4,1,1c0,0,0,0,0,0.1V18.9z M18,23c0,0.6-0.4,1-1,1h-6c-0.6,0-1-0.4-1-1s0.4-1,1-1h6C17.6,22,18,22.4,18,23z M18,20c0,0.6-0.4,1-1,1h-6c-0.6,0-1-0.4-1-1s0.4-1,1-1h6C17.6,19,18,19.4,18,20z M24,11c0,0.6-0.4,1-1,1h-2c-0.6,0-1-0.4-1-1s0.4-1,1-1h2C23.6,10,24,10.4,24,11z"/></svg> <span class="inline-block renew-on-lang-switch" data-slug="print-pk-text">'+$('.translates-holder').attr('print-pk-text')+'</span></a><div class="private-key-holder"><div class="scroll-content"><a href="javascript:void(0);" class="copy-private-key inline-block padding-right-5" data-toggle="tooltip" title="Copied." data-placement="right" data-clipboard-target="#copy-private-key"><svg class="width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 19.8 24" style="enable-background:new 0 0 19.8 24;" xml:space="preserve"><style type="text/css">.st0{fill:#303030;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="24" width="19.8" x="1.2" y="0"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M19.8,2.9c0,4.9,0,9.9,0,14.8c0,0.1,0,0.1,0,0.2c-0.2,1.4-1.2,2.4-2.6,2.7c-0.2,0-0.2,0.1-0.2,0.3c0,1.3-0.6,2.2-1.8,2.8c-0.3,0.2-0.7,0.2-1,0.3c-3.8,0-7.5,0-11.3,0c0,0-0.1,0-0.1,0c-1.3-0.3-2.2-1-2.6-2.3C0.1,21.4,0,21.3,0,21.1c0-4.9,0-9.9,0-14.8c0,0,0-0.1,0-0.1c0.3-1.6,1.6-2.7,3.2-2.7c2.5,0,5.1,0,7.6,0c0.7,0,1.3,0.3,1.9,0.8c1.1,1.1,2.3,2.3,3.4,3.4c0.5,0.5,0.8,1.1,0.8,1.9c0,3,0,6.1,0,9.1c0,0.1,0,0.2,0,0.3c0.2-0.1,0.3-0.1,0.4-0.2c0.6-0.3,0.8-0.9,0.8-1.6c0-4.2,0-8.4,0-12.6c0-0.4,0-0.9,0-1.3c0-1-0.7-1.7-1.7-1.7c-3.7,0-7.3,0-11,0c-0.5,0-1,0.2-1.3,0.6c0,0.1-0.1,0.1-0.2,0.1c-0.5,0-1.1,0-1.6,0c0,0,0-0.1,0-0.1c0-0.1,0-0.1,0.1-0.2c0.3-0.9,0.9-1.5,1.8-1.8C4.5,0.1,4.7,0.1,5,0c4,0,8,0,11.9,0c0,0,0.1,0,0.1,0c1.4,0.2,2.3,1.2,2.6,2.5C19.7,2.7,19.7,2.8,19.8,2.9z M1.6,13.7c0,2.3,0,4.6,0,6.9c0,1.1,0.7,1.7,1.7,1.7c3.4,0,6.8,0,10.2,0c1.1,0,1.8-0.7,1.8-1.8c0-3.7,0-7.3,0-11c0-0.1,0-0.1,0-0.2c0-0.2-0.1-0.2-0.3-0.2c-0.6,0-1.1,0-1.7,0c-1.4,0-2.3-1-2.3-2.4c0-0.5,0-1,0-1.5C11,5.1,11,5,10.8,5c-2.5,0-5,0-7.5,0C3,5,2.8,5.1,2.5,5.2C1.9,5.5,1.6,6.1,1.6,6.8C1.6,9.1,1.6,11.4,1.6,13.7z"/><path class="st0" d="M8.5,17.5c1.4,0,2.8,0,4.1,0c0.6,0,0.9,0.3,1,0.8c0.1,0.5-0.2,1-0.7,1.1c-0.1,0-0.2,0-0.3,0c-2.8,0-5.5,0-8.3,0c-0.6,0-1.1-0.4-1.1-0.9c0-0.5,0.4-0.9,1-0.9c0.6,0,1.3,0,1.9,0C6.9,17.5,7.7,17.5,8.5,17.5z"/><path class="st0" d="M8.4,15.3c-1.4,0-2.8,0-4.2,0c-0.4,0-0.8-0.2-0.9-0.6c-0.1-0.4,0-0.8,0.3-1c0.2-0.1,0.4-0.2,0.6-0.2c2.8,0,5.7,0,8.5,0c0.5,0,0.9,0.4,0.9,0.9c0,0.5-0.4,0.9-0.9,1c-0.6,0-1.2,0-1.8,0C10.1,15.3,9.3,15.3,8.4,15.3z"/><path class="st0" d="M6.7,11.2c-0.8,0-1.6,0-2.4,0c-0.4,0-0.7-0.2-0.9-0.6c-0.2-0.3-0.1-0.7,0.1-1c0.2-0.2,0.4-0.3,0.7-0.3c1.6,0,3.2,0,4.9,0c0.6,0,1,0.4,1,1c0,0.5-0.4,0.9-1,0.9C8.3,11.2,7.5,11.2,6.7,11.2z"/></g></svg></a><textarea readonly="" class="inline-block" id="copy-private-key">' + to_string + '</textarea></div></div><div class="padding-top-10 padding-bottom-15 fs-14 color-warning-red renew-on-lang-switch" data-slug="not-recomm">'+$('.translates-holder').attr('not-recomm')+'</div><div class="padding-top-10 padding-bottom-10 padding-left-70 padding-right-70 padding-left-xs-10 padding-right-xs-10 text-left fs-14 color-white row-with-warning-red-background"><div class="renew-on-lang-switch" data-slug="dont-lose-it">'+$('.translates-holder').attr('dont-lose-it')+'</div><div class="renew-on-lang-switch" data-slug="make-backup">'+$('.translates-holder').attr('make-backup')+'</div></div>');
+
+                                    $('.print-private-key').click(function() {
+                                        projectData.general_logic.generatePrivateKeyFile($(this).attr('data-key'));
+                                    });
 
                                     //init copy button event
                                     var clipboard = new ClipboardJS('.copy-private-key');
@@ -94974,14 +94983,15 @@ $(document).on('click', '.open-settings', function () {
                                     if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && projectData.utils.checksumAddress(JSON.parse(keystore_string).address) == projectData.utils.checksumAddress(global_state.account)) {
                                         decryptKeystoreFileAndShowPrivateKey(this_camping_row, keystore_string, this_row);
                                     } else {
-                                        $('<div class="error-handle">Please upload valid keystore file which is related to your Dentacoin Wallet address.</div>').insertAfter(this_camping_row);
+                                        $(translates.pleaseUpload).insertAfter(this_camping_row);
                                     }
                                 };
 
                                 reader.readAsText(file);
                             });
                         }, function (err) {
-                            $('<div class="error-handle">File upload failed, please try again with file inside your internal storage.</div>').insertAfter(this_camping_row);
+                            console.log(err);
+                            $('<div class="error-handle renew-on-lang-switch" data-slug="upload-failed">'+$('.translates-holder').attr('upload-failed')+'</div>').insertAfter(this_camping_row);
                         });
                     });
                 } else if (basic.getMobileOperatingSystem() == 'iOS') {
@@ -94995,7 +95005,7 @@ $(document).on('click', '.open-settings', function () {
                             if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && projectData.utils.checksumAddress(JSON.parse(keystore_string).address) == projectData.utils.checksumAddress(global_state.account)) {
                                 decryptKeystoreFileAndShowPrivateKey(this_camping_row, keystore_string, this_row);
                             } else {
-                                $('<div class="error-handle">Please upload valid keystore file which is related to your Dentacoin Wallet address.</div>').insertAfter(this_camping_row);
+                                $(translates.pleaseUpload).insertAfter(this_camping_row);
                             }
                         });
                     });
@@ -95017,7 +95027,7 @@ $(document).on('click', '.open-settings', function () {
 
                                 decryptKeystoreFileAndShowPrivateKey(this_camping_row, keystore_string, this_row);
                             } else {
-                                $('<div class="error-handle">Please upload valid keystore file which is related to your Dentacoin Wallet address.</div>').insertAfter(this_camping_row);
+                                $(translates.pleaseUpload).insertAfter(this_camping_row);
                             }
                         });
 
@@ -95035,7 +95045,7 @@ $(document).on('click', '.open-settings', function () {
 
         $('.settings-popup .camping-for-action').html('');
         $('.settings-popup .error-handle').remove();
-        this_camping_row.html('<div class="padding-top-20"><div class="custom-google-label-style margin-bottom-15 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-private-key">Private key:</label><input type="text" id="generate-keystore-private-key" class="full-rounded"/></div></div><div><div class="custom-google-label-style margin-bottom-15 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-password">Password:</label><input type="password" id="generate-keystore-password" class="full-rounded"/></div></div><div><div class="custom-google-label-style margin-bottom-15 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-repeat-password">Repeat Password:</label><input type="password" id="generate-keystore-repeat-password" class="full-rounded"/></div></div><div class="text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 generate-keystore-keystore-action">GENERATE BACKUP FILE</a></div>');
+        this_camping_row.html('<div class="padding-top-20"><div class="custom-google-label-style margin-bottom-15 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-private-key" class="renew-on-lang-switch" data-slug="priv-key">'+$('.translates-holder').attr('priv-key')+'</label><input type="text" id="generate-keystore-private-key" class="full-rounded" maxlength="64"/></div></div><div><div class="custom-google-label-style margin-bottom-15 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-password" class="renew-on-lang-switch" data-slug="pass-label">'+$('.translates-holder').attr('pass-label')+'</label><input type="password" id="generate-keystore-password" class="full-rounded"/></div></div><div><div class="custom-google-label-style margin-bottom-15 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-repeat-password" class="renew-on-lang-switch" data-slug="repeat-pass-label">'+$('.translates-holder').attr('repeat-pass-label')+'</label><input type="password" id="generate-keystore-repeat-password" class="full-rounded"/></div></div><div class="text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 generate-keystore-keystore-action text-uppercase renew-on-lang-switch" data-slug="generate-backup">'+$('.translates-holder').attr('generate-backup')+'</a></div>');
 
         $('#generate-keystore-private-key').focus();
         $('label[for="generate-keystore-private-key"]').addClass('active-label');
@@ -95046,19 +95056,19 @@ $(document).on('click', '.open-settings', function () {
             var generate_error = false;
             if ($('#generate-keystore-private-key').val().trim() == '') {
                 generate_error = true;
-                $('<div class="error-handle">Please enter valid private key.</div>').insertAfter(this_camping_row);
+                $('<div class="error-handle renew-on-lang-switch" data-slug="enter-priv-key-error">'+$('.translates-holder').attr('enter-priv-key-error')+'</div>').insertAfter(this_camping_row);
             } else if ($('#generate-keystore-password').val().trim() == '' || $('#generate-keystore-repeat-password').val().trim() == '') {
                 generate_error = true;
-                $('<div class="error-handle">Please enter both passwords.</div>').insertAfter(this_camping_row);
+                $('<div class="error-handle renew-on-lang-switch" data-slug="please-enter-both-password">'+$('.translates-holder').attr('please-enter-both-password')+'</div>').insertAfter(this_camping_row);
             } else if ($('#generate-keystore-password').val().trim().length < 8 || $('#generate-keystore-password').val().trim().length > 30) {
                 generate_error = true;
-                $('<div class="error-handle">The password must be with minimum length of 8 characters and maximum 30.</div>').insertAfter(this_camping_row);
+                $('<div class="error-handle renew-on-lang-switch" data-slug="the-pass">'+$('.translates-holder').attr('the-pass')+'</div>').insertAfter(this_camping_row);
             } else if ($('#generate-keystore-password').val().trim() != $('#generate-keystore-repeat-password').val().trim()) {
                 generate_error = true;
-                $('<div class="error-handle">Please make sure you entered same password in both fields.</div>').insertAfter(this_camping_row);
+                $('<div class="error-handle renew-on-lang-switch" data-slug="make-sure">'+$('.translates-holder').attr('make-sure')+'</div>').insertAfter(this_camping_row);
             } else if ($('#generate-keystore-private-key').val().trim().length != 64) {
                 generate_error = true;
-                $('<div class="error-handle">Wrong private key length.</div>').insertAfter(this_camping_row);
+                $('<div class="error-handle renew-on-lang-switch" data-slug="wrong-key-length">'+$('.translates-holder').attr('wrong-key-length')+'</div>').insertAfter(this_camping_row);
             }
 
             if (!generate_error) {
@@ -95074,7 +95084,7 @@ $(document).on('click', '.open-settings', function () {
                                     //downloading the file in mobile device file system
                                     hybridAppFileDownload(keystore_file_name, keystore_file, function () {
                                         basic.closeDialog();
-                                        basic.showAlert('File ' + keystore_file_name + ' has been downloaded to the top-level directory of your device file system.', '', true);
+                                        basic.showAlert($('.translates-holder').attr('file') +keystore_file_name + $('.translates-holder').attr('has-been-downloaded'), '', true);
                                         hideLoader();
                                     }, cordova.file.externalRootDirectory, true);
                                 } else if (basic.getMobileOperatingSystem() == 'iOS') {
@@ -95088,11 +95098,11 @@ $(document).on('click', '.open-settings', function () {
 
                                 downloadFile(buildKeystoreFileName(address), keystore_file);
                                 basic.closeDialog();
-                                basic.showAlert('File ' + buildKeystoreFileName(address) + ' has been downloaded to the top-level directory of your device file system.', '', true);
+                                basic.showAlert($('.translates-holder').attr('file') +buildKeystoreFileName(address) + $('.translates-holder').attr('has-been-downloaded'), '', true);
                             }
                         } else if (!generating_response) {
                             hideLoader();
-                            $('<div class="error-handle">Wrong secret private key.</div>').insertAfter(this_camping_row);
+                            $('<div class="error-handle renew-on-lang-switch" data-slug="wrong-key-length">'+$('.translates-holder').attr('wrong-key-length')+'</div>').insertAfter(this_camping_row);
                         }
                     });
                 }, 2000);
@@ -95103,7 +95113,9 @@ $(document).on('click', '.open-settings', function () {
 
 //method to download files in Download folder in Android device
 function hybridAppFileDownload(file_name, file_content, callback, location, download_folder) {
+    console.log(location, 'location');
     window.resolveLocalFileSystemURL(location, function (fileSystem) {
+        console.log(fileSystem, 'fileSystem');
         if (download_folder) {
             fileSystem.getDirectory('Download', {create: true, exclusive: false}, function (dirEntry) {
                 proceedWithDownload(dirEntry, file_name);
@@ -95118,8 +95130,11 @@ function hybridAppFileDownload(file_name, file_content, callback, location, down
 
         function proceedWithDownload(dirEntry, file_name) {
             dirEntry.getFile(file_name, {create: true, exclusive: true}, function (fileEntry) {
+                console.log(fileEntry, 'fileEntry');
                 fileEntry.createWriter(function (fileWriter) {
                     fileWriter.onwriteend = function (e) {
+                        console.log('file saved');
+
                         callback();
                     };
 
@@ -95131,6 +95146,7 @@ function hybridAppFileDownload(file_name, file_content, callback, location, down
 
                     // Create a new Blob and write they keystore content inside of it
                     var blob = new Blob([file_content], {type: 'text/plain'});
+                    console.log(blob, 'blob');
                     fileWriter.write(blob);
                 }, function (err) {
                     console.log(err, 'err');
@@ -95148,34 +95164,18 @@ function hybridAppFileDownload(file_name, file_content, callback, location, down
 
 //opening filepicker for Android
 function androidFileUpload(file_uri, callback) {
-    window.FilePath.resolveNativePath(file_uri, successNative, failNative);
-
-    function failNative(e) {
+    window.FilePath.resolveNativePath(file_uri, successNative, function(e) {
+        console.log(e);
         alert('Something went wrong with uploading your Backup file. Please contact admin@dentacoin.com.');
-    }
+    });
 
     function successNative(finalPath) {
+        console.log(finalPath, 'finalPath successNative');
         window.resolveLocalFileSystemURL(finalPath, function (entry) {
-            window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function (rootEntry) {
-                //checking external storage
-                rootEntry.getFile(decodeURIComponent(entry.fullPath), {create: false}, function (fileEntry) {
-                    fileEntry.file(function (file) {
-                        callback(file);
-                    }, function (err) {
-                        alert('Something went wrong with uploading your Backup file. Please contact admin@dentacoin.com.');
-                    });
-                }, function (err) {
-                    //if file is not found in the external storage check in the internal one
-                    window.resolveLocalFileSystemURL('file:///', function (rootEntry) {
-                        rootEntry.getFile(decodeURIComponent(entry.fullPath), {create: false}, function (fileEntry) {
-                            fileEntry.file(function (file) {
-                                callback(file);
-                            }, function (err) {
-                                alert('Something went wrong with uploading your Backup file. Please contact admin@dentacoin.com.');
-                            });
-                        });
-                    });
-                });
+            entry.file(function (file) {
+                callback(file);
+            }, function (err) {
+                alert('Something went wrong with uploading your Backup file. Please contact admin@dentacoin.com.');
             });
         });
     }
@@ -95213,9 +95213,9 @@ function checkIfLoadingFromMobileBrowser() {
     if (!is_hybrid && basic.isMobile() && basic.cookies.get('show-download-mobile-app') != '1') {
         basic.cookies.set('show-download-mobile-app', 1);
         if (basic.getMobileOperatingSystem() == 'Android') {
-            basic.showDialog('<div><h2 class="fs-24 lato-bold text-center padding-top-15 padding-bottom-25">Dentacoin Wallet App is here!<br>Download for free:</h2><figure itemscope="" itemtype="http://schema.org/Organization" class="text-center phone-container"><img src="assets/images/download-android-app.png" class="max-width-300 width-100" itemprop="logo" alt="Phone"/><a class="inline-block max-width-150 absolute-content" href="https://play.google.com/store/apps/details?id=wallet.dentacoin.com" target="_blank" itemprop="url"><img src="assets/images/google-play-badge.svg" class="width-100" itemprop="logo" alt="Google play icon"/></a></figure></div>', 'download-mobile-app', null, null);
+            basic.showDialog('<div><h2 class="fs-24 lato-bold text-center padding-top-15 padding-bottom-25">'+$('.translates-holder').attr('wallet-app-here')+'<br>'+$('.translates-holder').attr('free-download')+'</h2><figure itemscope="" itemtype="http://schema.org/Organization" class="text-center phone-container"><img src="assets/images/download-android-app.png" class="max-width-300 width-100" itemprop="logo" alt="Phone"/><a class="inline-block max-width-150 absolute-content" href="https://play.google.com/store/apps/details?id=wallet.dentacoin.com" target="_blank" itemprop="url"><img src="assets/images/google-play-badge.svg" class="width-100" itemprop="logo" alt="Google play icon"/></a></figure></div>', 'download-mobile-app', null, null);
         } else if (basic.getMobileOperatingSystem() == 'iOS') {
-            basic.showDialog('<div><h2 class="fs-24 lato-bold text-center padding-top-15 padding-bottom-25">Dentacoin Wallet App is here!<br>Download for free:</h2><figure itemscope="" itemtype="http://schema.org/Organization" class="text-center phone-container"><img src="assets/images/download-ios-app.png" class="max-width-300 width-100" itemprop="logo" alt="Phone"/><a class="inline-block max-width-150 absolute-content" href="https://apps.apple.com/us/app/dentacoin-wallet/id1478732657" target="_blank" itemprop="url"><img src="assets/images/app-store.svg" class="width-100" itemprop="logo" alt="App store icon"/></a></figure></div>', 'download-mobile-app', null, null);
+            basic.showDialog('<div><h2 class="fs-24 lato-bold text-center padding-top-15 padding-bottom-25">'+$('.translates-holder').attr('wallet-app-here')+'<br>'+$('.translates-holder').attr('free-download')+'</h2><figure itemscope="" itemtype="http://schema.org/Organization" class="text-center phone-container"><img src="assets/images/download-ios-app.png" class="max-width-300 width-100" itemprop="logo" alt="Phone"/><a class="inline-block max-width-150 absolute-content" href="https://apps.apple.com/us/app/dentacoin-wallet/id1478732657" target="_blank" itemprop="url"><img src="assets/images/app-store.svg" class="width-100" itemprop="logo" alt="App store icon"/></a></figure></div>', 'download-mobile-app', null, null);
         }
     }
 }
@@ -95252,24 +95252,36 @@ function router() {
     if ($('.main-holder app-homepage').length) {
         current_route = 'home';
         getHomepageData();
+        $('.nav-row .nav-link.home').addClass('active');
+        $('.camp-for-fixed-mobile-nav a.home').addClass('active');
     } else if ($('.main-holder app-buy-page').length) {
         current_route = 'buy';
         getBuyPageData();
+        $('.nav-row .nav-link.buy').addClass('active');
+        $('.camp-for-fixed-mobile-nav a.buy').addClass('active');
     } else if ($('.main-holder app-send-page').length) {
         current_route = 'send';
         getSendPageData();
+        $('.nav-row .nav-link.send').addClass('active');
+        $('.camp-for-fixed-mobile-nav a.send').addClass('active');
     } else if ($('.main-holder app-spend-page-pay-for-dental-services').length) {
         current_route = 'pay-for-dental-services';
         getSpendPageDentalServices();
-    } else if ($('.main-holder app-spend-page-gift-cards').length) {
+        $('.nav-row .nav-link.spend').addClass('active');
+        $('.camp-for-fixed-mobile-nav a.spend').addClass('active');
+    }/* else if ($('.main-holder app-spend-page-gift-cards').length) {
         current_route = 'gift-cards';
         getSpendPageGiftCards();
-    } else if ($('.main-holder app-spend-page-exchanges').length) {
+    }*/ else if ($('.main-holder app-spend-page-exchanges').length) {
         current_route = 'page-exchanges';
         getSpendPageExchanges();
+        $('.nav-row .nav-link.spend').addClass('active');
+        $('.camp-for-fixed-mobile-nav a.spend').addClass('active');
     } else if ($('.main-holder app-spend-page-pay-assurance-fees').length) {
         current_route = 'pay-assurance-fees';
         getSpendPageAssuranceFees();
+        $('.nav-row .nav-link.spend').addClass('active');
+        $('.camp-for-fixed-mobile-nav a.spend').addClass('active');
         initdApp();
     }
 
@@ -95277,24 +95289,36 @@ function router() {
         if ($('.main-holder app-homepage').length && current_route != 'home') {
             current_route = 'home';
             getHomepageData();
+            $('.nav-row .nav-link.home').addClass('active');
+            $('.camp-for-fixed-mobile-nav a.home').addClass('active');
         } else if ($('.main-holder app-buy-page').length && current_route != 'buy') {
             current_route = 'buy';
             getBuyPageData();
+            $('.nav-row .nav-link.buy').addClass('active');
+            $('.camp-for-fixed-mobile-nav a.buy').addClass('active');
         } else if ($('.main-holder app-send-page').length && current_route != 'send') {
             current_route = 'send';
             getSendPageData();
+            $('.nav-row .nav-link.send').addClass('active');
+            $('.camp-for-fixed-mobile-nav a.send').addClass('active');
         } else if ($('.main-holder app-spend-page-pay-for-dental-services').length && current_route != 'pay-for-dental-services') {
             current_route = 'pay-for-dental-services';
             getSpendPageDentalServices();
-        } else if ($('.main-holder app-spend-page-gift-cards').length && current_route != 'gift-cards') {
+            $('.nav-row .nav-link.spend').addClass('active');
+            $('.camp-for-fixed-mobile-nav a.spend').addClass('active');
+        }/* else if ($('.main-holder app-spend-page-gift-cards').length && current_route != 'gift-cards') {
             current_route = 'gift-cards';
             getSpendPageGiftCards();
-        } else if ($('.main-holder app-spend-page-exchanges').length && current_route != 'page-exchanges') {
+        }*/ else if ($('.main-holder app-spend-page-exchanges').length && current_route != 'page-exchanges') {
             current_route = 'page-exchanges';
             getSpendPageExchanges();
+            $('.nav-row .nav-link.spend').addClass('active');
+            $('.camp-for-fixed-mobile-nav a.spend').addClass('active');
         } else if ($('.main-holder app-spend-page-pay-assurance-fees').length && current_route != 'pay-assurance-fees') {
             current_route = 'pay-assurance-fees';
             getSpendPageAssuranceFees();
+            $('.nav-row .nav-link.spend').addClass('active');
+            $('.camp-for-fixed-mobile-nav a.spend').addClass('active');
         }
 
         if (current_route != 'home' && !$('.camp-for-custom-popover').hasClass('hide')) {
@@ -95303,6 +95327,23 @@ function router() {
         }
 
         updateExternalURLsForiOSDevice();
+    });
+
+    // on angular language change update the HTML inside the custom JS files
+    document.addEventListener('languageChanged', function(e) {
+        if (e.detail.currentLanguage == 'de') {
+            setTimeout(function() {
+                for (var i = 0, len = $('.renew-on-lang-switch').length; i < len; i+=1) {
+                    $('.renew-on-lang-switch').eq(i).html($('.translates-holder').attr($('.renew-on-lang-switch').eq(i).attr('data-slug')));
+                }
+            }, 500);
+        } else {
+            setTimeout(function() {
+                for (var i = 0, len = $('.renew-on-lang-switch').length; i < len; i+=1) {
+                    $('.renew-on-lang-switch').eq(i).html($('.translates-holder').attr($('.renew-on-lang-switch').eq(i).attr('data-slug')));
+                }
+            }, 500);
+        }
     });
 }
 
@@ -95371,13 +95412,13 @@ function buildEthereumHistoryTransaction(ethereum_data, value, to, from, timesta
     if (projectData.utils.checksumAddress(to) == projectData.utils.checksumAddress(global_state.account)) {
         //IF THE CURRENT ACCOUNT IS RECEIVER
         other_address = from;
-        label = 'Received from';
+        label = $('.translates-holder').attr('received-from');
         class_name = 'received_from';
         eth_amount_symbol = '+';
     } else if (projectData.utils.checksumAddress(from) == projectData.utils.checksumAddress(global_state.account)) {
         //IF THE CURRENT ACCOUNT IS SENDER
         other_address = to;
-        label = 'Sent to';
+        label = $('.translates-holder').attr('sent-to');
         class_name = 'sent_to';
         eth_amount_symbol = '-';
     }
@@ -95425,13 +95466,13 @@ function buildDentacoinHistoryTransaction(dentacoin_data, value, to, from, times
     if (projectData.utils.checksumAddress(to) == projectData.utils.checksumAddress(global_state.account)) {
         //IF THE CURRENT ACCOUNT IS RECEIVER
         other_address = from;
-        label = 'Received from';
+        label = $('.translates-holder').attr('received-from');
         class_name = 'received_from';
         dcn_amount_symbol = '+';
     } else if (projectData.utils.checksumAddress(from) == projectData.utils.checksumAddress(global_state.account)) {
         //IF THE CURRENT ACCOUNT IS SENDER
         other_address = to;
-        label = 'Sent to';
+        label = $('.translates-holder').attr('sent-to');
         class_name = 'sent_to';
         dcn_amount_symbol = '-';
     }
@@ -95520,7 +95561,7 @@ function initScan(clicker, valueHolder, callback, warning, warningText) {
                         }
                     },
                     function (error) {
-                        alert('Scanning failed. Please go to Settings/ Permissions and allow Camera access to Dentacoin Wallet and try again.');
+                        alert($('.translates-holder').attr('scanning-failed'));
                     }
                 );
             } else {
@@ -95605,7 +95646,7 @@ var assuranceTransactions = {
                 if (!err) {
                     callback();
                 } else {
-                    basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
+                    basic.showAlert(translates.defaultErrorMessage, '', true);
                 }
             });*/
         });
@@ -95684,7 +95725,7 @@ var assuranceTransactions = {
             if (!err) {
                 callback(transactionHash);
             } else {
-                basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
+                basic.showAlert(translates.defaultErrorMessage, '', true);
             }
         });*/
     },
@@ -95721,7 +95762,7 @@ var assuranceTransactions = {
             if (!err) {
                 callback(transactionHash);
             } else {
-                basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
+                basic.showAlert(translates.defaultErrorMessage, '', true);
             }
         });*/
     },
@@ -95759,7 +95800,7 @@ var assuranceTransactions = {
             if (!err) {
                 callback(transactionHash);
             } else {
-                basic.showAlert('Something went wrong. Please try again later or write a message to admin@dentacoin.com with description of the problem.', '', true);
+                basic.showAlert(translates.defaultErrorMessage, '', true);
             }
         });*/
     }
@@ -95778,7 +95819,10 @@ function firePushNotification(title, text) {
 function showMobileAppBannerForDesktopBrowsers() {
     if (!is_hybrid && !basic.isMobile()) {
         hideMobileAppBannerForDesktopBrowsers();
-        $('footer').prepend('<div class="mobile-app-banner margin-bottom-25">' + mobileAppBannerForDesktopBrowsersHtml + '</div>');
+        setTimeout(function() {
+            $('footer').prepend('<div class="mobile-app-banner margin-bottom-25">' + mobileAppBannerForDesktopBrowsersHtml + '</div>');
+            $('.mobile-app-banner-title').html($('.translates-holder').attr('also-available'));
+        }, 1000);
     }
 }
 

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ Copyright 2013 Sebastián Katzer
+
+ Licensed to the Apache Software Foundation (ASF) under one
+ or more contributor license agreements.  See the NOTICE file
+ distributed with this work for additional information
+ regarding copyright ownership.  The ASF licenses this file
+ to you under the Apache License, Version 2.0 (the
+ "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an
+ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ KIND, either express or implied.  See the License for the
+ specific language governing permissions and limitations
+ under the License.
+-->
+
+<plugin id="cordova-plugin-printer"
+        xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        version="0.8.0">
+
+    <name>Printer</name>
+
+    <description>Prints HTML content</description>
+
+    <repo>https://github.com/katzer/cordova-plugin-printer.git</repo>
+
+    <keywords>appplant, printer, cordova</keywords>
+
+    <license>Apache 2.0</license>
+
+    <author>Sebastián Katzer</author>
+
+    <!-- cordova -->
+    <engines>
+        <engine name="cordova" version=">=3.0.0" />
+        <engine name="android-sdk" version=">=19" />
+        <engine name="apple-ios" version=">=8.0" />
+    </engines>
+
+    <!-- interface -->
+    <js-module src="www/printer.js" name="Printer">
+        <clobbers target="cordova.plugins.printer" />
+    </js-module>
+
+    <!-- ios -->
+    <platform name="ios">
+        <config-file target="config.xml" parent="/*">
+            <feature name="Printer">
+                <param name="ios-package" value="APPPrinter"/>
+            </feature>
+        </config-file>
+
+        <header-file src="src/ios/APPPrinter.h" />
+        <source-file src="src/ios/APPPrinter.m" />
+
+        <header-file src="src/ios/APPPrinterInfo.h" />
+        <source-file src="src/ios/APPPrinterInfo.m" />
+
+        <header-file src="src/ios/APPPrinterItem.h" />
+        <source-file src="src/ios/APPPrinterItem.m" />
+
+        <header-file src="src/ios/APPPrinterLayout.h" />
+        <source-file src="src/ios/APPPrinterLayout.m" />
+
+        <header-file src="src/ios/APPPrinterPaper.h" />
+        <source-file src="src/ios/APPPrinterPaper.m" />
+
+        <header-file src="src/ios/APPPrinterRenderer.h" />
+        <source-file src="src/ios/APPPrinterRenderer.m" />
+
+        <header-file src="src/ios/APPPrinterFont.h" />
+        <source-file src="src/ios/APPPrinterFont.m" />
+
+        <header-file src="src/ios/APPPrinterUnit.h" />
+        <source-file src="src/ios/APPPrinterUnit.m" />
+
+        <header-file src="src/ios/UIPrintInteractionController+APPPrinter.h" />
+        <source-file src="src/ios/UIPrintInteractionController+APPPrinter.m" />
+    </platform>
+
+    <!-- android -->
+    <platform name="android">
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="Printer">
+                <param name="android-package" value="de.appplant.cordova.plugin.printer.Printer"/>
+            </feature>
+        </config-file>
+
+        <preference name="ANDROID_SUPPORT_V4_VERSION" default="28.+"/>
+
+        <framework src="com.android.support:support-v4:$ANDROID_SUPPORT_V4_VERSION"/>
+
+        <source-file src="src/android/PrintAdapter.java"
+            target-dir="src/de/appplant/cordova/plugin/printer" />
+
+        <source-file src="src/android/PrintContent.java"
+            target-dir="src/de/appplant/cordova/plugin/printer" />
+
+        <source-file src="src/android/Printer.java"
+            target-dir="src/de/appplant/cordova/plugin/printer" />
+
+        <source-file src="src/android/PrintIO.java"
+            target-dir="src/de/appplant/cordova/plugin/printer" />
+
+        <source-file src="src/android/PrintManager.java"
+            target-dir="src/de/appplant/cordova/plugin/printer" />
+
+        <source-file src="src/android/PrintOptions.java"
+            target-dir="src/de/appplant/cordova/plugin/printer" />
+
+        <source-file src="src/android/PrintProxy.java"
+            target-dir="src/de/appplant/cordova/plugin/printer" />
+    </platform>
+
+    <!-- windows -->
+    <platform name="windows">
+        <js-module src="src/windows/PrinterProxy.js" name="PrinterProxy">
+            <merges target="" />
+        </js-module>
+    </platform>
+
+    <!-- browser -->
+    <platform name="browser">
+        <config-file target="config.xml" parent="/*">
+            <feature name="Printer">
+                <param name="browser-package" value="Printer"/>
+            </feature>
+        </config-file>
+
+        <js-module src="src/browser/PrinterProxy.js" name="Printer.Proxy">
+            <runs />
+        </js-module>
+    </platform>
+</plugin>

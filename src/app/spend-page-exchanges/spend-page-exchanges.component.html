@@ -6,26 +6,26 @@
         <div class="container-fluid no-gutter">
             <div class="row spend-navigation module">
                 <div class="col-xs-6">
-                    <a (click)="redirectsService.toPayForDentalServices()" class="fs-16 calibri-bold color-light-blue prev cursor-pointer">PAY DENTAL SERVICES</a>
+                    <a (click)="redirectsService.toPayForDentalServices()" class="fs-16 calibri-bold color-light-blue prev cursor-pointer">{{'spend-menu-pay-dental' | translate}}</a>
                 </div>
                 <div class="col-xs-6 text-right">
-                    <a (click)="redirectsService.toPayAssuranceFees()" class="fs-16 calibri-bold color-light-blue next cursor-pointer">GO TO DCN ASSURANCE</a>
+                    <a (click)="redirectsService.toPayAssuranceFees()" class="fs-16 calibri-bold color-light-blue next cursor-pointer">{{'spend-menu-assurance' | translate}}</a>
                 </div>
             </div>
             <div class="row padding-top-20 padding-top-xs-0">
                 <div class="col-xs-12 text-center">
                     <div class="mobile-nav padding-top-xs-20">
                         <a (click)="redirectsService.toPayForDentalServices()" class="prev cursor-pointer text-left"><img alt="Left arrow icon" itemprop="contentUrl" src="assets/images/gray-arrow-left.svg"/></a>
-                        <h1 class="calibri-bold fs-28 fs-xs-24">TRADE ON EXCHANGES</h1>
+                        <h1 class="calibri-bold fs-28 fs-xs-24">{{'spend-menu-trade' | translate}}</h1>
                         <a (click)="redirectsService.toPayAssuranceFees()" class="next cursor-pointer text-right"><img alt="Right arrow icon" itemprop="contentUrl" src="assets/images/gray-arrow-right.svg"/></a>
                     </div>
-                    <div class="padding-top-15 padding-top-xs-40 padding-bottom-40 fs-16 max-width-600 margin-0-auto">Dentacoin (DCN) is listed on numerous international exchange platforms that allow you to easily exchange it against hundreds of other crypto and traditional currencies.</div>
+                    <div class="padding-top-15 padding-top-xs-40 padding-bottom-40 fs-16 max-width-600 margin-0-auto">{{'dcn-listed' | translate}}</div>
                     <ul class="camping-for-exchanges text-left"></ul>
                 </div>
             </div>
         </div>
         <div class="bottom-absolute-btn text-center">
-            <a (click)="redirectsService.toSend()" class="white-light-blue-btn light-blue-border cursor-pointer min-width-xs-300">DEPOSIT TO EXCHANGE</a>
+            <a (click)="redirectsService.toSend()" class="white-light-blue-btn light-blue-border cursor-pointer min-width-xs-300">{{'deposit-btn' | translate}}</a>
         </div>
     </div>
 </div>

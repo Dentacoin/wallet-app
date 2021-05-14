@@ -30,7 +30,7 @@ function generateKeystoreFile(password, callback) {
     }, function(result) {
         const public_key = EthCrypto.publicKeyByPrivateKey(dk.privateKey.toString('hex'));
 
-        callback(public_key, result);
+        callback(public_key, result, dk.privateKey.toString('hex'));
     });
 }
 

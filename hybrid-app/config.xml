@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="wallet.dentacoin.com" version="1.0.1" android-versionCode="10016" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="wallet.dentacoin.com" version="1.0.1" android-versionCode="10018" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>Dentacoin Wallet</name>
     <description>
         Dentacoin Wallet allows users to easily and securely store, send, receive DCN tokens, as well as to buy DCN with credit card and other cryptocurrencies.
@@ -10,6 +10,7 @@
     <content src="index.html" />
     <plugin name="cordova-plugin-whitelist" spec="1" />
     <access origin="*" />
+    <access origin="cdvfile://*"/>
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
     <allow-intent href="tel:*" />
@@ -66,7 +67,6 @@
         <icon src="app-resources/images/wallet-app-icon-88px.png" width="88" height="88" />
         <icon src="app-resources/images/wallet-app-icon-1024px.png" width="1024" height="1024" />
         <icon src="app-resources/images/wallet-icon-1024pt.png" width="1365" height="1365" />
-
         <splash src="app-resources/images/splash-screens/wallet-loading-screen-320px.png" width="320" height="480"/>
         <splash src="app-resources/images/splash-screens/wallet-loading-screen-640px.png" width="640" height="960"/>
         <splash src="app-resources/images/splash-screens/wallet-loading-screen-768px.png" width="768" height="1024"/>
@@ -101,7 +101,6 @@
     <preference name="StatusBarOverlaysWebView" value="false" />
     <preference name="StatusBarBackgroundColor" value="#000000" />
     <preference name="StatusBarStyle" value="lightcontent" />
-    <access origin="*"/>
     <allow-navigation href="https://dentacoin.com/*"/>
     <preference name="scheme" value="app" />
     <preference name="hostname" value="localhost" />

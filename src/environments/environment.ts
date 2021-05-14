@@ -5,6 +5,7 @@
 export const environment = {
   production: false,
   hybrid: false,
+  default_language: 'en',
   network: 'mainnet'
 };
 

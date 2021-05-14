@@ -9,12 +9,12 @@
                 <div class="col-xs-12 col-sm-5 padding-bottom-xs-20">
                     <div class="custom-google-label-style module fs-0 flex">
                         <div class="inline-block left-side">
-                            <label class="active-label" for="usd-value">Pay with:</label>
+                            <label class="active-label" for="usd-value">{{'pay-with' | translate}}</label>
                             <input type="number" id="usd-value"/>
                         </div>
                         <span class="inline-block input-label padding-top-10 padding-top-xs-15">USD</span>
                     </div>
-                    <div class="fs-16 padding-left-15 padding-left-xs-0 calibri-light text-below-input">First transaction: $<span class="min-usd-amount"></span> to $6,000. Daily limit: $20,000</div>
+                    <div class="fs-16 padding-left-15 padding-left-xs-0 calibri-light text-below-input">{{'first-tx' | translate}}<span class="min-usd-amount"></span> {{'daily-limit' | translate}}</div>
                 </div>
                 <div class="col-sm-2 text-center hide-this-xs">
                     <figure itemscope="" itemtype="http://schema.org/ImageObject">
@@ -24,7 +24,7 @@
                 <div class="col-xs-12 col-sm-5 padding-bottom-xs-20">
                     <div class="custom-google-label-style module fs-0 flex">
                         <div class="inline-block left-side">
-                            <label for="crypto-amount" class="active-label">You get:</label>
+                            <label for="crypto-amount" class="active-label">{{'you-get' | translate}}</label>
                             <input type="number" id="crypto-amount" readonly/>
                         </div>
                         <select class="inline-block crypto-label input-label" id="active-crypto">
@@ -32,13 +32,13 @@
                             <option value="eth">ETH</option>
                         </select>
                     </div>
-                    <div class="fs-16 padding-left-15 padding-left-xs-0 calibri-light text-below-input"><figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block margin-left-10 more-info" data-trigger="click" data-toggle="tooltip" data-placement="top" title="Determined by the service provider after deduction of the cost for processing the transaction on the Ethereum network."><img alt="More info icon" itemprop="contentUrl" src="assets/images/more-info.svg" class="width-100 max-width-20 cursor-pointer"/></figure> The exchange rate may change in the process.</div>
+                    <div class="fs-16 padding-left-15 padding-left-xs-0 calibri-light text-below-input"><figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block margin-left-10 more-info" data-trigger="click" data-toggle="tooltip" data-placement="top" [attr.data-title]="this.translate.instant('determined')"><img alt="More info icon" itemprop="contentUrl" src="assets/images/more-info.svg" class="width-100 max-width-20 cursor-pointer"/></figure> {{'exchange-rate' | translate}}</div>
                 </div>
             </div>
             <div class="row padding-top-50 padding-top-xs-0 padding-bottom-20">
                 <div class="col-xs-12 col-sm-6 col-sm-offset-3">
                     <div class="custom-google-label-style module" data-input-light-blue-border="true">
-                        <label for="dcn_address">Address to receive <span class="address-to-receive">DCN</span>:</label>
+                        <label for="dcn_address">{{'address-to-receive' | translate}} <span class="address-to-receive">DCN</span>:</label>
                         <input type="url" id="dcn_address" maxlength="42" class="full-rounded"/>
                     </div>
                 </div>
@@ -54,22 +54,22 @@
             <div class="row padding-top-20 text-center">
                 <div class="col-xs-12 col-sm-6 col-sm-offset-3">
                     <input type="checkbox" id="privacy-policy-agree" class="zoom-checkbox"/>
-                    <label class="fs-16 calibri-light text-below-input padding-left-10 cursor-pointer privacy-policy-agree-label" for="privacy-policy-agree">I have read and accept the <a href="https://dentacoin.com/privacy-policy" target="_blank" class="color-light-blue lato-bold data-external-link">Privacy Policy</a></label>
+                    <label class="fs-16 calibri-light text-below-input padding-left-10 cursor-pointer privacy-policy-agree-label" for="privacy-policy-agree">{{'read-and-accept' | translate}} <a href="https://dentacoin.com/privacy-policy" target="_blank" class="color-light-blue lato-bold data-external-link">{{'menu-privacy-policy' | translate}}</a> {{'read-and-accept-two' | translate}}</label>
                 </div>
             </div>
             <div class="row padding-top-30 text-center">
                 <div class="col-xs-12 fs-16">
-                    Powered by
+                    {{'powered' | translate}}
                     <figure itemscope="" itemtype="http://schema.org/ImageObject" class="padding-bottom-10">
                         <img alt="Indacoin logo" itemprop="contentUrl" src="assets/images/indacoin-logo.svg" class="width-100 max-width-150"/>
                     </figure>
-                    <div>All transactions are solely handled by Indacoin Limited.</div>
+                    <div>{{'all-txs' | translate}}</div>
                     <a href="https://indacoin.com/" target="_blank" class="text-decoration-underline color-light-blue">www.indacoin.com</a>
                 </div>
             </div>
         </section>
         <div class="bottom-absolute-btn text-center">
-            <a href="javascript:void(0)" class="white-light-blue-btn light-blue-border buy-crypto-btn">BUY</a>
+            <a href="javascript:void(0)" class="white-light-blue-btn light-blue-border buy-crypto-btn">{{'buy-btn' | translate}}</a>
         </div>
     </div>
 </div>
