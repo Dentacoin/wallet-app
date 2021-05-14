@@ -2666,34 +2666,36 @@ function executeGlobalLogic() {
     $('.camp-for-fixed-mobile-nav a').removeClass('active');
 
     if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS' && window.localStorage.getItem('keystore_file_ios_saved') == null) {
-        $('.ios-camper').html('<div class="ios-reminder-for-downloading-keystore-file"> <div class="white-bg container padding-top-30 padding-bottom-30"><div class="row"><div class="col-xs-12"> <div class="padding-bottom-15 color-warning-red fs-16"><img src="assets/images/attention-icon.svg" alt="Warning icon" class="warning-icon"/> '+$('.translates-holder').attr('export')+'</div><div class="custom-google-label-style margin-bottom-15 margin-top-20 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="ios-camper-download-keystore-password">'+$('.translates-holder').attr('pass-label')+'</label><input type="password" id="ios-camper-download-keystore-password" class="full-rounded"></div><div class="text-center padding-top-10 padding-bottom-30"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 ios-camper-download-keystore-action">'+$('.translates-holder').attr('export-btn')+'</a></div><div style="display: none" class="text-center fs-18 hidden-checkbox"><input type="checkbox" id="keystore-downloaded-verifier"> <label for="keystore-downloaded-verifier" class="lato-bold blinking-animation">'+$('.translates-holder').attr('i-verify')+'</label></div></div></div></div></div>');
-        $('#main-container').addClass('full-visual-height');
+        setTimeout(function() {
+            $('.ios-camper').html('<div class="ios-reminder-for-downloading-keystore-file"> <div class="white-bg container padding-top-30 padding-bottom-30"><div class="row"><div class="col-xs-12"> <div class="padding-bottom-15 color-warning-red fs-16"><img src="assets/images/attention-icon.svg" alt="Warning icon" class="warning-icon"/> '+$('.translates-holder').attr('export')+'</div><div class="custom-google-label-style margin-bottom-15 margin-top-20 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="ios-camper-download-keystore-password">'+$('.translates-holder').attr('pass-label')+'</label><input type="password" id="ios-camper-download-keystore-password" class="full-rounded"></div><div class="text-center padding-top-10 padding-bottom-30"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 ios-camper-download-keystore-action">'+$('.translates-holder').attr('export-btn')+'</a></div><div style="display: none" class="text-center fs-18 hidden-checkbox"><input type="checkbox" id="keystore-downloaded-verifier"> <label for="keystore-downloaded-verifier" class="lato-bold blinking-animation">'+$('.translates-holder').attr('i-verify')+'</label></div></div></div></div></div>');
+            $('#main-container').addClass('full-visual-height');
 
-        $('.ios-camper .ios-camper-download-keystore-action').click(function () {
-            showLoader($('.translates-holder').attr('hold-on-decrypt'));
+            $('.ios-camper .ios-camper-download-keystore-action').click(function () {
+                showLoader($('.translates-holder').attr('hold-on-decrypt'));
 
-            setTimeout(function () {
-                importKeystoreFile(window.localStorage.getItem('keystore_file'), $('.ios-camper #ios-camper-download-keystore-password').val().trim(), function (success, public_key, address, error, error_message) {
-                    if (success) {
-                        hideLoader();
-                        window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
-                        $('#ios-camper-download-keystore-password').val('');
+                setTimeout(function () {
+                    importKeystoreFile(window.localStorage.getItem('keystore_file'), $('.ios-camper #ios-camper-download-keystore-password').val().trim(), function (success, public_key, address, error, error_message) {
+                        if (success) {
+                            hideLoader();
+                            window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
+                            $('#ios-camper-download-keystore-password').val('');
 
-                        $('.ios-camper .hidden-checkbox').fadeIn(500);
-                        $('#keystore-downloaded-verifier').change(function() {
-                            if($(this).is(':checked')) {
-                                window.localStorage.setItem('keystore_file_ios_saved', true);
-                                $('.ios-camper').html('');
-                                $('#main-container').removeClass('full-visual-height');
-                            }
-                        });
-                    } else if (error) {
-                        hideLoader();
-                        basic.showAlert(error_message, '', true);
-                    }
-                });
-            }, 2000);
-        });
+                            $('.ios-camper .hidden-checkbox').fadeIn(500);
+                            $('#keystore-downloaded-verifier').change(function() {
+                                if($(this).is(':checked')) {
+                                    window.localStorage.setItem('keystore_file_ios_saved', true);
+                                    $('.ios-camper').html('');
+                                    $('#main-container').removeClass('full-visual-height');
+                                }
+                            });
+                        } else if (error) {
+                            hideLoader();
+                            basic.showAlert(error_message, '', true);
+                        }
+                    });
+                }, 2000);
+            });
+        }, 2000);
     }
 }
 
@@ -2738,6 +2740,12 @@ function initAccountChecker() {
 
                 $('#keystore-file-pass').focus();
                 $('label[for="keystore-file-pass"]').addClass('active-label');
+
+                if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
+                    $('.download-login-file .btn-text').html($('.translates-holder').attr('export-login-file')).addClass('renew-on-lang-switch').attr('data-slug', 'export-login-file');
+                } else {
+                    $('.download-login-file .btn-text').html($('.translates-holder').attr('download-login-file')).addClass('renew-on-lang-switch').attr('data-slug', 'export-login-file');
+                }
             }
 
             $('.custom-auth-popup .popup-body').addClass('hide');
@@ -2908,14 +2916,24 @@ function initAccountChecker() {
                                 }, cordova.file.externalRootDirectory, true);
                             } else if (basic.getMobileOperatingSystem() == 'iOS') {
                                 //saving keystore file to App folder
-                                hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
+                                /*hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
                                     loginIntoWallet();
                                     hideLoader();
 
                                     $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
                                     $('.custom-auth-popup .popup-left .popup-element.second').removeClass('hide');
                                     $('.custom-auth-popup .popup-header .nav-steps').removeClass('first-step').addClass('second-step');
-                                }, cordova.file.dataDirectory, false);
+                                }, cordova.file.dataDirectory, false);*/
+
+
+                                window.plugins.socialsharing.share(keystore);
+
+                                loginIntoWallet();
+                                hideLoader();
+
+                                $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
+                                $('.custom-auth-popup .popup-left .popup-element.second').removeClass('hide');
+                                $('.custom-auth-popup .popup-header .nav-steps').removeClass('first-step').addClass('second-step');
                             }
                         } else {
                             if (basic.getMobileOperatingSystem() == 'iOS') {

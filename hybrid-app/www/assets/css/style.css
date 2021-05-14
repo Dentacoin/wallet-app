@@ -5665,6 +5665,18 @@ input[type=file].hide-input {
   -ms-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); }
 
+select {
+  -webkit-appearance: none;
+  padding-right: 15px;
+  background-image: url(../images/black-caret.svg);
+  background-repeat: no-repeat;
+  background-size: 10px;
+  background-position: center right 5px; }
+  select.blue-color {
+    background-image: url(../images/blue-caret.svg); }
+  select.white-color {
+    background-image: url(../images/white-caret.svg); }
+
 header {
   position: relative;
   z-index: 150;

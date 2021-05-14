@@ -214,6 +214,7 @@
   "lets-store" : "Let’s store a login file on your computer<br> and protect it with a strong password:",
   "you-will-need" : "You will need this new password to login later. Write it down on paper. It cannot be reset if lost.",
   "download-login-file" : "DOWNLOAD LOGIN FILE",
+  "export-login-file" : "EXPORT LOGIN FILE",
   "additional-security" : "ADDITIONAL SECURITY",
   "print-pk-desc" : "Print out your private key to unlock your funds <br>manually in case you lose your device.",
   "print-pk" : "PRINT PRIVATE KEY",

@@ -93904,34 +93904,36 @@ function executeGlobalLogic() {
     $('.camp-for-fixed-mobile-nav a').removeClass('active');
 
     if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS' && window.localStorage.getItem('keystore_file_ios_saved') == null) {
-        $('.ios-camper').html('<div class="ios-reminder-for-downloading-keystore-file"> <div class="white-bg container padding-top-30 padding-bottom-30"><div class="row"><div class="col-xs-12"> <div class="padding-bottom-15 color-warning-red fs-16"><img src="assets/images/attention-icon.svg" alt="Warning icon" class="warning-icon"/> '+$('.translates-holder').attr('export')+'</div><div class="custom-google-label-style margin-bottom-15 margin-top-20 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="ios-camper-download-keystore-password">'+$('.translates-holder').attr('pass-label')+'</label><input type="password" id="ios-camper-download-keystore-password" class="full-rounded"></div><div class="text-center padding-top-10 padding-bottom-30"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 ios-camper-download-keystore-action">'+$('.translates-holder').attr('export-btn')+'</a></div><div style="display: none" class="text-center fs-18 hidden-checkbox"><input type="checkbox" id="keystore-downloaded-verifier"> <label for="keystore-downloaded-verifier" class="lato-bold blinking-animation">'+$('.translates-holder').attr('i-verify')+'</label></div></div></div></div></div>');
-        $('#main-container').addClass('full-visual-height');
+        setTimeout(function() {
+            $('.ios-camper').html('<div class="ios-reminder-for-downloading-keystore-file"> <div class="white-bg container padding-top-30 padding-bottom-30"><div class="row"><div class="col-xs-12"> <div class="padding-bottom-15 color-warning-red fs-16"><img src="assets/images/attention-icon.svg" alt="Warning icon" class="warning-icon"/> '+$('.translates-holder').attr('export')+'</div><div class="custom-google-label-style margin-bottom-15 margin-top-20 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="ios-camper-download-keystore-password">'+$('.translates-holder').attr('pass-label')+'</label><input type="password" id="ios-camper-download-keystore-password" class="full-rounded"></div><div class="text-center padding-top-10 padding-bottom-30"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 ios-camper-download-keystore-action">'+$('.translates-holder').attr('export-btn')+'</a></div><div style="display: none" class="text-center fs-18 hidden-checkbox"><input type="checkbox" id="keystore-downloaded-verifier"> <label for="keystore-downloaded-verifier" class="lato-bold blinking-animation">'+$('.translates-holder').attr('i-verify')+'</label></div></div></div></div></div>');
+            $('#main-container').addClass('full-visual-height');
 
-        $('.ios-camper .ios-camper-download-keystore-action').click(function () {
-            showLoader($('.translates-holder').attr('hold-on-decrypt'));
+            $('.ios-camper .ios-camper-download-keystore-action').click(function () {
+                showLoader($('.translates-holder').attr('hold-on-decrypt'));
 
-            setTimeout(function () {
-                importKeystoreFile(window.localStorage.getItem('keystore_file'), $('.ios-camper #ios-camper-download-keystore-password').val().trim(), function (success, public_key, address, error, error_message) {
-                    if (success) {
-                        hideLoader();
-                        window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
-                        $('#ios-camper-download-keystore-password').val('');
+                setTimeout(function () {
+                    importKeystoreFile(window.localStorage.getItem('keystore_file'), $('.ios-camper #ios-camper-download-keystore-password').val().trim(), function (success, public_key, address, error, error_message) {
+                        if (success) {
+                            hideLoader();
+                            window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
+                            $('#ios-camper-download-keystore-password').val('');
 
-                        $('.ios-camper .hidden-checkbox').fadeIn(500);
-                        $('#keystore-downloaded-verifier').change(function() {
-                            if($(this).is(':checked')) {
-                                window.localStorage.setItem('keystore_file_ios_saved', true);
-                                $('.ios-camper').html('');
-                                $('#main-container').removeClass('full-visual-height');
-                            }
-                        });
-                    } else if (error) {
-                        hideLoader();
-                        basic.showAlert(error_message, '', true);
-                    }
-                });
-            }, 2000);
-        });
+                            $('.ios-camper .hidden-checkbox').fadeIn(500);
+                            $('#keystore-downloaded-verifier').change(function() {
+                                if($(this).is(':checked')) {
+                                    window.localStorage.setItem('keystore_file_ios_saved', true);
+                                    $('.ios-camper').html('');
+                                    $('#main-container').removeClass('full-visual-height');
+                                }
+                            });
+                        } else if (error) {
+                            hideLoader();
+                            basic.showAlert(error_message, '', true);
+                        }
+                    });
+                }, 2000);
+            });
+        }, 2000);
     }
 }
 
@@ -93976,6 +93978,12 @@ function initAccountChecker() {
 
                 $('#keystore-file-pass').focus();
                 $('label[for="keystore-file-pass"]').addClass('active-label');
+
+                if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
+                    $('.download-login-file .btn-text').html($('.translates-holder').attr('export-login-file')).addClass('renew-on-lang-switch').attr('data-slug', 'export-login-file');
+                } else {
+                    $('.download-login-file .btn-text').html($('.translates-holder').attr('download-login-file')).addClass('renew-on-lang-switch').attr('data-slug', 'export-login-file');
+                }
             }
 
             $('.custom-auth-popup .popup-body').addClass('hide');
@@ -94146,14 +94154,24 @@ function initAccountChecker() {
                                 }, cordova.file.externalRootDirectory, true);
                             } else if (basic.getMobileOperatingSystem() == 'iOS') {
                                 //saving keystore file to App folder
-                                hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
+                                /*hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
                                     loginIntoWallet();
                                     hideLoader();
 
                                     $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
                                     $('.custom-auth-popup .popup-left .popup-element.second').removeClass('hide');
                                     $('.custom-auth-popup .popup-header .nav-steps').removeClass('first-step').addClass('second-step');
-                                }, cordova.file.dataDirectory, false);
+                                }, cordova.file.dataDirectory, false);*/
+
+
+                                window.plugins.socialsharing.share(keystore);
+
+                                loginIntoWallet();
+                                hideLoader();
+
+                                $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
+                                $('.custom-auth-popup .popup-left .popup-element.second').removeClass('hide');
+                                $('.custom-auth-popup .popup-header .nav-steps').removeClass('first-step').addClass('second-step');
                             }
                         } else {
                             if (basic.getMobileOperatingSystem() == 'iOS') {
@@ -94712,7 +94730,7 @@ $(document).on('click', '.open-settings', function () {
 
     var display_pk_error = '';
     if (window.localStorage.getItem('printed_private_key') == null) {
-        display_pk_error = $('.translates-holder').attr('upload-to-show-second-option');
+        display_pk_error = '<div class="error-handle">' + $('.translates-holder').attr('upload-to-show-second-option') + '</div>';
     }
 
     settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important generate-keystore"><svg class="margin-right-5 inline-block max-width-30" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 66.3 74.8" style="enable-background:new 0 0 66.3 74.8;" xml:space="preserve"><style type="text/css">.st0-generate-keystore-file{fill:#00B5E2;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="74.8" width="66.3" x="16.6" y="37.3"></sliceSourceBounds></sfw></metadata><path class="st0-generate-keystore-file" d="M66.3,37.4c0-13.7-8.6-26.1-21.4-31c-0.8-0.3-1.6,0.1-1.9,0.9c-0.3,0.8,0.1,1.6,0.9,1.9c11.6,4.4,19.5,15.7,19.5,28.2c0,15.5-11.8,28.3-26.8,29.9l2.1-2.6c0.5-0.6,0.4-1.6-0.2-2.1c-0.6-0.5-1.6-0.4-2.1,0.2l-4.1,5.1c-0.3,0.2-0.4,0.6-0.5,1c0,0,0,0.1,0,0.1c0,0,0,0,0,0.1c0,0,0,0,0,0.1c0,0.1,0,0.2,0,0.2c0,0,0,0,0,0c0.1,0.3,0.2,0.7,0.5,0.9l5.3,4.3c0.3,0.2,0.6,0.3,0.9,0.3c0.4,0,0.9-0.2,1.2-0.6c0.5-0.6,0.4-1.6-0.2-2.1L37,70.3C53.5,68.3,66.3,54.3,66.3,37.4z M34.3,6.7c0.1-0.1,0.1-0.1,0.1-0.2c0,0,0,0,0,0c0-0.1,0.1-0.1,0.1-0.2c0,0,0-0.1,0-0.1c0-0.1,0-0.1,0-0.2c0,0,0-0.1,0-0.1c0,0,0,0,0-0.1c0,0,0,0,0-0.1c0-0.1,0-0.1,0-0.2c0,0,0-0.1,0-0.1c0-0.1,0-0.1-0.1-0.2c0,0,0,0,0-0.1c0-0.1-0.1-0.1-0.1-0.2c0,0,0,0,0,0c0-0.1-0.1-0.1-0.2-0.2c0,0,0,0,0,0c0,0-0.1-0.1-0.1-0.1l-5.3-4.3c-0.6-0.5-1.6-0.4-2.1,0.2c-0.5,0.6-0.4,1.6,0.2,2.1l2.3,1.8C12.8,6.5,0,20.5,0,37.4c0,13.8,8.7,26.3,21.6,31.1c0.2,0.1,0.3,0.1,0.5,0.1c0.6,0,1.2-0.4,1.4-1c0.3-0.8-0.1-1.6-0.9-1.9C10.9,61.3,3,49.9,3,37.4C3,21.9,14.8,9.1,29.8,7.5l-2.1,2.6c-0.5,0.6-0.4,1.6,0.2,2.1c0.3,0.2,0.6,0.3,0.9,0.3c0.4,0,0.9-0.2,1.2-0.6L34.3,6.7C34.3,6.7,34.3,6.7,34.3,6.7z"/><g transform="translate(0,-952.36218)"><path class="st0-generate-keystore-file" d="M31.6,974.2c3,3,3.3,7.8,0.9,11.2l16.5,16.5c0.5,0.5,0.5,1.4,0,1.9l-3.7,3.7c-0.5,0.5-1.4,0.5-1.9,0c-0.5-0.5-0.5-1.4,0-1.9l2.7-2.7l-3.9-3.9l-4.2,4.2c-0.5,0.5-1.4,0.5-1.9,0c-0.5-0.5-0.5-1.4,0-1.9l4.2-4.2l-9.7-9.7c-3.4,2.4-8.2,2.2-11.2-0.9c-3.4-3.4-3.4-8.9,0-12.2C22.7,970.8,28.2,970.8,31.6,974.2z M29.7,976.1c-2.3-2.3-6.1-2.3-8.4,0c-2.3,2.3-2.3,6.1,0,8.4c2.3,2.3,6.1,2.3,8.4,0C32,982.2,32,978.4,29.7,976.1L29.7,976.1z"/></g></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="generate-backup">'+$('.translates-holder').attr('generate-backup')+'</span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="easy-to-easy">'+$('.translates-holder').attr('easy-to-easy')+'</div><div class="camping-for-action"></div></div><div class="option-row"><a href="javascript:void(0)" class="display-block-important show-private-key"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 21.3" style="enable-background:new 0 0 16 21.3;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="21.3" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M5.3,0C5.1,0,5,0.1,4.9,0.2L0.2,4.9C0.1,5,0,5.2,0,5.3v13.9c0,1.1,0.9,2.1,2.1,2.1h11.8c1.1,0,2.1-0.9,2.1-2.1 V2.1C16,0.9,15.1,0,13.9,0H5.3C5.3,0,5.3,0,5.3,0z M6.2,1.2h7.7c0.5,0,0.9,0.4,0.9,0.9v17.2c0,0.5-0.4,0.9-0.9,0.9H2.1 c-0.5,0-0.9-0.4-0.9-0.9v-13h4.4C6,6.2,6.2,6,6.2,5.6V1.2z M5,1.7V5H1.7L5,1.7z M4.4,9.8c-1.1,0-2.1,0.9-2.1,2.1s0.9,2.1,2.1,2.1 c0.9,0,1.7-0.6,2-1.5h3.6v0.9c0,0.3,0.3,0.6,0.6,0.6c0.3,0,0.6-0.3,0.6-0.6c0,0,0,0,0,0v-0.9h1.2v0.9c0,0.3,0.3,0.6,0.6,0.6 c0.3,0,0.6-0.3,0.6-0.6c0,0,0,0,0,0v-1.5c0-0.3-0.3-0.6-0.6-0.6H6.4C6.2,10.4,5.4,9.8,4.4,9.8L4.4,9.8z M4.4,11 c0.5,0,0.9,0.4,0.9,0.9c0,0.5-0.4,0.9-0.9,0.9c-0.5,0-0.9-0.4-0.9-0.9C3.6,11.3,3.9,11,4.4,11z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="display-key">'+$('.translates-holder').attr('display-key')+'</span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="upload-to-show">'+$('.translates-holder').attr('upload-to-show')+'</div><div class="camping-for-action"></div>'+display_pk_error+'</div>';

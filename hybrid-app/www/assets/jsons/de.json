@@ -216,6 +216,7 @@
   "lets-store" : "Speichern Sie eine Login-Datei auf Ihrem Computer / Handy und sichern Sie sie mit einem sicheren Passwort:",
   "you-will-need" : "Sie benötigen dieses neue Passwort, um sich später anzumelden. Schreiben Sie es auf Papier. Es kann nicht zurückgesetzt werden, wenn es verloren geht.",
   "download-login-file" : "LOGIN-DATEI HERUNTERLADEN",
+  "export-login-file" : "LOGIN-DATEI EXPORTIEREN",
   "additional-security" : "ZUSÄTZLICHE SICHERHEIT",
   "print-pk-desc" : "Drucken Sie Ihren privaten Schlüssel aus, um Ihr Konto manuell zu entsperren, falls Sie Ihr Gerät verlieren sollten.",
   "print-pk" : "PRIVATEN SCHLÜSSEL DRUCKEN",
