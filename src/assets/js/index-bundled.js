@@ -93190,7 +93190,7 @@ var projectData = {
                         if (basic.getMobileOperatingSystem() == 'Android') {
                             borderImage = 'assets/images/private-key-background.png';
                         } else if (basic.getMobileOperatingSystem() == 'iOS') {
-                            borderImage = 'app://localhost/assets/images/private-key-background.png';
+                            borderImage = 'https://dentacoin.com/assets/uploads/private-key-background.png';
                         }
                     }
                     console.log(borderImage, 'borderImage');
