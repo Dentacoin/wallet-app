@@ -5209,7 +5209,7 @@ input[type=file].hide-input {
       font-size: 16px; }
   @media screen and (max-width: 767px) {
     .custom-upload-button {
-      width: 260px; }
+      width: 280px; }
       .custom-upload-button a span {
         cursor: pointer;
         display: block;
@@ -5358,6 +5358,10 @@ input[type=file].hide-input {
       -webkit-transform: translateY(-50%);
       -ms-transform: translateY(-50%);
       transform: translateY(-50%); }
+    @media screen and (max-width: 767px) {
+      .account-checker-container .account-checker-wrapper .popup-header {
+        padding-left: 10px;
+        padding-right: 10px; } }
   .account-checker-container .account-checker-wrapper .custom-auth-popup {
     width: 95%;
     max-width: 1100px;
@@ -5384,7 +5388,7 @@ input[type=file].hide-input {
       font-family: "Calibri-Regular"; }
       @media screen and (max-width: 767px) {
         .account-checker-container .account-checker-wrapper .custom-auth-popup .import-private-key {
-          width: 260px; } }
+          width: 280px; } }
     .account-checker-container .account-checker-wrapper .custom-auth-popup .import-private-key-field {
       border: 1.5px solid #ff0046;
       padding: 12px 10px;
@@ -5453,11 +5457,11 @@ input[type=file].hide-input {
         background-color: transparent; }
     @media screen and (max-width: 767px) {
       .account-checker-container .account-checker-wrapper .custom-auth-popup .above-header .on-option-selected {
-        width: 70px; }
+        width: 85px; }
       .account-checker-container .account-checker-wrapper .custom-auth-popup .above-header .nav-steps {
-        width: calc(100% - 140px); }
+        width: calc(100% - 160px); }
       .account-checker-container .account-checker-wrapper .custom-auth-popup .above-header .lang-container {
-        width: 70px; } }
+        width: 85px; } }
     .account-checker-container .account-checker-wrapper .custom-auth-popup .navigation-link .nav-btn-container {
       width: 50%; }
       .account-checker-container .account-checker-wrapper .custom-auth-popup .navigation-link .nav-btn-container a[data-slug="first"] {

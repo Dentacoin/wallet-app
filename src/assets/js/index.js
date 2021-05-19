@@ -2846,7 +2846,7 @@ function initAccountChecker() {
 
         var tempPrivKey;
         var tempAddress;
-        $('.custom-auth-popup .popup-left .download-login-file').click(function () {
+        $('.custom-auth-popup .popup-left .download-login-file').unbind().click(function () {
             var login_errors = false;
             $('.popup-left .error-handle').remove();
             var login_fields = $('.popup-left .required-field');
@@ -2965,7 +2965,7 @@ function initAccountChecker() {
 
                         function clearCreation() {
                             $('.custom-auth-popup .popup-element.first .btn-container .download-login-file').removeClass('hide');
-                            $('.custom-auth-popup .popup-element.first .btn-container .hidden-checkbox').addClass('hide');
+                            $('.custom-auth-popup .popup-element.first .btn-container .hidden-checkbox').attr('checked', false).addClass('hide');
                             $('.custom-auth-popup #keystore-file-pass').val('');
                             $('.custom-auth-popup #second-pass').val('');
 
@@ -2989,7 +2989,7 @@ function initAccountChecker() {
             }
         });
 
-        $('.custom-auth-popup .popup-left .print-pk').click(function () {
+        $('.custom-auth-popup .popup-left .print-pk').unbind().click(function () {
             projectData.general_logic.generatePrivateKeyFile(tempPrivKey);
 
             $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
@@ -3003,7 +3003,7 @@ function initAccountChecker() {
             $('.custom-auth-popup .popup-header .nav-steps').removeClass('second-step').addClass('third-step');
         });
 
-        $('.custom-auth-popup .popup-left .login-into-wallet').click(function () {
+        $('.custom-auth-popup .popup-left .login-into-wallet').unbind().click(function () {
             if (is_hybrid) {
                 refreshApp();
             } else {

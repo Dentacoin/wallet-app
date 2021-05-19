@@ -1459,7 +1459,7 @@ input[type=file].hide-input {
         }
     }
     @include breakpoint($xs) {
-        width: 260px;
+        width: 280px;
         a {
             span {
                 cursor: pointer;
@@ -1613,6 +1613,10 @@ input[type=file].hide-input {
                 right: 20px;
                 @include vertical-align(absolute);
             }
+            @include breakpoint($xs) {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
         }
         .custom-auth-popup {
             width: 95%;
@@ -1634,7 +1638,7 @@ input[type=file].hide-input {
                 padding: 10px 5px;
                 font-family: "Calibri-Regular";
                 @include breakpoint($xs) {
-                    width: 260px;
+                    width: 280px;
                 }
             }
             .import-private-key-field {
@@ -1727,13 +1731,13 @@ input[type=file].hide-input {
                 }
                 @include breakpoint($xs) {
                     .on-option-selected {
-                        width: 70px;
+                        width: 85px;
                     }
                     .nav-steps {
-                        width: calc(100% - 140px);
+                        width: calc(100% - 160px);
                     }
                     .lang-container {
-                        width: 70px;
+                        width: 85px;
                     }
                 }
             }
