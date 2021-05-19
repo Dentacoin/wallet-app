@@ -16,6 +16,7 @@ export class FrontEndLanguageComponent implements OnInit {
     }
 
     ngOnInit() {
+        console.log('asd');
         this.activatedRoute.params.subscribe( (params : Params) => {
             if (this.channelArray.indexOf(params['lang']) > -1) {
                 console.log(1);

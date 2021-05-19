@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { environment } from './../environments/environment';
 
 import { HomepageComponent } from './homepage/homepage.component';
 import { BuyPageComponent } from './buy-page/buy-page.component';
@@ -10,10 +9,10 @@ import { SpendPageExchangesComponent } from './spend-page-exchanges/spend-page-e
 import { SpendPagePayAssuranceFeesComponent } from './spend-page-pay-assurance-fees/spend-page-pay-assurance-fees.component';
 import { NotFoundPageComponent } from './not-found-page/not-found-page.component';
 import { FrontEndLanguageComponent } from './front-end-language/front-end-language.component';
+import { RedirectToHomeComponent } from './redirect-to-home/redirect-to-home.component';
 
-const currentLang = localStorage.getItem('currentLanguage') ? localStorage.getItem('currentLanguage') : environment.default_language;
 const routes: Routes = [
-    {path: '', pathMatch: 'full', redirectTo: '/' + currentLang},
+    {path: '', component: RedirectToHomeComponent},
     {path: ':lang', component: FrontEndLanguageComponent, children: [
         {path: '', component: HomepageComponent},
         {path: 'buy', component: BuyPageComponent},
@@ -32,4 +31,4 @@ const routes: Routes = [
 
 export class AppRoutingModule {}
 
-export const routingComponents = [HomepageComponent, BuyPageComponent, SendPageComponent, SpendPagePayForDentalServicesComponent, SpendPageExchangesComponent, SpendPagePayAssuranceFeesComponent, NotFoundPageComponent, FrontEndLanguageComponent];
+export const routingComponents = [HomepageComponent, BuyPageComponent, SendPageComponent, SpendPagePayForDentalServicesComponent, SpendPageExchangesComponent, SpendPagePayAssuranceFeesComponent, NotFoundPageComponent, FrontEndLanguageComponent, RedirectToHomeComponent];
