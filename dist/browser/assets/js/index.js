@@ -756,7 +756,7 @@ var projectData = {
                         hideLoader();
 
                         // on currency switch from the dropdown
-                        $('section.ready-to-purchase-with-external-api #active-crypto').on('change', function () {
+                        $('section.ready-to-purchase-with-external-api #active-crypto').unbind().on('change', function () {
                             var thisValue = $(this);
 
                             showLoader();
@@ -786,7 +786,7 @@ var projectData = {
                         });
 
                         // on changing the usd value
-                        $('section.ready-to-purchase-with-external-api #usd-value').on('input', function () {
+                        $('section.ready-to-purchase-with-external-api #usd-value').unbind().on('input', function () {
                             if ($(this).val().trim() < minimumIndacoinUsdForTransaction) {
                                 $(this).parent().addClass('error-field');
                             } else {
@@ -811,7 +811,7 @@ var projectData = {
                         });
 
                         //on BUY action button make few inputs validations and redirect to indacoin external link
-                        $('.buy-crypto-btn').click(function () {
+                        $('.buy-crypto-btn').unbind().click(function () {
                             var currency = $('section.ready-to-purchase-with-external-api #active-crypto').val();
 
                             if (parseFloat($('section.ready-to-purchase-with-external-api #usd-value').val().trim()) < minimumIndacoinUsdForTransaction) {
