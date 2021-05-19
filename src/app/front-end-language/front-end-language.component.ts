@@ -1,4 +1,4 @@
-import {Component, NgZone, OnInit} from '@angular/core';
+import {Component, NgZone} from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {Router} from '@angular/router';
@@ -9,14 +9,10 @@ import {RedirectsService} from '../_services/redirects.service';
     selector: 'app-front-end-language',
     template: '<router-outlet></router-outlet>'
 })
-export class FrontEndLanguageComponent implements OnInit {
+export class FrontEndLanguageComponent {
     channelArray: Array<string> = ['de', 'en'];
 
     constructor(public activatedRoute: ActivatedRoute, public translate: TranslateService, public router: Router, public redirectsService: RedirectsService, private ngZone: NgZone) {
-    }
-
-    ngOnInit() {
-        console.log('asd');
         this.activatedRoute.params.subscribe( (params : Params) => {
             if (this.channelArray.indexOf(params['lang']) > -1) {
                 console.log(1);
