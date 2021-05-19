@@ -91236,6 +91236,15 @@ module.exports = {getWeb3, getContractInstance, generateKeystoreFile, importKeys
 
 },{"../../../node_modules/eth-crypto":397,"../../../node_modules/keythereum":467,"../../../node_modules/web3":606}],628:[function(require,module,exports){
 (function (Buffer){(function (){
+showLoader();
+var closeOnLoadLoader = true;
+$('body').on('DOMSubtreeModified', '.main-holder', function () {
+    if (closeOnLoadLoader) {
+        hideLoader();
+    }
+});
+
+
 //importing methods for keystore import, export, decrypt
 var {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey} = require('./helper');
 
@@ -93937,317 +93946,317 @@ function executeGlobalLogic() {
 
 //checking if metamask or if saved current_account in the local storage. If both are false then show custom login popup with CREATE / IMPORT logic
 function initAccountChecker() {
-    console.log(33);
-    if ($('.account-checker-container').hasClass('visible')) {
-        return;
-    }
-
-    hideMobileAppBannerForDesktopBrowsers();
-
-    if (is_hybrid) {
-        // opening the external links in app browser
-        $(document).on('click', '.data-external-link', function () {
-            event.preventDefault();
-            cordova.InAppBrowser.open($(this).attr('href'), '_blank', inAppBrowserSettings);
-        });
-    }
-
-    if ((window.localStorage.getItem('current_account') == null && typeof(web3) === 'undefined') || (window.localStorage.getItem('current_account') == null && window.localStorage.getItem('custom_wallet_over_external_web3_provider') == 'true')) {
-        console.log(11);
-        $('.account-checker-container').addClass('visible').removeClass('hide');
-
-        if (!is_hybrid) {
-            if (!basic.isMobile()) {
-                $('.account-checker-wrapper').append('<div class="mobile-app-banner padding-top-50">' + mobileAppBannerForDesktopBrowsersHtml + '</div>');
-            }
+    setTimeout(function() {
+        if ($('.account-checker-container').hasClass('visible')) {
+            return;
         }
-        updateExternalURLsForiOSDevice();
 
-        $(window).on('load', function () {
-            if ($('.custom-auth-popup .modal-content').height() > $('.custom-auth-popup .modal-dialog').height()) {
-                $('.custom-auth-popup .modal-content').addClass('clear-center-position');
+        hideMobileAppBannerForDesktopBrowsers();
+
+        if (is_hybrid) {
+            // opening the external links in app browser
+            $(document).on('click', '.data-external-link', function () {
+                event.preventDefault();
+                cordova.InAppBrowser.open($(this).attr('href'), '_blank', inAppBrowserSettings);
+            });
+        }
+
+        if ((window.localStorage.getItem('current_account') == null && typeof(web3) === 'undefined') || (window.localStorage.getItem('current_account') == null && window.localStorage.getItem('custom_wallet_over_external_web3_provider') == 'true')) {
+            $('.account-checker-container').addClass('visible').removeClass('hide');
+
+            if (!is_hybrid) {
+                if (!basic.isMobile()) {
+                    $('.account-checker-wrapper').append('<div class="mobile-app-banner padding-top-50">' + mobileAppBannerForDesktopBrowsersHtml + '</div>');
+                }
             }
-        });
+            updateExternalURLsForiOSDevice();
 
-        $('.custom-auth-popup .navigation-link a').click(function () {
-            $('.custom-auth-popup .on-page-load').addClass('hide');
-            $('.custom-auth-popup .on-option-selected').removeClass('custom-hide');
+            $(window).on('load', function () {
+                if ($('.custom-auth-popup .modal-content').height() > $('.custom-auth-popup .modal-dialog').height()) {
+                    $('.custom-auth-popup .modal-content').addClass('clear-center-position');
+                }
+            });
 
-            if ($(this).attr('data-slug') == 'first') {
-                $('.custom-auth-popup .nav-steps').removeClass('custom-hide');
+            $('.custom-auth-popup .navigation-link a').click(function () {
+                $('.custom-auth-popup .on-page-load').addClass('hide');
+                $('.custom-auth-popup .on-option-selected').removeClass('custom-hide');
 
-                $('#keystore-file-pass').focus();
-                $('label[for="keystore-file-pass"]').addClass('active-label');
+                if ($(this).attr('data-slug') == 'first') {
+                    $('.custom-auth-popup .nav-steps').removeClass('custom-hide');
 
-                $('.download-login-file .btn-text').html($('.translates-holder').attr('download-login-file')).addClass('renew-on-lang-switch').attr('data-slug', 'download-login-file');
-            }
+                    $('#keystore-file-pass').focus();
+                    $('label[for="keystore-file-pass"]').addClass('active-label');
 
-            $('.custom-auth-popup .popup-body').addClass('hide');
-            $('.custom-auth-popup .popup-body.' + $(this).attr('data-slug')).removeClass('hide');
-        });
+                    $('.download-login-file .btn-text').html($('.translates-holder').attr('download-login-file')).addClass('renew-on-lang-switch').attr('data-slug', 'download-login-file');
+                }
 
-        $('.custom-auth-popup .go-back-to-main-menu').click(function () {
-            $('.custom-auth-popup .on-page-load').removeClass('hide');
-            $('.custom-auth-popup .on-option-selected').addClass('custom-hide');
-            $('.custom-auth-popup .nav-steps').addClass('custom-hide');
+                $('.custom-auth-popup .popup-body').addClass('hide');
+                $('.custom-auth-popup .popup-body.' + $(this).attr('data-slug')).removeClass('hide');
+            });
 
-            $('.custom-auth-popup .popup-body').addClass('hide');
-        });
+            $('.custom-auth-popup .go-back-to-main-menu').click(function () {
+                $('.custom-auth-popup .on-page-load').removeClass('hide');
+                $('.custom-auth-popup .on-option-selected').addClass('custom-hide');
+                $('.custom-auth-popup .nav-steps').addClass('custom-hide');
 
-        $('.more-info-keystore-remember').popover({
-            trigger: 'click'
-        });
+                $('.custom-auth-popup .popup-body').addClass('hide');
+            });
 
-        // ================================= IMPORTING ==========================================
-        $(document).on('click', '.refresh-import-init-page', function () {
-            $('.camping-for-action').html('').show();
-            $('.import-keystore-file-row #upload-keystore').val('');
-            $('.import-keystore-file-row').show();
-            $('.or-label').show();
-            $('.import-private-key-row').html('<a href="javascript:void(0);" class="import-private-key light-blue-white-btn fs-16 fs-xs-14 renew-on-lang-switch" data-slug="import-key">'+$('.translates-holder').attr('import-key')+'</a>').show();
-        });
+            $('.more-info-keystore-remember').popover({
+                trigger: 'click'
+            });
 
-        //importing with private key
-        $(document).on('click', '.import-private-key', function () {
-            $('.camping-for-action').hide();
-            $('.import-keystore-file-row').hide();
-            $('.or-label').hide();
-            $('.import-private-key-row').html('<div class="field-parent"><div class="custom-google-label-style module text-left max-width-400 margin-0-auto" data-input-light-blue-border="true"><label for="import-private-key" class="renew-on-lang-switch" data-slug="priv-key">'+$('.translates-holder').attr('priv-key')+'</label><textarea id="import-private-key" maxlength="64" class="full-rounded"></textarea></div></div><div class="padding-top-10"><a class="inline-block max-width-80 scan-qr-code-importing-priv-key" href="javascript:void(0)"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img alt="Scan QR code icon" class="width-100" itemprop="contentUrl" src="assets/images/scan-qr-code.svg"></figure></a></div><div class="continue-btn-priv-key padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border renew-on-lang-switch" data-slug="CONTINUE-btn">'+$('.translates-holder').attr('CONTINUE-btn')+'</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block renew-on-lang-switch" data-slug="go-back">'+$('.translates-holder').attr('go-back')+'</span></a></div>');
-            $('#import-private-key').focus();
-            $('label[for="import-private-key"]').addClass('active-label');
+            // ================================= IMPORTING ==========================================
+            $(document).on('click', '.refresh-import-init-page', function () {
+                $('.camping-for-action').html('').show();
+                $('.import-keystore-file-row #upload-keystore').val('');
+                $('.import-keystore-file-row').show();
+                $('.or-label').show();
+                $('.import-private-key-row').html('<a href="javascript:void(0);" class="import-private-key light-blue-white-btn fs-16 fs-xs-14 renew-on-lang-switch" data-slug="import-key">'+$('.translates-holder').attr('import-key')+'</a>').show();
+            });
 
-            initScan($('.scan-qr-code-importing-priv-key'), $('#import-private-key'), function () {
+            //importing with private key
+            $(document).on('click', '.import-private-key', function () {
+                $('.camping-for-action').hide();
+                $('.import-keystore-file-row').hide();
+                $('.or-label').hide();
+                $('.import-private-key-row').html('<div class="field-parent"><div class="custom-google-label-style module text-left max-width-400 margin-0-auto" data-input-light-blue-border="true"><label for="import-private-key" class="renew-on-lang-switch" data-slug="priv-key">'+$('.translates-holder').attr('priv-key')+'</label><textarea id="import-private-key" maxlength="64" class="full-rounded"></textarea></div></div><div class="padding-top-10"><a class="inline-block max-width-80 scan-qr-code-importing-priv-key" href="javascript:void(0)"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img alt="Scan QR code icon" class="width-100" itemprop="contentUrl" src="assets/images/scan-qr-code.svg"></figure></a></div><div class="continue-btn-priv-key padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border renew-on-lang-switch" data-slug="CONTINUE-btn">'+$('.translates-holder').attr('CONTINUE-btn')+'</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block renew-on-lang-switch" data-slug="go-back">'+$('.translates-holder').attr('go-back')+'</span></a></div>');
                 $('#import-private-key').focus();
                 $('label[for="import-private-key"]').addClass('active-label');
-            });
 
-            $('.continue-btn-priv-key > a').unbind().click(function () {
-                $('.import-private-key-row .error-handle').remove();
+                initScan($('.scan-qr-code-importing-priv-key'), $('#import-private-key'), function () {
+                    $('#import-private-key').focus();
+                    $('label[for="import-private-key"]').addClass('active-label');
+                });
 
-                showLoader();
-                setTimeout(function () {
-                    var validate_private_key = validatePrivateKey($('#import-private-key').val().trim());
-                    if (validate_private_key.success) {
-                        var internet = navigator.onLine;
-                        if (internet) {
-                            savePublicKeyToAssurance(validate_private_key.success.address, validate_private_key.success.public_key);
-                        }
-                        setTimeout(function () {
-                            window.localStorage.setItem('current_account', validate_private_key.success.address);
-                            fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
+                $('.continue-btn-priv-key > a').unbind().click(function () {
+                    $('.import-private-key-row .error-handle').remove();
 
-                            if (is_hybrid) {
-                                if (basic.getMobileOperatingSystem() == 'iOS') {
-                                    window.localStorage.setItem('keystore_file_ios_saved', true);
-                                    if ($('.ios-camper .ios-reminder-for-downloading-keystore-file').length) {
-                                        $('.ios-camper .ios-reminder-for-downloading-keystore-file').remove();
-                                    }
-                                }
-
-                                refreshApp();
-                                //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
-                            } else {
-                                window.location.reload();
+                    showLoader();
+                    setTimeout(function () {
+                        var validate_private_key = validatePrivateKey($('#import-private-key').val().trim());
+                        if (validate_private_key.success) {
+                            var internet = navigator.onLine;
+                            if (internet) {
+                                savePublicKeyToAssurance(validate_private_key.success.address, validate_private_key.success.public_key);
                             }
-                        }, 500);
-                    } else if (validate_private_key.error) {
-                        hideLoader();
+                            setTimeout(function () {
+                                window.localStorage.setItem('current_account', validate_private_key.success.address);
+                                fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
 
-                        customErrorHandle($('#import-private-key').closest('.field-parent'), validate_private_key.message);
-                    }
-                }, 500);
+                                if (is_hybrid) {
+                                    if (basic.getMobileOperatingSystem() == 'iOS') {
+                                        window.localStorage.setItem('keystore_file_ios_saved', true);
+                                        if ($('.ios-camper .ios-reminder-for-downloading-keystore-file').length) {
+                                            $('.ios-camper .ios-reminder-for-downloading-keystore-file').remove();
+                                        }
+                                    }
+
+                                    refreshApp();
+                                    //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
+                                } else {
+                                    window.location.reload();
+                                }
+                            }, 500);
+                        } else if (validate_private_key.error) {
+                            hideLoader();
+
+                            customErrorHandle($('#import-private-key').closest('.field-parent'), validate_private_key.message);
+                        }
+                    }, 500);
+                });
             });
-        });
 
-        //importing with keystore file
-        styleKeystoreUploadBtn();
+            //importing with keystore file
+            styleKeystoreUploadBtn();
 
-        // ================================= /IMPORTING ==========================================
+            // ================================= /IMPORTING ==========================================
 
-        // ================================= CREATING ==========================================
+            // ================================= CREATING ==========================================
 
-        /*var passwordWarningShow = true;
-        $('.popup-left .required-field').on('change keyup focusout paste', function() {
-            if (passwordWarningShow) {
-                passwordWarningShow = false;
+            /*var passwordWarningShow = true;
+            $('.popup-left .required-field').on('change keyup focusout paste', function() {
+                if (passwordWarningShow) {
+                    passwordWarningShow = false;
 
-                if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
-                    $('.custom-auth-popup .popup-left .wallet-creation-warning').addClass('max-width-300 margin-left-right-auto').html('<div class="color-warning-red fs-14 lato-bold">Keep your password and backup file safe!<br>NOBODY CAN RESET THEM IF LOST.</div><div class="padding-bottom-15 fs-14">To access your wallet, you need both the password and the backup file which you must export on the next step or from the Settings.</div>');
-                } else {
-                    $('.custom-auth-popup .popup-left .wallet-creation-warning').addClass('max-width-300 margin-left-right-auto').html('<div class="color-warning-red fs-14 lato-bold">Keep your password and backup file safe!<br>NOBODY CAN RESET THEM IF LOST.</div><div class="padding-bottom-15 fs-14">To access your wallet, you need both the password and the backup file which will be automatically downloaded on your device.</div>');
+                    if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
+                        $('.custom-auth-popup .popup-left .wallet-creation-warning').addClass('max-width-300 margin-left-right-auto').html('<div class="color-warning-red fs-14 lato-bold">Keep your password and backup file safe!<br>NOBODY CAN RESET THEM IF LOST.</div><div class="padding-bottom-15 fs-14">To access your wallet, you need both the password and the backup file which you must export on the next step or from the Settings.</div>');
+                    } else {
+                        $('.custom-auth-popup .popup-left .wallet-creation-warning').addClass('max-width-300 margin-left-right-auto').html('<div class="color-warning-red fs-14 lato-bold">Keep your password and backup file safe!<br>NOBODY CAN RESET THEM IF LOST.</div><div class="padding-bottom-15 fs-14">To access your wallet, you need both the password and the backup file which will be automatically downloaded on your device.</div>');
+                    }
                 }
-            }
-        });*/
+            });*/
 
-        var tempPrivKey;
-        var tempAddress;
-        $('.custom-auth-popup .popup-left .download-login-file').unbind().click(function () {
-            var login_errors = false;
-            $('.popup-left .error-handle').remove();
-            var login_fields = $('.popup-left .required-field');
+            var tempPrivKey;
+            var tempAddress;
+            $('.custom-auth-popup .popup-left .download-login-file').unbind().click(function () {
+                var login_errors = false;
+                $('.popup-left .error-handle').remove();
+                var login_fields = $('.popup-left .required-field');
 
-            for (var i = 0, len = login_fields.length; i < len; i += 1) {
-                if (login_fields.eq(i).val().trim() == '') {
-                    customErrorHandle(login_fields.eq(i).closest('.field-parent'), $('.translates-holder').attr('enter-pass'));
-                    login_errors = true;
-                } else if (login_fields.eq(i).val().trim().length < 8 || login_fields.eq(i).val().trim().length > 30) {
-                    customErrorHandle(login_fields.eq(i).closest('.field-parent'), $('.translates-holder').attr('min-pass-error'));
+                for (var i = 0, len = login_fields.length; i < len; i += 1) {
+                    if (login_fields.eq(i).val().trim() == '') {
+                        customErrorHandle(login_fields.eq(i).closest('.field-parent'), $('.translates-holder').attr('enter-pass'));
+                        login_errors = true;
+                    } else if (login_fields.eq(i).val().trim().length < 8 || login_fields.eq(i).val().trim().length > 30) {
+                        customErrorHandle(login_fields.eq(i).closest('.field-parent'), $('.translates-holder').attr('min-pass-error'));
+                        login_errors = true;
+                    }
+                }
+
+                if ($('.custom-auth-popup .keystore-file-pass').val().trim() != $('.custom-auth-popup .second-pass').val().trim()) {
+                    customErrorHandle($('.custom-auth-popup .second-pass').closest('.field-parent'), $('.translates-holder').attr('def-pass-error'));
                     login_errors = true;
                 }
-            }
 
-            if ($('.custom-auth-popup .keystore-file-pass').val().trim() != $('.custom-auth-popup .second-pass').val().trim()) {
-                customErrorHandle($('.custom-auth-popup .second-pass').closest('.field-parent'), $('.translates-holder').attr('def-pass-error'));
-                login_errors = true;
-            }
-
-            if (!login_errors) {
-                if (is_hybrid) {
-                    //MOBILE APP
-                    if (basic.getMobileOperatingSystem() == 'Android') {
-                        showLoader($('.translates-holder').attr('few-mins'));
-                    }/* else if (basic.getMobileOperatingSystem() == 'iOS') {
+                if (!login_errors) {
+                    if (is_hybrid) {
+                        //MOBILE APP
+                        if (basic.getMobileOperatingSystem() == 'Android') {
+                            showLoader($('.translates-holder').attr('few-mins'));
+                        }/* else if (basic.getMobileOperatingSystem() == 'iOS') {
                         showLoader($('.translates-holder').attr('few-mins-two'));
                     }*/
-                } else {
-                    showLoader($('.translates-holder').attr('few-mins'));
-                }
+                    } else {
+                        showLoader($('.translates-holder').attr('few-mins'));
+                    }
 
-                setTimeout(function () {
-                    generateKeystoreFile($('.custom-auth-popup .keystore-file-pass').val().trim(), function (public_key, keystore, private_key) {
-                        var keystore_file_name = buildKeystoreFileName(keystore.address);
-                        tempPrivKey = private_key;
-                        tempAddress = '0x' + keystore.address;
+                    setTimeout(function () {
+                        generateKeystoreFile($('.custom-auth-popup .keystore-file-pass').val().trim(), function (public_key, keystore, private_key) {
+                            var keystore_file_name = buildKeystoreFileName(keystore.address);
+                            tempPrivKey = private_key;
+                            tempAddress = '0x' + keystore.address;
 
-                        // if internet connection save the public key to assurance
-                        var internet = navigator.onLine;
-                        if (internet) {
-                            savePublicKeyToAssurance(keystore.address, public_key);
-                        }
+                            // if internet connection save the public key to assurance
+                            var internet = navigator.onLine;
+                            if (internet) {
+                                savePublicKeyToAssurance(keystore.address, public_key);
+                            }
 
-                        if (is_hybrid) {
-                            //MOBILE APP
-                            if (basic.getMobileOperatingSystem() == 'Android') {
-                                //saving keystore file to Downloads folder
-                                hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
-                                    //saving keystore file to App folder
+                            if (is_hybrid) {
+                                //MOBILE APP
+                                if (basic.getMobileOperatingSystem() == 'Android') {
+                                    //saving keystore file to Downloads folder
                                     hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
-                                        fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
-                                        loginIntoWallet();
+                                        //saving keystore file to App folder
+                                        hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
+                                            fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
+                                            loginIntoWallet();
 
-                                        basic.showAlert($('.translates-holder').attr('file') + keystore_file_name + $('.translates-holder').attr('has-been-stored'), 'overlap-loading-popup', true);
-                                        setTimeout(function () {
-                                            fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
-                                            basic.closeDialog();
-                                            hideLoader();
+                                            basic.showAlert($('.translates-holder').attr('file') + keystore_file_name + $('.translates-holder').attr('has-been-stored'), 'overlap-loading-popup', true);
+                                            setTimeout(function () {
+                                                fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
+                                                basic.closeDialog();
+                                                hideLoader();
+                                                clearCreation();
+                                            }, 6000);
+
+                                        }, cordova.file.externalDataDirectory, false);
+                                    }, cordova.file.externalRootDirectory, true);
+                                } else if (basic.getMobileOperatingSystem() == 'iOS') {
+                                    //saving keystore file to App folder
+                                    /*hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
+                                        loginIntoWallet();
+                                        hideLoader();
+                                    }, cordova.file.dataDirectory, false);*/
+
+                                    //
+                                    //hideLoader();
+
+                                    window.plugins.socialsharing.share(JSON.stringify(keystore));
+
+                                    $('.custom-auth-popup .popup-element.first .btn-container .download-login-file').addClass('hide');
+                                    $('.custom-auth-popup .popup-element.first .btn-container .hidden-checkbox').removeClass('hide');
+
+                                    $('.custom-auth-popup #keystore-downloaded-verifier').change(function() {
+                                        if($(this).is(':checked')) {
+                                            loginIntoWallet();
                                             clearCreation();
-                                        }, 6000);
-
-                                    }, cordova.file.externalDataDirectory, false);
-                                }, cordova.file.externalRootDirectory, true);
-                            } else if (basic.getMobileOperatingSystem() == 'iOS') {
-                                //saving keystore file to App folder
-                                /*hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
-                                    loginIntoWallet();
-                                    hideLoader();
-                                }, cordova.file.dataDirectory, false);*/
-
-                                //
-                                //hideLoader();
-
-                                window.plugins.socialsharing.share(JSON.stringify(keystore));
-
-                                $('.custom-auth-popup .popup-element.first .btn-container .download-login-file').addClass('hide');
-                                $('.custom-auth-popup .popup-element.first .btn-container .hidden-checkbox').removeClass('hide');
-
-                                $('.custom-auth-popup #keystore-downloaded-verifier').change(function() {
-                                    if($(this).is(':checked')) {
-                                        loginIntoWallet();
-                                        clearCreation();
-                                    }
-                                });
-                            }
-                        } else {
-                            if (basic.getMobileOperatingSystem() == 'iOS') {
-                                //mobile browser from iPhone
-                                basic.showAlert($('.translates-holder').attr('opened-new-tab'), 'mobile-safari-keystore-creation overlap-loading-popup', true);
-
-                                //mobile safari
-                                downloadFile(keystore_file_name, JSON.stringify(keystore));
-
-                                $('.mobile-safari-keystore-creation .modal-footer .btn.btn-primary, .mobile-safari-keystore-creation .bootbox-close-button.close').click(function () {
-                                    fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
-                                    basic.closeDialog();
-                                    loginIntoWallet();
-                                    hideLoader();
-                                    clearCreation();
-                                });
+                                        }
+                                    });
+                                }
                             } else {
-                                //BROWSER
-                                downloadFile(keystore_file_name, JSON.stringify(keystore));
-                                fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
-                                loginIntoWallet();
+                                if (basic.getMobileOperatingSystem() == 'iOS') {
+                                    //mobile browser from iPhone
+                                    basic.showAlert($('.translates-holder').attr('opened-new-tab'), 'mobile-safari-keystore-creation overlap-loading-popup', true);
 
-                                basic.showAlert($('.translates-holder').attr('file') +keystore_file_name + $('.translates-holder').attr('has-been-stored'), 'overlap-loading-popup', true);
-                                setTimeout(function () {
-                                    fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
-                                    basic.closeDialog();
-                                    hideLoader();
-                                    clearCreation();
-                                }, 6000);
-                            }
-                        }
+                                    //mobile safari
+                                    downloadFile(keystore_file_name, JSON.stringify(keystore));
 
-                        function clearCreation() {
-                            $('.custom-auth-popup .popup-element.first .btn-container .download-login-file').removeClass('hide');
-                            $('.custom-auth-popup .popup-element.first .btn-container .hidden-checkbox').attr('checked', false).addClass('hide');
-                            $('.custom-auth-popup #keystore-file-pass').val('');
-                            $('.custom-auth-popup #second-pass').val('');
+                                    $('.mobile-safari-keystore-creation .modal-footer .btn.btn-primary, .mobile-safari-keystore-creation .bootbox-close-button.close').click(function () {
+                                        fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
+                                        basic.closeDialog();
+                                        loginIntoWallet();
+                                        hideLoader();
+                                        clearCreation();
+                                    });
+                                } else {
+                                    //BROWSER
+                                    downloadFile(keystore_file_name, JSON.stringify(keystore));
+                                    fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
+                                    loginIntoWallet();
 
-                            $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
-                            $('.custom-auth-popup .popup-left .popup-element.second').removeClass('hide');
-                            $('.custom-auth-popup .popup-header .nav-steps').removeClass('first-step').addClass('second-step');
-                        }
-
-                        function loginIntoWallet() {
-                            //if ($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
-                            var localStorageAddress = keystore.address;
-                            if (localStorageAddress.length == 40) {
-                                localStorageAddress = '0x' + localStorageAddress;
+                                    basic.showAlert($('.translates-holder').attr('file') +keystore_file_name + $('.translates-holder').attr('has-been-stored'), 'overlap-loading-popup', true);
+                                    setTimeout(function () {
+                                        fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
+                                        basic.closeDialog();
+                                        hideLoader();
+                                        clearCreation();
+                                    }, 6000);
+                                }
                             }
 
-                            window.localStorage.setItem('current_account', localStorageAddress);
-                            window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
-                        }
-                    });
-                }, 1000);
-            }
-        });
+                            function clearCreation() {
+                                $('.custom-auth-popup .popup-element.first .btn-container .download-login-file').removeClass('hide');
+                                $('.custom-auth-popup .popup-element.first .btn-container .hidden-checkbox').attr('checked', false).addClass('hide');
+                                $('.custom-auth-popup #keystore-file-pass').val('');
+                                $('.custom-auth-popup #second-pass').val('');
 
-        $('.custom-auth-popup .popup-left .print-pk').unbind().click(function () {
-            projectData.general_logic.generatePrivateKeyFile(tempPrivKey);
+                                $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
+                                $('.custom-auth-popup .popup-left .popup-element.second').removeClass('hide');
+                                $('.custom-auth-popup .popup-header .nav-steps').removeClass('first-step').addClass('second-step');
+                            }
 
-            $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
-            $('.custom-auth-popup .popup-left .popup-element.third').removeClass('hide');
-            $('.custom-auth-popup .popup-header .nav-steps').removeClass('second-step').addClass('third-step');
-        });
+                            function loginIntoWallet() {
+                                //if ($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
+                                var localStorageAddress = keystore.address;
+                                if (localStorageAddress.length == 40) {
+                                    localStorageAddress = '0x' + localStorageAddress;
+                                }
 
-        $('.custom-auth-popup .popup-left .remind-me-later').click(function () {
-            $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
-            $('.custom-auth-popup .popup-left .popup-element.third').removeClass('hide');
-            $('.custom-auth-popup .popup-header .nav-steps').removeClass('second-step').addClass('third-step');
-        });
+                                window.localStorage.setItem('current_account', localStorageAddress);
+                                window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
+                            }
+                        });
+                    }, 1000);
+                }
+            });
 
-        $('.custom-auth-popup .popup-left .login-into-wallet').unbind().click(function () {
-            if (is_hybrid) {
-                refreshApp();
-            } else {
-                window.location.reload();
-            }
-        });
-    } else {
-        checkIfLoadingFromMobileBrowser();
-    }
+            $('.custom-auth-popup .popup-left .print-pk').unbind().click(function () {
+                projectData.general_logic.generatePrivateKeyFile(tempPrivKey);
+
+                $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
+                $('.custom-auth-popup .popup-left .popup-element.third').removeClass('hide');
+                $('.custom-auth-popup .popup-header .nav-steps').removeClass('second-step').addClass('third-step');
+            });
+
+            $('.custom-auth-popup .popup-left .remind-me-later').click(function () {
+                $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
+                $('.custom-auth-popup .popup-left .popup-element.third').removeClass('hide');
+                $('.custom-auth-popup .popup-header .nav-steps').removeClass('second-step').addClass('third-step');
+            });
+
+            $('.custom-auth-popup .popup-left .login-into-wallet').unbind().click(function () {
+                if (is_hybrid) {
+                    refreshApp();
+                } else {
+                    window.location.reload();
+                }
+            });
+        } else {
+            checkIfLoadingFromMobileBrowser();
+        }
+    }, 1000);
 }
 
 function removeAccountChecker() {
