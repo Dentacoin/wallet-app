@@ -1734,7 +1734,7 @@ input[type=file].hide-input {
                         width: 85px;
                     }
                     .nav-steps {
-                        width: calc(100% - 160px);
+                        width: calc(100% - 170px);
                     }
                     .lang-container {
                         width: 85px;
@@ -1894,6 +1894,19 @@ input[type=file].hide-input {
                         width: 100%;
                         .navigation-link {
                             display: none;
+                        }
+                        .custom-upload-button {
+                            height: auto;
+                            line-height: normal;
+                            a {
+                                height: auto;
+                                line-height: normal;
+                                padding: 10px;
+                                span {
+                                    height: auto;
+                                    line-height: normal;
+                                }
+                            }
                         }
                     }
                 }

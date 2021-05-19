@@ -5459,7 +5459,7 @@ input[type=file].hide-input {
       .account-checker-container .account-checker-wrapper .custom-auth-popup .above-header .on-option-selected {
         width: 85px; }
       .account-checker-container .account-checker-wrapper .custom-auth-popup .above-header .nav-steps {
-        width: calc(100% - 160px); }
+        width: calc(100% - 170px); }
       .account-checker-container .account-checker-wrapper .custom-auth-popup .above-header .lang-container {
         width: 85px; } }
     .account-checker-container .account-checker-wrapper .custom-auth-popup .navigation-link .nav-btn-container {
@@ -5604,7 +5604,17 @@ input[type=file].hide-input {
         .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-right {
           width: 100%; }
           .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-right .navigation-link {
-            display: none; } }
+            display: none; }
+          .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-right .custom-upload-button {
+            height: auto;
+            line-height: normal; }
+            .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-right .custom-upload-button a {
+              height: auto;
+              line-height: normal;
+              padding: 10px; }
+              .account-checker-container .account-checker-wrapper .custom-auth-popup .left-right-side-holder .popup-right .custom-upload-button a span {
+                height: auto;
+                line-height: normal; } }
   @media screen and (max-width: 767px) {
     .account-checker-container .account-checker-wrapper {
       z-index: 1050;
