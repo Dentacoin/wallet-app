@@ -11,7 +11,7 @@ import { SpendPagePayAssuranceFeesComponent } from './spend-page-pay-assurance-f
 import { NotFoundPageComponent } from './not-found-page/not-found-page.component';
 import { FrontEndLanguageComponent } from './front-end-language/front-end-language.component';
 
-const currentLang = window && window.localStorage.getItem('currentLanguage') ? window.localStorage.getItem('currentLanguage') : environment.default_language;
+const currentLang = localStorage.getItem('currentLanguage') ? localStorage.getItem('currentLanguage') : environment.default_language;
 const routes: Routes = [
     {path: '', pathMatch: 'full', redirectTo: '/' + currentLang},
     {path: ':lang', component: FrontEndLanguageComponent, children: [
