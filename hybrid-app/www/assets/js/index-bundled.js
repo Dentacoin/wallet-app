@@ -94162,7 +94162,6 @@ function initAccountChecker() {
 
                                 $('.custom-auth-popup .popup-element.first .btn-container .download-login-file').addClass('hide');
                                 $('.custom-auth-popup .popup-element.first .btn-container .hidden-checkbox').removeClass('hide');
-                                $('.custom-auth-popup .popup-element.first .btn-container').html('<div class="text-center fs-18 hidden-checkbox"><input type="checkbox" id="keystore-downloaded-verifier"> <label for="keystore-downloaded-verifier" class="lato-bold blinking-animation renew-on-lang-switch" data-slug="i-verify">'+$('.translates-holder').attr('i-verify')+'</label></div>');
 
                                 $('.custom-auth-popup #keystore-downloaded-verifier').change(function() {
                                     if($(this).is(':checked')) {
@@ -94205,8 +94204,8 @@ function initAccountChecker() {
                         function clearCreation() {
                             $('.custom-auth-popup .popup-element.first .btn-container .download-login-file').removeClass('hide');
                             $('.custom-auth-popup .popup-element.first .btn-container .hidden-checkbox').addClass('hide');
-                            $('.custom-auth-popup #keystore-file-pass').val();
-                            $('.custom-auth-popup #second-pass').val();
+                            $('.custom-auth-popup #keystore-file-pass').val('');
+                            $('.custom-auth-popup #second-pass').val('');
 
                             $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
                             $('.custom-auth-popup .popup-left .popup-element.second').removeClass('hide');
