@@ -6,12 +6,6 @@ var assurance_config;
 var iframeHeightListenerInit = true;
 var isDeviceReady = false;
 var lastHybridScreen;
-var translates = {
-    defaultErrorMessage : $('.translates-holder').attr('smth-went-wrong'),
-    txOnHold : $('.translates-holder').attr('hold-on'),
-    successfullySigned : $('.translates-holder').attr('data-assurance-success'),
-    pleaseUpload : $('.translates-holder').attr('data-valid-keytore')
-};
 var inAppBrowserSettings = 'location=yes,zoom=no,toolbarposition=top,closebuttoncaption=Back,presentationstyle=fullscreen,fullscreen=yes';
 if (basic.getMobileOperatingSystem() == 'iOS') {
     inAppBrowserSettings = 'location=no,hardwareback=no,zoom=no,toolbarposition=top,closebuttoncaption=Back,presentationstyle=fullscreen,fullscreen=yes';
@@ -501,7 +495,7 @@ var dApp = {
             }).on('transactionHash', function (hash) {
                 displayMessageOnTransactionSend('Dentacoin tokens', hash);
             }).catch(function (err) {
-                basic.showAlert(translates.defaultErrorMessage, '', true);
+                basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
             });
         }
     },
@@ -1295,7 +1289,7 @@ var projectData = {
                                                                 }).on('transactionHash', function (hash) {
                                                                     displayMessageOnTransactionSend('Ethers', hash);
                                                                 }).catch(function (err) {
-                                                                    basic.showAlert(translates.defaultErrorMessage, '', true);
+                                                                    basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
                                                                 });
                                                             }
                                                         } else {
@@ -1372,7 +1366,7 @@ var projectData = {
                                                                                 if ($('.cached-keystore-file #your-secret-key-password').val().trim() == '') {
                                                                                     basic.showAlert($('.translates-holder').attr('valid-password'), '', true);
                                                                                 } else {
-                                                                                    showLoader(translates.txOnHold);
+                                                                                    showLoader($('.translates-holder').attr('hold-on'));
 
                                                                                     setTimeout(function () {
                                                                                         decryptKeystore(window.localStorage.getItem('keystore_file'), $('.cached-keystore-file #your-secret-key-password').val().trim(), function (success, to_string, error, error_message) {
@@ -1417,7 +1411,7 @@ var projectData = {
                                                                                     if ($('.proof-of-address #your-private-key').val().trim() == '') {
                                                                                         basic.showAlert($('.translates-holder').attr('enter-priv-key-error'), '', true);
                                                                                     } else {
-                                                                                        showLoader(translates.txOnHold);
+                                                                                        showLoader($('.translates-holder').attr('hold-on'));
 
                                                                                         setTimeout(function () {
                                                                                             var validating_private_key = validatePrivateKey($('.proof-of-address #your-private-key').val().trim());
@@ -1622,10 +1616,10 @@ var projectData = {
                                                                 hideLoader();
                                                                 basic.closeDialog();
                                                                 if (response.success) {
-                                                                    basic.showAlert(translates.successfullySigned, '', true);
+                                                                    basic.showAlert($('.translates-holder').attr('data-assurance-success'), '', true);
                                                                     firePushNotification('Assurance transaction', 'Contract created successfully.');
                                                                 } else {
-                                                                    basic.showAlert(translates.defaultErrorMessage, '', true);
+                                                                    basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
                                                                 }
                                                             }
                                                         });
@@ -1650,10 +1644,10 @@ var projectData = {
                                                             hideLoader();
                                                             basic.closeDialog();
                                                             if (response.success) {
-                                                                basic.showAlert(translates.successfullySigned, '', true);
+                                                                basic.showAlert($('.translates-holder').attr('data-assurance-success'), '', true);
                                                                 firePushNotification('Assurance transaction', 'Contract created successfully.');
                                                             } else {
-                                                                basic.showAlert(translates.defaultErrorMessage, '', true);
+                                                                basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
                                                             }
                                                         }
                                                     });
@@ -1677,10 +1671,10 @@ var projectData = {
                                                             hideLoader();
                                                             basic.closeDialog();
                                                             if (response.success) {
-                                                                basic.showAlert(translates.successfullySigned, '', true);
+                                                                basic.showAlert($('.translates-holder').attr('data-assurance-success'), '', true);
                                                                 firePushNotification('Assurance transaction', 'Contract approved successfully.');
                                                             } else {
-                                                                basic.showAlert(translates.defaultErrorMessage, '', true);
+                                                                basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
                                                             }
                                                         }
                                                     });
@@ -1704,10 +1698,10 @@ var projectData = {
                                                             hideLoader();
                                                             basic.closeDialog();
                                                             if (response.success) {
-                                                                basic.showAlert(translates.successfullySigned, '', true);
+                                                                basic.showAlert($('.translates-holder').attr('data-assurance-success'), '', true);
                                                                 firePushNotification('Assurance transaction', 'Successful withdraw.');
                                                             } else {
-                                                                basic.showAlert(translates.defaultErrorMessage, '', true);
+                                                                basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
                                                             }
                                                         }
                                                     });
@@ -1733,10 +1727,10 @@ var projectData = {
                                                             hideLoader();
                                                             basic.closeDialog();
                                                             if (response.success) {
-                                                                basic.showAlert(translates.successfullySigned, '', true);
+                                                                basic.showAlert($('.translates-holder').attr('data-assurance-success'), '', true);
                                                                 firePushNotification('Assurance transaction', 'Contract cancelled successfully.');
                                                             } else {
-                                                                basic.showAlert(translates.defaultErrorMessage, '', true);
+                                                                basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
                                                             }
                                                         }
                                                     });
@@ -1768,7 +1762,7 @@ var projectData = {
                                                 if ($('.cached-keystore-file #your-secret-key-password').val().trim() == '') {
                                                     basic.showAlert($('.translates-holder').attr('valid-password'), '', true);
                                                 } else {
-                                                    showLoader(translates.txOnHold);
+                                                    showLoader($('.translates-holder').attr('hold-on'));
 
                                                     setTimeout(function () {
                                                         decryptKeystore(window.localStorage.getItem('keystore_file'), $('.cached-keystore-file #your-secret-key-password').val().trim(), function (success, to_string, error, error_message) {
@@ -1799,7 +1793,7 @@ var projectData = {
                                                     if ($('.proof-of-address #your-private-key').val().trim() == '') {
                                                         basic.showAlert($('.translates-holder').attr('enter-priv-key-error'), '', true);
                                                     } else {
-                                                        showLoader(translates.txOnHold);
+                                                        showLoader($('.translates-holder').attr('hold-on'));
 
                                                         setTimeout(function () {
                                                             var validating_private_key = validatePrivateKey($('.proof-of-address #your-private-key').val().trim());
@@ -1825,12 +1819,12 @@ var projectData = {
                                             });
                                         }
                                     } else {
-                                        basic.showAlert(translates.defaultErrorMessage, '', true);
+                                        basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
                                     }
                                 }
                             });
                         } else {
-                            basic.showAlert(translates.defaultErrorMessage, '', true);
+                            basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
                         }
                     });
                 }
@@ -2248,7 +2242,7 @@ function styleKeystoreUploadBtnForTx(callback) {
                         if ($('.proof-of-address #your-secret-key-password').val().trim() == '') {
                             basic.showAlert($('.translates-holder').attr('valid-password'), '', true);
                         } else {
-                            showLoader(translates.txOnHold);
+                            showLoader($('.translates-holder').attr('hold-on'));
 
                             setTimeout(function () {
                                 decryptKeystore(keystore_string, $('.proof-of-address #your-secret-key-password').val().trim(), function (success, to_string, error, error_message) {
@@ -2299,7 +2293,7 @@ function styleKeystoreUploadBtnForTx(callback) {
                                 if ($('.proof-of-address #your-secret-key-password').val().trim() == '') {
                                     basic.showAlert($('.translates-holder').attr('valid-password'), '', true);
                                 } else {
-                                    showLoader(translates.txOnHold);
+                                    showLoader($('.translates-holder').attr('hold-on'));
 
                                     setTimeout(function () {
                                         decryptKeystore(keystore_string, $('.proof-of-address #your-secret-key-password').val().trim(), function (success, to_string, error, error_message) {
@@ -3406,7 +3400,7 @@ $(document).on('click', '.open-settings', function () {
                                     if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && projectData.utils.checksumAddress(JSON.parse(keystore_string).address) == projectData.utils.checksumAddress(global_state.account)) {
                                         validateKeystoreFileAndPasswordForCachingKeystoreFile(this_camping_row, keystore_string, this_row);
                                     } else {
-                                        $(translates.pleaseUpload).insertAfter(this_camping_row);
+                                        $($('.translates-holder').attr('data-valid-keytore')).insertAfter(this_camping_row);
                                     }
                                 };
 
@@ -3429,7 +3423,7 @@ $(document).on('click', '.open-settings', function () {
                             if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && projectData.utils.checksumAddress(JSON.parse(keystore_string).address) == projectData.utils.checksumAddress(global_state.account)) {
                                 validateKeystoreFileAndPasswordForCachingKeystoreFile(this_camping_row, keystore_string, this_row);
                             } else {
-                                $(translates.pleaseUpload).insertAfter(this_camping_row);
+                                $($('.translates-holder').attr('data-valid-keytore')).insertAfter(this_camping_row);
                             }
                         });
                     });
@@ -3451,7 +3445,7 @@ $(document).on('click', '.open-settings', function () {
 
                                 validateKeystoreFileAndPasswordForCachingKeystoreFile(this_camping_row, keystore_string, this_row);
                             } else {
-                                $(translates.pleaseUpload).insertAfter(this_camping_row);
+                                $($('.translates-holder').attr('data-valid-keytore')).insertAfter(this_camping_row);
                             }
                         });
 
@@ -3777,7 +3771,7 @@ $(document).on('click', '.open-settings', function () {
                                     if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && projectData.utils.checksumAddress(JSON.parse(keystore_string).address) == projectData.utils.checksumAddress(global_state.account)) {
                                         decryptKeystoreFileAndShowPrivateKey(this_camping_row, keystore_string, this_row);
                                     } else {
-                                        $(translates.pleaseUpload).insertAfter(this_camping_row);
+                                        $($('.translates-holder').attr('data-valid-keytore')).insertAfter(this_camping_row);
                                     }
                                 };
 
@@ -3799,7 +3793,7 @@ $(document).on('click', '.open-settings', function () {
                             if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && projectData.utils.checksumAddress(JSON.parse(keystore_string).address) == projectData.utils.checksumAddress(global_state.account)) {
                                 decryptKeystoreFileAndShowPrivateKey(this_camping_row, keystore_string, this_row);
                             } else {
-                                $(translates.pleaseUpload).insertAfter(this_camping_row);
+                                $($('.translates-holder').attr('data-valid-keytore')).insertAfter(this_camping_row);
                             }
                         });
                     });
@@ -3821,7 +3815,7 @@ $(document).on('click', '.open-settings', function () {
 
                                 decryptKeystoreFileAndShowPrivateKey(this_camping_row, keystore_string, this_row);
                             } else {
-                                $(translates.pleaseUpload).insertAfter(this_camping_row);
+                                $($('.translates-holder').attr('data-valid-keytore')).insertAfter(this_camping_row);
                             }
                         });
 
@@ -4446,7 +4440,7 @@ var assuranceTransactions = {
                 if (!err) {
                     callback();
                 } else {
-                    basic.showAlert(translates.defaultErrorMessage, '', true);
+                    basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
                 }
             });*/
         });
@@ -4525,7 +4519,7 @@ var assuranceTransactions = {
             if (!err) {
                 callback(transactionHash);
             } else {
-                basic.showAlert(translates.defaultErrorMessage, '', true);
+                basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
             }
         });*/
     },
@@ -4562,7 +4556,7 @@ var assuranceTransactions = {
             if (!err) {
                 callback(transactionHash);
             } else {
-                basic.showAlert(translates.defaultErrorMessage, '', true);
+                basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
             }
         });*/
     },
@@ -4600,7 +4594,7 @@ var assuranceTransactions = {
             if (!err) {
                 callback(transactionHash);
             } else {
-                basic.showAlert(translates.defaultErrorMessage, '', true);
+                basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
             }
         });*/
     }
