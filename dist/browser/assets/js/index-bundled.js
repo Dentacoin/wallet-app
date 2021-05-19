@@ -91236,15 +91236,7 @@ module.exports = {getWeb3, getContractInstance, generateKeystoreFile, importKeys
 
 },{"../../../node_modules/eth-crypto":397,"../../../node_modules/keythereum":467,"../../../node_modules/web3":606}],628:[function(require,module,exports){
 (function (Buffer){(function (){
-showLoader();
 var closeOnLoadLoader = true;
-$('body').on('DOMSubtreeModified', '.main-holder', function () {
-    if (closeOnLoadLoader) {
-        hideLoader();
-    }
-});
-
-
 //importing methods for keystore import, export, decrypt
 var {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey} = require('./helper');
 
@@ -95330,6 +95322,13 @@ function router() {
     }
 
     $('body').on('DOMSubtreeModified', '.main-holder', function () {
+        if (closeOnLoadLoader) {
+            closeOnLoadLoader = false;
+            setTimeout(function() {
+                hideLoader();
+            }, 1000)
+        }
+
         if ($('.main-holder app-homepage').length && current_route != 'home') {
             current_route = 'home';
             getHomepageData();
