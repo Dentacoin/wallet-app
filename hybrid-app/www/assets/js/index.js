@@ -2744,11 +2744,7 @@ function initAccountChecker() {
                 $('#keystore-file-pass').focus();
                 $('label[for="keystore-file-pass"]').addClass('active-label');
 
-                if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
-                    $('.download-login-file .btn-text').html($('.translates-holder').attr('CONTINUE-btn')).addClass('renew-on-lang-switch').attr('data-slug', 'CONTINUE-btn');
-                } else {
-                    $('.download-login-file .btn-text').html($('.translates-holder').attr('download-login-file')).addClass('renew-on-lang-switch').attr('data-slug', 'download-login-file');
-                }
+                $('.download-login-file .btn-text').html($('.translates-holder').attr('download-login-file')).addClass('renew-on-lang-switch').attr('data-slug', 'download-login-file');
             }
 
             $('.custom-auth-popup .popup-body').addClass('hide');
