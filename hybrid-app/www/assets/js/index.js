@@ -1950,12 +1950,12 @@ var projectData = {
                     var borderImage = '/assets/images/private-key-background.png';
                     var borderStyle = 'height: 95vh';
                     if (is_hybrid) {
-                        if (basic.getMobileOperatingSystem() == 'Android') {
+                        //if (basic.getMobileOperatingSystem() == 'Android') {
                             borderImage = 'assets/images/private-key-background.png';
-                        } else if (basic.getMobileOperatingSystem() == 'iOS') {
+                        /*} else if (basic.getMobileOperatingSystem() == 'iOS') {
                             borderImage = 'https://dentacoin.com/assets/uploads/private-key-background.png';
                             borderStyle = 'width: 100%';
-                        }
+                        }*/
                     }
                     var printingHtml = '<html><head><style>body, html {margin: 0; padding: 0;text-align: center;color: black;font-family: “Helvetica Neue”,Helvetica,Arial,sans-serif;} .border-parent{text-align: left;position:relative; display: inline-block;} img {'+borderStyle+'} .absolute-content{position: absolute;z-index: 100;width: 80%;height: 80%;top: 0;left: 0;padding: 10%;}</style></head><body><div class="border-parent"><img src="'+borderImage+'"/><div class="absolute-content"><div style="text-align:center;"><i>'+$('.translates-holder').attr('confidential')+'</i><h1 style="margin-top: 25px;font-weight:bold;color: black; margin-bottom: 10px;">DENTACOIN</h1><div style="font-size: 18px;color: #2a3575;padding-bottom: 20px;"><b>'+$('.translates-holder').attr('unlock-funds')+'</b></div><div style="background-color: white;padding: 25px 10px;text-align: left;"><div style="color: #888888;padding-bottom: 5px;font-weight: bold;">'+$('.translates-holder').attr('pk-label')+':</div><div style="font-size: 15px;">'+privateKey+'</div></div><div style="font-size: 24px;padding: 30px 0 10px;"><b>'+$('.translates-holder').attr('pk-as-qr')+'</b></div><div><img src="'+qrCodeBase64Data+'" style=" height: auto; width: 180px;"></div><div style=" text-align: left; "><div style="font-size: 22px;color: #2a3575;padding-bottom: 15px;padding-top: 20px;font-weight: bold;">'+$('.translates-holder').attr('important')+'</div><div style=" padding-bottom: 15px;"><b>1.</b> '+$('.translates-holder').attr('provides')+'<div></div>'+projectData.utils.checksumAddress(window.localStorage.getItem('current_account'))+'</div><div style=" padding-bottom: 15px;"><b>2.</b> '+$('.translates-holder').attr('secure-place')+'</div><div style=" padding-bottom: 15px;"><b>3. '+$('.translates-holder').attr('never-share')+'</div><div><b>4.</b> '+$('.translates-holder').attr('to-unlock')+'</div></div></div></div></div></body></html>';
 
