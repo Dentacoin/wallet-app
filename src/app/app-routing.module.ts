@@ -10,17 +10,29 @@ import { SpendPagePayAssuranceFeesComponent } from './spend-page-pay-assurance-f
 import { NotFoundPageComponent } from './not-found-page/not-found-page.component';
 import { FrontEndLanguageComponent } from './front-end-language/front-end-language.component';
 import { RedirectToHomeComponent } from './redirect-to-home/redirect-to-home.component';
+import {environment} from '../environments/environment';
 
-const routes: Routes = [
+const routes: Routes = environment.hybrid ? [
+    {path: '', pathMatch: 'full', redirectTo: '/' + (window.localStorage.getItem('currentLanguage') ? window.localStorage.getItem('currentLanguage') : environment.default_language)},
+    {path: ':lang', component: FrontEndLanguageComponent, children: [
+            {path: '', component: HomepageComponent},
+            {path: 'buy', component: BuyPageComponent},
+            {path: 'send', component: SendPageComponent},
+            {path: 'spend-pay-for-dental-services', component: SpendPagePayForDentalServicesComponent},
+            {path: 'spend-exchanges', component: SpendPageExchangesComponent},
+            {path: 'spend-pay-assurance-fees', component: SpendPagePayAssuranceFeesComponent},
+        ]},
+    {path: '**', component: NotFoundPageComponent}
+] : [
     {path: '', component: RedirectToHomeComponent},
     {path: ':lang', component: FrontEndLanguageComponent, children: [
-        {path: '', component: HomepageComponent},
-        {path: 'buy', component: BuyPageComponent},
-        {path: 'send', component: SendPageComponent},
-        {path: 'spend-pay-for-dental-services', component: SpendPagePayForDentalServicesComponent},
-        {path: 'spend-exchanges', component: SpendPageExchangesComponent},
-        {path: 'spend-pay-assurance-fees', component: SpendPagePayAssuranceFeesComponent},
-    ]},
+            {path: '', component: HomepageComponent},
+            {path: 'buy', component: BuyPageComponent},
+            {path: 'send', component: SendPageComponent},
+            {path: 'spend-pay-for-dental-services', component: SpendPagePayForDentalServicesComponent},
+            {path: 'spend-exchanges', component: SpendPageExchangesComponent},
+            {path: 'spend-pay-assurance-fees', component: SpendPagePayAssuranceFeesComponent},
+        ]},
     {path: '**', component: NotFoundPageComponent}
 ];
 
