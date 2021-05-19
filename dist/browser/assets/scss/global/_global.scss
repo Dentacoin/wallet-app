@@ -55,6 +55,12 @@ body {
     }
 }
 
+@for $i from 0 through 80 {
+    .line-height-#{$i} {
+        line-height: 0px + $i!important;
+    }
+}
+
 @for $i from 0 through 20 * 2 {
     .padding-bottom-#{$i * 5} {
         padding-bottom: 0px + $i * 5!important;
@@ -707,7 +713,7 @@ img {
             }
         }
     }
-    &.custom-auth-popup {
+    /*&.custom-auth-popup {
         .bootbox-close-button {
             display: none;
         }
@@ -949,7 +955,7 @@ img {
                 }
             }
         }
-    }
+    }*/
     &.mobile-dentacoin-address-and-qr {
         .modal-body {
             padding-bottom: 30px;
@@ -1191,126 +1197,6 @@ img {
             }
         }
     }
-    &.settings-popup {
-        .bootbox-close-button {
-            display: none;
-        }
-        .custom-close-bootbox {
-            max-width: 25px;
-        }
-        .modal-dialog {
-            width: 95%;
-            max-width: 700px;
-            .modal-content {
-                overflow: hidden;
-                .modal-body {
-                    padding: 0;
-                    .log-out {
-                        &:hover {
-                            svg path {
-                                fill: white;
-                            }
-                        }
-                    }
-                    .private-key-holder {
-                        border: 1.5px solid $warning_red;
-                        padding: 8px 10px;
-                        text-align: center;
-                        font-size: 14px;
-                        overflow-x: auto;
-                        margin-top: 20px;
-                        @include rounded(4px);
-                        ::-webkit-scrollbar {
-                            -webkit-appearance: none;
-                        }
-
-                        ::-webkit-scrollbar:vertical {
-                            width: 12px;
-                        }
-
-                        ::-webkit-scrollbar:horizontal {
-                            height: 12px;
-                        }
-
-                        ::-webkit-scrollbar-thumb {
-                            background-color: rgba(0, 0, 0, .5);
-                            border-radius: 10px;
-                            border: 2px solid white;
-                        }
-
-                        ::-webkit-scrollbar-track {
-                            background-color: white;
-                            @include rounded(10px);
-                        }
-                        .scroll-content {
-                            .copy-private-key {
-                                max-width: 25px;
-                            }
-                            #copy-private-key {
-                                width: calc(100% - 25px);
-                                border: 0;
-                                padding: 0;
-                                height: 25px;
-                                resize: none;
-                                @include breakpoint($xs) {
-                                    height: 45px;
-                                }
-                            }
-                        }
-                    }
-                    .row-with-warning-red-background {
-                        background-color: $warning_red;
-                        margin-left: -70px;
-                        margin-right: -70px;
-                        @include breakpoint($xs) {
-                            margin-left: -10px;
-                            margin-right: -10px;
-                        }
-                    }
-                    .popup-header {
-                        background-color: $light_blue;
-                        padding: 10px;
-                        span {
-                            width: calc(100% - 30px);
-                        }
-                    }
-                    .popup-body {
-                        padding: 25px 70px;
-                        .option-row {
-                            padding-bottom: 20px;
-                            .option-description {
-                                margin-top: 10px;
-                                padding-top: 5px;
-                                border-top: 1px solid $solid_gray;
-                                color: $solid_gray;
-                            }
-                        }
-                        @include breakpoint($xs) {
-                            padding: 20px 10px;
-                        }
-                    }
-                    .popup-footer {
-                        padding-bottom: 30px;
-                        hr {
-                            width: calc(100% - 140px);
-                            margin: 0 auto;
-                            border: 0;
-                            border-top: 1px solid $solid_gray;
-                            padding-bottom: 25px;
-                        }
-                        @include breakpoint($xs) {
-                            padding-left: 10px;
-                            padding-right: 10px;
-                        }
-                    }
-                }
-            }
-            @include breakpoint($xs) {
-                margin: 0 !important;
-                width: 100%;
-            }
-        }
-    }
     &.popup-save-to-address-book, &.tx-settings-popup {
         @include breakpoint($xs) {
             .modal-dialog {
@@ -1341,26 +1227,197 @@ img {
     }
 }
 
+.settings-popup {
+    background-color: rgba(0,0,0,0.6);
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1035;
+    overflow: auto;
+    .settings-popup-wrapper {
+        position: absolute;
+        top: 100px;
+        padding-bottom: 50px;
+        left: 50%;
+        -webkit-transform: translateX(-50%);
+        -ms-transform: translateX(-50%);
+        transform: translateX(-50%);
+        width: 95%;
+        max-width: 700px;
+        .settings-popup-inner-wrapper {
+            background-color: white;
+            .log-out {
+                &:hover {
+                    svg path {
+                        fill: white;
+                    }
+                }
+            }
+            .private-key-holder {
+                border: 1.5px solid $warning_red;
+                padding: 8px 10px;
+                text-align: center;
+                font-size: 14px;
+                overflow-x: auto;
+                margin-top: 20px;
+                @include rounded(4px);
+                ::-webkit-scrollbar {
+                    -webkit-appearance: none;
+                }
+
+                ::-webkit-scrollbar:vertical {
+                    width: 12px;
+                }
+
+                ::-webkit-scrollbar:horizontal {
+                    height: 12px;
+                }
+
+                ::-webkit-scrollbar-thumb {
+                    background-color: rgba(0, 0, 0, .5);
+                    border-radius: 10px;
+                    border: 2px solid white;
+                }
+
+                ::-webkit-scrollbar-track {
+                    background-color: white;
+                    @include rounded(10px);
+                }
+                .scroll-content {
+                    .copy-private-key {
+                        max-width: 25px;
+                    }
+                    #copy-private-key {
+                        width: calc(100% - 25px);
+                        border: 0;
+                        padding: 0;
+                        height: 25px;
+                        resize: none;
+                        @include breakpoint($xs) {
+                            height: 45px;
+                        }
+                    }
+                }
+            }
+            .row-with-warning-red-background {
+                background-color: $warning_red;
+                margin-left: -70px;
+                margin-right: -70px;
+                @include breakpoint($xs) {
+                    margin-left: -10px;
+                    margin-right: -10px;
+                }
+            }
+            .popup-header {
+                background-color: $light_blue;
+                padding: 10px;
+                .custom-close-settings-popup {
+                    width: 25px;
+                }
+                span {
+                    width: calc(100% - 80px);
+                }
+                .lang-container {
+                    width: 50px;
+                    select {
+                        border: 0;
+                        font-size: 20px;
+                        color: white;
+                        background-color: transparent;
+                        option {
+                            color: black;
+                        }
+                    }
+                }
+            }
+            .popup-body {
+                padding: 25px 70px;
+                .option-row {
+                    padding-bottom: 20px;
+                    .option-description {
+                        margin-top: 10px;
+                        padding-top: 5px;
+                        border-top: 1px solid $solid_gray;
+                        color: $solid_gray;
+                    }
+                    .display-block-important {
+                        > span {
+                            width: calc(100% - 35px);
+                        }
+                    }
+                }
+                @include breakpoint($xs) {
+                    padding: 20px 10px;
+                }
+            }
+            .popup-footer {
+                padding-bottom: 30px;
+                hr {
+                    width: calc(100% - 140px);
+                    margin: 0 auto;
+                    border: 0;
+                    border-top: 1px solid $solid_gray;
+                    padding-bottom: 25px;
+                }
+                @include breakpoint($xs) {
+                    padding-left: 10px;
+                    padding-right: 10px;
+                }
+            }
+        }
+    }
+    @include breakpoint($xs) {
+        .settings-popup-wrapper {
+            width: 100%;
+            max-width: 100%;
+            position: static;
+            top: 0;
+            left: 0;
+            @include clear_transform();
+        }
+    }
+    /*.modal-dialog {
+        width: 95%;
+        max-width: 700px;
+        .modal-content {
+            overflow: hidden;
+            .modal-body {
+                padding: 0;*/
+
+            /*}
+        }
+        @include breakpoint($xs) {
+            margin: 0 !important;
+            width: 100%;
+        }
+    }*/
+}
+
 input[type=file].hide-input {
     display: none;
+}
+
+.text-uppercase {
+    text-transform: uppercase;
 }
 
 .custom-upload-button {
     display: block;
     background: #fff;
-    width: 320px;
+    width: 340px;
     margin: 0 auto;
     position: relative;
     font-size: 18px;
     @include rounded(10px);
     @include box-shadow(0 2px 6px rgba(170, 185, 200, 0.4));
-    svg {
+    img {
         display: none;
         position: absolute;
         left: 50%;
         top: 50%;
         margin: -15px 0 0 -15px;
-        fill: #fff;
     }
     div {
         height: 4px;
@@ -1402,7 +1459,7 @@ input[type=file].hide-input {
         }
     }
     @include breakpoint($xs) {
-        width: 260px;
+        width: 280px;
         a {
             span {
                 cursor: pointer;
@@ -1472,7 +1529,7 @@ input[type=file].hide-input {
     border: 1px solid rgba(0,0,0,0.2);
     background-color:white;
     font-size: 14px;
-    z-index: 2000;
+    z-index: 1030;
     position: relative;
     @include rounded(6px);
     @include box-shadow(0 5px 10px rgba(0,0,0,0.2));
@@ -1548,13 +1605,27 @@ input[type=file].hide-input {
         top: 0;
         left: 0;
         z-index: 100;
+        .popup-header {
+            padding-left: 20px;
+            padding-right: 20px;
+            position: relative;
+            #language-switch {
+                right: 20px;
+                @include vertical-align(absolute);
+            }
+            @include breakpoint($xs) {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+        }
         .custom-auth-popup {
             width: 95%;
             max-width: 1100px;
             background: white;
             margin: 200px auto 0;
-            padding-top: 10px;
-            padding-bottom: 10px;
+            padding-top: 20px;
+            padding-bottom: 50px;
+            position: relative;
             @include rounded(10px);
             @include box-shadow(0 8px 44px rgba(0, 0, 0, .2));
             #import-private-key {
@@ -1562,12 +1633,12 @@ input[type=file].hide-input {
                 height: 75px;
             }
             .import-private-key {
-                width: 320px;
+                width: 340px;
                 text-align: center;
                 padding: 10px 5px;
                 font-family: "Calibri-Regular";
                 @include breakpoint($xs) {
-                    width: 260px;
+                    width: 280px;
                 }
             }
             .import-private-key-field {
@@ -1593,60 +1664,137 @@ input[type=file].hide-input {
                     font-size: 22px;
                 }
             }
-            .left-right-side-holder {
-                position: relative;
-                .auth-popup-faq-link {
-                    bottom: -30px;
-                    @include horizontal-align(absolute);
-                    a {
-                        width: 45px;
-                        height: 45px;
-                        line-height: 45px;
-                        font-size: 36px;
-                        font-family: "Calibri-Bold";
-                        text-align: center;
-                        display: inline-block;
-                        background-color: $light_blue;
-                        color: white;
-                        @include rounded(50%);
+            .st0-import {
+                fill: url(#SVGID_1_import);
+            }
+
+            .st1-import {
+                fill: url(#SVGID_2_import);
+            }
+
+            .st2-import {
+                fill: #FFFFFF;
+            }
+
+            .st3-import {
+                fill: url(#SVGID_3_import);
+                stroke: #FFFFFF;
+                stroke-width: 0.75;
+                stroke-miterlimit: 10;
+            }
+
+            .st4-import {
+                fill: #FFFFFF;
+                stroke: #FFFFFF;
+                stroke-miterlimit: 10;
+            }
+            .custom-hide {
+                visibility: hidden;
+            }
+            .above-header {
+                .on-option-selected {
+                    width: 100px;
+                }
+                .nav-steps {
+                    width: calc(100% - 200px);
+                    div {
+                        width: 40px;
+                        margin: 0 5px;
+                        height: 5px;
+                        background-color: #e8e8e8;
+                        @include rounded(6px);
                     }
-                    @include breakpoint($xs) {
-                        bottom: auto;
-                        position: static;
-                        @include clear_transform();
+                    &.first-step {
+                        .first {
+                            background-color: $light_blue;
+                        }
+                    }
+                    &.second-step {
+                        .first, .second {
+                            background-color: $light_blue;
+                        }
+                    }
+                    &.third-step {
+                        .first, .second, .third {
+                            background-color: $light_blue;
+                        }
                     }
                 }
-                .popup-left, .popup-right {
-                    width: 50%;
-                    font-size: 16px;
-                    .navigation-link {
-                        a {
-                            display: block;
-                            padding-top: 5px;
-                            padding-bottom: 5px;
-                            text-align: center;
-                            border-left: 1px solid $light_gray;
-                            border-top: 1px solid $light_gray;
-                            border-bottom: 1px solid $light_gray;
-                            font-size: 30px;
-                            font-family: "Calibri-Bold";
-                            &.active {
-                                background-color: $light_blue;
-                                color: white;
-                            }
-                        }
+                .lang-container {
+                    width: 100px;
+                    select {
+                        border: 0;
+                        font-size: 20px;
+                        color: $light_blue;
+                        background-color: transparent;
                     }
+                }
+                @include breakpoint($xs) {
+                    .on-option-selected {
+                        width: 85px;
+                    }
+                    .nav-steps {
+                        width: calc(100% - 170px);
+                    }
+                    .lang-container {
+                        width: 85px;
+                    }
+                }
+            }
+            .navigation-link {
+                .nav-btn-container {
+                    width: 50%;
+                    a[data-slug="first"] {
+                        color: white;
+                        min-width: 280px;
+                        background-color: $light_blue;
+                        padding: 8px 25px;
+                        border: 1.5px solid transparent;
+                        @include rounded(6px);
+                    }
+                    a[data-slug="second"] {
+                        color: $light_blue;
+                        min-width: 280px;
+                        background-color: white;
+                        padding: 8px 25px;
+                        border: 1.5px solid $light_blue;
+                        @include rounded(6px);
+                    }
+                    @include breakpoint($xs) {
+                        width: 100%;
+                    }
+                }
+            }
+            .auth-popup-faq-link {
+                bottom: -22.5px;
+                @include horizontal-align(absolute);
+                a {
+                    width: 45px;
+                    height: 45px;
+                    line-height: 45px;
+                    font-size: 36px;
+                    font-family: "Calibri-Bold";
+                    text-align: center;
+                    display: inline-block;
+                    background-color: $light_blue;
+                    color: white;
+                    @include rounded(50%);
+                }
+                @include breakpoint($xs) {
+                    bottom: auto;
+                    position: static;
+                    @include clear_transform();
+                }
+            }
+            .left-right-side-holder {
+                position: relative;
+                .popup-left, .popup-right {
+                    width: 100%;
+                    font-size: 16px;
                     .popup-body {
                         font-size: 16px;
-                        min-height: 350px;
                         padding-left: 30px;
                         padding-right: 30px;
-                        &.custom-hide {
-                            visibility: hidden;
-                            @include breakpoint($xs)    {
-                                display: none;
-                            }
-                        }
                         .row-with-image-and-text {
                             margin: 0 auto;
                             .text {
@@ -1665,11 +1813,6 @@ input[type=file].hide-input {
                     }
                 }
                 .popup-left {
-                    .navigation-link {
-                        &.mobile {
-                            display: none;
-                        }
-                    }
                     border-right: 1px solid $light_gray;
                     label.custom-label {
                         padding: 30px 10px 20px;
@@ -1708,16 +1851,6 @@ input[type=file].hide-input {
                         }
                         .scroll-content {
                             width: 460px;
-                        }
-                    }
-                    .creation-text {
-                        font-size: 0;
-                        margin: 0 auto;
-                        svg {
-                            width: 100px;
-                        }
-                        .text {
-                            width: calc(100% - 100px);
                         }
                     }
                     @include breakpoint($xs)    {
@@ -1762,6 +1895,19 @@ input[type=file].hide-input {
                         .navigation-link {
                             display: none;
                         }
+                        .custom-upload-button {
+                            height: auto;
+                            line-height: normal;
+                            a {
+                                height: auto;
+                                line-height: normal;
+                                padding: 10px;
+                                span {
+                                    height: auto;
+                                    line-height: normal;
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -1780,7 +1926,7 @@ input[type=file].hide-input {
             .custom-auth-popup {
                 width: 100%;
                 margin: 0;
-                padding-top: 50px;
+                padding-top: 25px;
                 @include rounded(0);
                 @include box-shadow(none);
             }
@@ -1832,5 +1978,20 @@ input[type=file].hide-input {
         border-radius: 6px;
         color: #333;
         @include box-shadow(0 5px 10px rgba(0,0,0,.2));
+    }
+}
+
+select {
+    -webkit-appearance: none;
+    padding-right: 15px;
+    background-image: url(../images/black-caret.svg);
+    background-repeat: no-repeat;
+    background-size: 10px;
+    background-position: center right 5px;
+    &.blue-color {
+        background-image: url(../images/blue-caret.svg);
+    }
+    &.white-color {
+        background-image: url(../images/white-caret.svg);
     }
 }
