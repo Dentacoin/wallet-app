@@ -95858,6 +95858,9 @@ function showMobileAppBannerForDesktopBrowsers() {
     if (!is_hybrid && !basic.isMobile()) {
         hideMobileAppBannerForDesktopBrowsers();
         setTimeout(function() {
+            if ($('.mobile-app-banner').length) {
+                $('.mobile-app-banner').remove();
+            }
             $('footer').prepend('<div class="mobile-app-banner margin-bottom-25">' + mobileAppBannerForDesktopBrowsersHtml + '</div>');
             $('.mobile-app-banner-title').html($('.translates-holder').attr('also-available'));
         }, 1000);
