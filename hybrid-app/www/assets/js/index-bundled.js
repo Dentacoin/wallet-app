@@ -94143,10 +94143,7 @@ function initAccountChecker() {
                                             fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
                                             basic.closeDialog();
                                             hideLoader();
-
-                                            $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
-                                            $('.custom-auth-popup .popup-left .popup-element.second').removeClass('hide');
-                                            $('.custom-auth-popup .popup-header .nav-steps').removeClass('first-step').addClass('second-step');
+                                            clearCreation();
                                         }, 6000);
 
                                     }, cordova.file.externalDataDirectory, false);
@@ -94156,10 +94153,6 @@ function initAccountChecker() {
                                 /*hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
                                     loginIntoWallet();
                                     hideLoader();
-
-                                    $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
-                                    $('.custom-auth-popup .popup-left .popup-element.second').removeClass('hide');
-                                    $('.custom-auth-popup .popup-header .nav-steps').removeClass('first-step').addClass('second-step');
                                 }, cordova.file.dataDirectory, false);*/
 
                                 //
@@ -94167,15 +94160,14 @@ function initAccountChecker() {
 
                                 window.plugins.socialsharing.share(JSON.stringify(keystore));
 
+                                $('.custom-auth-popup .popup-element.first .btn-container .download-login-file').addClass('hide');
+                                $('.custom-auth-popup .popup-element.first .btn-container .hidden-checkbox').removeClass('hide');
                                 $('.custom-auth-popup .popup-element.first .btn-container').html('<div class="text-center fs-18 hidden-checkbox"><input type="checkbox" id="keystore-downloaded-verifier"> <label for="keystore-downloaded-verifier" class="lato-bold blinking-animation renew-on-lang-switch" data-slug="i-verify">'+$('.translates-holder').attr('i-verify')+'</label></div>');
 
                                 $('.custom-auth-popup #keystore-downloaded-verifier').change(function() {
                                     if($(this).is(':checked')) {
                                         loginIntoWallet();
-
-                                        $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
-                                        $('.custom-auth-popup .popup-left .popup-element.second').removeClass('hide');
-                                        $('.custom-auth-popup .popup-header .nav-steps').removeClass('first-step').addClass('second-step');
+                                        clearCreation();
                                     }
                                 });
                             }
@@ -94192,10 +94184,7 @@ function initAccountChecker() {
                                     basic.closeDialog();
                                     loginIntoWallet();
                                     hideLoader();
-
-                                    $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
-                                    $('.custom-auth-popup .popup-left .popup-element.second').removeClass('hide');
-                                    $('.custom-auth-popup .popup-header .nav-steps').removeClass('first-step').addClass('second-step');
+                                    clearCreation();
                                 });
                             } else {
                                 //BROWSER
@@ -94208,12 +94197,20 @@ function initAccountChecker() {
                                     fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
                                     basic.closeDialog();
                                     hideLoader();
-
-                                    $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
-                                    $('.custom-auth-popup .popup-left .popup-element.second').removeClass('hide');
-                                    $('.custom-auth-popup .popup-header .nav-steps').removeClass('first-step').addClass('second-step');
+                                    clearCreation();
                                 }, 6000);
                             }
+                        }
+
+                        function clearCreation() {
+                            $('.custom-auth-popup .popup-element.first .btn-container .download-login-file').removeClass('hide');
+                            $('.custom-auth-popup .popup-element.first .btn-container .hidden-checkbox').addClass('hide');
+                            $('.custom-auth-popup #keystore-file-pass').val();
+                            $('.custom-auth-popup #second-pass').val();
+
+                            $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
+                            $('.custom-auth-popup .popup-left .popup-element.second').removeClass('hide');
+                            $('.custom-auth-popup .popup-header .nav-steps').removeClass('first-step').addClass('second-step');
                         }
 
                         function loginIntoWallet() {
