@@ -2931,9 +2931,9 @@ function initAccountChecker() {
                                 //
                                 //hideLoader();
 
-                                window.plugins.socialsharing.share(keystore);
+                                window.plugins.socialsharing.share(JSON.stringify(keystore));
 
-                                $('.custom-auth-popup .popup-element.first .btn-container').html('<div style="display: none" class="text-center fs-18 hidden-checkbox"><input type="checkbox" id="keystore-downloaded-verifier"> <label for="keystore-downloaded-verifier" class="lato-bold blinking-animation renew-on-lang-switch" data-slug="i-verify">'+$('.translates-holder').attr('i-verify')+'</label></div>');
+                                $('.custom-auth-popup .popup-element.first .btn-container').html('<div class="text-center fs-18 hidden-checkbox"><input type="checkbox" id="keystore-downloaded-verifier"> <label for="keystore-downloaded-verifier" class="lato-bold blinking-animation renew-on-lang-switch" data-slug="i-verify">'+$('.translates-holder').attr('i-verify')+'</label></div>');
 
                                 $('.custom-auth-popup #keystore-downloaded-verifier').change(function() {
                                     if($(this).is(':checked')) {
@@ -3366,13 +3366,13 @@ $(document).on('click', '.open-settings', function () {
         var download_btn_label = $('.translates-holder').attr('download');
         var slug_attr = 'download';
         var warning_html = '';
-        if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
+        /*if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
             download_btn_label = $('.translates-holder').attr('export-btn');
-            slug_attr = 'export-btn';
+            slug_attr = 'export-btn';*/
             /*if (window.localStorage.getItem('keystore_file_ios_saved') == null) {
                 warning_html = '<div class="error-handle keystore-file-ios-saved">You have not saved your Backup file yet.</div>';
             }*/
-        }
+        /*}*/
 
         //if cached keystore file show the option for downloading it
         settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important download-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M14.4,10.4v3.2c0,0.1,0,0.2-0.1,0.3c0,0.1-0.1,0.2-0.2,0.3c-0.1,0.1-0.2,0.1-0.3,0.2c-0.1,0-0.2,0.1-0.3,0.1 H2.4c-0.1,0-0.2,0-0.3-0.1c-0.1,0-0.2-0.1-0.3-0.2S1.7,14,1.7,13.9c0-0.1-0.1-0.2-0.1-0.3v-3.2c0-0.4-0.4-0.8-0.8-0.8S0,10,0,10.4 v3.2c0,0.3,0.1,0.6,0.2,0.9c0.1,0.3,0.3,0.6,0.5,0.8c0.2,0.2,0.5,0.4,0.8,0.5C1.8,15.9,2.1,16,2.4,16h11.2c0.3,0,0.6-0.1,0.9-0.2 c0.3-0.1,0.6-0.3,0.8-0.5c0.2-0.2,0.4-0.5,0.5-0.8c0.1-0.3,0.2-0.6,0.2-0.9v-3.2c0-0.4-0.4-0.8-0.8-0.8S14.4,10,14.4,10.4z M8.8,8.5 V0.8C8.8,0.4,8.4,0,8,0C7.6,0,7.2,0.4,7.2,0.8v7.7L4.6,5.8c-0.3-0.3-0.8-0.3-1.1,0C3.1,6.1,3.1,6.7,3.4,7l4,4c0,0,0,0,0,0 c0.1,0.1,0.2,0.1,0.3,0.2c0.1,0,0.2,0.1,0.3,0.1c0,0,0,0,0,0c0.1,0,0.2,0,0.3-0.1c0.1,0,0.2-0.1,0.3-0.2l4-4c0.3-0.3,0.3-0.8,0-1.1 s-0.8-0.3-1.1,0L8.8,8.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="'+slug_attr+'">' + download_btn_label + ' <span class="renew-on-lang-switch" data-slug="backupfile">'+$('.translates-holder').attr('backupfile')+'</span></span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="very-important">'+$('.translates-holder').attr('very-important')+'</div><div class="camping-for-action"></div>' + warning_html + '</div>';
@@ -3489,6 +3489,9 @@ $(document).on('click', '.open-settings', function () {
 
                                 basic.closeDialog();
                                 basic.showAlert($('.translates-holder').attr('your-backup'), '', true);
+
+                                $('body').removeClass('overflow-hidden');
+                                $('.settings-popup').addClass('hide');
                             } else if (error) {
                                 $('<div class="error-handle">' + error_message + '</div>').insertAfter(this_camping_row);
                             }
@@ -3523,6 +3526,9 @@ $(document).on('click', '.open-settings', function () {
 
                             basic.closeDialog();
                             basic.showAlert($('.translates-holder').attr('forget-file-succ'), '', true);
+
+                            $('body').removeClass('overflow-hidden');
+                            $('.settings-popup').addClass('hide');
                         }
                     }
                 };
@@ -3592,6 +3598,9 @@ $(document).on('click', '.open-settings', function () {
                                             basic.closeDialog();
                                             basic.showAlert($('.translates-holder').attr('file') +keystore_file_name + $('.translates-holder').attr('has-been-downloaded'), '', true);
 
+                                            $('body').removeClass('overflow-hidden');
+                                            $('.settings-popup').addClass('hide');
+
                                             $('#download-keystore-password').val('');
                                             hideLoader();
                                         }, cordova.file.externalRootDirectory, true);
@@ -3604,6 +3613,9 @@ $(document).on('click', '.open-settings', function () {
                             } else {
                                 hideLoader();
                                 basic.closeDialog();
+
+                                $('body').removeClass('overflow-hidden');
+                                $('.settings-popup').addClass('hide');
 
                                 if (basic.getMobileOperatingSystem() == 'iOS' && basic.isMobile()) {
                                     // mobile ios device
@@ -3874,6 +3886,9 @@ $(document).on('click', '.open-settings', function () {
                                     //downloading the file in mobile device file system
                                     hybridAppFileDownload(keystore_file_name, keystore_file, function () {
                                         basic.closeDialog();
+
+                                        $('body').removeClass('overflow-hidden');
+                                        $('.settings-popup').addClass('hide');
                                         basic.showAlert($('.translates-holder').attr('file') +keystore_file_name + $('.translates-holder').attr('has-been-downloaded'), '', true);
                                         hideLoader();
                                     }, cordova.file.externalRootDirectory, true);
@@ -3888,6 +3903,9 @@ $(document).on('click', '.open-settings', function () {
 
                                 downloadFile(buildKeystoreFileName(address), keystore_file);
                                 basic.closeDialog();
+
+                                $('body').removeClass('overflow-hidden');
+                                $('.settings-popup').addClass('hide');
                                 basic.showAlert($('.translates-holder').attr('file') +buildKeystoreFileName(address) + $('.translates-holder').attr('has-been-downloaded'), '', true);
                             }
                         } else if (!generating_response) {
