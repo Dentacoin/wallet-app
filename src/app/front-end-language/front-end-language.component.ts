@@ -15,13 +15,11 @@ export class FrontEndLanguageComponent {
     constructor(public activatedRoute: ActivatedRoute, public translate: TranslateService, public router: Router, public redirectsService: RedirectsService, private ngZone: NgZone) {
         this.activatedRoute.params.subscribe( (params : Params) => {
             if (this.channelArray.indexOf(params['lang']) > -1) {
-                console.log(1);
                 if (window.localStorage.getItem('currentLanguage') != null && params['lang'] != window.localStorage.getItem('currentLanguage')) {
                     window.localStorage.setItem('currentLanguage', params['lang']);
                 }
                 this.translate.use(params['lang']);
             } else {
-                console.log(2);
                 this.translate.use(environment.default_language);
                 if (params.hasOwnProperty('lang')) {
                     this.ngZone.run(() => this.router.navigateByUrl(this.translate.currentLang + '/' + params['lang'])).then();

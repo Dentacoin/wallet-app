@@ -2412,6 +2412,7 @@ function displayMessageOnTransactionSend(token_label, tx_hash) {
 
 //method for 'refreshing' the mobile app
 window.refreshApp = function () {
+    console.log(22);
     $('.account-checker-container').addClass('hide').removeClass('visible');
     basic.closeDialog();
     hideLoader();
@@ -2698,6 +2699,7 @@ function executeGlobalLogic() {
 
 //checking if metamask or if saved current_account in the local storage. If both are false then show custom login popup with CREATE / IMPORT logic
 function initAccountChecker() {
+    console.log(33);
     if ($('.account-checker-container').hasClass('visible')) {
         return;
     }
@@ -2713,6 +2715,7 @@ function initAccountChecker() {
     }
 
     if ((window.localStorage.getItem('current_account') == null && typeof(web3) === 'undefined') || (window.localStorage.getItem('current_account') == null && window.localStorage.getItem('custom_wallet_over_external_web3_provider') == 'true')) {
+        console.log(11);
         $('.account-checker-container').addClass('visible').removeClass('hide');
 
         if (!is_hybrid) {
