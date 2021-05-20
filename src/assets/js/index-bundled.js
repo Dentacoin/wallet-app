@@ -97997,6 +97997,14 @@ $(document).on('click', '.open-settings', function () {
     basic.closeDialog();
     var settings_html = '';
 
+    if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
+        var cachedPrintingImage = new Image();
+        cachedPrintingImage.addEventListener('load', function () {
+            console.log('Cached image loaded');
+        });
+        cachedPrintingImage.src = 'https://dentacoin.com/assets/uploads/private-key-background.png';
+    }
+
     if (window.localStorage.getItem('keystore_file') != null/* || (is_hybrid && basic.getMobileOperatingSystem() == 'iOS' && window.localStorage.getItem('keystore_file_ios_saved') == null)*/) {
         var download_btn_label = $('.translates-holder').attr('download');
         var slug_attr = 'download';
