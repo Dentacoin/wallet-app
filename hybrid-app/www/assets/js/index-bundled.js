@@ -91236,6 +91236,7 @@ module.exports = {getWeb3, getContractInstance, generateKeystoreFile, importKeys
 
 },{"../../../node_modules/eth-crypto":397,"../../../node_modules/keythereum":467,"../../../node_modules/web3":606}],628:[function(require,module,exports){
 (function (Buffer){(function (){
+var closeOnLoadLoader = true;
 //importing methods for keystore import, export, decrypt
 var {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey} = require('./helper');
 
@@ -91244,12 +91245,6 @@ var assurance_config;
 var iframeHeightListenerInit = true;
 var isDeviceReady = false;
 var lastHybridScreen;
-var translates = {
-    defaultErrorMessage : $('.translates-holder').attr('smth-went-wrong'),
-    txOnHold : $('.translates-holder').attr('hold-on'),
-    successfullySigned : $('.translates-holder').attr('data-assurance-success'),
-    pleaseUpload : $('.translates-holder').attr('data-valid-keytore')
-};
 var inAppBrowserSettings = 'location=yes,zoom=no,toolbarposition=top,closebuttoncaption=Back,presentationstyle=fullscreen,fullscreen=yes';
 if (basic.getMobileOperatingSystem() == 'iOS') {
     inAppBrowserSettings = 'location=no,hardwareback=no,zoom=no,toolbarposition=top,closebuttoncaption=Back,presentationstyle=fullscreen,fullscreen=yes';
@@ -91739,7 +91734,7 @@ var dApp = {
             }).on('transactionHash', function (hash) {
                 displayMessageOnTransactionSend('Dentacoin tokens', hash);
             }).catch(function (err) {
-                basic.showAlert(translates.defaultErrorMessage, '', true);
+                basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
             });
         }
     },
@@ -91994,7 +91989,7 @@ var projectData = {
                         hideLoader();
 
                         // on currency switch from the dropdown
-                        $('section.ready-to-purchase-with-external-api #active-crypto').on('change', function () {
+                        $('section.ready-to-purchase-with-external-api #active-crypto').unbind().on('change', function () {
                             var thisValue = $(this);
 
                             showLoader();
@@ -92024,7 +92019,7 @@ var projectData = {
                         });
 
                         // on changing the usd value
-                        $('section.ready-to-purchase-with-external-api #usd-value').on('input', function () {
+                        $('section.ready-to-purchase-with-external-api #usd-value').unbind().on('input', function () {
                             if ($(this).val().trim() < minimumIndacoinUsdForTransaction) {
                                 $(this).parent().addClass('error-field');
                             } else {
@@ -92049,7 +92044,7 @@ var projectData = {
                         });
 
                         //on BUY action button make few inputs validations and redirect to indacoin external link
-                        $('.buy-crypto-btn').click(function () {
+                        $('.buy-crypto-btn').unbind().click(function () {
                             var currency = $('section.ready-to-purchase-with-external-api #active-crypto').val();
 
                             if (parseFloat($('section.ready-to-purchase-with-external-api #usd-value').val().trim()) < minimumIndacoinUsdForTransaction) {
@@ -92533,7 +92528,7 @@ var projectData = {
                                                                 }).on('transactionHash', function (hash) {
                                                                     displayMessageOnTransactionSend('Ethers', hash);
                                                                 }).catch(function (err) {
-                                                                    basic.showAlert(translates.defaultErrorMessage, '', true);
+                                                                    basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
                                                                 });
                                                             }
                                                         } else {
@@ -92610,7 +92605,7 @@ var projectData = {
                                                                                 if ($('.cached-keystore-file #your-secret-key-password').val().trim() == '') {
                                                                                     basic.showAlert($('.translates-holder').attr('valid-password'), '', true);
                                                                                 } else {
-                                                                                    showLoader(translates.txOnHold);
+                                                                                    showLoader($('.translates-holder').attr('hold-on'));
 
                                                                                     setTimeout(function () {
                                                                                         decryptKeystore(window.localStorage.getItem('keystore_file'), $('.cached-keystore-file #your-secret-key-password').val().trim(), function (success, to_string, error, error_message) {
@@ -92655,7 +92650,7 @@ var projectData = {
                                                                                     if ($('.proof-of-address #your-private-key').val().trim() == '') {
                                                                                         basic.showAlert($('.translates-holder').attr('enter-priv-key-error'), '', true);
                                                                                     } else {
-                                                                                        showLoader(translates.txOnHold);
+                                                                                        showLoader($('.translates-holder').attr('hold-on'));
 
                                                                                         setTimeout(function () {
                                                                                             var validating_private_key = validatePrivateKey($('.proof-of-address #your-private-key').val().trim());
@@ -92860,10 +92855,10 @@ var projectData = {
                                                                 hideLoader();
                                                                 basic.closeDialog();
                                                                 if (response.success) {
-                                                                    basic.showAlert(translates.successfullySigned, '', true);
+                                                                    basic.showAlert($('.translates-holder').attr('data-assurance-success'), '', true);
                                                                     firePushNotification('Assurance transaction', 'Contract created successfully.');
                                                                 } else {
-                                                                    basic.showAlert(translates.defaultErrorMessage, '', true);
+                                                                    basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
                                                                 }
                                                             }
                                                         });
@@ -92888,10 +92883,10 @@ var projectData = {
                                                             hideLoader();
                                                             basic.closeDialog();
                                                             if (response.success) {
-                                                                basic.showAlert(translates.successfullySigned, '', true);
+                                                                basic.showAlert($('.translates-holder').attr('data-assurance-success'), '', true);
                                                                 firePushNotification('Assurance transaction', 'Contract created successfully.');
                                                             } else {
-                                                                basic.showAlert(translates.defaultErrorMessage, '', true);
+                                                                basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
                                                             }
                                                         }
                                                     });
@@ -92915,10 +92910,10 @@ var projectData = {
                                                             hideLoader();
                                                             basic.closeDialog();
                                                             if (response.success) {
-                                                                basic.showAlert(translates.successfullySigned, '', true);
+                                                                basic.showAlert($('.translates-holder').attr('data-assurance-success'), '', true);
                                                                 firePushNotification('Assurance transaction', 'Contract approved successfully.');
                                                             } else {
-                                                                basic.showAlert(translates.defaultErrorMessage, '', true);
+                                                                basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
                                                             }
                                                         }
                                                     });
@@ -92942,10 +92937,10 @@ var projectData = {
                                                             hideLoader();
                                                             basic.closeDialog();
                                                             if (response.success) {
-                                                                basic.showAlert(translates.successfullySigned, '', true);
+                                                                basic.showAlert($('.translates-holder').attr('data-assurance-success'), '', true);
                                                                 firePushNotification('Assurance transaction', 'Successful withdraw.');
                                                             } else {
-                                                                basic.showAlert(translates.defaultErrorMessage, '', true);
+                                                                basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
                                                             }
                                                         }
                                                     });
@@ -92971,10 +92966,10 @@ var projectData = {
                                                             hideLoader();
                                                             basic.closeDialog();
                                                             if (response.success) {
-                                                                basic.showAlert(translates.successfullySigned, '', true);
+                                                                basic.showAlert($('.translates-holder').attr('data-assurance-success'), '', true);
                                                                 firePushNotification('Assurance transaction', 'Contract cancelled successfully.');
                                                             } else {
-                                                                basic.showAlert(translates.defaultErrorMessage, '', true);
+                                                                basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
                                                             }
                                                         }
                                                     });
@@ -93006,7 +93001,7 @@ var projectData = {
                                                 if ($('.cached-keystore-file #your-secret-key-password').val().trim() == '') {
                                                     basic.showAlert($('.translates-holder').attr('valid-password'), '', true);
                                                 } else {
-                                                    showLoader(translates.txOnHold);
+                                                    showLoader($('.translates-holder').attr('hold-on'));
 
                                                     setTimeout(function () {
                                                         decryptKeystore(window.localStorage.getItem('keystore_file'), $('.cached-keystore-file #your-secret-key-password').val().trim(), function (success, to_string, error, error_message) {
@@ -93037,7 +93032,7 @@ var projectData = {
                                                     if ($('.proof-of-address #your-private-key').val().trim() == '') {
                                                         basic.showAlert($('.translates-holder').attr('enter-priv-key-error'), '', true);
                                                     } else {
-                                                        showLoader(translates.txOnHold);
+                                                        showLoader($('.translates-holder').attr('hold-on'));
 
                                                         setTimeout(function () {
                                                             var validating_private_key = validatePrivateKey($('.proof-of-address #your-private-key').val().trim());
@@ -93063,12 +93058,12 @@ var projectData = {
                                             });
                                         }
                                     } else {
-                                        basic.showAlert(translates.defaultErrorMessage, '', true);
+                                        basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
                                     }
                                 }
                             });
                         } else {
-                            basic.showAlert(translates.defaultErrorMessage, '', true);
+                            basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
                         }
                     });
                 }
@@ -93185,17 +93180,17 @@ var projectData = {
 
                     $('#dummy-qr-code-image').remove();
 
-                    var borderImage = '/assets/images/private-key-background.png';
+                    var borderImage = '';
                     var borderStyle = 'height: 95vh';
                     if (is_hybrid) {
                         if (basic.getMobileOperatingSystem() == 'Android') {
-                            borderImage = 'assets/images/private-key-background.png';
+                            borderImage = 'src="assets/images/private-key-background.png"';
                         } else if (basic.getMobileOperatingSystem() == 'iOS') {
-                            borderImage = 'https://dentacoin.com/assets/uploads/private-key-background.png';
+                            borderImage = 'src="https://dentacoin.com/assets/uploads/private-key-background.png"';
                             borderStyle = 'width: 100%';
                         }
                     }
-                    var printingHtml = '<html><head><style>body, html {margin: 0; padding: 0;text-align: center;color: black;font-family: “Helvetica Neue”,Helvetica,Arial,sans-serif;} .border-parent{text-align: left;position:relative; display: inline-block;} img {'+borderStyle+'} .absolute-content{position: absolute;z-index: 100;width: 80%;height: 80%;top: 0;left: 0;padding: 10%;}</style></head><body><div class="border-parent"><img src="'+borderImage+'"/><div class="absolute-content"><div style="text-align:center;"><i>'+$('.translates-holder').attr('confidential')+'</i><h1 style="margin-top: 25px;font-weight:bold;color: black; margin-bottom: 10px;">DENTACOIN</h1><div style="font-size: 18px;color: #2a3575;padding-bottom: 20px;"><b>'+$('.translates-holder').attr('unlock-funds')+'</b></div><div style="background-color: white;padding: 25px 10px;text-align: left;"><div style="color: #888888;padding-bottom: 5px;font-weight: bold;">'+$('.translates-holder').attr('pk-label')+':</div><div style="font-size: 15px;">'+privateKey+'</div></div><div style="font-size: 24px;padding: 30px 0 10px;"><b>'+$('.translates-holder').attr('pk-as-qr')+'</b></div><div><img src="'+qrCodeBase64Data+'" style=" height: auto; width: 180px;"></div><div style=" text-align: left; "><div style="font-size: 22px;color: #2a3575;padding-bottom: 15px;padding-top: 20px;font-weight: bold;">'+$('.translates-holder').attr('important')+'</div><div style=" padding-bottom: 15px;"><b>1.</b> '+$('.translates-holder').attr('provides')+'<div></div>'+projectData.utils.checksumAddress(window.localStorage.getItem('current_account'))+'</div><div style=" padding-bottom: 15px;"><b>2.</b> '+$('.translates-holder').attr('secure-place')+'</div><div style=" padding-bottom: 15px;"><b>3. '+$('.translates-holder').attr('never-share')+'</div><div><b>4.</b> '+$('.translates-holder').attr('to-unlock')+'</div></div></div></div></div></body></html>';
+                    var printingHtml = '<html><head><style>body, html {margin: 0; padding: 0;text-align: center;color: black;font-family: “Helvetica Neue”,Helvetica,Arial,sans-serif;} .border-parent{text-align: left;position:relative; display: inline-block;} img {'+borderStyle+'} .absolute-content{position: absolute;z-index: 100;width: 80%;height: 80%;top: 0;left: 0;padding: 10%;}</style></head><body><div class="border-parent"><img '+borderImage+' id="border-image"/><div class="absolute-content"><div style="text-align:center;"><i>'+$('.translates-holder').attr('confidential')+'</i><h1 style="margin-top: 20px;font-weight:bold;color: black; margin-bottom: 10px;">DENTACOIN</h1><div style="font-size: 18px;color: #2a3575;padding-bottom: 20px;"><b>'+$('.translates-holder').attr('unlock-funds')+'</b></div><div style="background-color: white;padding: 25px 10px;text-align: left;"><div style="color: #888888;padding-bottom: 5px;font-weight: bold;">'+$('.translates-holder').attr('pk-label')+':</div><div style="font-size: 14px;">'+privateKey+'</div></div><div style="font-size: 22px;padding: 30px 0 10px;"><b>'+$('.translates-holder').attr('pk-as-qr')+'</b></div><div><img src="'+qrCodeBase64Data+'" style=" height: auto; width: 160px;"></div><div style=" text-align: left; "><div style="font-size: 20px;color: #2a3575;padding-bottom: 15px;padding-top: 20px;font-weight: bold;">'+$('.translates-holder').attr('important')+'</div><div style=" padding-bottom: 15px;"><b>1.</b> '+$('.translates-holder').attr('provides')+'<div></div>'+projectData.utils.checksumAddress(window.localStorage.getItem('current_account'))+'</div><div style=" padding-bottom: 15px;"><b>2.</b> '+$('.translates-holder').attr('secure-place')+'</div><div style=" padding-bottom: 15px;"><b>3. '+$('.translates-holder').attr('never-share')+'</div><div><b>4.</b> '+$('.translates-holder').attr('to-unlock')+'</div></div></div></div></div></body></html>';
 
                     if (is_hybrid) {
                         cordova.plugins.printer.print(printingHtml, {
@@ -93207,14 +93202,21 @@ var projectData = {
                         var mywindow = window.open('', 'PRINT');
                         mywindow.document.write(printingHtml);
 
-                        mywindow.document.close(); // necessary for IE >= 10
-                        mywindow.focus(); // necessary for IE >= 10*/
+                        var imgTag = mywindow.document.getElementById('border-image');
+                        var newImg = new Image;
+                        newImg.onload = function() {
+                            imgTag.src = this.src;
 
-                        setTimeout(function() {
-                            mywindow.print();
-                            mywindow.close();
-                            return true;
-                        }, 1000);
+                            setTimeout(function() {
+                                mywindow.document.close(); // necessary for IE >= 10
+                                mywindow.focus(); // necessary for IE >= 10*/
+
+                                mywindow.print();
+                                mywindow.close();
+                                return true;
+                            }, 1000);
+                        };
+                        newImg.src = '/assets/images/private-key-background.png';
                     }
                 }
             }, 300);
@@ -93486,7 +93488,7 @@ function styleKeystoreUploadBtnForTx(callback) {
                         if ($('.proof-of-address #your-secret-key-password').val().trim() == '') {
                             basic.showAlert($('.translates-holder').attr('valid-password'), '', true);
                         } else {
-                            showLoader(translates.txOnHold);
+                            showLoader($('.translates-holder').attr('hold-on'));
 
                             setTimeout(function () {
                                 decryptKeystore(keystore_string, $('.proof-of-address #your-secret-key-password').val().trim(), function (success, to_string, error, error_message) {
@@ -93537,7 +93539,7 @@ function styleKeystoreUploadBtnForTx(callback) {
                                 if ($('.proof-of-address #your-secret-key-password').val().trim() == '') {
                                     basic.showAlert($('.translates-holder').attr('valid-password'), '', true);
                                 } else {
-                                    showLoader(translates.txOnHold);
+                                    showLoader($('.translates-holder').attr('hold-on'));
 
                                     setTimeout(function () {
                                         decryptKeystore(keystore_string, $('.proof-of-address #your-secret-key-password').val().trim(), function (success, to_string, error, error_message) {
@@ -93656,6 +93658,7 @@ function displayMessageOnTransactionSend(token_label, tx_hash) {
 
 //method for 'refreshing' the mobile app
 window.refreshApp = function () {
+    console.log(22);
     $('.account-checker-container').addClass('hide').removeClass('visible');
     basic.closeDialog();
     hideLoader();
@@ -93942,315 +93945,317 @@ function executeGlobalLogic() {
 
 //checking if metamask or if saved current_account in the local storage. If both are false then show custom login popup with CREATE / IMPORT logic
 function initAccountChecker() {
-    if ($('.account-checker-container').hasClass('visible')) {
-        return;
-    }
-
-    hideMobileAppBannerForDesktopBrowsers();
-
-    if (is_hybrid) {
-        // opening the external links in app browser
-        $(document).on('click', '.data-external-link', function () {
-            event.preventDefault();
-            cordova.InAppBrowser.open($(this).attr('href'), '_blank', inAppBrowserSettings);
-        });
-    }
-
-    if ((window.localStorage.getItem('current_account') == null && typeof(web3) === 'undefined') || (window.localStorage.getItem('current_account') == null && window.localStorage.getItem('custom_wallet_over_external_web3_provider') == 'true')) {
-        $('.account-checker-container').addClass('visible').removeClass('hide');
-
-        if (!is_hybrid) {
-            if (!basic.isMobile()) {
-                $('.account-checker-wrapper').append('<div class="mobile-app-banner padding-top-50">' + mobileAppBannerForDesktopBrowsersHtml + '</div>');
-            }
+    setTimeout(function() {
+        if ($('.account-checker-container').hasClass('visible')) {
+            return;
         }
-        updateExternalURLsForiOSDevice();
 
-        $(window).on('load', function () {
-            if ($('.custom-auth-popup .modal-content').height() > $('.custom-auth-popup .modal-dialog').height()) {
-                $('.custom-auth-popup .modal-content').addClass('clear-center-position');
+        hideMobileAppBannerForDesktopBrowsers();
+
+        if (is_hybrid) {
+            // opening the external links in app browser
+            $(document).on('click', '.data-external-link', function () {
+                event.preventDefault();
+                cordova.InAppBrowser.open($(this).attr('href'), '_blank', inAppBrowserSettings);
+            });
+        }
+
+        if ((window.localStorage.getItem('current_account') == null && typeof(web3) === 'undefined') || (window.localStorage.getItem('current_account') == null && window.localStorage.getItem('custom_wallet_over_external_web3_provider') == 'true')) {
+            $('.account-checker-container').addClass('visible').removeClass('hide');
+
+            if (!is_hybrid) {
+                if (!basic.isMobile()) {
+                    $('.account-checker-wrapper').append('<div class="mobile-app-banner padding-top-50">' + mobileAppBannerForDesktopBrowsersHtml + '</div>');
+                }
             }
-        });
+            updateExternalURLsForiOSDevice();
 
-        $('.custom-auth-popup .navigation-link a').click(function () {
-            $('.custom-auth-popup .on-page-load').addClass('hide');
-            $('.custom-auth-popup .on-option-selected').removeClass('custom-hide');
+            $(window).on('load', function () {
+                if ($('.custom-auth-popup .modal-content').height() > $('.custom-auth-popup .modal-dialog').height()) {
+                    $('.custom-auth-popup .modal-content').addClass('clear-center-position');
+                }
+            });
 
-            if ($(this).attr('data-slug') == 'first') {
-                $('.custom-auth-popup .nav-steps').removeClass('custom-hide');
+            $('.custom-auth-popup .navigation-link a').click(function () {
+                $('.custom-auth-popup .on-page-load').addClass('hide');
+                $('.custom-auth-popup .on-option-selected').removeClass('custom-hide');
 
-                $('#keystore-file-pass').focus();
-                $('label[for="keystore-file-pass"]').addClass('active-label');
+                if ($(this).attr('data-slug') == 'first') {
+                    $('.custom-auth-popup .nav-steps').removeClass('custom-hide');
 
-                $('.download-login-file .btn-text').html($('.translates-holder').attr('download-login-file')).addClass('renew-on-lang-switch').attr('data-slug', 'download-login-file');
-            }
+                    $('#keystore-file-pass').focus();
+                    $('label[for="keystore-file-pass"]').addClass('active-label');
 
-            $('.custom-auth-popup .popup-body').addClass('hide');
-            $('.custom-auth-popup .popup-body.' + $(this).attr('data-slug')).removeClass('hide');
-        });
+                    $('.download-login-file .btn-text').html($('.translates-holder').attr('download-login-file')).addClass('renew-on-lang-switch').attr('data-slug', 'download-login-file');
+                }
 
-        $('.custom-auth-popup .go-back-to-main-menu').click(function () {
-            $('.custom-auth-popup .on-page-load').removeClass('hide');
-            $('.custom-auth-popup .on-option-selected').addClass('custom-hide');
-            $('.custom-auth-popup .nav-steps').addClass('custom-hide');
+                $('.custom-auth-popup .popup-body').addClass('hide');
+                $('.custom-auth-popup .popup-body.' + $(this).attr('data-slug')).removeClass('hide');
+            });
 
-            $('.custom-auth-popup .popup-body').addClass('hide');
-        });
+            $('.custom-auth-popup .go-back-to-main-menu').click(function () {
+                $('.custom-auth-popup .on-page-load').removeClass('hide');
+                $('.custom-auth-popup .on-option-selected').addClass('custom-hide');
+                $('.custom-auth-popup .nav-steps').addClass('custom-hide');
 
-        $('.more-info-keystore-remember').popover({
-            trigger: 'click'
-        });
+                $('.custom-auth-popup .popup-body').addClass('hide');
+            });
 
-        // ================================= IMPORTING ==========================================
-        $(document).on('click', '.refresh-import-init-page', function () {
-            $('.camping-for-action').html('').show();
-            $('.import-keystore-file-row #upload-keystore').val('');
-            $('.import-keystore-file-row').show();
-            $('.or-label').show();
-            $('.import-private-key-row').html('<a href="javascript:void(0);" class="import-private-key light-blue-white-btn fs-16 fs-xs-14 renew-on-lang-switch" data-slug="import-key">'+$('.translates-holder').attr('import-key')+'</a>').show();
-        });
+            $('.more-info-keystore-remember').popover({
+                trigger: 'click'
+            });
 
-        //importing with private key
-        $(document).on('click', '.import-private-key', function () {
-            $('.camping-for-action').hide();
-            $('.import-keystore-file-row').hide();
-            $('.or-label').hide();
-            $('.import-private-key-row').html('<div class="field-parent"><div class="custom-google-label-style module text-left max-width-400 margin-0-auto" data-input-light-blue-border="true"><label for="import-private-key" class="renew-on-lang-switch" data-slug="priv-key">'+$('.translates-holder').attr('priv-key')+'</label><textarea id="import-private-key" maxlength="64" class="full-rounded"></textarea></div></div><div class="padding-top-10"><a class="inline-block max-width-80 scan-qr-code-importing-priv-key" href="javascript:void(0)"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img alt="Scan QR code icon" class="width-100" itemprop="contentUrl" src="assets/images/scan-qr-code.svg"></figure></a></div><div class="continue-btn-priv-key padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border renew-on-lang-switch" data-slug="CONTINUE-btn">'+$('.translates-holder').attr('CONTINUE-btn')+'</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block renew-on-lang-switch" data-slug="go-back">'+$('.translates-holder').attr('go-back')+'</span></a></div>');
-            $('#import-private-key').focus();
-            $('label[for="import-private-key"]').addClass('active-label');
+            // ================================= IMPORTING ==========================================
+            $(document).on('click', '.refresh-import-init-page', function () {
+                $('.camping-for-action').html('').show();
+                $('.import-keystore-file-row #upload-keystore').val('');
+                $('.import-keystore-file-row').show();
+                $('.or-label').show();
+                $('.import-private-key-row').html('<a href="javascript:void(0);" class="import-private-key light-blue-white-btn fs-16 fs-xs-14 renew-on-lang-switch" data-slug="import-key">'+$('.translates-holder').attr('import-key')+'</a>').show();
+            });
 
-            initScan($('.scan-qr-code-importing-priv-key'), $('#import-private-key'), function () {
+            //importing with private key
+            $(document).on('click', '.import-private-key', function () {
+                $('.camping-for-action').hide();
+                $('.import-keystore-file-row').hide();
+                $('.or-label').hide();
+                $('.import-private-key-row').html('<div class="field-parent"><div class="custom-google-label-style module text-left max-width-400 margin-0-auto" data-input-light-blue-border="true"><label for="import-private-key" class="renew-on-lang-switch" data-slug="priv-key">'+$('.translates-holder').attr('priv-key')+'</label><textarea id="import-private-key" maxlength="64" class="full-rounded"></textarea></div></div><div class="padding-top-10"><a class="inline-block max-width-80 scan-qr-code-importing-priv-key" href="javascript:void(0)"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img alt="Scan QR code icon" class="width-100" itemprop="contentUrl" src="assets/images/scan-qr-code.svg"></figure></a></div><div class="continue-btn-priv-key padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border renew-on-lang-switch" data-slug="CONTINUE-btn">'+$('.translates-holder').attr('CONTINUE-btn')+'</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block renew-on-lang-switch" data-slug="go-back">'+$('.translates-holder').attr('go-back')+'</span></a></div>');
                 $('#import-private-key').focus();
                 $('label[for="import-private-key"]').addClass('active-label');
-            });
 
-            $('.continue-btn-priv-key > a').unbind().click(function () {
-                $('.import-private-key-row .error-handle').remove();
+                initScan($('.scan-qr-code-importing-priv-key'), $('#import-private-key'), function () {
+                    $('#import-private-key').focus();
+                    $('label[for="import-private-key"]').addClass('active-label');
+                });
 
-                showLoader();
-                setTimeout(function () {
-                    var validate_private_key = validatePrivateKey($('#import-private-key').val().trim());
-                    if (validate_private_key.success) {
-                        var internet = navigator.onLine;
-                        if (internet) {
-                            savePublicKeyToAssurance(validate_private_key.success.address, validate_private_key.success.public_key);
-                        }
-                        setTimeout(function () {
-                            window.localStorage.setItem('current_account', validate_private_key.success.address);
-                            fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
+                $('.continue-btn-priv-key > a').unbind().click(function () {
+                    $('.import-private-key-row .error-handle').remove();
 
-                            if (is_hybrid) {
-                                if (basic.getMobileOperatingSystem() == 'iOS') {
-                                    window.localStorage.setItem('keystore_file_ios_saved', true);
-                                    if ($('.ios-camper .ios-reminder-for-downloading-keystore-file').length) {
-                                        $('.ios-camper .ios-reminder-for-downloading-keystore-file').remove();
-                                    }
-                                }
-
-                                refreshApp();
-                                //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
-                            } else {
-                                window.location.reload();
+                    showLoader();
+                    setTimeout(function () {
+                        var validate_private_key = validatePrivateKey($('#import-private-key').val().trim());
+                        if (validate_private_key.success) {
+                            var internet = navigator.onLine;
+                            if (internet) {
+                                savePublicKeyToAssurance(validate_private_key.success.address, validate_private_key.success.public_key);
                             }
-                        }, 500);
-                    } else if (validate_private_key.error) {
-                        hideLoader();
+                            setTimeout(function () {
+                                window.localStorage.setItem('current_account', validate_private_key.success.address);
+                                fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
 
-                        customErrorHandle($('#import-private-key').closest('.field-parent'), validate_private_key.message);
-                    }
-                }, 500);
+                                if (is_hybrid) {
+                                    if (basic.getMobileOperatingSystem() == 'iOS') {
+                                        window.localStorage.setItem('keystore_file_ios_saved', true);
+                                        if ($('.ios-camper .ios-reminder-for-downloading-keystore-file').length) {
+                                            $('.ios-camper .ios-reminder-for-downloading-keystore-file').remove();
+                                        }
+                                    }
+
+                                    refreshApp();
+                                    //navigator.app.loadUrl("file:///android_asset/www/index.html", {loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
+                                } else {
+                                    window.location.reload();
+                                }
+                            }, 500);
+                        } else if (validate_private_key.error) {
+                            hideLoader();
+
+                            customErrorHandle($('#import-private-key').closest('.field-parent'), validate_private_key.message);
+                        }
+                    }, 500);
+                });
             });
-        });
 
-        //importing with keystore file
-        styleKeystoreUploadBtn();
+            //importing with keystore file
+            styleKeystoreUploadBtn();
 
-        // ================================= /IMPORTING ==========================================
+            // ================================= /IMPORTING ==========================================
 
-        // ================================= CREATING ==========================================
+            // ================================= CREATING ==========================================
 
-        /*var passwordWarningShow = true;
-        $('.popup-left .required-field').on('change keyup focusout paste', function() {
-            if (passwordWarningShow) {
-                passwordWarningShow = false;
+            /*var passwordWarningShow = true;
+            $('.popup-left .required-field').on('change keyup focusout paste', function() {
+                if (passwordWarningShow) {
+                    passwordWarningShow = false;
 
-                if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
-                    $('.custom-auth-popup .popup-left .wallet-creation-warning').addClass('max-width-300 margin-left-right-auto').html('<div class="color-warning-red fs-14 lato-bold">Keep your password and backup file safe!<br>NOBODY CAN RESET THEM IF LOST.</div><div class="padding-bottom-15 fs-14">To access your wallet, you need both the password and the backup file which you must export on the next step or from the Settings.</div>');
-                } else {
-                    $('.custom-auth-popup .popup-left .wallet-creation-warning').addClass('max-width-300 margin-left-right-auto').html('<div class="color-warning-red fs-14 lato-bold">Keep your password and backup file safe!<br>NOBODY CAN RESET THEM IF LOST.</div><div class="padding-bottom-15 fs-14">To access your wallet, you need both the password and the backup file which will be automatically downloaded on your device.</div>');
+                    if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
+                        $('.custom-auth-popup .popup-left .wallet-creation-warning').addClass('max-width-300 margin-left-right-auto').html('<div class="color-warning-red fs-14 lato-bold">Keep your password and backup file safe!<br>NOBODY CAN RESET THEM IF LOST.</div><div class="padding-bottom-15 fs-14">To access your wallet, you need both the password and the backup file which you must export on the next step or from the Settings.</div>');
+                    } else {
+                        $('.custom-auth-popup .popup-left .wallet-creation-warning').addClass('max-width-300 margin-left-right-auto').html('<div class="color-warning-red fs-14 lato-bold">Keep your password and backup file safe!<br>NOBODY CAN RESET THEM IF LOST.</div><div class="padding-bottom-15 fs-14">To access your wallet, you need both the password and the backup file which will be automatically downloaded on your device.</div>');
+                    }
                 }
-            }
-        });*/
+            });*/
 
-        var tempPrivKey;
-        var tempAddress;
-        $('.custom-auth-popup .popup-left .download-login-file').unbind().click(function () {
-            var login_errors = false;
-            $('.popup-left .error-handle').remove();
-            var login_fields = $('.popup-left .required-field');
+            var tempPrivKey;
+            var tempAddress;
+            $('.custom-auth-popup .popup-left .download-login-file').unbind().click(function () {
+                var login_errors = false;
+                $('.popup-left .error-handle').remove();
+                var login_fields = $('.popup-left .required-field');
 
-            for (var i = 0, len = login_fields.length; i < len; i += 1) {
-                if (login_fields.eq(i).val().trim() == '') {
-                    customErrorHandle(login_fields.eq(i).closest('.field-parent'), $('.translates-holder').attr('enter-pass'));
-                    login_errors = true;
-                } else if (login_fields.eq(i).val().trim().length < 8 || login_fields.eq(i).val().trim().length > 30) {
-                    customErrorHandle(login_fields.eq(i).closest('.field-parent'), $('.translates-holder').attr('min-pass-error'));
+                for (var i = 0, len = login_fields.length; i < len; i += 1) {
+                    if (login_fields.eq(i).val().trim() == '') {
+                        customErrorHandle(login_fields.eq(i).closest('.field-parent'), $('.translates-holder').attr('enter-pass'));
+                        login_errors = true;
+                    } else if (login_fields.eq(i).val().trim().length < 8 || login_fields.eq(i).val().trim().length > 30) {
+                        customErrorHandle(login_fields.eq(i).closest('.field-parent'), $('.translates-holder').attr('min-pass-error'));
+                        login_errors = true;
+                    }
+                }
+
+                if ($('.custom-auth-popup .keystore-file-pass').val().trim() != $('.custom-auth-popup .second-pass').val().trim()) {
+                    customErrorHandle($('.custom-auth-popup .second-pass').closest('.field-parent'), $('.translates-holder').attr('def-pass-error'));
                     login_errors = true;
                 }
-            }
 
-            if ($('.custom-auth-popup .keystore-file-pass').val().trim() != $('.custom-auth-popup .second-pass').val().trim()) {
-                customErrorHandle($('.custom-auth-popup .second-pass').closest('.field-parent'), $('.translates-holder').attr('def-pass-error'));
-                login_errors = true;
-            }
-
-            if (!login_errors) {
-                if (is_hybrid) {
-                    //MOBILE APP
-                    if (basic.getMobileOperatingSystem() == 'Android') {
-                        showLoader($('.translates-holder').attr('few-mins'));
-                    }/* else if (basic.getMobileOperatingSystem() == 'iOS') {
+                if (!login_errors) {
+                    if (is_hybrid) {
+                        //MOBILE APP
+                        if (basic.getMobileOperatingSystem() == 'Android') {
+                            showLoader($('.translates-holder').attr('few-mins'));
+                        }/* else if (basic.getMobileOperatingSystem() == 'iOS') {
                         showLoader($('.translates-holder').attr('few-mins-two'));
                     }*/
-                } else {
-                    showLoader($('.translates-holder').attr('few-mins'));
-                }
+                    } else {
+                        showLoader($('.translates-holder').attr('few-mins'));
+                    }
 
-                setTimeout(function () {
-                    generateKeystoreFile($('.custom-auth-popup .keystore-file-pass').val().trim(), function (public_key, keystore, private_key) {
-                        var keystore_file_name = buildKeystoreFileName(keystore.address);
-                        tempPrivKey = private_key;
-                        tempAddress = '0x' + keystore.address;
+                    setTimeout(function () {
+                        generateKeystoreFile($('.custom-auth-popup .keystore-file-pass').val().trim(), function (public_key, keystore, private_key) {
+                            var keystore_file_name = buildKeystoreFileName(keystore.address);
+                            tempPrivKey = private_key;
+                            tempAddress = '0x' + keystore.address;
 
-                        // if internet connection save the public key to assurance
-                        var internet = navigator.onLine;
-                        if (internet) {
-                            savePublicKeyToAssurance(keystore.address, public_key);
-                        }
+                            // if internet connection save the public key to assurance
+                            var internet = navigator.onLine;
+                            if (internet) {
+                                savePublicKeyToAssurance(keystore.address, public_key);
+                            }
 
-                        if (is_hybrid) {
-                            //MOBILE APP
-                            if (basic.getMobileOperatingSystem() == 'Android') {
-                                //saving keystore file to Downloads folder
-                                hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
-                                    //saving keystore file to App folder
+                            if (is_hybrid) {
+                                //MOBILE APP
+                                if (basic.getMobileOperatingSystem() == 'Android') {
+                                    //saving keystore file to Downloads folder
                                     hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
-                                        fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
-                                        loginIntoWallet();
+                                        //saving keystore file to App folder
+                                        hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
+                                            fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
+                                            loginIntoWallet();
 
-                                        basic.showAlert($('.translates-holder').attr('file') + keystore_file_name + $('.translates-holder').attr('has-been-stored'), 'overlap-loading-popup', true);
-                                        setTimeout(function () {
-                                            fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
-                                            basic.closeDialog();
-                                            hideLoader();
+                                            basic.showAlert($('.translates-holder').attr('file') + keystore_file_name + $('.translates-holder').attr('has-been-stored'), 'overlap-loading-popup', true);
+                                            setTimeout(function () {
+                                                fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
+                                                basic.closeDialog();
+                                                hideLoader();
+                                                clearCreation();
+                                            }, 6000);
+
+                                        }, cordova.file.externalDataDirectory, false);
+                                    }, cordova.file.externalRootDirectory, true);
+                                } else if (basic.getMobileOperatingSystem() == 'iOS') {
+                                    //saving keystore file to App folder
+                                    /*hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
+                                        loginIntoWallet();
+                                        hideLoader();
+                                    }, cordova.file.dataDirectory, false);*/
+
+                                    //
+                                    //hideLoader();
+
+                                    window.plugins.socialsharing.share(JSON.stringify(keystore));
+
+                                    $('.custom-auth-popup .popup-element.first .btn-container .download-login-file').addClass('hide');
+                                    $('.custom-auth-popup .popup-element.first .btn-container .hidden-checkbox').removeClass('hide');
+
+                                    $('.custom-auth-popup #keystore-downloaded-verifier').change(function() {
+                                        if($(this).is(':checked')) {
+                                            loginIntoWallet();
                                             clearCreation();
-                                        }, 6000);
-
-                                    }, cordova.file.externalDataDirectory, false);
-                                }, cordova.file.externalRootDirectory, true);
-                            } else if (basic.getMobileOperatingSystem() == 'iOS') {
-                                //saving keystore file to App folder
-                                /*hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
-                                    loginIntoWallet();
-                                    hideLoader();
-                                }, cordova.file.dataDirectory, false);*/
-
-                                //
-                                //hideLoader();
-
-                                window.plugins.socialsharing.share(JSON.stringify(keystore));
-
-                                $('.custom-auth-popup .popup-element.first .btn-container .download-login-file').addClass('hide');
-                                $('.custom-auth-popup .popup-element.first .btn-container .hidden-checkbox').removeClass('hide');
-
-                                $('.custom-auth-popup #keystore-downloaded-verifier').change(function() {
-                                    if($(this).is(':checked')) {
-                                        loginIntoWallet();
-                                        clearCreation();
-                                    }
-                                });
-                            }
-                        } else {
-                            if (basic.getMobileOperatingSystem() == 'iOS') {
-                                //mobile browser from iPhone
-                                basic.showAlert($('.translates-holder').attr('opened-new-tab'), 'mobile-safari-keystore-creation overlap-loading-popup', true);
-
-                                //mobile safari
-                                downloadFile(keystore_file_name, JSON.stringify(keystore));
-
-                                $('.mobile-safari-keystore-creation .modal-footer .btn.btn-primary, .mobile-safari-keystore-creation .bootbox-close-button.close').click(function () {
-                                    fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
-                                    basic.closeDialog();
-                                    loginIntoWallet();
-                                    hideLoader();
-                                    clearCreation();
-                                });
+                                        }
+                                    });
+                                }
                             } else {
-                                //BROWSER
-                                downloadFile(keystore_file_name, JSON.stringify(keystore));
-                                fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
-                                loginIntoWallet();
+                                if (basic.getMobileOperatingSystem() == 'iOS') {
+                                    //mobile browser from iPhone
+                                    basic.showAlert($('.translates-holder').attr('opened-new-tab'), 'mobile-safari-keystore-creation overlap-loading-popup', true);
 
-                                basic.showAlert($('.translates-holder').attr('file') +keystore_file_name + $('.translates-holder').attr('has-been-stored'), 'overlap-loading-popup', true);
-                                setTimeout(function () {
-                                    fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
-                                    basic.closeDialog();
-                                    hideLoader();
-                                    clearCreation();
-                                }, 6000);
-                            }
-                        }
+                                    //mobile safari
+                                    downloadFile(keystore_file_name, JSON.stringify(keystore));
 
-                        function clearCreation() {
-                            $('.custom-auth-popup .popup-element.first .btn-container .download-login-file').removeClass('hide');
-                            $('.custom-auth-popup .popup-element.first .btn-container .hidden-checkbox').attr('checked', false).addClass('hide');
-                            $('.custom-auth-popup #keystore-file-pass').val('');
-                            $('.custom-auth-popup #second-pass').val('');
+                                    $('.mobile-safari-keystore-creation .modal-footer .btn.btn-primary, .mobile-safari-keystore-creation .bootbox-close-button.close').click(function () {
+                                        fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
+                                        basic.closeDialog();
+                                        loginIntoWallet();
+                                        hideLoader();
+                                        clearCreation();
+                                    });
+                                } else {
+                                    //BROWSER
+                                    downloadFile(keystore_file_name, JSON.stringify(keystore));
+                                    fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
+                                    loginIntoWallet();
 
-                            $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
-                            $('.custom-auth-popup .popup-left .popup-element.second').removeClass('hide');
-                            $('.custom-auth-popup .popup-header .nav-steps').removeClass('first-step').addClass('second-step');
-                        }
-
-                        function loginIntoWallet() {
-                            //if ($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
-                            var localStorageAddress = keystore.address;
-                            if (localStorageAddress.length == 40) {
-                                localStorageAddress = '0x' + localStorageAddress;
+                                    basic.showAlert($('.translates-holder').attr('file') +keystore_file_name + $('.translates-holder').attr('has-been-stored'), 'overlap-loading-popup', true);
+                                    setTimeout(function () {
+                                        fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
+                                        basic.closeDialog();
+                                        hideLoader();
+                                        clearCreation();
+                                    }, 6000);
+                                }
                             }
 
-                            window.localStorage.setItem('current_account', localStorageAddress);
-                            window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
-                        }
-                    });
-                }, 1000);
-            }
-        });
+                            function clearCreation() {
+                                $('.custom-auth-popup .popup-element.first .btn-container .download-login-file').removeClass('hide');
+                                $('.custom-auth-popup .popup-element.first .btn-container .hidden-checkbox').attr('checked', false).addClass('hide');
+                                $('.custom-auth-popup #keystore-file-pass').val('');
+                                $('.custom-auth-popup #second-pass').val('');
 
-        $('.custom-auth-popup .popup-left .print-pk').unbind().click(function () {
-            projectData.general_logic.generatePrivateKeyFile(tempPrivKey);
+                                $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
+                                $('.custom-auth-popup .popup-left .popup-element.second').removeClass('hide');
+                                $('.custom-auth-popup .popup-header .nav-steps').removeClass('first-step').addClass('second-step');
+                            }
 
-            $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
-            $('.custom-auth-popup .popup-left .popup-element.third').removeClass('hide');
-            $('.custom-auth-popup .popup-header .nav-steps').removeClass('second-step').addClass('third-step');
-        });
+                            function loginIntoWallet() {
+                                //if ($('.custom-auth-popup .popup-left .popup-body #agree-to-cache-create').is(':checked')) {
+                                var localStorageAddress = keystore.address;
+                                if (localStorageAddress.length == 40) {
+                                    localStorageAddress = '0x' + localStorageAddress;
+                                }
 
-        $('.custom-auth-popup .popup-left .remind-me-later').click(function () {
-            $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
-            $('.custom-auth-popup .popup-left .popup-element.third').removeClass('hide');
-            $('.custom-auth-popup .popup-header .nav-steps').removeClass('second-step').addClass('third-step');
-        });
+                                window.localStorage.setItem('current_account', localStorageAddress);
+                                window.localStorage.setItem('keystore_file', JSON.stringify(keystore));
+                            }
+                        });
+                    }, 1000);
+                }
+            });
 
-        $('.custom-auth-popup .popup-left .login-into-wallet').unbind().click(function () {
-            if (is_hybrid) {
-                refreshApp();
-            } else {
-                window.location.reload();
-            }
-        });
-    } else {
-        checkIfLoadingFromMobileBrowser();
-    }
+            $('.custom-auth-popup .popup-left .print-pk').unbind().click(function () {
+                projectData.general_logic.generatePrivateKeyFile(tempPrivKey);
+
+                $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
+                $('.custom-auth-popup .popup-left .popup-element.third').removeClass('hide');
+                $('.custom-auth-popup .popup-header .nav-steps').removeClass('second-step').addClass('third-step');
+            });
+
+            $('.custom-auth-popup .popup-left .remind-me-later').click(function () {
+                $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
+                $('.custom-auth-popup .popup-left .popup-element.third').removeClass('hide');
+                $('.custom-auth-popup .popup-header .nav-steps').removeClass('second-step').addClass('third-step');
+            });
+
+            $('.custom-auth-popup .popup-left .login-into-wallet').unbind().click(function () {
+                if (is_hybrid) {
+                    refreshApp();
+                } else {
+                    window.location.reload();
+                }
+            });
+        } else {
+            checkIfLoadingFromMobileBrowser();
+        }
+    }, 1000);
 }
 
 function removeAccountChecker() {
@@ -94644,7 +94649,7 @@ $(document).on('click', '.open-settings', function () {
                                     if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && projectData.utils.checksumAddress(JSON.parse(keystore_string).address) == projectData.utils.checksumAddress(global_state.account)) {
                                         validateKeystoreFileAndPasswordForCachingKeystoreFile(this_camping_row, keystore_string, this_row);
                                     } else {
-                                        $(translates.pleaseUpload).insertAfter(this_camping_row);
+                                        $($('.translates-holder').attr('data-valid-keytore')).insertAfter(this_camping_row);
                                     }
                                 };
 
@@ -94667,7 +94672,7 @@ $(document).on('click', '.open-settings', function () {
                             if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && projectData.utils.checksumAddress(JSON.parse(keystore_string).address) == projectData.utils.checksumAddress(global_state.account)) {
                                 validateKeystoreFileAndPasswordForCachingKeystoreFile(this_camping_row, keystore_string, this_row);
                             } else {
-                                $(translates.pleaseUpload).insertAfter(this_camping_row);
+                                $($('.translates-holder').attr('data-valid-keytore')).insertAfter(this_camping_row);
                             }
                         });
                     });
@@ -94689,7 +94694,7 @@ $(document).on('click', '.open-settings', function () {
 
                                 validateKeystoreFileAndPasswordForCachingKeystoreFile(this_camping_row, keystore_string, this_row);
                             } else {
-                                $(translates.pleaseUpload).insertAfter(this_camping_row);
+                                $($('.translates-holder').attr('data-valid-keytore')).insertAfter(this_camping_row);
                             }
                         });
 
@@ -95015,7 +95020,7 @@ $(document).on('click', '.open-settings', function () {
                                     if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && projectData.utils.checksumAddress(JSON.parse(keystore_string).address) == projectData.utils.checksumAddress(global_state.account)) {
                                         decryptKeystoreFileAndShowPrivateKey(this_camping_row, keystore_string, this_row);
                                     } else {
-                                        $(translates.pleaseUpload).insertAfter(this_camping_row);
+                                        $($('.translates-holder').attr('data-valid-keytore')).insertAfter(this_camping_row);
                                     }
                                 };
 
@@ -95037,7 +95042,7 @@ $(document).on('click', '.open-settings', function () {
                             if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && projectData.utils.checksumAddress(JSON.parse(keystore_string).address) == projectData.utils.checksumAddress(global_state.account)) {
                                 decryptKeystoreFileAndShowPrivateKey(this_camping_row, keystore_string, this_row);
                             } else {
-                                $(translates.pleaseUpload).insertAfter(this_camping_row);
+                                $($('.translates-holder').attr('data-valid-keytore')).insertAfter(this_camping_row);
                             }
                         });
                     });
@@ -95059,7 +95064,7 @@ $(document).on('click', '.open-settings', function () {
 
                                 decryptKeystoreFileAndShowPrivateKey(this_camping_row, keystore_string, this_row);
                             } else {
-                                $(translates.pleaseUpload).insertAfter(this_camping_row);
+                                $($('.translates-holder').attr('data-valid-keytore')).insertAfter(this_camping_row);
                             }
                         });
 
@@ -95324,6 +95329,13 @@ function router() {
     }
 
     $('body').on('DOMSubtreeModified', '.main-holder', function () {
+        if (closeOnLoadLoader) {
+            closeOnLoadLoader = false;
+            setTimeout(function() {
+                hideLoader();
+            }, 1000)
+        }
+
         if ($('.main-holder app-homepage').length && current_route != 'home') {
             current_route = 'home';
             getHomepageData();
@@ -95684,7 +95696,7 @@ var assuranceTransactions = {
                 if (!err) {
                     callback();
                 } else {
-                    basic.showAlert(translates.defaultErrorMessage, '', true);
+                    basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
                 }
             });*/
         });
@@ -95763,7 +95775,7 @@ var assuranceTransactions = {
             if (!err) {
                 callback(transactionHash);
             } else {
-                basic.showAlert(translates.defaultErrorMessage, '', true);
+                basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
             }
         });*/
     },
@@ -95800,7 +95812,7 @@ var assuranceTransactions = {
             if (!err) {
                 callback(transactionHash);
             } else {
-                basic.showAlert(translates.defaultErrorMessage, '', true);
+                basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
             }
         });*/
     },
@@ -95838,7 +95850,7 @@ var assuranceTransactions = {
             if (!err) {
                 callback(transactionHash);
             } else {
-                basic.showAlert(translates.defaultErrorMessage, '', true);
+                basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
             }
         });*/
     }
@@ -95858,6 +95870,9 @@ function showMobileAppBannerForDesktopBrowsers() {
     if (!is_hybrid && !basic.isMobile()) {
         hideMobileAppBannerForDesktopBrowsers();
         setTimeout(function() {
+            if ($('.mobile-app-banner').length) {
+                $('.mobile-app-banner').remove();
+            }
             $('footer').prepend('<div class="mobile-app-banner margin-bottom-25">' + mobileAppBannerForDesktopBrowsersHtml + '</div>');
             $('.mobile-app-banner-title').html($('.translates-holder').attr('also-available'));
         }, 1000);

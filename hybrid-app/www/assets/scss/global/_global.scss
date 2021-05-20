@@ -1317,10 +1317,11 @@ img {
                     width: 25px;
                 }
                 span {
-                    width: calc(100% - 80px);
+                    width: calc(100% - 90px);
                 }
                 .lang-container {
                     width: 50px;
+                    border-left: 1px solid white;
                     select {
                         border: 0;
                         font-size: 20px;

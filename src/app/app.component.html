@@ -308,9 +308,9 @@
                 <a href="javascript:void(0)" class="custom-close-settings-popup inline-block margin-right-5">
                     <img src="assets/images/left-arrow.svg" alt="Left arrow" class="check width-100 max-width-20"/>
                 </a>
-                <span class="inline-block text-center fs-28 fs-xs-16">{{'wallet-settings' | translate}}</span>
-                <div class="inline-block text-right lang-container">
-                    <select (change)="this.languageService.onLangSwitcherChange($event.target.value)" class="fix-selects-for-ios lang-switcher white-color padding-right-20">
+                <span class="inline-block text-center fs-28 fs-xs-15">{{'wallet-settings' | translate}}</span>
+                <div class="inline-block text-right lang-container margin-left-10">
+                    <select (change)="this.languageService.onLangSwitcherChange($event.target.value)" class="fix-selects-for-ios lang-switcher white-color padding-right-20 fs-xs-18">
                         <option value="en" *ngIf="(translate.currentLang === 'en')" selected>EN</option>
                         <option value="de" *ngIf="(translate.currentLang === 'en')">DE</option>
                         <option value="en" *ngIf="(translate.currentLang === 'de')">EN</option>

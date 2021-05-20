@@ -5090,9 +5090,10 @@ img {
         .settings-popup .settings-popup-wrapper .settings-popup-inner-wrapper .popup-header .custom-close-settings-popup {
           width: 25px; }
         .settings-popup .settings-popup-wrapper .settings-popup-inner-wrapper .popup-header span {
-          width: calc(100% - 80px); }
+          width: calc(100% - 90px); }
         .settings-popup .settings-popup-wrapper .settings-popup-inner-wrapper .popup-header .lang-container {
-          width: 50px; }
+          width: 50px;
+          border-left: 1px solid white; }
           .settings-popup .settings-popup-wrapper .settings-popup-inner-wrapper .popup-header .lang-container select {
             border: 0;
             font-size: 20px;
