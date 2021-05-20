@@ -233,5 +233,6 @@
   "provides" : "Dieser private Schlüssel bietet vollen Zugriff auf die Gelder in der digitalen Wallet: ",
   "secure-place" : "Drucken Sie dieses Dokument aus und bewahren Sie es an einem sicheren Ort auf.",
   "never-share" : "Teilen Sie dieses Dokument niemals mit jemandem, um den Diebstahl Ihres Geldes zu verhindern!",
-  "to-unlock" : "Um Ihr Vermögen zu verwalten, öffnen Sie bitte die Dentacoin Wallet-App oder gehen Sie auf: wallet.dentacoin.com. Wählen Sie „Vorhandene Wallet importieren“, schreiben Sie den privaten Schlüssel in das entsprechende Feld oder scannen Sie den QR-Code. Sie sehen den DCN-Betrag, den Sie besitzen."
+  "to-unlock" : "Um Ihr Vermögen zu verwalten, öffnen Sie bitte die Dentacoin Wallet-App oder gehen Sie auf: wallet.dentacoin.com. Wählen Sie „Vorhandene Wallet importieren“, schreiben Sie den privaten Schlüssel in das entsprechende Feld oder scannen Sie den QR-Code. Sie sehen den DCN-Betrag, den Sie besitzen.",
+  "use-a4" : "Bitte wählen Sie das Papierformat A4 für eine optimale Anzeige."
 }

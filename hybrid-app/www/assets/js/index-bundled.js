@@ -31056,7 +31056,7 @@ Entity.prototype.encode = function encode(data, enc, /* internal */ reporter) {
   return this._getEncoder(enc).encode(data, reporter);
 };
 
-},{"../asn1":228,"inherits":456,"vm":223}],230:[function(require,module,exports){
+},{"../asn1":228,"inherits":457,"vm":223}],230:[function(require,module,exports){
 var inherits = require('inherits');
 var Reporter = require('../base').Reporter;
 var Buffer = require('buffer').Buffer;
@@ -31174,7 +31174,7 @@ EncoderBuffer.prototype.join = function join(out, offset) {
   return out;
 };
 
-},{"../base":231,"buffer":68,"inherits":456}],231:[function(require,module,exports){
+},{"../base":231,"buffer":68,"inherits":457}],231:[function(require,module,exports){
 var base = exports;
 
 base.Reporter = require('./reporter').Reporter;
@@ -31818,7 +31818,7 @@ Node.prototype._isPrintstr = function isPrintstr(str) {
   return /^[A-Za-z0-9 '\(\)\+,\-\.\/:=\?]*$/.test(str);
 };
 
-},{"../base":231,"minimalistic-assert":479}],233:[function(require,module,exports){
+},{"../base":231,"minimalistic-assert":480}],233:[function(require,module,exports){
 var inherits = require('inherits');
 
 function Reporter(options) {
@@ -31941,7 +31941,7 @@ ReporterError.prototype.rethrow = function rethrow(msg) {
   return this;
 };
 
-},{"inherits":456}],234:[function(require,module,exports){
+},{"inherits":457}],234:[function(require,module,exports){
 var constants = require('../constants');
 
 exports.tagClass = {
@@ -32332,7 +32332,7 @@ function derDecodeLen(buf, primitive, fail) {
   return len;
 }
 
-},{"../../asn1":228,"inherits":456}],237:[function(require,module,exports){
+},{"../../asn1":228,"inherits":457}],237:[function(require,module,exports){
 var decoders = exports;
 
 decoders.der = require('./der');
@@ -32389,7 +32389,7 @@ PEMDecoder.prototype.decode = function decode(data, options) {
   return DERDecoder.prototype.decode.call(this, input, options);
 };
 
-},{"./der":236,"buffer":68,"inherits":456}],239:[function(require,module,exports){
+},{"./der":236,"buffer":68,"inherits":457}],239:[function(require,module,exports){
 var inherits = require('inherits');
 var Buffer = require('buffer').Buffer;
 
@@ -32686,7 +32686,7 @@ function encodeTag(tag, primitive, cls, reporter) {
   return res;
 }
 
-},{"../../asn1":228,"buffer":68,"inherits":456}],240:[function(require,module,exports){
+},{"../../asn1":228,"buffer":68,"inherits":457}],240:[function(require,module,exports){
 var encoders = exports;
 
 encoders.der = require('./der');
@@ -32715,7 +32715,7 @@ PEMEncoder.prototype.encode = function encode(data, options) {
   return out.join('\n');
 };
 
-},{"./der":239,"inherits":456}],242:[function(require,module,exports){
+},{"./der":239,"inherits":457}],242:[function(require,module,exports){
 module.exports = { "default": require("core-js/library/fn/array/from"), __esModule: true };
 },{"core-js/library/fn/array/from":244}],243:[function(require,module,exports){
 "use strict";
@@ -33575,7 +33575,7 @@ module.exports = {
   encode: encode
 }
 
-},{"safe-buffer":512}],297:[function(require,module,exports){
+},{"safe-buffer":542}],297:[function(require,module,exports){
 (function (module, exports) {
   'use strict';
 
@@ -37008,29 +37008,29 @@ module.exports = {
 arguments[4][23][0].apply(exports,arguments)
 },{"crypto":24,"dup":23}],299:[function(require,module,exports){
 arguments[4][25][0].apply(exports,arguments)
-},{"dup":25,"safe-buffer":512}],300:[function(require,module,exports){
+},{"dup":25,"safe-buffer":542}],300:[function(require,module,exports){
 arguments[4][26][0].apply(exports,arguments)
-},{"./aes":299,"./ghash":304,"./incr32":305,"buffer-xor":326,"cipher-base":327,"dup":26,"inherits":456,"safe-buffer":512}],301:[function(require,module,exports){
+},{"./aes":299,"./ghash":304,"./incr32":305,"buffer-xor":326,"cipher-base":327,"dup":26,"inherits":457,"safe-buffer":542}],301:[function(require,module,exports){
 arguments[4][27][0].apply(exports,arguments)
 },{"./decrypter":302,"./encrypter":303,"./modes/list.json":313,"dup":27}],302:[function(require,module,exports){
 arguments[4][28][0].apply(exports,arguments)
-},{"./aes":299,"./authCipher":300,"./modes":312,"./streamCipher":315,"cipher-base":327,"dup":28,"evp_bytestokey":434,"inherits":456,"safe-buffer":512}],303:[function(require,module,exports){
+},{"./aes":299,"./authCipher":300,"./modes":312,"./streamCipher":315,"cipher-base":327,"dup":28,"evp_bytestokey":435,"inherits":457,"safe-buffer":542}],303:[function(require,module,exports){
 arguments[4][29][0].apply(exports,arguments)
-},{"./aes":299,"./authCipher":300,"./modes":312,"./streamCipher":315,"cipher-base":327,"dup":29,"evp_bytestokey":434,"inherits":456,"safe-buffer":512}],304:[function(require,module,exports){
+},{"./aes":299,"./authCipher":300,"./modes":312,"./streamCipher":315,"cipher-base":327,"dup":29,"evp_bytestokey":435,"inherits":457,"safe-buffer":542}],304:[function(require,module,exports){
 arguments[4][30][0].apply(exports,arguments)
-},{"dup":30,"safe-buffer":512}],305:[function(require,module,exports){
+},{"dup":30,"safe-buffer":542}],305:[function(require,module,exports){
 arguments[4][31][0].apply(exports,arguments)
 },{"dup":31}],306:[function(require,module,exports){
 arguments[4][32][0].apply(exports,arguments)
 },{"buffer-xor":326,"dup":32}],307:[function(require,module,exports){
 arguments[4][33][0].apply(exports,arguments)
-},{"buffer-xor":326,"dup":33,"safe-buffer":512}],308:[function(require,module,exports){
+},{"buffer-xor":326,"dup":33,"safe-buffer":542}],308:[function(require,module,exports){
 arguments[4][34][0].apply(exports,arguments)
-},{"dup":34,"safe-buffer":512}],309:[function(require,module,exports){
+},{"dup":34,"safe-buffer":542}],309:[function(require,module,exports){
 arguments[4][35][0].apply(exports,arguments)
-},{"dup":35,"safe-buffer":512}],310:[function(require,module,exports){
+},{"dup":35,"safe-buffer":542}],310:[function(require,module,exports){
 arguments[4][36][0].apply(exports,arguments)
-},{"../incr32":305,"buffer-xor":326,"dup":36,"safe-buffer":512}],311:[function(require,module,exports){
+},{"../incr32":305,"buffer-xor":326,"dup":36,"safe-buffer":542}],311:[function(require,module,exports){
 arguments[4][37][0].apply(exports,arguments)
 },{"dup":37}],312:[function(require,module,exports){
 arguments[4][38][0].apply(exports,arguments)
@@ -37040,11 +37040,11 @@ arguments[4][39][0].apply(exports,arguments)
 arguments[4][40][0].apply(exports,arguments)
 },{"buffer":68,"buffer-xor":326,"dup":40}],315:[function(require,module,exports){
 arguments[4][41][0].apply(exports,arguments)
-},{"./aes":299,"cipher-base":327,"dup":41,"inherits":456,"safe-buffer":512}],316:[function(require,module,exports){
+},{"./aes":299,"cipher-base":327,"dup":41,"inherits":457,"safe-buffer":542}],316:[function(require,module,exports){
 arguments[4][42][0].apply(exports,arguments)
-},{"browserify-aes/browser":301,"browserify-aes/modes":312,"browserify-des":317,"browserify-des/modes":318,"dup":42,"evp_bytestokey":434}],317:[function(require,module,exports){
+},{"browserify-aes/browser":301,"browserify-aes/modes":312,"browserify-des":317,"browserify-des/modes":318,"dup":42,"evp_bytestokey":435}],317:[function(require,module,exports){
 arguments[4][43][0].apply(exports,arguments)
-},{"cipher-base":327,"des.js":337,"dup":43,"inherits":456,"safe-buffer":512}],318:[function(require,module,exports){
+},{"cipher-base":327,"des.js":337,"dup":43,"inherits":457,"safe-buffer":542}],318:[function(require,module,exports){
 arguments[4][44][0].apply(exports,arguments)
 },{"dup":44}],319:[function(require,module,exports){
 (function (Buffer){(function (){
@@ -37090,7 +37090,7 @@ function getr(priv) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"bn.js":297,"buffer":68,"randombytes":505}],320:[function(require,module,exports){
+},{"bn.js":297,"buffer":68,"randombytes":535}],320:[function(require,module,exports){
 arguments[4][46][0].apply(exports,arguments)
 },{"./browser/algorithms.json":321,"dup":46}],321:[function(require,module,exports){
 arguments[4][47][0].apply(exports,arguments)
@@ -37191,7 +37191,7 @@ module.exports = {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./algorithms.json":321,"./sign":324,"./verify":325,"buffer":68,"create-hash":330,"inherits":456,"stream":185}],324:[function(require,module,exports){
+},{"./algorithms.json":321,"./sign":324,"./verify":325,"buffer":68,"create-hash":330,"inherits":457,"stream":185}],324:[function(require,module,exports){
 (function (Buffer){(function (){
 // much of this based on https://github.com/indutny/self-signed/blob/gh-pages/lib/rsa.js
 var createHmac = require('create-hmac')
@@ -37340,7 +37340,7 @@ module.exports.getKey = getKey
 module.exports.makeKey = makeKey
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./curves.json":322,"bn.js":297,"browserify-rsa":319,"buffer":68,"create-hmac":332,"elliptic":365,"parse-asn1":492}],325:[function(require,module,exports){
+},{"./curves.json":322,"bn.js":297,"browserify-rsa":319,"buffer":68,"create-hmac":332,"elliptic":366,"parse-asn1":493}],325:[function(require,module,exports){
 (function (Buffer){(function (){
 // much of this based on https://github.com/indutny/self-signed/blob/gh-pages/lib/rsa.js
 var BN = require('bn.js')
@@ -37427,11 +37427,11 @@ function checkValue (b, q) {
 module.exports = verify
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./curves.json":322,"bn.js":297,"buffer":68,"elliptic":365,"parse-asn1":492}],326:[function(require,module,exports){
+},{"./curves.json":322,"bn.js":297,"buffer":68,"elliptic":366,"parse-asn1":493}],326:[function(require,module,exports){
 arguments[4][67][0].apply(exports,arguments)
 },{"buffer":68,"dup":67}],327:[function(require,module,exports){
 arguments[4][70][0].apply(exports,arguments)
-},{"dup":70,"inherits":456,"safe-buffer":512,"stream":185,"string_decoder":219}],328:[function(require,module,exports){
+},{"dup":70,"inherits":457,"safe-buffer":542,"stream":185,"string_decoder":219}],328:[function(require,module,exports){
 /* jshint node: true */
 (function () {
     "use strict";
@@ -37711,17 +37711,17 @@ arguments[4][70][0].apply(exports,arguments)
 
 },{}],329:[function(require,module,exports){
 arguments[4][71][0].apply(exports,arguments)
-},{"bn.js":297,"buffer":68,"dup":71,"elliptic":365}],330:[function(require,module,exports){
+},{"bn.js":297,"buffer":68,"dup":71,"elliptic":366}],330:[function(require,module,exports){
 arguments[4][73][0].apply(exports,arguments)
-},{"cipher-base":327,"dup":73,"inherits":456,"md5.js":477,"ripemd160":510,"sha.js":522}],331:[function(require,module,exports){
+},{"cipher-base":327,"dup":73,"inherits":457,"md5.js":478,"ripemd160":540,"sha.js":552}],331:[function(require,module,exports){
 arguments[4][74][0].apply(exports,arguments)
-},{"dup":74,"md5.js":477}],332:[function(require,module,exports){
+},{"dup":74,"md5.js":478}],332:[function(require,module,exports){
 arguments[4][75][0].apply(exports,arguments)
-},{"./legacy":333,"cipher-base":327,"create-hash/md5":331,"dup":75,"inherits":456,"ripemd160":510,"safe-buffer":512,"sha.js":522}],333:[function(require,module,exports){
+},{"./legacy":333,"cipher-base":327,"create-hash/md5":331,"dup":75,"inherits":457,"ripemd160":540,"safe-buffer":542,"sha.js":552}],333:[function(require,module,exports){
 arguments[4][76][0].apply(exports,arguments)
-},{"cipher-base":327,"dup":76,"inherits":456,"safe-buffer":512}],334:[function(require,module,exports){
+},{"cipher-base":327,"dup":76,"inherits":457,"safe-buffer":542}],334:[function(require,module,exports){
 arguments[4][77][0].apply(exports,arguments)
-},{"browserify-cipher":316,"browserify-sign":323,"browserify-sign/algos":320,"create-ecdh":329,"create-hash":330,"create-hmac":332,"diffie-hellman":343,"dup":77,"pbkdf2":494,"public-encrypt":499,"randombytes":505,"randomfill":506}],335:[function(require,module,exports){
+},{"browserify-cipher":316,"browserify-sign":323,"browserify-sign/algos":320,"create-ecdh":329,"create-hash":330,"create-hmac":332,"diffie-hellman":343,"dup":77,"pbkdf2":495,"public-encrypt":500,"randombytes":535,"randomfill":536}],335:[function(require,module,exports){
 'use strict';
 var token = '%[a-f0-9]{2}';
 var singleMatcher = new RegExp(token, 'gi');
@@ -37877,13 +37877,13 @@ defineProperties.supportsDescriptors = !!supportsDescriptors;
 
 module.exports = defineProperties;
 
-},{"object-keys":485}],337:[function(require,module,exports){
+},{"object-keys":486}],337:[function(require,module,exports){
 arguments[4][78][0].apply(exports,arguments)
 },{"./des/cbc":338,"./des/cipher":339,"./des/des":340,"./des/ede":341,"./des/utils":342,"dup":78}],338:[function(require,module,exports){
 arguments[4][79][0].apply(exports,arguments)
-},{"dup":79,"inherits":456,"minimalistic-assert":479}],339:[function(require,module,exports){
+},{"dup":79,"inherits":457,"minimalistic-assert":480}],339:[function(require,module,exports){
 arguments[4][80][0].apply(exports,arguments)
-},{"dup":80,"minimalistic-assert":479}],340:[function(require,module,exports){
+},{"dup":80,"minimalistic-assert":480}],340:[function(require,module,exports){
 'use strict';
 
 var assert = require('minimalistic-assert');
@@ -38028,7 +38028,7 @@ DES.prototype._decrypt = function _decrypt(state, lStart, rStart, out, off) {
   utils.rip(l, r, out, off);
 };
 
-},{"../des":337,"inherits":456,"minimalistic-assert":479}],341:[function(require,module,exports){
+},{"../des":337,"inherits":457,"minimalistic-assert":480}],341:[function(require,module,exports){
 'use strict';
 
 var assert = require('minimalistic-assert');
@@ -38085,17 +38085,184 @@ EDE.prototype._update = function _update(inp, inOff, out, outOff) {
 EDE.prototype._pad = DES.prototype._pad;
 EDE.prototype._unpad = DES.prototype._unpad;
 
-},{"../des":337,"inherits":456,"minimalistic-assert":479}],342:[function(require,module,exports){
+},{"../des":337,"inherits":457,"minimalistic-assert":480}],342:[function(require,module,exports){
 arguments[4][83][0].apply(exports,arguments)
 },{"dup":83}],343:[function(require,module,exports){
 arguments[4][84][0].apply(exports,arguments)
 },{"./lib/dh":344,"./lib/generatePrime":345,"./lib/primes.json":346,"buffer":68,"dup":84}],344:[function(require,module,exports){
 arguments[4][85][0].apply(exports,arguments)
-},{"./generatePrime":345,"bn.js":297,"buffer":68,"dup":85,"miller-rabin":478,"randombytes":505}],345:[function(require,module,exports){
+},{"./generatePrime":345,"bn.js":297,"buffer":68,"dup":85,"miller-rabin":479,"randombytes":535}],345:[function(require,module,exports){
 arguments[4][86][0].apply(exports,arguments)
-},{"bn.js":297,"dup":86,"miller-rabin":478,"randombytes":505}],346:[function(require,module,exports){
+},{"bn.js":297,"dup":86,"miller-rabin":479,"randombytes":535}],346:[function(require,module,exports){
 arguments[4][87][0].apply(exports,arguments)
 },{"dup":87}],347:[function(require,module,exports){
+'use strict';
+
+/******************************************************************************
+ * Created 2008-08-19.
+ *
+ * Dijkstra path-finding functions. Adapted from the Dijkstar Python project.
+ *
+ * Copyright (C) 2008
+ *   Wyatt Baldwin <self@wyattbaldwin.com>
+ *   All rights reserved
+ *
+ * Licensed under the MIT license.
+ *
+ *   http://www.opensource.org/licenses/mit-license.php
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *****************************************************************************/
+var dijkstra = {
+  single_source_shortest_paths: function(graph, s, d) {
+    // Predecessor map for each node that has been encountered.
+    // node ID => predecessor node ID
+    var predecessors = {};
+
+    // Costs of shortest paths from s to all nodes encountered.
+    // node ID => cost
+    var costs = {};
+    costs[s] = 0;
+
+    // Costs of shortest paths from s to all nodes encountered; differs from
+    // `costs` in that it provides easy access to the node that currently has
+    // the known shortest path from s.
+    // XXX: Do we actually need both `costs` and `open`?
+    var open = dijkstra.PriorityQueue.make();
+    open.push(s, 0);
+
+    var closest,
+        u, v,
+        cost_of_s_to_u,
+        adjacent_nodes,
+        cost_of_e,
+        cost_of_s_to_u_plus_cost_of_e,
+        cost_of_s_to_v,
+        first_visit;
+    while (!open.empty()) {
+      // In the nodes remaining in graph that have a known cost from s,
+      // find the node, u, that currently has the shortest path from s.
+      closest = open.pop();
+      u = closest.value;
+      cost_of_s_to_u = closest.cost;
+
+      // Get nodes adjacent to u...
+      adjacent_nodes = graph[u] || {};
+
+      // ...and explore the edges that connect u to those nodes, updating
+      // the cost of the shortest paths to any or all of those nodes as
+      // necessary. v is the node across the current edge from u.
+      for (v in adjacent_nodes) {
+        if (adjacent_nodes.hasOwnProperty(v)) {
+          // Get the cost of the edge running from u to v.
+          cost_of_e = adjacent_nodes[v];
+
+          // Cost of s to u plus the cost of u to v across e--this is *a*
+          // cost from s to v that may or may not be less than the current
+          // known cost to v.
+          cost_of_s_to_u_plus_cost_of_e = cost_of_s_to_u + cost_of_e;
+
+          // If we haven't visited v yet OR if the current known cost from s to
+          // v is greater than the new cost we just found (cost of s to u plus
+          // cost of u to v across e), update v's cost in the cost list and
+          // update v's predecessor in the predecessor list (it's now u).
+          cost_of_s_to_v = costs[v];
+          first_visit = (typeof costs[v] === 'undefined');
+          if (first_visit || cost_of_s_to_v > cost_of_s_to_u_plus_cost_of_e) {
+            costs[v] = cost_of_s_to_u_plus_cost_of_e;
+            open.push(v, cost_of_s_to_u_plus_cost_of_e);
+            predecessors[v] = u;
+          }
+        }
+      }
+    }
+
+    if (typeof d !== 'undefined' && typeof costs[d] === 'undefined') {
+      var msg = ['Could not find a path from ', s, ' to ', d, '.'].join('');
+      throw new Error(msg);
+    }
+
+    return predecessors;
+  },
+
+  extract_shortest_path_from_predecessor_list: function(predecessors, d) {
+    var nodes = [];
+    var u = d;
+    var predecessor;
+    while (u) {
+      nodes.push(u);
+      predecessor = predecessors[u];
+      u = predecessors[u];
+    }
+    nodes.reverse();
+    return nodes;
+  },
+
+  find_path: function(graph, s, d) {
+    var predecessors = dijkstra.single_source_shortest_paths(graph, s, d);
+    return dijkstra.extract_shortest_path_from_predecessor_list(
+      predecessors, d);
+  },
+
+  /**
+   * A very naive priority queue implementation.
+   */
+  PriorityQueue: {
+    make: function (opts) {
+      var T = dijkstra.PriorityQueue,
+          t = {},
+          key;
+      opts = opts || {};
+      for (key in T) {
+        if (T.hasOwnProperty(key)) {
+          t[key] = T[key];
+        }
+      }
+      t.queue = [];
+      t.sorter = opts.sorter || T.default_sorter;
+      return t;
+    },
+
+    default_sorter: function (a, b) {
+      return a.cost - b.cost;
+    },
+
+    /**
+     * Add a new item to the queue and ensure the highest priority element
+     * is at the front of the queue.
+     */
+    push: function (value, cost) {
+      var item = {value: value, cost: cost};
+      this.queue.push(item);
+      this.queue.sort(this.sorter);
+    },
+
+    /**
+     * Return the highest priority element in the queue.
+     */
+    pop: function () {
+      return this.queue.shift();
+    },
+
+    empty: function () {
+      return this.queue.length === 0;
+    }
+  }
+};
+
+
+// node.js module exports
+if (typeof module !== 'undefined') {
+  module.exports = dijkstra;
+}
+
+},{}],348:[function(require,module,exports){
 (function (global,Buffer){(function (){
 "use strict";
 
@@ -38361,7 +38528,7 @@ exports.decrypt = function(privateKey, opts) {
 
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
-},{"buffer":68,"crypto":77,"elliptic":348}],348:[function(require,module,exports){
+},{"buffer":68,"crypto":77,"elliptic":349}],349:[function(require,module,exports){
 'use strict';
 
 var elliptic = exports;
@@ -38377,7 +38544,7 @@ elliptic.curves = require('./elliptic/curves');
 elliptic.ec = require('./elliptic/ec');
 elliptic.eddsa = require('./elliptic/eddsa');
 
-},{"../package.json":364,"./elliptic/curve":351,"./elliptic/curves":354,"./elliptic/ec":355,"./elliptic/eddsa":358,"./elliptic/hmac-drbg":361,"./elliptic/utils":363,"brorand":298}],349:[function(require,module,exports){
+},{"../package.json":365,"./elliptic/curve":352,"./elliptic/curves":355,"./elliptic/ec":356,"./elliptic/eddsa":359,"./elliptic/hmac-drbg":362,"./elliptic/utils":364,"brorand":298}],350:[function(require,module,exports){
 'use strict';
 
 var bn = require('bn.js');
@@ -38730,7 +38897,7 @@ BasePoint.prototype.dblp = function dblp(k) {
   return r;
 };
 
-},{"../../elliptic":348,"bn.js":297}],350:[function(require,module,exports){
+},{"../../elliptic":349,"bn.js":297}],351:[function(require,module,exports){
 'use strict';
 
 var curve = require('../curve');
@@ -39138,9 +39305,9 @@ Point.prototype.eq = function eq(other) {
 Point.prototype.toP = Point.prototype.normalize;
 Point.prototype.mixedAdd = Point.prototype.add;
 
-},{"../../elliptic":348,"../curve":351,"bn.js":297,"inherits":456}],351:[function(require,module,exports){
+},{"../../elliptic":349,"../curve":352,"bn.js":297,"inherits":457}],352:[function(require,module,exports){
 arguments[4][92][0].apply(exports,arguments)
-},{"./base":349,"./edwards":350,"./mont":352,"./short":353,"dup":92}],352:[function(require,module,exports){
+},{"./base":350,"./edwards":351,"./mont":353,"./short":354,"dup":92}],353:[function(require,module,exports){
 'use strict';
 
 var curve = require('../curve');
@@ -39318,7 +39485,7 @@ Point.prototype.getX = function getX() {
   return this.x.fromRed();
 };
 
-},{"../../elliptic":348,"../curve":351,"bn.js":297,"inherits":456}],353:[function(require,module,exports){
+},{"../../elliptic":349,"../curve":352,"bn.js":297,"inherits":457}],354:[function(require,module,exports){
 'use strict';
 
 var curve = require('../curve');
@@ -40227,7 +40394,7 @@ JPoint.prototype.isInfinity = function isInfinity() {
   return this.z.cmpn(0) === 0;
 };
 
-},{"../../elliptic":348,"../curve":351,"bn.js":297,"inherits":456}],354:[function(require,module,exports){
+},{"../../elliptic":349,"../curve":352,"bn.js":297,"inherits":457}],355:[function(require,module,exports){
 'use strict';
 
 var curves = exports;
@@ -40434,7 +40601,7 @@ defineCurve('secp256k1', {
   ]
 });
 
-},{"../elliptic":348,"./precomputed/secp256k1":362,"hash.js":441}],355:[function(require,module,exports){
+},{"../elliptic":349,"./precomputed/secp256k1":363,"hash.js":442}],356:[function(require,module,exports){
 'use strict';
 
 var bn = require('bn.js');
@@ -40652,7 +40819,7 @@ EC.prototype.getKeyRecoveryParam = function(e, signature, Q, enc) {
   throw new Error('Unable to find valid recovery factor');
 };
 
-},{"../../elliptic":348,"./key":356,"./signature":357,"bn.js":297}],356:[function(require,module,exports){
+},{"../../elliptic":349,"./key":357,"./signature":358,"bn.js":297}],357:[function(require,module,exports){
 'use strict';
 
 var bn = require('bn.js');
@@ -40761,7 +40928,7 @@ KeyPair.prototype.inspect = function inspect() {
          ' pub: ' + (this.pub && this.pub.inspect()) + ' >';
 };
 
-},{"bn.js":297}],357:[function(require,module,exports){
+},{"bn.js":297}],358:[function(require,module,exports){
 'use strict';
 
 var bn = require('bn.js');
@@ -40898,7 +41065,7 @@ Signature.prototype.toDER = function toDER(enc) {
   return utils.encode(res, enc);
 };
 
-},{"../../elliptic":348,"bn.js":297}],358:[function(require,module,exports){
+},{"../../elliptic":349,"bn.js":297}],359:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -41018,7 +41185,7 @@ EDDSA.prototype.isPoint = function isPoint(val) {
   return val instanceof this.pointClass;
 };
 
-},{"../../elliptic":348,"./key":359,"./signature":360,"hash.js":441}],359:[function(require,module,exports){
+},{"../../elliptic":349,"./key":360,"./signature":361,"hash.js":442}],360:[function(require,module,exports){
 'use strict';
 
 var elliptic = require('../../elliptic');
@@ -41116,7 +41283,7 @@ KeyPair.prototype.getPublic = function getPublic(enc) {
 
 module.exports = KeyPair;
 
-},{"../../elliptic":348}],360:[function(require,module,exports){
+},{"../../elliptic":349}],361:[function(require,module,exports){
 'use strict';
 
 var bn = require('bn.js');
@@ -41184,7 +41351,7 @@ Signature.prototype.toHex = function toHex() {
 
 module.exports = Signature;
 
-},{"../../elliptic":348,"bn.js":297}],361:[function(require,module,exports){
+},{"../../elliptic":349,"bn.js":297}],362:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -41300,7 +41467,7 @@ HmacDRBG.prototype.generate = function generate(len, enc, add, addEnc) {
   return utils.encode(res, enc);
 };
 
-},{"../elliptic":348,"hash.js":441}],362:[function(require,module,exports){
+},{"../elliptic":349,"hash.js":442}],363:[function(require,module,exports){
 module.exports = {
   doubles: {
     step: 4,
@@ -42082,7 +42249,7 @@ module.exports = {
   }
 };
 
-},{}],363:[function(require,module,exports){
+},{}],364:[function(require,module,exports){
 'use strict';
 
 var utils = exports;
@@ -42257,7 +42424,7 @@ function intFromLE(bytes) {
 utils.intFromLE = intFromLE;
 
 
-},{"bn.js":297}],364:[function(require,module,exports){
+},{"bn.js":297}],365:[function(require,module,exports){
 module.exports={
   "_args": [
     [
@@ -42336,9 +42503,9 @@ module.exports={
   "version": "6.0.2"
 }
 
-},{}],365:[function(require,module,exports){
+},{}],366:[function(require,module,exports){
 arguments[4][89][0].apply(exports,arguments)
-},{"../package.json":380,"./elliptic/curve":368,"./elliptic/curves":371,"./elliptic/ec":372,"./elliptic/eddsa":375,"./elliptic/utils":379,"brorand":298,"dup":89}],366:[function(require,module,exports){
+},{"../package.json":381,"./elliptic/curve":369,"./elliptic/curves":372,"./elliptic/ec":373,"./elliptic/eddsa":376,"./elliptic/utils":380,"brorand":298,"dup":89}],367:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -42714,7 +42881,7 @@ BasePoint.prototype.dblp = function dblp(k) {
   return r;
 };
 
-},{"../utils":379,"bn.js":297}],367:[function(require,module,exports){
+},{"../utils":380,"bn.js":297}],368:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -43148,11 +43315,11 @@ Point.prototype.eqXToP = function eqXToP(x) {
 Point.prototype.toP = Point.prototype.normalize;
 Point.prototype.mixedAdd = Point.prototype.add;
 
-},{"../utils":379,"./base":366,"bn.js":297,"inherits":456}],368:[function(require,module,exports){
+},{"../utils":380,"./base":367,"bn.js":297,"inherits":457}],369:[function(require,module,exports){
 arguments[4][92][0].apply(exports,arguments)
-},{"./base":366,"./edwards":367,"./mont":369,"./short":370,"dup":92}],369:[function(require,module,exports){
+},{"./base":367,"./edwards":368,"./mont":370,"./short":371,"dup":92}],370:[function(require,module,exports){
 arguments[4][93][0].apply(exports,arguments)
-},{"../utils":379,"./base":366,"bn.js":297,"dup":93,"inherits":456}],370:[function(require,module,exports){
+},{"../utils":380,"./base":367,"bn.js":297,"dup":93,"inherits":457}],371:[function(require,module,exports){
 'use strict';
 
 var utils = require('../utils');
@@ -44090,7 +44257,7 @@ JPoint.prototype.isInfinity = function isInfinity() {
   return this.z.cmpn(0) === 0;
 };
 
-},{"../utils":379,"./base":366,"bn.js":297,"inherits":456}],371:[function(require,module,exports){
+},{"../utils":380,"./base":367,"bn.js":297,"inherits":457}],372:[function(require,module,exports){
 'use strict';
 
 var curves = exports;
@@ -44298,7 +44465,7 @@ defineCurve('secp256k1', {
   ]
 });
 
-},{"./curve":368,"./precomputed/secp256k1":378,"./utils":379,"hash.js":441}],372:[function(require,module,exports){
+},{"./curve":369,"./precomputed/secp256k1":379,"./utils":380,"hash.js":442}],373:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -44541,7 +44708,7 @@ EC.prototype.getKeyRecoveryParam = function(e, signature, Q, enc) {
   throw new Error('Unable to find valid recovery factor');
 };
 
-},{"../curves":371,"../utils":379,"./key":373,"./signature":374,"bn.js":297,"brorand":298,"hmac-drbg":453}],373:[function(require,module,exports){
+},{"../curves":372,"../utils":380,"./key":374,"./signature":375,"bn.js":297,"brorand":298,"hmac-drbg":454}],374:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -44661,7 +44828,7 @@ KeyPair.prototype.inspect = function inspect() {
          ' pub: ' + (this.pub && this.pub.inspect()) + ' >';
 };
 
-},{"../utils":379,"bn.js":297}],374:[function(require,module,exports){
+},{"../utils":380,"bn.js":297}],375:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -44797,7 +44964,7 @@ Signature.prototype.toDER = function toDER(enc) {
   return utils.encode(res, enc);
 };
 
-},{"../utils":379,"bn.js":297}],375:[function(require,module,exports){
+},{"../utils":380,"bn.js":297}],376:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -44917,9 +45084,9 @@ EDDSA.prototype.isPoint = function isPoint(val) {
   return val instanceof this.pointClass;
 };
 
-},{"../curves":371,"../utils":379,"./key":376,"./signature":377,"hash.js":441}],376:[function(require,module,exports){
+},{"../curves":372,"../utils":380,"./key":377,"./signature":378,"hash.js":442}],377:[function(require,module,exports){
 arguments[4][100][0].apply(exports,arguments)
-},{"../utils":379,"dup":100}],377:[function(require,module,exports){
+},{"../utils":380,"dup":100}],378:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -44986,9 +45153,9 @@ Signature.prototype.toHex = function toHex() {
 
 module.exports = Signature;
 
-},{"../utils":379,"bn.js":297}],378:[function(require,module,exports){
-arguments[4][362][0].apply(exports,arguments)
-},{"dup":362}],379:[function(require,module,exports){
+},{"../utils":380,"bn.js":297}],379:[function(require,module,exports){
+arguments[4][363][0].apply(exports,arguments)
+},{"dup":363}],380:[function(require,module,exports){
 'use strict';
 
 var utils = exports;
@@ -45110,7 +45277,7 @@ function intFromLE(bytes) {
 utils.intFromLE = intFromLE;
 
 
-},{"bn.js":297,"minimalistic-assert":479,"minimalistic-crypto-utils":480}],380:[function(require,module,exports){
+},{"bn.js":297,"minimalistic-assert":480,"minimalistic-crypto-utils":481}],381:[function(require,module,exports){
 module.exports={
   "_args": [
     [
@@ -45208,7 +45375,7 @@ module.exports={
   "version": "6.5.0"
 }
 
-},{}],381:[function(require,module,exports){
+},{}],382:[function(require,module,exports){
 'use strict';
 
 /* globals
@@ -45387,7 +45554,7 @@ module.exports = function GetIntrinsic(name, allowMissing) {
 	return INTRINSICS[key];
 };
 
-},{}],382:[function(require,module,exports){
+},{}],383:[function(require,module,exports){
 'use strict';
 
 var GetIntrinsic = require('./GetIntrinsic');
@@ -45624,7 +45791,7 @@ var ES5 = {
 
 module.exports = ES5;
 
-},{"./GetIntrinsic":381,"./helpers/assertRecord":383,"./helpers/isFinite":384,"./helpers/isNaN":385,"./helpers/mod":386,"./helpers/sign":387,"es-to-primitive/es5":388,"has":439,"is-callable":457}],383:[function(require,module,exports){
+},{"./GetIntrinsic":382,"./helpers/assertRecord":384,"./helpers/isFinite":385,"./helpers/isNaN":386,"./helpers/mod":387,"./helpers/sign":388,"es-to-primitive/es5":389,"has":440,"is-callable":458}],384:[function(require,module,exports){
 'use strict';
 
 var GetIntrinsic = require('../GetIntrinsic');
@@ -45675,28 +45842,28 @@ module.exports = function assertRecord(ES, recordType, argumentName, value) {
   console.log(predicate(ES, value), value);
 };
 
-},{"../GetIntrinsic":381,"has":439}],384:[function(require,module,exports){
+},{"../GetIntrinsic":382,"has":440}],385:[function(require,module,exports){
 var $isNaN = Number.isNaN || function (a) { return a !== a; };
 
 module.exports = Number.isFinite || function (x) { return typeof x === 'number' && !$isNaN(x) && x !== Infinity && x !== -Infinity; };
 
-},{}],385:[function(require,module,exports){
+},{}],386:[function(require,module,exports){
 module.exports = Number.isNaN || function isNaN(a) {
 	return a !== a;
 };
 
-},{}],386:[function(require,module,exports){
+},{}],387:[function(require,module,exports){
 module.exports = function mod(number, modulo) {
 	var remain = number % modulo;
 	return Math.floor(remain >= 0 ? remain : remain + modulo);
 };
 
-},{}],387:[function(require,module,exports){
+},{}],388:[function(require,module,exports){
 module.exports = function sign(number) {
 	return number >= 0 ? 1 : -1;
 };
 
-},{}],388:[function(require,module,exports){
+},{}],389:[function(require,module,exports){
 'use strict';
 
 var toStr = Object.prototype.toString;
@@ -45743,12 +45910,12 @@ module.exports = function ToPrimitive(input) {
 	return ES5internalSlots['[[DefaultValue]]'](input);
 };
 
-},{"./helpers/isPrimitive":389,"is-callable":457}],389:[function(require,module,exports){
+},{"./helpers/isPrimitive":390,"is-callable":458}],390:[function(require,module,exports){
 module.exports = function isPrimitive(value) {
 	return value === null || (typeof value !== 'function' && typeof value !== 'object');
 };
 
-},{}],390:[function(require,module,exports){
+},{}],391:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -45763,7 +45930,7 @@ function calculateContractAddress(creatorAddress, nonce) {
     var address = addressBuffer.toString('hex');
     return (0, _ethereumjsUtil.toChecksumAddress)(address);
 }
-},{"ethereumjs-util":417}],391:[function(require,module,exports){
+},{"ethereumjs-util":418}],392:[function(require,module,exports){
 (function (Buffer){(function (){
 'use strict';
 
@@ -45808,7 +45975,7 @@ function parse(str) {
     return ret;
 }
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./public-key":399,"buffer":68}],392:[function(require,module,exports){
+},{"./public-key":400,"buffer":68}],393:[function(require,module,exports){
 (function (Buffer){(function (){
 'use strict';
 
@@ -45867,7 +46034,7 @@ function createIdentity(entropy) {
     return identity;
 }
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./public-key-by-private-key":398,"buffer":68,"eth-lib/lib/account":408,"eth-lib/lib/bytes":410,"eth-lib/lib/hash":411}],393:[function(require,module,exports){
+},{"./public-key-by-private-key":399,"buffer":68,"eth-lib/lib/account":409,"eth-lib/lib/bytes":411,"eth-lib/lib/hash":412}],394:[function(require,module,exports){
 (function (Buffer){(function (){
 'use strict';
 
@@ -45901,7 +46068,7 @@ function decryptWithPrivateKey(privateKey, encrypted) {
     });
 }
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./cipher":391,"./util":405,"buffer":68,"eccrypto":347}],394:[function(require,module,exports){
+},{"./cipher":392,"./util":406,"buffer":68,"eccrypto":348}],395:[function(require,module,exports){
 (function (Buffer){(function (){
 'use strict';
 
@@ -45933,7 +46100,7 @@ function encryptWithPublicKey(publicKey, message) {
     });
 }
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./public-key":399,"buffer":68,"eccrypto":347}],395:[function(require,module,exports){
+},{"./public-key":400,"buffer":68,"eccrypto":348}],396:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -45960,7 +46127,7 @@ function keccak256(params) {
 }
 
 var SIGN_PREFIX = exports.SIGN_PREFIX = '\x19Ethereum Signed Message:\n32';
-},{"ethers/utils/solidity.js":428}],396:[function(require,module,exports){
+},{"ethers/utils/solidity.js":429}],397:[function(require,module,exports){
 (function (Buffer){(function (){
 'use strict';
 
@@ -46015,7 +46182,7 @@ function decompress(compressedString) {
     return (0, _util.addTrailing0x)(hex);
 }
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./util":405,"buffer":68}],397:[function(require,module,exports){
+},{"./util":406,"buffer":68}],398:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -46125,7 +46292,7 @@ exports['default'] = {
     vrs: vrs,
     util: util
 };
-},{"./calculate-contract-address":390,"./cipher":391,"./create-identity":392,"./decrypt-with-private-key":393,"./encrypt-with-public-key":394,"./hash":395,"./hex":396,"./public-key":399,"./public-key-by-private-key":398,"./recover":401,"./recover-public-key":400,"./sign":403,"./sign-transaction":402,"./tx-data-by-compiled":404,"./util":405,"./vrs":406}],398:[function(require,module,exports){
+},{"./calculate-contract-address":391,"./cipher":392,"./create-identity":393,"./decrypt-with-private-key":394,"./encrypt-with-public-key":395,"./hash":396,"./hex":397,"./public-key":400,"./public-key-by-private-key":399,"./recover":402,"./recover-public-key":401,"./sign":404,"./sign-transaction":403,"./tx-data-by-compiled":405,"./util":406,"./vrs":407}],399:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -46148,7 +46315,7 @@ function publicKeyOfPrivateKey(privateKey) {
     var publicKeyBuffer = (0, _ethereumjsUtil.privateToPublic)(privateKey);
     return publicKeyBuffer.toString('hex');
 }
-},{"./util":405,"ethereumjs-util":417}],399:[function(require,module,exports){
+},{"./util":406,"ethereumjs-util":418}],400:[function(require,module,exports){
 (function (Buffer){(function (){
 'use strict';
 
@@ -46200,7 +46367,7 @@ function toAddress(publicKey) {
     return checkSumAdress;
 }
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":68,"ethereumjs-util":417,"secp256k1":515}],400:[function(require,module,exports){
+},{"buffer":68,"ethereumjs-util":418,"secp256k1":545}],401:[function(require,module,exports){
 (function (Buffer){(function (){
 'use strict';
 
@@ -46236,7 +46403,7 @@ function recoverPublicKey(signature, hash) {
     return pubKey;
 }
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./util":405,"buffer":68,"secp256k1":515}],401:[function(require,module,exports){
+},{"./util":406,"buffer":68,"secp256k1":545}],402:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -46263,7 +46430,7 @@ function recover(sigString, hash) {
     var address = (0, _publicKey.toAddress)(pubkey);
     return address;
 }
-},{"./public-key":399,"./recover-public-key":400}],402:[function(require,module,exports){
+},{"./public-key":400,"./recover-public-key":401}],403:[function(require,module,exports){
 (function (Buffer){(function (){
 'use strict';
 
@@ -46298,7 +46465,7 @@ function signTransaction(rawTx, privateKey) {
     return serializedTx;
 }
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./public-key":399,"./public-key-by-private-key":398,"buffer":68,"ethereumjs-tx":415}],403:[function(require,module,exports){
+},{"./public-key":400,"./public-key-by-private-key":399,"buffer":68,"ethereumjs-tx":416}],404:[function(require,module,exports){
 (function (Buffer){(function (){
 'use strict';
 
@@ -46330,7 +46497,7 @@ function sign(privateKey, hash) {
     return newSignature;
 }
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./util":405,"buffer":68,"secp256k1":515}],404:[function(require,module,exports){
+},{"./util":406,"buffer":68,"secp256k1":545}],405:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -46357,7 +46524,7 @@ function txDataByCompiled(abi, bytecode, args) {
 
     return deployTransaction.data;
 }
-},{"babel-runtime/helpers/toConsumableArray":243,"ethers/contracts/contract.js":418}],405:[function(require,module,exports){
+},{"babel-runtime/helpers/toConsumableArray":243,"ethers/contracts/contract.js":419}],406:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -46372,7 +46539,7 @@ function removeTrailing0x(str) {
 function addTrailing0x(str) {
     if (!str.startsWith('0x')) return '0x' + str;else return str;
 }
-},{}],406:[function(require,module,exports){
+},{}],407:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -46406,7 +46573,7 @@ function toString(sig) {
     var partsArray = [sig.v, sig.r, sig.s];
     return (0, _account.encodeSignature)(partsArray);
 }
-},{"eth-lib/lib/account":408}],407:[function(require,module,exports){
+},{"eth-lib/lib/account":409}],408:[function(require,module,exports){
 (function (Buffer){(function (){
 var sha3 = require('js-sha3').keccak_256
 var uts46 = require('idna-uts46-hx')
@@ -46440,7 +46607,7 @@ exports.hash = namehash
 exports.normalize = normalize
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":68,"idna-uts46-hx":455,"js-sha3":460}],408:[function(require,module,exports){
+},{"buffer":68,"idna-uts46-hx":456,"js-sha3":461}],409:[function(require,module,exports){
 (function (Buffer){(function (){
 const Bytes = require("./bytes");
 const Nat = require("./nat");
@@ -46507,7 +46674,7 @@ module.exports = {
   decodeSignature
 };
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./bytes":410,"./hash":411,"./nat":412,"./rlp":413,"buffer":68,"elliptic":365}],409:[function(require,module,exports){
+},{"./bytes":411,"./hash":412,"./nat":413,"./rlp":414,"buffer":68,"elliptic":366}],410:[function(require,module,exports){
 const generate = (num, fn) => {
   let a = [];
   for (var i = 0; i < num; ++i) a.push(fn(i));
@@ -46537,7 +46704,7 @@ module.exports = {
   flatten,
   chunksOf
 };
-},{}],410:[function(require,module,exports){
+},{}],411:[function(require,module,exports){
 const A = require("./array.js");
 
 const at = (bytes, index) => parseInt(bytes.slice(index * 2 + 2, index * 2 + 4), 16);
@@ -46696,7 +46863,7 @@ module.exports = {
   fromUint8Array,
   toUint8Array
 };
-},{"./array.js":409}],411:[function(require,module,exports){
+},{"./array.js":410}],412:[function(require,module,exports){
 // This was ported from https://github.com/emn178/js-sha3, with some minor
 // modifications and pruning. It is licensed under MIT:
 //
@@ -47028,7 +47195,7 @@ module.exports = {
   keccak256s: keccak(256),
   keccak512s: keccak(512)
 };
-},{}],412:[function(require,module,exports){
+},{}],413:[function(require,module,exports){
 const BN = require("bn.js");
 const Bytes = require("./bytes");
 
@@ -47073,7 +47240,7 @@ module.exports = {
   div,
   sub
 };
-},{"./bytes":410,"bn.js":297}],413:[function(require,module,exports){
+},{"./bytes":411,"bn.js":297}],414:[function(require,module,exports){
 // The RLP format
 // Serialization and deserialization for the BytesTree type, under the following grammar:
 // | First byte | Meaning                                                                    |
@@ -47140,7 +47307,7 @@ const decode = hex => {
 };
 
 module.exports = { encode, decode };
-},{}],414:[function(require,module,exports){
+},{}],415:[function(require,module,exports){
 module.exports={
   "genesisGasLimit": {
     "v": 5000,
@@ -47377,7 +47544,7 @@ module.exports={
   }
 }
 
-},{}],415:[function(require,module,exports){
+},{}],416:[function(require,module,exports){
 (function (Buffer){(function (){
 'use strict';
 
@@ -47705,7 +47872,7 @@ var Transaction = function () {
 
 module.exports = Transaction;
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":68,"ethereum-common/params.json":414,"ethereumjs-util":416}],416:[function(require,module,exports){
+},{"buffer":68,"ethereum-common/params.json":415,"ethereumjs-util":417}],417:[function(require,module,exports){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -48421,7 +48588,7 @@ exports.defineProperties = function (self, fields, data) {
     }
   }
 };
-},{"assert":17,"bn.js":297,"create-hash":330,"ethjs-util":433,"keccak":461,"rlp":511,"safe-buffer":512,"secp256k1":515}],417:[function(require,module,exports){
+},{"assert":17,"bn.js":297,"create-hash":330,"ethjs-util":434,"keccak":462,"rlp":541,"safe-buffer":542,"secp256k1":545}],418:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var BN = require("bn.js");
@@ -49020,7 +49187,7 @@ function isValidSigRecovery(recovery) {
     return recovery === 0 || recovery === 1;
 }
 
-},{"assert":17,"bn.js":297,"create-hash":330,"ethjs-util":433,"keccak":461,"rlp":511,"safe-buffer":512,"secp256k1":515}],418:[function(require,module,exports){
+},{"assert":17,"bn.js":297,"create-hash":330,"ethjs-util":434,"keccak":462,"rlp":541,"safe-buffer":542,"secp256k1":545}],419:[function(require,module,exports){
 'use strict';
 
 var Interface = require('./interface.js');
@@ -49353,7 +49520,7 @@ utils.defineProperty(Contract, 'getDeployTransaction', function(bytecode, contra
 
 module.exports = Contract;
 
-},{"../utils/address.js":421,"../utils/bignumber.js":422,"../utils/convert.js":423,"../utils/errors":424,"../utils/properties.js":426,"./interface.js":419}],419:[function(require,module,exports){
+},{"../utils/address.js":422,"../utils/bignumber.js":423,"../utils/convert.js":424,"../utils/errors":425,"../utils/properties.js":427,"./interface.js":420}],420:[function(require,module,exports){
 'use strict';
 
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
@@ -49766,7 +49933,7 @@ utils.defineProperty(Interface.prototype, 'parseTransaction', function(tx) {
 
 module.exports = Interface;
 
-},{"../utils/abi-coder":420,"../utils/convert":423,"../utils/errors":424,"../utils/keccak256":425,"../utils/properties":426,"../utils/utf8":430}],420:[function(require,module,exports){
+},{"../utils/abi-coder":421,"../utils/convert":424,"../utils/errors":425,"../utils/keccak256":426,"../utils/properties":427,"../utils/utf8":431}],421:[function(require,module,exports){
 'use strict';
 
 // See: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
@@ -50786,7 +50953,7 @@ utils.defineProperty(Coder, 'parseSignature', parseSignature);
 
 module.exports = Coder
 
-},{"../utils/address":421,"../utils/bignumber.js":422,"../utils/convert.js":423,"../utils/properties.js":426,"../utils/utf8.js":430,"./errors":424}],421:[function(require,module,exports){
+},{"../utils/address":422,"../utils/bignumber.js":423,"../utils/convert.js":424,"../utils/properties.js":427,"../utils/utf8.js":431,"./errors":425}],422:[function(require,module,exports){
 
 var BN = require('bn.js');
 
@@ -50912,7 +51079,7 @@ module.exports = {
     getAddress: getAddress,
 }
 
-},{"./convert":423,"./keccak256":425,"./throw-error":429,"bn.js":297}],422:[function(require,module,exports){
+},{"./convert":424,"./keccak256":426,"./throw-error":430,"bn.js":297}],423:[function(require,module,exports){
 /**
  *  BigNumber
  *
@@ -51063,7 +51230,7 @@ module.exports = {
     BigNumber: BigNumber
 };
 
-},{"./convert":423,"./properties":426,"./throw-error":429,"bn.js":297}],423:[function(require,module,exports){
+},{"./convert":424,"./properties":427,"./throw-error":430,"bn.js":297}],424:[function(require,module,exports){
 /**
  *  Conversion Utilities
  *
@@ -51289,7 +51456,7 @@ module.exports = {
     hexZeroPad: hexZeroPad,
 };
 
-},{"./errors":424,"./properties.js":426}],424:[function(require,module,exports){
+},{"./errors":425,"./properties.js":427}],425:[function(require,module,exports){
 'use strict';
 
 var defineProperty = require('./properties').defineProperty;
@@ -51382,7 +51549,7 @@ defineProperty(codes, 'checkNew', function(self, kind) {
 
 module.exports = codes;
 
-},{"./properties":426}],425:[function(require,module,exports){
+},{"./properties":427}],426:[function(require,module,exports){
 'use strict';
 
 var sha3 = require('js-sha3');
@@ -51396,7 +51563,7 @@ function keccak256(data) {
 
 module.exports = keccak256;
 
-},{"./convert.js":423,"js-sha3":460}],426:[function(require,module,exports){
+},{"./convert.js":424,"js-sha3":461}],427:[function(require,module,exports){
 'use strict';
 
 function defineProperty(object, name, value) {
@@ -51420,7 +51587,7 @@ module.exports = {
     defineProperty: defineProperty,
 };
 
-},{}],427:[function(require,module,exports){
+},{}],428:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -51445,7 +51612,7 @@ module.exports = {
     createSha512: hash.sha512,
 }
 
-},{"./convert.js":423,"hash.js":441}],428:[function(require,module,exports){
+},{"./convert.js":424,"hash.js":442}],429:[function(require,module,exports){
 'use strict';
 
 var bigNumberify = require('./bignumber').bigNumberify;
@@ -51544,7 +51711,7 @@ module.exports = {
     sha256: sha256,
 }
 
-},{"./address":421,"./bignumber":422,"./convert":423,"./keccak256":425,"./sha2":427,"./utf8":430}],429:[function(require,module,exports){
+},{"./address":422,"./bignumber":423,"./convert":424,"./keccak256":426,"./sha2":428,"./utf8":431}],430:[function(require,module,exports){
 'use strict';
 
 function throwError(message, params) {
@@ -51557,7 +51724,7 @@ function throwError(message, params) {
 
 module.exports = throwError;
 
-},{}],430:[function(require,module,exports){
+},{}],431:[function(require,module,exports){
 
 var convert = require('./convert.js');
 
@@ -51672,7 +51839,7 @@ module.exports = {
     toUtf8String: bytesToUtf8,
 };
 
-},{"./convert.js":423}],431:[function(require,module,exports){
+},{"./convert.js":424}],432:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -51841,7 +52008,7 @@ module.exports = {
   fromWei: fromWei,
   toWei: toWei
 };
-},{"bn.js":432,"number-to-bn":482}],432:[function(require,module,exports){
+},{"bn.js":433,"number-to-bn":483}],433:[function(require,module,exports){
 (function (module, exports) {
   'use strict';
 
@@ -55270,7 +55437,7 @@ module.exports = {
   };
 })(typeof module === 'undefined' || module, this);
 
-},{}],433:[function(require,module,exports){
+},{}],434:[function(require,module,exports){
 (function (Buffer){(function (){
 'use strict';
 
@@ -55493,9 +55660,9 @@ module.exports = {
   isHexString: isHexString
 };
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":68,"is-hex-prefixed":459,"strip-hex-prefix":535}],434:[function(require,module,exports){
+},{"buffer":68,"is-hex-prefixed":460,"strip-hex-prefix":565}],435:[function(require,module,exports){
 arguments[4][107][0].apply(exports,arguments)
-},{"dup":107,"md5.js":477,"safe-buffer":512}],435:[function(require,module,exports){
+},{"dup":107,"md5.js":478,"safe-buffer":542}],436:[function(require,module,exports){
 'use strict';
 
 var isCallable = require('is-callable');
@@ -55559,7 +55726,7 @@ var forEach = function forEach(list, iterator, thisArg) {
 
 module.exports = forEach;
 
-},{"is-callable":457}],436:[function(require,module,exports){
+},{"is-callable":458}],437:[function(require,module,exports){
 'use strict';
 
 /* eslint no-invalid-this: 1 */
@@ -55613,14 +55780,14 @@ module.exports = function bind(that) {
     return bound;
 };
 
-},{}],437:[function(require,module,exports){
+},{}],438:[function(require,module,exports){
 'use strict';
 
 var implementation = require('./implementation');
 
 module.exports = Function.prototype.bind || implementation;
 
-},{"./implementation":436}],438:[function(require,module,exports){
+},{"./implementation":437}],439:[function(require,module,exports){
 (function (global){(function (){
 var win;
 
@@ -55637,14 +55804,14 @@ if (typeof window !== "undefined") {
 module.exports = win;
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],439:[function(require,module,exports){
+},{}],440:[function(require,module,exports){
 'use strict';
 
 var bind = require('function-bind');
 
 module.exports = bind.call(Function.call, Object.prototype.hasOwnProperty);
 
-},{"function-bind":437}],440:[function(require,module,exports){
+},{"function-bind":438}],441:[function(require,module,exports){
 'use strict'
 var Buffer = require('safe-buffer').Buffer
 var Transform = require('stream').Transform
@@ -55741,33 +55908,33 @@ HashBase.prototype._digest = function () {
 
 module.exports = HashBase
 
-},{"inherits":456,"safe-buffer":512,"stream":185}],441:[function(require,module,exports){
+},{"inherits":457,"safe-buffer":542,"stream":185}],442:[function(require,module,exports){
 arguments[4][124][0].apply(exports,arguments)
-},{"./hash/common":442,"./hash/hmac":443,"./hash/ripemd":444,"./hash/sha":445,"./hash/utils":452,"dup":124}],442:[function(require,module,exports){
+},{"./hash/common":443,"./hash/hmac":444,"./hash/ripemd":445,"./hash/sha":446,"./hash/utils":453,"dup":124}],443:[function(require,module,exports){
 arguments[4][125][0].apply(exports,arguments)
-},{"./utils":452,"dup":125,"minimalistic-assert":479}],443:[function(require,module,exports){
+},{"./utils":453,"dup":125,"minimalistic-assert":480}],444:[function(require,module,exports){
 arguments[4][126][0].apply(exports,arguments)
-},{"./utils":452,"dup":126,"minimalistic-assert":479}],444:[function(require,module,exports){
+},{"./utils":453,"dup":126,"minimalistic-assert":480}],445:[function(require,module,exports){
 arguments[4][127][0].apply(exports,arguments)
-},{"./common":442,"./utils":452,"dup":127}],445:[function(require,module,exports){
+},{"./common":443,"./utils":453,"dup":127}],446:[function(require,module,exports){
 arguments[4][128][0].apply(exports,arguments)
-},{"./sha/1":446,"./sha/224":447,"./sha/256":448,"./sha/384":449,"./sha/512":450,"dup":128}],446:[function(require,module,exports){
+},{"./sha/1":447,"./sha/224":448,"./sha/256":449,"./sha/384":450,"./sha/512":451,"dup":128}],447:[function(require,module,exports){
 arguments[4][129][0].apply(exports,arguments)
-},{"../common":442,"../utils":452,"./common":451,"dup":129}],447:[function(require,module,exports){
+},{"../common":443,"../utils":453,"./common":452,"dup":129}],448:[function(require,module,exports){
 arguments[4][130][0].apply(exports,arguments)
-},{"../utils":452,"./256":448,"dup":130}],448:[function(require,module,exports){
+},{"../utils":453,"./256":449,"dup":130}],449:[function(require,module,exports){
 arguments[4][131][0].apply(exports,arguments)
-},{"../common":442,"../utils":452,"./common":451,"dup":131,"minimalistic-assert":479}],449:[function(require,module,exports){
+},{"../common":443,"../utils":453,"./common":452,"dup":131,"minimalistic-assert":480}],450:[function(require,module,exports){
 arguments[4][132][0].apply(exports,arguments)
-},{"../utils":452,"./512":450,"dup":132}],450:[function(require,module,exports){
+},{"../utils":453,"./512":451,"dup":132}],451:[function(require,module,exports){
 arguments[4][133][0].apply(exports,arguments)
-},{"../common":442,"../utils":452,"dup":133,"minimalistic-assert":479}],451:[function(require,module,exports){
+},{"../common":443,"../utils":453,"dup":133,"minimalistic-assert":480}],452:[function(require,module,exports){
 arguments[4][134][0].apply(exports,arguments)
-},{"../utils":452,"dup":134}],452:[function(require,module,exports){
+},{"../utils":453,"dup":134}],453:[function(require,module,exports){
 arguments[4][135][0].apply(exports,arguments)
-},{"dup":135,"inherits":456,"minimalistic-assert":479}],453:[function(require,module,exports){
+},{"dup":135,"inherits":457,"minimalistic-assert":480}],454:[function(require,module,exports){
 arguments[4][136][0].apply(exports,arguments)
-},{"dup":136,"hash.js":441,"minimalistic-assert":479,"minimalistic-crypto-utils":480}],454:[function(require,module,exports){
+},{"dup":136,"hash.js":442,"minimalistic-assert":480,"minimalistic-crypto-utils":481}],455:[function(require,module,exports){
 /* This file is generated from the Unicode IDNA table, using
    the build-unicode-tables.py script. Please edit that
    script instead of this file. */
@@ -56526,7 +56693,7 @@ return {
 };
 }));
 
-},{}],455:[function(require,module,exports){
+},{}],456:[function(require,module,exports){
 (function(root, factory) {
   /* istanbul ignore next */
   if (typeof define === 'function' && define.amd) {
@@ -56660,9 +56827,9 @@ return {
   };
 }));
 
-},{"./idna-map":454,"punycode":168}],456:[function(require,module,exports){
+},{"./idna-map":455,"punycode":168}],457:[function(require,module,exports){
 arguments[4][139][0].apply(exports,arguments)
-},{"dup":139}],457:[function(require,module,exports){
+},{"dup":139}],458:[function(require,module,exports){
 'use strict';
 
 var fnToStr = Function.prototype.toString;
@@ -56701,7 +56868,7 @@ module.exports = function isCallable(value) {
 	return strClass === fnClass || strClass === genClass;
 };
 
-},{}],458:[function(require,module,exports){
+},{}],459:[function(require,module,exports){
 module.exports = isFunction
 
 var toString = Object.prototype.toString
@@ -56718,7 +56885,7 @@ function isFunction (fn) {
       fn === window.prompt))
 };
 
-},{}],459:[function(require,module,exports){
+},{}],460:[function(require,module,exports){
 /**
  * Returns a `Boolean` on whether or not the a `String` starts with '0x'
  * @param {String} str the string input value
@@ -56733,7 +56900,7 @@ module.exports = function isHexPrefixed(str) {
   return str.slice(0, 2) === '0x';
 }
 
-},{}],460:[function(require,module,exports){
+},{}],461:[function(require,module,exports){
 (function (process,global){(function (){
 /**
  * [js-sha3]{@link https://github.com/emn178/js-sha3}
@@ -57212,11 +57379,11 @@ module.exports = function isHexPrefixed(str) {
 })();
 
 }).call(this)}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":160}],461:[function(require,module,exports){
+},{"_process":160}],462:[function(require,module,exports){
 'use strict'
 module.exports = require('./lib/api')(require('./lib/keccak'))
 
-},{"./lib/api":462,"./lib/keccak":466}],462:[function(require,module,exports){
+},{"./lib/api":463,"./lib/keccak":467}],463:[function(require,module,exports){
 'use strict'
 var createKeccak = require('./keccak')
 var createShake = require('./shake')
@@ -57246,7 +57413,7 @@ module.exports = function (KeccakState) {
   }
 }
 
-},{"./keccak":463,"./shake":464}],463:[function(require,module,exports){
+},{"./keccak":464,"./shake":465}],464:[function(require,module,exports){
 'use strict'
 var Buffer = require('safe-buffer').Buffer
 var Transform = require('stream').Transform
@@ -57332,7 +57499,7 @@ module.exports = function (KeccakState) {
   return Keccak
 }
 
-},{"inherits":456,"safe-buffer":512,"stream":185}],464:[function(require,module,exports){
+},{"inherits":457,"safe-buffer":542,"stream":185}],465:[function(require,module,exports){
 'use strict'
 var Buffer = require('safe-buffer').Buffer
 var Transform = require('stream').Transform
@@ -57409,7 +57576,7 @@ module.exports = function (KeccakState) {
   return Shake
 }
 
-},{"inherits":456,"safe-buffer":512,"stream":185}],465:[function(require,module,exports){
+},{"inherits":457,"safe-buffer":542,"stream":185}],466:[function(require,module,exports){
 'use strict'
 var P1600_ROUND_CONSTANTS = [1, 0, 32898, 0, 32906, 2147483648, 2147516416, 2147483648, 32907, 0, 2147483649, 0, 2147516545, 2147483648, 32777, 2147483648, 138, 0, 136, 0, 2147516425, 0, 2147483658, 0, 2147516555, 0, 139, 2147483648, 32905, 2147483648, 32771, 2147483648, 32770, 2147483648, 128, 2147483648, 32778, 0, 2147483658, 2147483648, 2147516545, 2147483648, 32896, 2147483648, 2147483649, 0, 2147516424, 2147483648]
 
@@ -57598,7 +57765,7 @@ exports.p1600 = function (s) {
   }
 }
 
-},{}],466:[function(require,module,exports){
+},{}],467:[function(require,module,exports){
 'use strict'
 var Buffer = require('safe-buffer').Buffer
 var keccakState = require('./keccak-state-unroll')
@@ -57670,7 +57837,7 @@ Keccak.prototype.copy = function (dest) {
 
 module.exports = Keccak
 
-},{"./keccak-state-unroll":465,"safe-buffer":512}],467:[function(require,module,exports){
+},{"./keccak-state-unroll":466,"safe-buffer":542}],468:[function(require,module,exports){
 (function (process,Buffer){(function (){
 /**
  * Create, import, and export ethereum keys.
@@ -58227,7 +58394,7 @@ module.exports = {
 };
 
 }).call(this)}).call(this,require('_process'),require("buffer").Buffer)
-},{"./lib/scrypt":468,"_process":160,"buffer":68,"crypto":77,"crypto-browserify":334,"fs":1,"keccak/js":461,"path":153,"scrypt":24,"secp256k1/elliptic":469,"sjcl":529,"uuid":476}],468:[function(require,module,exports){
+},{"./lib/scrypt":469,"_process":160,"buffer":68,"crypto":77,"crypto-browserify":334,"fs":1,"keccak/js":462,"path":153,"scrypt":24,"secp256k1/elliptic":470,"sjcl":559,"uuid":477}],469:[function(require,module,exports){
 (function (process,__dirname){(function (){
 // https://github.com/tonyg/js-scrypt
 module.exports = function (requested_total_memory) {
@@ -69948,11 +70115,11 @@ module.exports = function (requested_total_memory) {
 };
 
 }).call(this)}).call(this,require('_process'),"/node_modules/keythereum/lib")
-},{"_process":160,"fs":1,"path":153}],469:[function(require,module,exports){
+},{"_process":160,"fs":1,"path":153}],470:[function(require,module,exports){
 'use strict'
 module.exports = require('./lib')(require('./lib/elliptic'))
 
-},{"./lib":473,"./lib/elliptic":472}],470:[function(require,module,exports){
+},{"./lib":474,"./lib/elliptic":473}],471:[function(require,module,exports){
 (function (Buffer){(function (){
 'use strict'
 var toString = Object.prototype.toString
@@ -70000,7 +70167,7 @@ exports.isNumberInInterval = function (number, x, y, message) {
 }
 
 }).call(this)}).call(this,{"isBuffer":require("C:/Program Files/nodejs/node_modules/browserify/node_modules/is-buffer/index.js")})
-},{"C:/Program Files/nodejs/node_modules/browserify/node_modules/is-buffer/index.js":140}],471:[function(require,module,exports){
+},{"C:/Program Files/nodejs/node_modules/browserify/node_modules/is-buffer/index.js":140}],472:[function(require,module,exports){
 'use strict'
 var Buffer = require('safe-buffer').Buffer
 var bip66 = require('bip66')
@@ -70195,7 +70362,7 @@ exports.signatureImportLax = function (sig) {
   return { r: r, s: s }
 }
 
-},{"bip66":296,"safe-buffer":512}],472:[function(require,module,exports){
+},{"bip66":296,"safe-buffer":542}],473:[function(require,module,exports){
 'use strict'
 var Buffer = require('safe-buffer').Buffer
 var createHash = require('create-hash')
@@ -70457,7 +70624,7 @@ exports.ecdhUnsafe = function (publicKey, privateKey, compressed) {
   return Buffer.from(pair.pub.mul(scalar).encode(true, compressed))
 }
 
-},{"../messages.json":474,"bn.js":297,"create-hash":330,"elliptic":365,"safe-buffer":512}],473:[function(require,module,exports){
+},{"../messages.json":475,"bn.js":297,"create-hash":330,"elliptic":366,"safe-buffer":542}],474:[function(require,module,exports){
 'use strict'
 var assert = require('./assert')
 var der = require('./der')
@@ -70704,7 +70871,7 @@ module.exports = function (secp256k1) {
   }
 }
 
-},{"./assert":470,"./der":471,"./messages.json":474}],474:[function(require,module,exports){
+},{"./assert":471,"./der":472,"./messages.json":475}],475:[function(require,module,exports){
 module.exports={
   "COMPRESSED_TYPE_INVALID": "compressed should be a boolean",
   "EC_PRIVATE_KEY_TYPE_INVALID": "private key should be a Buffer",
@@ -70743,7 +70910,7 @@ module.exports={
   "TWEAK_LENGTH_INVALID": "tweak length is invalid"
 }
 
-},{}],475:[function(require,module,exports){
+},{}],476:[function(require,module,exports){
 (function (global){(function (){
 
 var rng;
@@ -70779,7 +70946,7 @@ module.exports = rng;
 
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],476:[function(require,module,exports){
+},{}],477:[function(require,module,exports){
 // Unique ID creation requires a high quality random # generator.  We feature
 // detect to determine the best RNG source, normalizing to a function that
 // returns 128-bits of randomness, since that's what's usually required
@@ -70938,17 +71105,17 @@ uuid.v4 = v4;
 
 module.exports = uuid;
 
-},{"./lib/rng":475}],477:[function(require,module,exports){
+},{"./lib/rng":476}],478:[function(require,module,exports){
 arguments[4][141][0].apply(exports,arguments)
-},{"dup":141,"hash-base":440,"inherits":456,"safe-buffer":512}],478:[function(require,module,exports){
+},{"dup":141,"hash-base":441,"inherits":457,"safe-buffer":542}],479:[function(require,module,exports){
 arguments[4][142][0].apply(exports,arguments)
-},{"bn.js":297,"brorand":298,"dup":142}],479:[function(require,module,exports){
+},{"bn.js":297,"brorand":298,"dup":142}],480:[function(require,module,exports){
 arguments[4][144][0].apply(exports,arguments)
-},{"dup":144}],480:[function(require,module,exports){
+},{"dup":144}],481:[function(require,module,exports){
 arguments[4][145][0].apply(exports,arguments)
-},{"dup":145}],481:[function(require,module,exports){
-arguments[4][432][0].apply(exports,arguments)
-},{"dup":432}],482:[function(require,module,exports){
+},{"dup":145}],482:[function(require,module,exports){
+arguments[4][433][0].apply(exports,arguments)
+},{"dup":433}],483:[function(require,module,exports){
 var BN = require('bn.js');
 var stripHexPrefix = require('strip-hex-prefix');
 
@@ -70988,9 +71155,9 @@ module.exports = function numberToBN(arg) {
   throw new Error('[number-to-bn] while converting number ' + JSON.stringify(arg) + ' to BN.js instance, error: invalid number value. Value must be an integer, hex string, BN or BigNumber instance. Note, decimals are not supported.');
 }
 
-},{"bn.js":481,"strip-hex-prefix":535}],483:[function(require,module,exports){
+},{"bn.js":482,"strip-hex-prefix":565}],484:[function(require,module,exports){
 arguments[4][146][0].apply(exports,arguments)
-},{"dup":146}],484:[function(require,module,exports){
+},{"dup":146}],485:[function(require,module,exports){
 'use strict';
 
 var keysShim;
@@ -71114,7 +71281,7 @@ if (!Object.keys) {
 }
 module.exports = keysShim;
 
-},{"./isArguments":486}],485:[function(require,module,exports){
+},{"./isArguments":487}],486:[function(require,module,exports){
 'use strict';
 
 var slice = Array.prototype.slice;
@@ -71148,7 +71315,7 @@ keysShim.shim = function shimObjectKeys() {
 
 module.exports = keysShim;
 
-},{"./implementation":484,"./isArguments":486}],486:[function(require,module,exports){
+},{"./implementation":485,"./isArguments":487}],487:[function(require,module,exports){
 'use strict';
 
 var toStr = Object.prototype.toString;
@@ -71167,7 +71334,7 @@ module.exports = function isArguments(value) {
 	return isArgs;
 };
 
-},{}],487:[function(require,module,exports){
+},{}],488:[function(require,module,exports){
 // This file is the concatenation of many js files.
 // See http://github.com/jimhigson/oboe.js for the raw source
 
@@ -73871,13 +74038,13 @@ oboe.drop = function() {
       }
    }()), Object, Array, Error, JSON);
 
-},{}],488:[function(require,module,exports){
+},{}],489:[function(require,module,exports){
 arguments[4][148][0].apply(exports,arguments)
-},{"dup":148}],489:[function(require,module,exports){
+},{"dup":148}],490:[function(require,module,exports){
 arguments[4][149][0].apply(exports,arguments)
-},{"./certificate":490,"asn1.js":228,"dup":149}],490:[function(require,module,exports){
+},{"./certificate":491,"asn1.js":228,"dup":149}],491:[function(require,module,exports){
 arguments[4][150][0].apply(exports,arguments)
-},{"asn1.js":228,"dup":150}],491:[function(require,module,exports){
+},{"asn1.js":228,"dup":150}],492:[function(require,module,exports){
 // adapted from https://github.com/apatil/pemstrip
 var findProc = /Proc-Type: 4,ENCRYPTED[\n\r]+DEK-Info: AES-((?:128)|(?:192)|(?:256))-CBC,([0-9A-H]+)[\n\r]+([0-9A-z\n\r\+\/\=]+)[\n\r]+/m
 var startRegex = /^-----BEGIN ((?:.*? KEY)|CERTIFICATE)-----/m
@@ -73910,7 +74077,7 @@ module.exports = function (okey, password) {
   }
 }
 
-},{"browserify-aes":301,"evp_bytestokey":434,"safe-buffer":512}],492:[function(require,module,exports){
+},{"browserify-aes":301,"evp_bytestokey":435,"safe-buffer":542}],493:[function(require,module,exports){
 var asn1 = require('./asn1')
 var aesid = require('./aesid.json')
 var fixProc = require('./fixProc')
@@ -74019,7 +74186,7 @@ function decrypt (data, password) {
   return Buffer.concat(out)
 }
 
-},{"./aesid.json":488,"./asn1":489,"./fixProc":491,"browserify-aes":301,"pbkdf2":494,"safe-buffer":512}],493:[function(require,module,exports){
+},{"./aesid.json":489,"./asn1":490,"./fixProc":492,"browserify-aes":301,"pbkdf2":495,"safe-buffer":542}],494:[function(require,module,exports){
 var trim = require('string.prototype.trim')
   , forEach = require('for-each')
   , isArray = function(arg) {
@@ -74052,9 +74219,9 @@ module.exports = function (headers) {
   return result
 }
 
-},{"for-each":435,"string.prototype.trim":532}],494:[function(require,module,exports){
+},{"for-each":436,"string.prototype.trim":562}],495:[function(require,module,exports){
 arguments[4][154][0].apply(exports,arguments)
-},{"./lib/async":495,"./lib/sync":498,"dup":154}],495:[function(require,module,exports){
+},{"./lib/async":496,"./lib/sync":499,"dup":154}],496:[function(require,module,exports){
 (function (process,global){(function (){
 var checkParameters = require('./precondition')
 var defaultEncoding = require('./default-encoding')
@@ -74158,7 +74325,7 @@ module.exports = function (password, salt, iterations, keylen, digest, callback)
 }
 
 }).call(this)}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./default-encoding":496,"./precondition":497,"./sync":498,"_process":160,"safe-buffer":512}],496:[function(require,module,exports){
+},{"./default-encoding":497,"./precondition":498,"./sync":499,"_process":160,"safe-buffer":542}],497:[function(require,module,exports){
 (function (process){(function (){
 var defaultEncoding
 /* istanbul ignore next */
@@ -74172,7 +74339,7 @@ if (process.browser) {
 module.exports = defaultEncoding
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":160}],497:[function(require,module,exports){
+},{"_process":160}],498:[function(require,module,exports){
 (function (Buffer){(function (){
 var MAX_ALLOC = Math.pow(2, 30) - 1 // default in iojs
 
@@ -74204,7 +74371,7 @@ module.exports = function (password, salt, iterations, keylen) {
 }
 
 }).call(this)}).call(this,{"isBuffer":require("C:/Program Files/nodejs/node_modules/browserify/node_modules/is-buffer/index.js")})
-},{"C:/Program Files/nodejs/node_modules/browserify/node_modules/is-buffer/index.js":140}],498:[function(require,module,exports){
+},{"C:/Program Files/nodejs/node_modules/browserify/node_modules/is-buffer/index.js":140}],499:[function(require,module,exports){
 var md5 = require('create-hash/md5')
 var RIPEMD160 = require('ripemd160')
 var sha = require('sha.js')
@@ -74310,27 +74477,3231 @@ function pbkdf2 (password, salt, iterations, keylen, digest) {
 
 module.exports = pbkdf2
 
-},{"./default-encoding":496,"./precondition":497,"create-hash/md5":331,"ripemd160":510,"safe-buffer":512,"sha.js":522}],499:[function(require,module,exports){
+},{"./default-encoding":497,"./precondition":498,"create-hash/md5":331,"ripemd160":540,"safe-buffer":542,"sha.js":552}],500:[function(require,module,exports){
 arguments[4][161][0].apply(exports,arguments)
-},{"./privateDecrypt":501,"./publicEncrypt":502,"dup":161}],500:[function(require,module,exports){
+},{"./privateDecrypt":502,"./publicEncrypt":503,"dup":161}],501:[function(require,module,exports){
 arguments[4][162][0].apply(exports,arguments)
-},{"create-hash":330,"dup":162,"safe-buffer":512}],501:[function(require,module,exports){
+},{"create-hash":330,"dup":162,"safe-buffer":542}],502:[function(require,module,exports){
 arguments[4][164][0].apply(exports,arguments)
-},{"./mgf":500,"./withPublic":503,"./xor":504,"bn.js":297,"browserify-rsa":319,"create-hash":330,"dup":164,"parse-asn1":492,"safe-buffer":512}],502:[function(require,module,exports){
+},{"./mgf":501,"./withPublic":504,"./xor":505,"bn.js":297,"browserify-rsa":319,"create-hash":330,"dup":164,"parse-asn1":493,"safe-buffer":542}],503:[function(require,module,exports){
 arguments[4][165][0].apply(exports,arguments)
-},{"./mgf":500,"./withPublic":503,"./xor":504,"bn.js":297,"browserify-rsa":319,"create-hash":330,"dup":165,"parse-asn1":492,"randombytes":505,"safe-buffer":512}],503:[function(require,module,exports){
+},{"./mgf":501,"./withPublic":504,"./xor":505,"bn.js":297,"browserify-rsa":319,"create-hash":330,"dup":165,"parse-asn1":493,"randombytes":535,"safe-buffer":542}],504:[function(require,module,exports){
 arguments[4][166][0].apply(exports,arguments)
-},{"bn.js":297,"dup":166,"safe-buffer":512}],504:[function(require,module,exports){
+},{"bn.js":297,"dup":166,"safe-buffer":542}],505:[function(require,module,exports){
 arguments[4][167][0].apply(exports,arguments)
-},{"dup":167}],505:[function(require,module,exports){
-arguments[4][172][0].apply(exports,arguments)
-},{"_process":160,"dup":172,"safe-buffer":512}],506:[function(require,module,exports){
-arguments[4][173][0].apply(exports,arguments)
-},{"_process":160,"dup":173,"randombytes":505,"safe-buffer":512}],507:[function(require,module,exports){
-module.exports = window.crypto;
+},{"dup":167}],506:[function(require,module,exports){
+
+var canPromise = require('./can-promise')
+
+var QRCode = require('./core/qrcode')
+var CanvasRenderer = require('./renderer/canvas')
+var SvgRenderer = require('./renderer/svg-tag.js')
+
+function renderCanvas (renderFunc, canvas, text, opts, cb) {
+  var args = [].slice.call(arguments, 1)
+  var argsNum = args.length
+  var isLastArgCb = typeof args[argsNum - 1] === 'function'
+
+  if (!isLastArgCb && !canPromise()) {
+    throw new Error('Callback required as last argument')
+  }
+
+  if (isLastArgCb) {
+    if (argsNum < 2) {
+      throw new Error('Too few arguments provided')
+    }
+
+    if (argsNum === 2) {
+      cb = text
+      text = canvas
+      canvas = opts = undefined
+    } else if (argsNum === 3) {
+      if (canvas.getContext && typeof cb === 'undefined') {
+        cb = opts
+        opts = undefined
+      } else {
+        cb = opts
+        opts = text
+        text = canvas
+        canvas = undefined
+      }
+    }
+  } else {
+    if (argsNum < 1) {
+      throw new Error('Too few arguments provided')
+    }
+
+    if (argsNum === 1) {
+      text = canvas
+      canvas = opts = undefined
+    } else if (argsNum === 2 && !canvas.getContext) {
+      opts = text
+      text = canvas
+      canvas = undefined
+    }
+
+    return new Promise(function (resolve, reject) {
+      try {
+        var data = QRCode.create(text, opts)
+        resolve(renderFunc(data, canvas, opts))
+      } catch (e) {
+        reject(e)
+      }
+    })
+  }
+
+  try {
+    var data = QRCode.create(text, opts)
+    cb(null, renderFunc(data, canvas, opts))
+  } catch (e) {
+    cb(e)
+  }
+}
+
+exports.create = QRCode.create
+exports.toCanvas = renderCanvas.bind(null, CanvasRenderer.render)
+exports.toDataURL = renderCanvas.bind(null, CanvasRenderer.renderToDataURL)
+
+// only svg for now.
+exports.toString = renderCanvas.bind(null, function (data, _, opts) {
+  return SvgRenderer.render(data, opts)
+})
+
+},{"./can-promise":507,"./core/qrcode":523,"./renderer/canvas":530,"./renderer/svg-tag.js":531}],507:[function(require,module,exports){
+// can-promise has a crash in some versions of react native that dont have
+// standard global objects
+// https://github.com/soldair/node-qrcode/issues/157
+
+module.exports = function () {
+  return typeof Promise === 'function' && Promise.prototype && Promise.prototype.then
+}
+
 },{}],508:[function(require,module,exports){
+/**
+ * Alignment pattern are fixed reference pattern in defined positions
+ * in a matrix symbology, which enables the decode software to re-synchronise
+ * the coordinate mapping of the image modules in the event of moderate amounts
+ * of distortion of the image.
+ *
+ * Alignment patterns are present only in QR Code symbols of version 2 or larger
+ * and their number depends on the symbol version.
+ */
+
+var getSymbolSize = require('./utils').getSymbolSize
+
+/**
+ * Calculate the row/column coordinates of the center module of each alignment pattern
+ * for the specified QR Code version.
+ *
+ * The alignment patterns are positioned symmetrically on either side of the diagonal
+ * running from the top left corner of the symbol to the bottom right corner.
+ *
+ * Since positions are simmetrical only half of the coordinates are returned.
+ * Each item of the array will represent in turn the x and y coordinate.
+ * @see {@link getPositions}
+ *
+ * @param  {Number} version QR Code version
+ * @return {Array}          Array of coordinate
+ */
+exports.getRowColCoords = function getRowColCoords (version) {
+  if (version === 1) return []
+
+  var posCount = Math.floor(version / 7) + 2
+  var size = getSymbolSize(version)
+  var intervals = size === 145 ? 26 : Math.ceil((size - 13) / (2 * posCount - 2)) * 2
+  var positions = [size - 7] // Last coord is always (size - 7)
+
+  for (var i = 1; i < posCount - 1; i++) {
+    positions[i] = positions[i - 1] - intervals
+  }
+
+  positions.push(6) // First coord is always 6
+
+  return positions.reverse()
+}
+
+/**
+ * Returns an array containing the positions of each alignment pattern.
+ * Each array's element represent the center point of the pattern as (x, y) coordinates
+ *
+ * Coordinates are calculated expanding the row/column coordinates returned by {@link getRowColCoords}
+ * and filtering out the items that overlaps with finder pattern
+ *
+ * @example
+ * For a Version 7 symbol {@link getRowColCoords} returns values 6, 22 and 38.
+ * The alignment patterns, therefore, are to be centered on (row, column)
+ * positions (6,22), (22,6), (22,22), (22,38), (38,22), (38,38).
+ * Note that the coordinates (6,6), (6,38), (38,6) are occupied by finder patterns
+ * and are not therefore used for alignment patterns.
+ *
+ * var pos = getPositions(7)
+ * // [[6,22], [22,6], [22,22], [22,38], [38,22], [38,38]]
+ *
+ * @param  {Number} version QR Code version
+ * @return {Array}          Array of coordinates
+ */
+exports.getPositions = function getPositions (version) {
+  var coords = []
+  var pos = exports.getRowColCoords(version)
+  var posLength = pos.length
+
+  for (var i = 0; i < posLength; i++) {
+    for (var j = 0; j < posLength; j++) {
+      // Skip if position is occupied by finder patterns
+      if ((i === 0 && j === 0) ||             // top-left
+          (i === 0 && j === posLength - 1) || // bottom-left
+          (i === posLength - 1 && j === 0)) { // top-right
+        continue
+      }
+
+      coords.push([pos[i], pos[j]])
+    }
+  }
+
+  return coords
+}
+
+},{"./utils":527}],509:[function(require,module,exports){
+var Mode = require('./mode')
+
+/**
+ * Array of characters available in alphanumeric mode
+ *
+ * As per QR Code specification, to each character
+ * is assigned a value from 0 to 44 which in this case coincides
+ * with the array index
+ *
+ * @type {Array}
+ */
+var ALPHA_NUM_CHARS = [
+  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+  'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+  ' ', '$', '%', '*', '+', '-', '.', '/', ':'
+]
+
+function AlphanumericData (data) {
+  this.mode = Mode.ALPHANUMERIC
+  this.data = data
+}
+
+AlphanumericData.getBitsLength = function getBitsLength (length) {
+  return 11 * Math.floor(length / 2) + 6 * (length % 2)
+}
+
+AlphanumericData.prototype.getLength = function getLength () {
+  return this.data.length
+}
+
+AlphanumericData.prototype.getBitsLength = function getBitsLength () {
+  return AlphanumericData.getBitsLength(this.data.length)
+}
+
+AlphanumericData.prototype.write = function write (bitBuffer) {
+  var i
+
+  // Input data characters are divided into groups of two characters
+  // and encoded as 11-bit binary codes.
+  for (i = 0; i + 2 <= this.data.length; i += 2) {
+    // The character value of the first character is multiplied by 45
+    var value = ALPHA_NUM_CHARS.indexOf(this.data[i]) * 45
+
+    // The character value of the second digit is added to the product
+    value += ALPHA_NUM_CHARS.indexOf(this.data[i + 1])
+
+    // The sum is then stored as 11-bit binary number
+    bitBuffer.put(value, 11)
+  }
+
+  // If the number of input data characters is not a multiple of two,
+  // the character value of the final character is encoded as a 6-bit binary number.
+  if (this.data.length % 2) {
+    bitBuffer.put(ALPHA_NUM_CHARS.indexOf(this.data[i]), 6)
+  }
+}
+
+module.exports = AlphanumericData
+
+},{"./mode":520}],510:[function(require,module,exports){
+function BitBuffer () {
+  this.buffer = []
+  this.length = 0
+}
+
+BitBuffer.prototype = {
+
+  get: function (index) {
+    var bufIndex = Math.floor(index / 8)
+    return ((this.buffer[bufIndex] >>> (7 - index % 8)) & 1) === 1
+  },
+
+  put: function (num, length) {
+    for (var i = 0; i < length; i++) {
+      this.putBit(((num >>> (length - i - 1)) & 1) === 1)
+    }
+  },
+
+  getLengthInBits: function () {
+    return this.length
+  },
+
+  putBit: function (bit) {
+    var bufIndex = Math.floor(this.length / 8)
+    if (this.buffer.length <= bufIndex) {
+      this.buffer.push(0)
+    }
+
+    if (bit) {
+      this.buffer[bufIndex] |= (0x80 >>> (this.length % 8))
+    }
+
+    this.length++
+  }
+}
+
+module.exports = BitBuffer
+
+},{}],511:[function(require,module,exports){
+var BufferUtil = require('../utils/buffer')
+
+/**
+ * Helper class to handle QR Code symbol modules
+ *
+ * @param {Number} size Symbol size
+ */
+function BitMatrix (size) {
+  if (!size || size < 1) {
+    throw new Error('BitMatrix size must be defined and greater than 0')
+  }
+
+  this.size = size
+  this.data = BufferUtil.alloc(size * size)
+  this.reservedBit = BufferUtil.alloc(size * size)
+}
+
+/**
+ * Set bit value at specified location
+ * If reserved flag is set, this bit will be ignored during masking process
+ *
+ * @param {Number}  row
+ * @param {Number}  col
+ * @param {Boolean} value
+ * @param {Boolean} reserved
+ */
+BitMatrix.prototype.set = function (row, col, value, reserved) {
+  var index = row * this.size + col
+  this.data[index] = value
+  if (reserved) this.reservedBit[index] = true
+}
+
+/**
+ * Returns bit value at specified location
+ *
+ * @param  {Number}  row
+ * @param  {Number}  col
+ * @return {Boolean}
+ */
+BitMatrix.prototype.get = function (row, col) {
+  return this.data[row * this.size + col]
+}
+
+/**
+ * Applies xor operator at specified location
+ * (used during masking process)
+ *
+ * @param {Number}  row
+ * @param {Number}  col
+ * @param {Boolean} value
+ */
+BitMatrix.prototype.xor = function (row, col, value) {
+  this.data[row * this.size + col] ^= value
+}
+
+/**
+ * Check if bit at specified location is reserved
+ *
+ * @param {Number}   row
+ * @param {Number}   col
+ * @return {Boolean}
+ */
+BitMatrix.prototype.isReserved = function (row, col) {
+  return this.reservedBit[row * this.size + col]
+}
+
+module.exports = BitMatrix
+
+},{"../utils/buffer":533}],512:[function(require,module,exports){
+var BufferUtil = require('../utils/buffer')
+var Mode = require('./mode')
+
+function ByteData (data) {
+  this.mode = Mode.BYTE
+  this.data = BufferUtil.from(data)
+}
+
+ByteData.getBitsLength = function getBitsLength (length) {
+  return length * 8
+}
+
+ByteData.prototype.getLength = function getLength () {
+  return this.data.length
+}
+
+ByteData.prototype.getBitsLength = function getBitsLength () {
+  return ByteData.getBitsLength(this.data.length)
+}
+
+ByteData.prototype.write = function (bitBuffer) {
+  for (var i = 0, l = this.data.length; i < l; i++) {
+    bitBuffer.put(this.data[i], 8)
+  }
+}
+
+module.exports = ByteData
+
+},{"../utils/buffer":533,"./mode":520}],513:[function(require,module,exports){
+var ECLevel = require('./error-correction-level')
+
+var EC_BLOCKS_TABLE = [
+// L  M  Q  H
+  1, 1, 1, 1,
+  1, 1, 1, 1,
+  1, 1, 2, 2,
+  1, 2, 2, 4,
+  1, 2, 4, 4,
+  2, 4, 4, 4,
+  2, 4, 6, 5,
+  2, 4, 6, 6,
+  2, 5, 8, 8,
+  4, 5, 8, 8,
+  4, 5, 8, 11,
+  4, 8, 10, 11,
+  4, 9, 12, 16,
+  4, 9, 16, 16,
+  6, 10, 12, 18,
+  6, 10, 17, 16,
+  6, 11, 16, 19,
+  6, 13, 18, 21,
+  7, 14, 21, 25,
+  8, 16, 20, 25,
+  8, 17, 23, 25,
+  9, 17, 23, 34,
+  9, 18, 25, 30,
+  10, 20, 27, 32,
+  12, 21, 29, 35,
+  12, 23, 34, 37,
+  12, 25, 34, 40,
+  13, 26, 35, 42,
+  14, 28, 38, 45,
+  15, 29, 40, 48,
+  16, 31, 43, 51,
+  17, 33, 45, 54,
+  18, 35, 48, 57,
+  19, 37, 51, 60,
+  19, 38, 53, 63,
+  20, 40, 56, 66,
+  21, 43, 59, 70,
+  22, 45, 62, 74,
+  24, 47, 65, 77,
+  25, 49, 68, 81
+]
+
+var EC_CODEWORDS_TABLE = [
+// L  M  Q  H
+  7, 10, 13, 17,
+  10, 16, 22, 28,
+  15, 26, 36, 44,
+  20, 36, 52, 64,
+  26, 48, 72, 88,
+  36, 64, 96, 112,
+  40, 72, 108, 130,
+  48, 88, 132, 156,
+  60, 110, 160, 192,
+  72, 130, 192, 224,
+  80, 150, 224, 264,
+  96, 176, 260, 308,
+  104, 198, 288, 352,
+  120, 216, 320, 384,
+  132, 240, 360, 432,
+  144, 280, 408, 480,
+  168, 308, 448, 532,
+  180, 338, 504, 588,
+  196, 364, 546, 650,
+  224, 416, 600, 700,
+  224, 442, 644, 750,
+  252, 476, 690, 816,
+  270, 504, 750, 900,
+  300, 560, 810, 960,
+  312, 588, 870, 1050,
+  336, 644, 952, 1110,
+  360, 700, 1020, 1200,
+  390, 728, 1050, 1260,
+  420, 784, 1140, 1350,
+  450, 812, 1200, 1440,
+  480, 868, 1290, 1530,
+  510, 924, 1350, 1620,
+  540, 980, 1440, 1710,
+  570, 1036, 1530, 1800,
+  570, 1064, 1590, 1890,
+  600, 1120, 1680, 1980,
+  630, 1204, 1770, 2100,
+  660, 1260, 1860, 2220,
+  720, 1316, 1950, 2310,
+  750, 1372, 2040, 2430
+]
+
+/**
+ * Returns the number of error correction block that the QR Code should contain
+ * for the specified version and error correction level.
+ *
+ * @param  {Number} version              QR Code version
+ * @param  {Number} errorCorrectionLevel Error correction level
+ * @return {Number}                      Number of error correction blocks
+ */
+exports.getBlocksCount = function getBlocksCount (version, errorCorrectionLevel) {
+  switch (errorCorrectionLevel) {
+    case ECLevel.L:
+      return EC_BLOCKS_TABLE[(version - 1) * 4 + 0]
+    case ECLevel.M:
+      return EC_BLOCKS_TABLE[(version - 1) * 4 + 1]
+    case ECLevel.Q:
+      return EC_BLOCKS_TABLE[(version - 1) * 4 + 2]
+    case ECLevel.H:
+      return EC_BLOCKS_TABLE[(version - 1) * 4 + 3]
+    default:
+      return undefined
+  }
+}
+
+/**
+ * Returns the number of error correction codewords to use for the specified
+ * version and error correction level.
+ *
+ * @param  {Number} version              QR Code version
+ * @param  {Number} errorCorrectionLevel Error correction level
+ * @return {Number}                      Number of error correction codewords
+ */
+exports.getTotalCodewordsCount = function getTotalCodewordsCount (version, errorCorrectionLevel) {
+  switch (errorCorrectionLevel) {
+    case ECLevel.L:
+      return EC_CODEWORDS_TABLE[(version - 1) * 4 + 0]
+    case ECLevel.M:
+      return EC_CODEWORDS_TABLE[(version - 1) * 4 + 1]
+    case ECLevel.Q:
+      return EC_CODEWORDS_TABLE[(version - 1) * 4 + 2]
+    case ECLevel.H:
+      return EC_CODEWORDS_TABLE[(version - 1) * 4 + 3]
+    default:
+      return undefined
+  }
+}
+
+},{"./error-correction-level":514}],514:[function(require,module,exports){
+exports.L = { bit: 1 }
+exports.M = { bit: 0 }
+exports.Q = { bit: 3 }
+exports.H = { bit: 2 }
+
+function fromString (string) {
+  if (typeof string !== 'string') {
+    throw new Error('Param is not a string')
+  }
+
+  var lcStr = string.toLowerCase()
+
+  switch (lcStr) {
+    case 'l':
+    case 'low':
+      return exports.L
+
+    case 'm':
+    case 'medium':
+      return exports.M
+
+    case 'q':
+    case 'quartile':
+      return exports.Q
+
+    case 'h':
+    case 'high':
+      return exports.H
+
+    default:
+      throw new Error('Unknown EC Level: ' + string)
+  }
+}
+
+exports.isValid = function isValid (level) {
+  return level && typeof level.bit !== 'undefined' &&
+    level.bit >= 0 && level.bit < 4
+}
+
+exports.from = function from (value, defaultValue) {
+  if (exports.isValid(value)) {
+    return value
+  }
+
+  try {
+    return fromString(value)
+  } catch (e) {
+    return defaultValue
+  }
+}
+
+},{}],515:[function(require,module,exports){
+var getSymbolSize = require('./utils').getSymbolSize
+var FINDER_PATTERN_SIZE = 7
+
+/**
+ * Returns an array containing the positions of each finder pattern.
+ * Each array's element represent the top-left point of the pattern as (x, y) coordinates
+ *
+ * @param  {Number} version QR Code version
+ * @return {Array}          Array of coordinates
+ */
+exports.getPositions = function getPositions (version) {
+  var size = getSymbolSize(version)
+
+  return [
+    // top-left
+    [0, 0],
+    // top-right
+    [size - FINDER_PATTERN_SIZE, 0],
+    // bottom-left
+    [0, size - FINDER_PATTERN_SIZE]
+  ]
+}
+
+},{"./utils":527}],516:[function(require,module,exports){
+var Utils = require('./utils')
+
+var G15 = (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0)
+var G15_MASK = (1 << 14) | (1 << 12) | (1 << 10) | (1 << 4) | (1 << 1)
+var G15_BCH = Utils.getBCHDigit(G15)
+
+/**
+ * Returns format information with relative error correction bits
+ *
+ * The format information is a 15-bit sequence containing 5 data bits,
+ * with 10 error correction bits calculated using the (15, 5) BCH code.
+ *
+ * @param  {Number} errorCorrectionLevel Error correction level
+ * @param  {Number} mask                 Mask pattern
+ * @return {Number}                      Encoded format information bits
+ */
+exports.getEncodedBits = function getEncodedBits (errorCorrectionLevel, mask) {
+  var data = ((errorCorrectionLevel.bit << 3) | mask)
+  var d = data << 10
+
+  while (Utils.getBCHDigit(d) - G15_BCH >= 0) {
+    d ^= (G15 << (Utils.getBCHDigit(d) - G15_BCH))
+  }
+
+  // xor final data with mask pattern in order to ensure that
+  // no combination of Error Correction Level and data mask pattern
+  // will result in an all-zero data string
+  return ((data << 10) | d) ^ G15_MASK
+}
+
+},{"./utils":527}],517:[function(require,module,exports){
+var BufferUtil = require('../utils/buffer')
+
+var EXP_TABLE = BufferUtil.alloc(512)
+var LOG_TABLE = BufferUtil.alloc(256)
+/**
+ * Precompute the log and anti-log tables for faster computation later
+ *
+ * For each possible value in the galois field 2^8, we will pre-compute
+ * the logarithm and anti-logarithm (exponential) of this value
+ *
+ * ref {@link https://en.wikiversity.org/wiki/Reed%E2%80%93Solomon_codes_for_coders#Introduction_to_mathematical_fields}
+ */
+;(function initTables () {
+  var x = 1
+  for (var i = 0; i < 255; i++) {
+    EXP_TABLE[i] = x
+    LOG_TABLE[x] = i
+
+    x <<= 1 // multiply by 2
+
+    // The QR code specification says to use byte-wise modulo 100011101 arithmetic.
+    // This means that when a number is 256 or larger, it should be XORed with 0x11D.
+    if (x & 0x100) { // similar to x >= 256, but a lot faster (because 0x100 == 256)
+      x ^= 0x11D
+    }
+  }
+
+  // Optimization: double the size of the anti-log table so that we don't need to mod 255 to
+  // stay inside the bounds (because we will mainly use this table for the multiplication of
+  // two GF numbers, no more).
+  // @see {@link mul}
+  for (i = 255; i < 512; i++) {
+    EXP_TABLE[i] = EXP_TABLE[i - 255]
+  }
+}())
+
+/**
+ * Returns log value of n inside Galois Field
+ *
+ * @param  {Number} n
+ * @return {Number}
+ */
+exports.log = function log (n) {
+  if (n < 1) throw new Error('log(' + n + ')')
+  return LOG_TABLE[n]
+}
+
+/**
+ * Returns anti-log value of n inside Galois Field
+ *
+ * @param  {Number} n
+ * @return {Number}
+ */
+exports.exp = function exp (n) {
+  return EXP_TABLE[n]
+}
+
+/**
+ * Multiplies two number inside Galois Field
+ *
+ * @param  {Number} x
+ * @param  {Number} y
+ * @return {Number}
+ */
+exports.mul = function mul (x, y) {
+  if (x === 0 || y === 0) return 0
+
+  // should be EXP_TABLE[(LOG_TABLE[x] + LOG_TABLE[y]) % 255] if EXP_TABLE wasn't oversized
+  // @see {@link initTables}
+  return EXP_TABLE[LOG_TABLE[x] + LOG_TABLE[y]]
+}
+
+},{"../utils/buffer":533}],518:[function(require,module,exports){
+var Mode = require('./mode')
+var Utils = require('./utils')
+
+function KanjiData (data) {
+  this.mode = Mode.KANJI
+  this.data = data
+}
+
+KanjiData.getBitsLength = function getBitsLength (length) {
+  return length * 13
+}
+
+KanjiData.prototype.getLength = function getLength () {
+  return this.data.length
+}
+
+KanjiData.prototype.getBitsLength = function getBitsLength () {
+  return KanjiData.getBitsLength(this.data.length)
+}
+
+KanjiData.prototype.write = function (bitBuffer) {
+  var i
+
+  // In the Shift JIS system, Kanji characters are represented by a two byte combination.
+  // These byte values are shifted from the JIS X 0208 values.
+  // JIS X 0208 gives details of the shift coded representation.
+  for (i = 0; i < this.data.length; i++) {
+    var value = Utils.toSJIS(this.data[i])
+
+    // For characters with Shift JIS values from 0x8140 to 0x9FFC:
+    if (value >= 0x8140 && value <= 0x9FFC) {
+      // Subtract 0x8140 from Shift JIS value
+      value -= 0x8140
+
+    // For characters with Shift JIS values from 0xE040 to 0xEBBF
+    } else if (value >= 0xE040 && value <= 0xEBBF) {
+      // Subtract 0xC140 from Shift JIS value
+      value -= 0xC140
+    } else {
+      throw new Error(
+        'Invalid SJIS character: ' + this.data[i] + '\n' +
+        'Make sure your charset is UTF-8')
+    }
+
+    // Multiply most significant byte of result by 0xC0
+    // and add least significant byte to product
+    value = (((value >>> 8) & 0xff) * 0xC0) + (value & 0xff)
+
+    // Convert result to a 13-bit binary string
+    bitBuffer.put(value, 13)
+  }
+}
+
+module.exports = KanjiData
+
+},{"./mode":520,"./utils":527}],519:[function(require,module,exports){
+/**
+ * Data mask pattern reference
+ * @type {Object}
+ */
+exports.Patterns = {
+  PATTERN000: 0,
+  PATTERN001: 1,
+  PATTERN010: 2,
+  PATTERN011: 3,
+  PATTERN100: 4,
+  PATTERN101: 5,
+  PATTERN110: 6,
+  PATTERN111: 7
+}
+
+/**
+ * Weighted penalty scores for the undesirable features
+ * @type {Object}
+ */
+var PenaltyScores = {
+  N1: 3,
+  N2: 3,
+  N3: 40,
+  N4: 10
+}
+
+/**
+ * Check if mask pattern value is valid
+ *
+ * @param  {Number}  mask    Mask pattern
+ * @return {Boolean}         true if valid, false otherwise
+ */
+exports.isValid = function isValid (mask) {
+  return mask != null && mask !== '' && !isNaN(mask) && mask >= 0 && mask <= 7
+}
+
+/**
+ * Returns mask pattern from a value.
+ * If value is not valid, returns undefined
+ *
+ * @param  {Number|String} value        Mask pattern value
+ * @return {Number}                     Valid mask pattern or undefined
+ */
+exports.from = function from (value) {
+  return exports.isValid(value) ? parseInt(value, 10) : undefined
+}
+
+/**
+* Find adjacent modules in row/column with the same color
+* and assign a penalty value.
+*
+* Points: N1 + i
+* i is the amount by which the number of adjacent modules of the same color exceeds 5
+*/
+exports.getPenaltyN1 = function getPenaltyN1 (data) {
+  var size = data.size
+  var points = 0
+  var sameCountCol = 0
+  var sameCountRow = 0
+  var lastCol = null
+  var lastRow = null
+
+  for (var row = 0; row < size; row++) {
+    sameCountCol = sameCountRow = 0
+    lastCol = lastRow = null
+
+    for (var col = 0; col < size; col++) {
+      var module = data.get(row, col)
+      if (module === lastCol) {
+        sameCountCol++
+      } else {
+        if (sameCountCol >= 5) points += PenaltyScores.N1 + (sameCountCol - 5)
+        lastCol = module
+        sameCountCol = 1
+      }
+
+      module = data.get(col, row)
+      if (module === lastRow) {
+        sameCountRow++
+      } else {
+        if (sameCountRow >= 5) points += PenaltyScores.N1 + (sameCountRow - 5)
+        lastRow = module
+        sameCountRow = 1
+      }
+    }
+
+    if (sameCountCol >= 5) points += PenaltyScores.N1 + (sameCountCol - 5)
+    if (sameCountRow >= 5) points += PenaltyScores.N1 + (sameCountRow - 5)
+  }
+
+  return points
+}
+
+/**
+ * Find 2x2 blocks with the same color and assign a penalty value
+ *
+ * Points: N2 * (m - 1) * (n - 1)
+ */
+exports.getPenaltyN2 = function getPenaltyN2 (data) {
+  var size = data.size
+  var points = 0
+
+  for (var row = 0; row < size - 1; row++) {
+    for (var col = 0; col < size - 1; col++) {
+      var last = data.get(row, col) +
+        data.get(row, col + 1) +
+        data.get(row + 1, col) +
+        data.get(row + 1, col + 1)
+
+      if (last === 4 || last === 0) points++
+    }
+  }
+
+  return points * PenaltyScores.N2
+}
+
+/**
+ * Find 1:1:3:1:1 ratio (dark:light:dark:light:dark) pattern in row/column,
+ * preceded or followed by light area 4 modules wide
+ *
+ * Points: N3 * number of pattern found
+ */
+exports.getPenaltyN3 = function getPenaltyN3 (data) {
+  var size = data.size
+  var points = 0
+  var bitsCol = 0
+  var bitsRow = 0
+
+  for (var row = 0; row < size; row++) {
+    bitsCol = bitsRow = 0
+    for (var col = 0; col < size; col++) {
+      bitsCol = ((bitsCol << 1) & 0x7FF) | data.get(row, col)
+      if (col >= 10 && (bitsCol === 0x5D0 || bitsCol === 0x05D)) points++
+
+      bitsRow = ((bitsRow << 1) & 0x7FF) | data.get(col, row)
+      if (col >= 10 && (bitsRow === 0x5D0 || bitsRow === 0x05D)) points++
+    }
+  }
+
+  return points * PenaltyScores.N3
+}
+
+/**
+ * Calculate proportion of dark modules in entire symbol
+ *
+ * Points: N4 * k
+ *
+ * k is the rating of the deviation of the proportion of dark modules
+ * in the symbol from 50% in steps of 5%
+ */
+exports.getPenaltyN4 = function getPenaltyN4 (data) {
+  var darkCount = 0
+  var modulesCount = data.data.length
+
+  for (var i = 0; i < modulesCount; i++) darkCount += data.data[i]
+
+  var k = Math.abs(Math.ceil((darkCount * 100 / modulesCount) / 5) - 10)
+
+  return k * PenaltyScores.N4
+}
+
+/**
+ * Return mask value at given position
+ *
+ * @param  {Number} maskPattern Pattern reference value
+ * @param  {Number} i           Row
+ * @param  {Number} j           Column
+ * @return {Boolean}            Mask value
+ */
+function getMaskAt (maskPattern, i, j) {
+  switch (maskPattern) {
+    case exports.Patterns.PATTERN000: return (i + j) % 2 === 0
+    case exports.Patterns.PATTERN001: return i % 2 === 0
+    case exports.Patterns.PATTERN010: return j % 3 === 0
+    case exports.Patterns.PATTERN011: return (i + j) % 3 === 0
+    case exports.Patterns.PATTERN100: return (Math.floor(i / 2) + Math.floor(j / 3)) % 2 === 0
+    case exports.Patterns.PATTERN101: return (i * j) % 2 + (i * j) % 3 === 0
+    case exports.Patterns.PATTERN110: return ((i * j) % 2 + (i * j) % 3) % 2 === 0
+    case exports.Patterns.PATTERN111: return ((i * j) % 3 + (i + j) % 2) % 2 === 0
+
+    default: throw new Error('bad maskPattern:' + maskPattern)
+  }
+}
+
+/**
+ * Apply a mask pattern to a BitMatrix
+ *
+ * @param  {Number}    pattern Pattern reference number
+ * @param  {BitMatrix} data    BitMatrix data
+ */
+exports.applyMask = function applyMask (pattern, data) {
+  var size = data.size
+
+  for (var col = 0; col < size; col++) {
+    for (var row = 0; row < size; row++) {
+      if (data.isReserved(row, col)) continue
+      data.xor(row, col, getMaskAt(pattern, row, col))
+    }
+  }
+}
+
+/**
+ * Returns the best mask pattern for data
+ *
+ * @param  {BitMatrix} data
+ * @return {Number} Mask pattern reference number
+ */
+exports.getBestMask = function getBestMask (data, setupFormatFunc) {
+  var numPatterns = Object.keys(exports.Patterns).length
+  var bestPattern = 0
+  var lowerPenalty = Infinity
+
+  for (var p = 0; p < numPatterns; p++) {
+    setupFormatFunc(p)
+    exports.applyMask(p, data)
+
+    // Calculate penalty
+    var penalty =
+      exports.getPenaltyN1(data) +
+      exports.getPenaltyN2(data) +
+      exports.getPenaltyN3(data) +
+      exports.getPenaltyN4(data)
+
+    // Undo previously applied mask
+    exports.applyMask(p, data)
+
+    if (penalty < lowerPenalty) {
+      lowerPenalty = penalty
+      bestPattern = p
+    }
+  }
+
+  return bestPattern
+}
+
+},{}],520:[function(require,module,exports){
+var VersionCheck = require('./version-check')
+var Regex = require('./regex')
+
+/**
+ * Numeric mode encodes data from the decimal digit set (0 - 9)
+ * (byte values 30HEX to 39HEX).
+ * Normally, 3 data characters are represented by 10 bits.
+ *
+ * @type {Object}
+ */
+exports.NUMERIC = {
+  id: 'Numeric',
+  bit: 1 << 0,
+  ccBits: [10, 12, 14]
+}
+
+/**
+ * Alphanumeric mode encodes data from a set of 45 characters,
+ * i.e. 10 numeric digits (0 - 9),
+ *      26 alphabetic characters (A - Z),
+ *   and 9 symbols (SP, $, %, *, +, -, ., /, :).
+ * Normally, two input characters are represented by 11 bits.
+ *
+ * @type {Object}
+ */
+exports.ALPHANUMERIC = {
+  id: 'Alphanumeric',
+  bit: 1 << 1,
+  ccBits: [9, 11, 13]
+}
+
+/**
+ * In byte mode, data is encoded at 8 bits per character.
+ *
+ * @type {Object}
+ */
+exports.BYTE = {
+  id: 'Byte',
+  bit: 1 << 2,
+  ccBits: [8, 16, 16]
+}
+
+/**
+ * The Kanji mode efficiently encodes Kanji characters in accordance with
+ * the Shift JIS system based on JIS X 0208.
+ * The Shift JIS values are shifted from the JIS X 0208 values.
+ * JIS X 0208 gives details of the shift coded representation.
+ * Each two-byte character value is compacted to a 13-bit binary codeword.
+ *
+ * @type {Object}
+ */
+exports.KANJI = {
+  id: 'Kanji',
+  bit: 1 << 3,
+  ccBits: [8, 10, 12]
+}
+
+/**
+ * Mixed mode will contain a sequences of data in a combination of any of
+ * the modes described above
+ *
+ * @type {Object}
+ */
+exports.MIXED = {
+  bit: -1
+}
+
+/**
+ * Returns the number of bits needed to store the data length
+ * according to QR Code specifications.
+ *
+ * @param  {Mode}   mode    Data mode
+ * @param  {Number} version QR Code version
+ * @return {Number}         Number of bits
+ */
+exports.getCharCountIndicator = function getCharCountIndicator (mode, version) {
+  if (!mode.ccBits) throw new Error('Invalid mode: ' + mode)
+
+  if (!VersionCheck.isValid(version)) {
+    throw new Error('Invalid version: ' + version)
+  }
+
+  if (version >= 1 && version < 10) return mode.ccBits[0]
+  else if (version < 27) return mode.ccBits[1]
+  return mode.ccBits[2]
+}
+
+/**
+ * Returns the most efficient mode to store the specified data
+ *
+ * @param  {String} dataStr Input data string
+ * @return {Mode}           Best mode
+ */
+exports.getBestModeForData = function getBestModeForData (dataStr) {
+  if (Regex.testNumeric(dataStr)) return exports.NUMERIC
+  else if (Regex.testAlphanumeric(dataStr)) return exports.ALPHANUMERIC
+  else if (Regex.testKanji(dataStr)) return exports.KANJI
+  else return exports.BYTE
+}
+
+/**
+ * Return mode name as string
+ *
+ * @param {Mode} mode Mode object
+ * @returns {String}  Mode name
+ */
+exports.toString = function toString (mode) {
+  if (mode && mode.id) return mode.id
+  throw new Error('Invalid mode')
+}
+
+/**
+ * Check if input param is a valid mode object
+ *
+ * @param   {Mode}    mode Mode object
+ * @returns {Boolean} True if valid mode, false otherwise
+ */
+exports.isValid = function isValid (mode) {
+  return mode && mode.bit && mode.ccBits
+}
+
+/**
+ * Get mode object from its name
+ *
+ * @param   {String} string Mode name
+ * @returns {Mode}          Mode object
+ */
+function fromString (string) {
+  if (typeof string !== 'string') {
+    throw new Error('Param is not a string')
+  }
+
+  var lcStr = string.toLowerCase()
+
+  switch (lcStr) {
+    case 'numeric':
+      return exports.NUMERIC
+    case 'alphanumeric':
+      return exports.ALPHANUMERIC
+    case 'kanji':
+      return exports.KANJI
+    case 'byte':
+      return exports.BYTE
+    default:
+      throw new Error('Unknown mode: ' + string)
+  }
+}
+
+/**
+ * Returns mode from a value.
+ * If value is not a valid mode, returns defaultValue
+ *
+ * @param  {Mode|String} value        Encoding mode
+ * @param  {Mode}        defaultValue Fallback value
+ * @return {Mode}                     Encoding mode
+ */
+exports.from = function from (value, defaultValue) {
+  if (exports.isValid(value)) {
+    return value
+  }
+
+  try {
+    return fromString(value)
+  } catch (e) {
+    return defaultValue
+  }
+}
+
+},{"./regex":525,"./version-check":528}],521:[function(require,module,exports){
+var Mode = require('./mode')
+
+function NumericData (data) {
+  this.mode = Mode.NUMERIC
+  this.data = data.toString()
+}
+
+NumericData.getBitsLength = function getBitsLength (length) {
+  return 10 * Math.floor(length / 3) + ((length % 3) ? ((length % 3) * 3 + 1) : 0)
+}
+
+NumericData.prototype.getLength = function getLength () {
+  return this.data.length
+}
+
+NumericData.prototype.getBitsLength = function getBitsLength () {
+  return NumericData.getBitsLength(this.data.length)
+}
+
+NumericData.prototype.write = function write (bitBuffer) {
+  var i, group, value
+
+  // The input data string is divided into groups of three digits,
+  // and each group is converted to its 10-bit binary equivalent.
+  for (i = 0; i + 3 <= this.data.length; i += 3) {
+    group = this.data.substr(i, 3)
+    value = parseInt(group, 10)
+
+    bitBuffer.put(value, 10)
+  }
+
+  // If the number of input digits is not an exact multiple of three,
+  // the final one or two digits are converted to 4 or 7 bits respectively.
+  var remainingNum = this.data.length - i
+  if (remainingNum > 0) {
+    group = this.data.substr(i)
+    value = parseInt(group, 10)
+
+    bitBuffer.put(value, remainingNum * 3 + 1)
+  }
+}
+
+module.exports = NumericData
+
+},{"./mode":520}],522:[function(require,module,exports){
+var BufferUtil = require('../utils/buffer')
+var GF = require('./galois-field')
+
+/**
+ * Multiplies two polynomials inside Galois Field
+ *
+ * @param  {Buffer} p1 Polynomial
+ * @param  {Buffer} p2 Polynomial
+ * @return {Buffer}    Product of p1 and p2
+ */
+exports.mul = function mul (p1, p2) {
+  var coeff = BufferUtil.alloc(p1.length + p2.length - 1)
+
+  for (var i = 0; i < p1.length; i++) {
+    for (var j = 0; j < p2.length; j++) {
+      coeff[i + j] ^= GF.mul(p1[i], p2[j])
+    }
+  }
+
+  return coeff
+}
+
+/**
+ * Calculate the remainder of polynomials division
+ *
+ * @param  {Buffer} divident Polynomial
+ * @param  {Buffer} divisor  Polynomial
+ * @return {Buffer}          Remainder
+ */
+exports.mod = function mod (divident, divisor) {
+  var result = BufferUtil.from(divident)
+
+  while ((result.length - divisor.length) >= 0) {
+    var coeff = result[0]
+
+    for (var i = 0; i < divisor.length; i++) {
+      result[i] ^= GF.mul(divisor[i], coeff)
+    }
+
+    // remove all zeros from buffer head
+    var offset = 0
+    while (offset < result.length && result[offset] === 0) offset++
+    result = result.slice(offset)
+  }
+
+  return result
+}
+
+/**
+ * Generate an irreducible generator polynomial of specified degree
+ * (used by Reed-Solomon encoder)
+ *
+ * @param  {Number} degree Degree of the generator polynomial
+ * @return {Buffer}        Buffer containing polynomial coefficients
+ */
+exports.generateECPolynomial = function generateECPolynomial (degree) {
+  var poly = BufferUtil.from([1])
+  for (var i = 0; i < degree; i++) {
+    poly = exports.mul(poly, [1, GF.exp(i)])
+  }
+
+  return poly
+}
+
+},{"../utils/buffer":533,"./galois-field":517}],523:[function(require,module,exports){
+var BufferUtil = require('../utils/buffer')
+var Utils = require('./utils')
+var ECLevel = require('./error-correction-level')
+var BitBuffer = require('./bit-buffer')
+var BitMatrix = require('./bit-matrix')
+var AlignmentPattern = require('./alignment-pattern')
+var FinderPattern = require('./finder-pattern')
+var MaskPattern = require('./mask-pattern')
+var ECCode = require('./error-correction-code')
+var ReedSolomonEncoder = require('./reed-solomon-encoder')
+var Version = require('./version')
+var FormatInfo = require('./format-info')
+var Mode = require('./mode')
+var Segments = require('./segments')
+var isArray = require('isarray')
+
+/**
+ * QRCode for JavaScript
+ *
+ * modified by Ryan Day for nodejs support
+ * Copyright (c) 2011 Ryan Day
+ *
+ * Licensed under the MIT license:
+ *   http://www.opensource.org/licenses/mit-license.php
+ *
+//---------------------------------------------------------------------
+// QRCode for JavaScript
+//
+// Copyright (c) 2009 Kazuhiko Arase
+//
+// URL: http://www.d-project.com/
+//
+// Licensed under the MIT license:
+//   http://www.opensource.org/licenses/mit-license.php
+//
+// The word "QR Code" is registered trademark of
+// DENSO WAVE INCORPORATED
+//   http://www.denso-wave.com/qrcode/faqpatent-e.html
+//
+//---------------------------------------------------------------------
+*/
+
+/**
+ * Add finder patterns bits to matrix
+ *
+ * @param  {BitMatrix} matrix  Modules matrix
+ * @param  {Number}    version QR Code version
+ */
+function setupFinderPattern (matrix, version) {
+  var size = matrix.size
+  var pos = FinderPattern.getPositions(version)
+
+  for (var i = 0; i < pos.length; i++) {
+    var row = pos[i][0]
+    var col = pos[i][1]
+
+    for (var r = -1; r <= 7; r++) {
+      if (row + r <= -1 || size <= row + r) continue
+
+      for (var c = -1; c <= 7; c++) {
+        if (col + c <= -1 || size <= col + c) continue
+
+        if ((r >= 0 && r <= 6 && (c === 0 || c === 6)) ||
+          (c >= 0 && c <= 6 && (r === 0 || r === 6)) ||
+          (r >= 2 && r <= 4 && c >= 2 && c <= 4)) {
+          matrix.set(row + r, col + c, true, true)
+        } else {
+          matrix.set(row + r, col + c, false, true)
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Add timing pattern bits to matrix
+ *
+ * Note: this function must be called before {@link setupAlignmentPattern}
+ *
+ * @param  {BitMatrix} matrix Modules matrix
+ */
+function setupTimingPattern (matrix) {
+  var size = matrix.size
+
+  for (var r = 8; r < size - 8; r++) {
+    var value = r % 2 === 0
+    matrix.set(r, 6, value, true)
+    matrix.set(6, r, value, true)
+  }
+}
+
+/**
+ * Add alignment patterns bits to matrix
+ *
+ * Note: this function must be called after {@link setupTimingPattern}
+ *
+ * @param  {BitMatrix} matrix  Modules matrix
+ * @param  {Number}    version QR Code version
+ */
+function setupAlignmentPattern (matrix, version) {
+  var pos = AlignmentPattern.getPositions(version)
+
+  for (var i = 0; i < pos.length; i++) {
+    var row = pos[i][0]
+    var col = pos[i][1]
+
+    for (var r = -2; r <= 2; r++) {
+      for (var c = -2; c <= 2; c++) {
+        if (r === -2 || r === 2 || c === -2 || c === 2 ||
+          (r === 0 && c === 0)) {
+          matrix.set(row + r, col + c, true, true)
+        } else {
+          matrix.set(row + r, col + c, false, true)
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Add version info bits to matrix
+ *
+ * @param  {BitMatrix} matrix  Modules matrix
+ * @param  {Number}    version QR Code version
+ */
+function setupVersionInfo (matrix, version) {
+  var size = matrix.size
+  var bits = Version.getEncodedBits(version)
+  var row, col, mod
+
+  for (var i = 0; i < 18; i++) {
+    row = Math.floor(i / 3)
+    col = i % 3 + size - 8 - 3
+    mod = ((bits >> i) & 1) === 1
+
+    matrix.set(row, col, mod, true)
+    matrix.set(col, row, mod, true)
+  }
+}
+
+/**
+ * Add format info bits to matrix
+ *
+ * @param  {BitMatrix} matrix               Modules matrix
+ * @param  {ErrorCorrectionLevel}    errorCorrectionLevel Error correction level
+ * @param  {Number}    maskPattern          Mask pattern reference value
+ */
+function setupFormatInfo (matrix, errorCorrectionLevel, maskPattern) {
+  var size = matrix.size
+  var bits = FormatInfo.getEncodedBits(errorCorrectionLevel, maskPattern)
+  var i, mod
+
+  for (i = 0; i < 15; i++) {
+    mod = ((bits >> i) & 1) === 1
+
+    // vertical
+    if (i < 6) {
+      matrix.set(i, 8, mod, true)
+    } else if (i < 8) {
+      matrix.set(i + 1, 8, mod, true)
+    } else {
+      matrix.set(size - 15 + i, 8, mod, true)
+    }
+
+    // horizontal
+    if (i < 8) {
+      matrix.set(8, size - i - 1, mod, true)
+    } else if (i < 9) {
+      matrix.set(8, 15 - i - 1 + 1, mod, true)
+    } else {
+      matrix.set(8, 15 - i - 1, mod, true)
+    }
+  }
+
+  // fixed module
+  matrix.set(size - 8, 8, 1, true)
+}
+
+/**
+ * Add encoded data bits to matrix
+ *
+ * @param  {BitMatrix} matrix Modules matrix
+ * @param  {Buffer}    data   Data codewords
+ */
+function setupData (matrix, data) {
+  var size = matrix.size
+  var inc = -1
+  var row = size - 1
+  var bitIndex = 7
+  var byteIndex = 0
+
+  for (var col = size - 1; col > 0; col -= 2) {
+    if (col === 6) col--
+
+    while (true) {
+      for (var c = 0; c < 2; c++) {
+        if (!matrix.isReserved(row, col - c)) {
+          var dark = false
+
+          if (byteIndex < data.length) {
+            dark = (((data[byteIndex] >>> bitIndex) & 1) === 1)
+          }
+
+          matrix.set(row, col - c, dark)
+          bitIndex--
+
+          if (bitIndex === -1) {
+            byteIndex++
+            bitIndex = 7
+          }
+        }
+      }
+
+      row += inc
+
+      if (row < 0 || size <= row) {
+        row -= inc
+        inc = -inc
+        break
+      }
+    }
+  }
+}
+
+/**
+ * Create encoded codewords from data input
+ *
+ * @param  {Number}   version              QR Code version
+ * @param  {ErrorCorrectionLevel}   errorCorrectionLevel Error correction level
+ * @param  {ByteData} data                 Data input
+ * @return {Buffer}                        Buffer containing encoded codewords
+ */
+function createData (version, errorCorrectionLevel, segments) {
+  // Prepare data buffer
+  var buffer = new BitBuffer()
+
+  segments.forEach(function (data) {
+    // prefix data with mode indicator (4 bits)
+    buffer.put(data.mode.bit, 4)
+
+    // Prefix data with character count indicator.
+    // The character count indicator is a string of bits that represents the
+    // number of characters that are being encoded.
+    // The character count indicator must be placed after the mode indicator
+    // and must be a certain number of bits long, depending on the QR version
+    // and data mode
+    // @see {@link Mode.getCharCountIndicator}.
+    buffer.put(data.getLength(), Mode.getCharCountIndicator(data.mode, version))
+
+    // add binary data sequence to buffer
+    data.write(buffer)
+  })
+
+  // Calculate required number of bits
+  var totalCodewords = Utils.getSymbolTotalCodewords(version)
+  var ecTotalCodewords = ECCode.getTotalCodewordsCount(version, errorCorrectionLevel)
+  var dataTotalCodewordsBits = (totalCodewords - ecTotalCodewords) * 8
+
+  // Add a terminator.
+  // If the bit string is shorter than the total number of required bits,
+  // a terminator of up to four 0s must be added to the right side of the string.
+  // If the bit string is more than four bits shorter than the required number of bits,
+  // add four 0s to the end.
+  if (buffer.getLengthInBits() + 4 <= dataTotalCodewordsBits) {
+    buffer.put(0, 4)
+  }
+
+  // If the bit string is fewer than four bits shorter, add only the number of 0s that
+  // are needed to reach the required number of bits.
+
+  // After adding the terminator, if the number of bits in the string is not a multiple of 8,
+  // pad the string on the right with 0s to make the string's length a multiple of 8.
+  while (buffer.getLengthInBits() % 8 !== 0) {
+    buffer.putBit(0)
+  }
+
+  // Add pad bytes if the string is still shorter than the total number of required bits.
+  // Extend the buffer to fill the data capacity of the symbol corresponding to
+  // the Version and Error Correction Level by adding the Pad Codewords 11101100 (0xEC)
+  // and 00010001 (0x11) alternately.
+  var remainingByte = (dataTotalCodewordsBits - buffer.getLengthInBits()) / 8
+  for (var i = 0; i < remainingByte; i++) {
+    buffer.put(i % 2 ? 0x11 : 0xEC, 8)
+  }
+
+  return createCodewords(buffer, version, errorCorrectionLevel)
+}
+
+/**
+ * Encode input data with Reed-Solomon and return codewords with
+ * relative error correction bits
+ *
+ * @param  {BitBuffer} bitBuffer            Data to encode
+ * @param  {Number}    version              QR Code version
+ * @param  {ErrorCorrectionLevel} errorCorrectionLevel Error correction level
+ * @return {Buffer}                         Buffer containing encoded codewords
+ */
+function createCodewords (bitBuffer, version, errorCorrectionLevel) {
+  // Total codewords for this QR code version (Data + Error correction)
+  var totalCodewords = Utils.getSymbolTotalCodewords(version)
+
+  // Total number of error correction codewords
+  var ecTotalCodewords = ECCode.getTotalCodewordsCount(version, errorCorrectionLevel)
+
+  // Total number of data codewords
+  var dataTotalCodewords = totalCodewords - ecTotalCodewords
+
+  // Total number of blocks
+  var ecTotalBlocks = ECCode.getBlocksCount(version, errorCorrectionLevel)
+
+  // Calculate how many blocks each group should contain
+  var blocksInGroup2 = totalCodewords % ecTotalBlocks
+  var blocksInGroup1 = ecTotalBlocks - blocksInGroup2
+
+  var totalCodewordsInGroup1 = Math.floor(totalCodewords / ecTotalBlocks)
+
+  var dataCodewordsInGroup1 = Math.floor(dataTotalCodewords / ecTotalBlocks)
+  var dataCodewordsInGroup2 = dataCodewordsInGroup1 + 1
+
+  // Number of EC codewords is the same for both groups
+  var ecCount = totalCodewordsInGroup1 - dataCodewordsInGroup1
+
+  // Initialize a Reed-Solomon encoder with a generator polynomial of degree ecCount
+  var rs = new ReedSolomonEncoder(ecCount)
+
+  var offset = 0
+  var dcData = new Array(ecTotalBlocks)
+  var ecData = new Array(ecTotalBlocks)
+  var maxDataSize = 0
+  var buffer = BufferUtil.from(bitBuffer.buffer)
+
+  // Divide the buffer into the required number of blocks
+  for (var b = 0; b < ecTotalBlocks; b++) {
+    var dataSize = b < blocksInGroup1 ? dataCodewordsInGroup1 : dataCodewordsInGroup2
+
+    // extract a block of data from buffer
+    dcData[b] = buffer.slice(offset, offset + dataSize)
+
+    // Calculate EC codewords for this data block
+    ecData[b] = rs.encode(dcData[b])
+
+    offset += dataSize
+    maxDataSize = Math.max(maxDataSize, dataSize)
+  }
+
+  // Create final data
+  // Interleave the data and error correction codewords from each block
+  var data = BufferUtil.alloc(totalCodewords)
+  var index = 0
+  var i, r
+
+  // Add data codewords
+  for (i = 0; i < maxDataSize; i++) {
+    for (r = 0; r < ecTotalBlocks; r++) {
+      if (i < dcData[r].length) {
+        data[index++] = dcData[r][i]
+      }
+    }
+  }
+
+  // Apped EC codewords
+  for (i = 0; i < ecCount; i++) {
+    for (r = 0; r < ecTotalBlocks; r++) {
+      data[index++] = ecData[r][i]
+    }
+  }
+
+  return data
+}
+
+/**
+ * Build QR Code symbol
+ *
+ * @param  {String} data                 Input string
+ * @param  {Number} version              QR Code version
+ * @param  {ErrorCorretionLevel} errorCorrectionLevel Error level
+ * @param  {MaskPattern} maskPattern     Mask pattern
+ * @return {Object}                      Object containing symbol data
+ */
+function createSymbol (data, version, errorCorrectionLevel, maskPattern) {
+  var segments
+
+  if (isArray(data)) {
+    segments = Segments.fromArray(data)
+  } else if (typeof data === 'string') {
+    var estimatedVersion = version
+
+    if (!estimatedVersion) {
+      var rawSegments = Segments.rawSplit(data)
+
+      // Estimate best version that can contain raw splitted segments
+      estimatedVersion = Version.getBestVersionForData(rawSegments,
+        errorCorrectionLevel)
+    }
+
+    // Build optimized segments
+    // If estimated version is undefined, try with the highest version
+    segments = Segments.fromString(data, estimatedVersion || 40)
+  } else {
+    throw new Error('Invalid data')
+  }
+
+  // Get the min version that can contain data
+  var bestVersion = Version.getBestVersionForData(segments,
+      errorCorrectionLevel)
+
+  // If no version is found, data cannot be stored
+  if (!bestVersion) {
+    throw new Error('The amount of data is too big to be stored in a QR Code')
+  }
+
+  // If not specified, use min version as default
+  if (!version) {
+    version = bestVersion
+
+  // Check if the specified version can contain the data
+  } else if (version < bestVersion) {
+    throw new Error('\n' +
+      'The chosen QR Code version cannot contain this amount of data.\n' +
+      'Minimum version required to store current data is: ' + bestVersion + '.\n'
+    )
+  }
+
+  var dataBits = createData(version, errorCorrectionLevel, segments)
+
+  // Allocate matrix buffer
+  var moduleCount = Utils.getSymbolSize(version)
+  var modules = new BitMatrix(moduleCount)
+
+  // Add function modules
+  setupFinderPattern(modules, version)
+  setupTimingPattern(modules)
+  setupAlignmentPattern(modules, version)
+
+  // Add temporary dummy bits for format info just to set them as reserved.
+  // This is needed to prevent these bits from being masked by {@link MaskPattern.applyMask}
+  // since the masking operation must be performed only on the encoding region.
+  // These blocks will be replaced with correct values later in code.
+  setupFormatInfo(modules, errorCorrectionLevel, 0)
+
+  if (version >= 7) {
+    setupVersionInfo(modules, version)
+  }
+
+  // Add data codewords
+  setupData(modules, dataBits)
+
+  if (isNaN(maskPattern)) {
+    // Find best mask pattern
+    maskPattern = MaskPattern.getBestMask(modules,
+      setupFormatInfo.bind(null, modules, errorCorrectionLevel))
+  }
+
+  // Apply mask pattern
+  MaskPattern.applyMask(maskPattern, modules)
+
+  // Replace format info bits with correct values
+  setupFormatInfo(modules, errorCorrectionLevel, maskPattern)
+
+  return {
+    modules: modules,
+    version: version,
+    errorCorrectionLevel: errorCorrectionLevel,
+    maskPattern: maskPattern,
+    segments: segments
+  }
+}
+
+/**
+ * QR Code
+ *
+ * @param {String | Array} data                 Input data
+ * @param {Object} options                      Optional configurations
+ * @param {Number} options.version              QR Code version
+ * @param {String} options.errorCorrectionLevel Error correction level
+ * @param {Function} options.toSJISFunc         Helper func to convert utf8 to sjis
+ */
+exports.create = function create (data, options) {
+  if (typeof data === 'undefined' || data === '') {
+    throw new Error('No input text')
+  }
+
+  var errorCorrectionLevel = ECLevel.M
+  var version
+  var mask
+
+  if (typeof options !== 'undefined') {
+    // Use higher error correction level as default
+    errorCorrectionLevel = ECLevel.from(options.errorCorrectionLevel, ECLevel.M)
+    version = Version.from(options.version)
+    mask = MaskPattern.from(options.maskPattern)
+
+    if (options.toSJISFunc) {
+      Utils.setToSJISFunction(options.toSJISFunc)
+    }
+  }
+
+  return createSymbol(data, version, errorCorrectionLevel, mask)
+}
+
+},{"../utils/buffer":533,"./alignment-pattern":508,"./bit-buffer":510,"./bit-matrix":511,"./error-correction-code":513,"./error-correction-level":514,"./finder-pattern":515,"./format-info":516,"./mask-pattern":519,"./mode":520,"./reed-solomon-encoder":524,"./segments":526,"./utils":527,"./version":529,"isarray":534}],524:[function(require,module,exports){
+var BufferUtil = require('../utils/buffer')
+var Polynomial = require('./polynomial')
+var Buffer = require('buffer').Buffer
+
+function ReedSolomonEncoder (degree) {
+  this.genPoly = undefined
+  this.degree = degree
+
+  if (this.degree) this.initialize(this.degree)
+}
+
+/**
+ * Initialize the encoder.
+ * The input param should correspond to the number of error correction codewords.
+ *
+ * @param  {Number} degree
+ */
+ReedSolomonEncoder.prototype.initialize = function initialize (degree) {
+  // create an irreducible generator polynomial
+  this.degree = degree
+  this.genPoly = Polynomial.generateECPolynomial(this.degree)
+}
+
+/**
+ * Encodes a chunk of data
+ *
+ * @param  {Buffer} data Buffer containing input data
+ * @return {Buffer}      Buffer containing encoded data
+ */
+ReedSolomonEncoder.prototype.encode = function encode (data) {
+  if (!this.genPoly) {
+    throw new Error('Encoder not initialized')
+  }
+
+  // Calculate EC for this data block
+  // extends data size to data+genPoly size
+  var pad = BufferUtil.alloc(this.degree)
+  var paddedData = Buffer.concat([data, pad], data.length + this.degree)
+
+  // The error correction codewords are the remainder after dividing the data codewords
+  // by a generator polynomial
+  var remainder = Polynomial.mod(paddedData, this.genPoly)
+
+  // return EC data blocks (last n byte, where n is the degree of genPoly)
+  // If coefficients number in remainder are less than genPoly degree,
+  // pad with 0s to the left to reach the needed number of coefficients
+  var start = this.degree - remainder.length
+  if (start > 0) {
+    var buff = BufferUtil.alloc(this.degree)
+    remainder.copy(buff, start)
+
+    return buff
+  }
+
+  return remainder
+}
+
+module.exports = ReedSolomonEncoder
+
+},{"../utils/buffer":533,"./polynomial":522,"buffer":68}],525:[function(require,module,exports){
+var numeric = '[0-9]+'
+var alphanumeric = '[A-Z $%*+\\-./:]+'
+var kanji = '(?:[u3000-u303F]|[u3040-u309F]|[u30A0-u30FF]|' +
+  '[uFF00-uFFEF]|[u4E00-u9FAF]|[u2605-u2606]|[u2190-u2195]|u203B|' +
+  '[u2010u2015u2018u2019u2025u2026u201Cu201Du2225u2260]|' +
+  '[u0391-u0451]|[u00A7u00A8u00B1u00B4u00D7u00F7])+'
+kanji = kanji.replace(/u/g, '\\u')
+
+var byte = '(?:(?![A-Z0-9 $%*+\\-./:]|' + kanji + ')(?:.|[\r\n]))+'
+
+exports.KANJI = new RegExp(kanji, 'g')
+exports.BYTE_KANJI = new RegExp('[^A-Z0-9 $%*+\\-./:]+', 'g')
+exports.BYTE = new RegExp(byte, 'g')
+exports.NUMERIC = new RegExp(numeric, 'g')
+exports.ALPHANUMERIC = new RegExp(alphanumeric, 'g')
+
+var TEST_KANJI = new RegExp('^' + kanji + '$')
+var TEST_NUMERIC = new RegExp('^' + numeric + '$')
+var TEST_ALPHANUMERIC = new RegExp('^[A-Z0-9 $%*+\\-./:]+$')
+
+exports.testKanji = function testKanji (str) {
+  return TEST_KANJI.test(str)
+}
+
+exports.testNumeric = function testNumeric (str) {
+  return TEST_NUMERIC.test(str)
+}
+
+exports.testAlphanumeric = function testAlphanumeric (str) {
+  return TEST_ALPHANUMERIC.test(str)
+}
+
+},{}],526:[function(require,module,exports){
+var Mode = require('./mode')
+var NumericData = require('./numeric-data')
+var AlphanumericData = require('./alphanumeric-data')
+var ByteData = require('./byte-data')
+var KanjiData = require('./kanji-data')
+var Regex = require('./regex')
+var Utils = require('./utils')
+var dijkstra = require('dijkstrajs')
+
+/**
+ * Returns UTF8 byte length
+ *
+ * @param  {String} str Input string
+ * @return {Number}     Number of byte
+ */
+function getStringByteLength (str) {
+  return unescape(encodeURIComponent(str)).length
+}
+
+/**
+ * Get a list of segments of the specified mode
+ * from a string
+ *
+ * @param  {Mode}   mode Segment mode
+ * @param  {String} str  String to process
+ * @return {Array}       Array of object with segments data
+ */
+function getSegments (regex, mode, str) {
+  var segments = []
+  var result
+
+  while ((result = regex.exec(str)) !== null) {
+    segments.push({
+      data: result[0],
+      index: result.index,
+      mode: mode,
+      length: result[0].length
+    })
+  }
+
+  return segments
+}
+
+/**
+ * Extracts a series of segments with the appropriate
+ * modes from a string
+ *
+ * @param  {String} dataStr Input string
+ * @return {Array}          Array of object with segments data
+ */
+function getSegmentsFromString (dataStr) {
+  var numSegs = getSegments(Regex.NUMERIC, Mode.NUMERIC, dataStr)
+  var alphaNumSegs = getSegments(Regex.ALPHANUMERIC, Mode.ALPHANUMERIC, dataStr)
+  var byteSegs
+  var kanjiSegs
+
+  if (Utils.isKanjiModeEnabled()) {
+    byteSegs = getSegments(Regex.BYTE, Mode.BYTE, dataStr)
+    kanjiSegs = getSegments(Regex.KANJI, Mode.KANJI, dataStr)
+  } else {
+    byteSegs = getSegments(Regex.BYTE_KANJI, Mode.BYTE, dataStr)
+    kanjiSegs = []
+  }
+
+  var segs = numSegs.concat(alphaNumSegs, byteSegs, kanjiSegs)
+
+  return segs
+    .sort(function (s1, s2) {
+      return s1.index - s2.index
+    })
+    .map(function (obj) {
+      return {
+        data: obj.data,
+        mode: obj.mode,
+        length: obj.length
+      }
+    })
+}
+
+/**
+ * Returns how many bits are needed to encode a string of
+ * specified length with the specified mode
+ *
+ * @param  {Number} length String length
+ * @param  {Mode} mode     Segment mode
+ * @return {Number}        Bit length
+ */
+function getSegmentBitsLength (length, mode) {
+  switch (mode) {
+    case Mode.NUMERIC:
+      return NumericData.getBitsLength(length)
+    case Mode.ALPHANUMERIC:
+      return AlphanumericData.getBitsLength(length)
+    case Mode.KANJI:
+      return KanjiData.getBitsLength(length)
+    case Mode.BYTE:
+      return ByteData.getBitsLength(length)
+  }
+}
+
+/**
+ * Merges adjacent segments which have the same mode
+ *
+ * @param  {Array} segs Array of object with segments data
+ * @return {Array}      Array of object with segments data
+ */
+function mergeSegments (segs) {
+  return segs.reduce(function (acc, curr) {
+    var prevSeg = acc.length - 1 >= 0 ? acc[acc.length - 1] : null
+    if (prevSeg && prevSeg.mode === curr.mode) {
+      acc[acc.length - 1].data += curr.data
+      return acc
+    }
+
+    acc.push(curr)
+    return acc
+  }, [])
+}
+
+/**
+ * Generates a list of all possible nodes combination which
+ * will be used to build a segments graph.
+ *
+ * Nodes are divided by groups. Each group will contain a list of all the modes
+ * in which is possible to encode the given text.
+ *
+ * For example the text '12345' can be encoded as Numeric, Alphanumeric or Byte.
+ * The group for '12345' will contain then 3 objects, one for each
+ * possible encoding mode.
+ *
+ * Each node represents a possible segment.
+ *
+ * @param  {Array} segs Array of object with segments data
+ * @return {Array}      Array of object with segments data
+ */
+function buildNodes (segs) {
+  var nodes = []
+  for (var i = 0; i < segs.length; i++) {
+    var seg = segs[i]
+
+    switch (seg.mode) {
+      case Mode.NUMERIC:
+        nodes.push([seg,
+          { data: seg.data, mode: Mode.ALPHANUMERIC, length: seg.length },
+          { data: seg.data, mode: Mode.BYTE, length: seg.length }
+        ])
+        break
+      case Mode.ALPHANUMERIC:
+        nodes.push([seg,
+          { data: seg.data, mode: Mode.BYTE, length: seg.length }
+        ])
+        break
+      case Mode.KANJI:
+        nodes.push([seg,
+          { data: seg.data, mode: Mode.BYTE, length: getStringByteLength(seg.data) }
+        ])
+        break
+      case Mode.BYTE:
+        nodes.push([
+          { data: seg.data, mode: Mode.BYTE, length: getStringByteLength(seg.data) }
+        ])
+    }
+  }
+
+  return nodes
+}
+
+/**
+ * Builds a graph from a list of nodes.
+ * All segments in each node group will be connected with all the segments of
+ * the next group and so on.
+ *
+ * At each connection will be assigned a weight depending on the
+ * segment's byte length.
+ *
+ * @param  {Array} nodes    Array of object with segments data
+ * @param  {Number} version QR Code version
+ * @return {Object}         Graph of all possible segments
+ */
+function buildGraph (nodes, version) {
+  var table = {}
+  var graph = {'start': {}}
+  var prevNodeIds = ['start']
+
+  for (var i = 0; i < nodes.length; i++) {
+    var nodeGroup = nodes[i]
+    var currentNodeIds = []
+
+    for (var j = 0; j < nodeGroup.length; j++) {
+      var node = nodeGroup[j]
+      var key = '' + i + j
+
+      currentNodeIds.push(key)
+      table[key] = { node: node, lastCount: 0 }
+      graph[key] = {}
+
+      for (var n = 0; n < prevNodeIds.length; n++) {
+        var prevNodeId = prevNodeIds[n]
+
+        if (table[prevNodeId] && table[prevNodeId].node.mode === node.mode) {
+          graph[prevNodeId][key] =
+            getSegmentBitsLength(table[prevNodeId].lastCount + node.length, node.mode) -
+            getSegmentBitsLength(table[prevNodeId].lastCount, node.mode)
+
+          table[prevNodeId].lastCount += node.length
+        } else {
+          if (table[prevNodeId]) table[prevNodeId].lastCount = node.length
+
+          graph[prevNodeId][key] = getSegmentBitsLength(node.length, node.mode) +
+            4 + Mode.getCharCountIndicator(node.mode, version) // switch cost
+        }
+      }
+    }
+
+    prevNodeIds = currentNodeIds
+  }
+
+  for (n = 0; n < prevNodeIds.length; n++) {
+    graph[prevNodeIds[n]]['end'] = 0
+  }
+
+  return { map: graph, table: table }
+}
+
+/**
+ * Builds a segment from a specified data and mode.
+ * If a mode is not specified, the more suitable will be used.
+ *
+ * @param  {String} data             Input data
+ * @param  {Mode | String} modesHint Data mode
+ * @return {Segment}                 Segment
+ */
+function buildSingleSegment (data, modesHint) {
+  var mode
+  var bestMode = Mode.getBestModeForData(data)
+
+  mode = Mode.from(modesHint, bestMode)
+
+  // Make sure data can be encoded
+  if (mode !== Mode.BYTE && mode.bit < bestMode.bit) {
+    throw new Error('"' + data + '"' +
+      ' cannot be encoded with mode ' + Mode.toString(mode) +
+      '.\n Suggested mode is: ' + Mode.toString(bestMode))
+  }
+
+  // Use Mode.BYTE if Kanji support is disabled
+  if (mode === Mode.KANJI && !Utils.isKanjiModeEnabled()) {
+    mode = Mode.BYTE
+  }
+
+  switch (mode) {
+    case Mode.NUMERIC:
+      return new NumericData(data)
+
+    case Mode.ALPHANUMERIC:
+      return new AlphanumericData(data)
+
+    case Mode.KANJI:
+      return new KanjiData(data)
+
+    case Mode.BYTE:
+      return new ByteData(data)
+  }
+}
+
+/**
+ * Builds a list of segments from an array.
+ * Array can contain Strings or Objects with segment's info.
+ *
+ * For each item which is a string, will be generated a segment with the given
+ * string and the more appropriate encoding mode.
+ *
+ * For each item which is an object, will be generated a segment with the given
+ * data and mode.
+ * Objects must contain at least the property "data".
+ * If property "mode" is not present, the more suitable mode will be used.
+ *
+ * @param  {Array} array Array of objects with segments data
+ * @return {Array}       Array of Segments
+ */
+exports.fromArray = function fromArray (array) {
+  return array.reduce(function (acc, seg) {
+    if (typeof seg === 'string') {
+      acc.push(buildSingleSegment(seg, null))
+    } else if (seg.data) {
+      acc.push(buildSingleSegment(seg.data, seg.mode))
+    }
+
+    return acc
+  }, [])
+}
+
+/**
+ * Builds an optimized sequence of segments from a string,
+ * which will produce the shortest possible bitstream.
+ *
+ * @param  {String} data    Input string
+ * @param  {Number} version QR Code version
+ * @return {Array}          Array of segments
+ */
+exports.fromString = function fromString (data, version) {
+  var segs = getSegmentsFromString(data, Utils.isKanjiModeEnabled())
+
+  var nodes = buildNodes(segs)
+  var graph = buildGraph(nodes, version)
+  var path = dijkstra.find_path(graph.map, 'start', 'end')
+
+  var optimizedSegs = []
+  for (var i = 1; i < path.length - 1; i++) {
+    optimizedSegs.push(graph.table[path[i]].node)
+  }
+
+  return exports.fromArray(mergeSegments(optimizedSegs))
+}
+
+/**
+ * Splits a string in various segments with the modes which
+ * best represent their content.
+ * The produced segments are far from being optimized.
+ * The output of this function is only used to estimate a QR Code version
+ * which may contain the data.
+ *
+ * @param  {string} data Input string
+ * @return {Array}       Array of segments
+ */
+exports.rawSplit = function rawSplit (data) {
+  return exports.fromArray(
+    getSegmentsFromString(data, Utils.isKanjiModeEnabled())
+  )
+}
+
+},{"./alphanumeric-data":509,"./byte-data":512,"./kanji-data":518,"./mode":520,"./numeric-data":521,"./regex":525,"./utils":527,"dijkstrajs":347}],527:[function(require,module,exports){
+var toSJISFunction
+var CODEWORDS_COUNT = [
+  0, // Not used
+  26, 44, 70, 100, 134, 172, 196, 242, 292, 346,
+  404, 466, 532, 581, 655, 733, 815, 901, 991, 1085,
+  1156, 1258, 1364, 1474, 1588, 1706, 1828, 1921, 2051, 2185,
+  2323, 2465, 2611, 2761, 2876, 3034, 3196, 3362, 3532, 3706
+]
+
+/**
+ * Returns the QR Code size for the specified version
+ *
+ * @param  {Number} version QR Code version
+ * @return {Number}         size of QR code
+ */
+exports.getSymbolSize = function getSymbolSize (version) {
+  if (!version) throw new Error('"version" cannot be null or undefined')
+  if (version < 1 || version > 40) throw new Error('"version" should be in range from 1 to 40')
+  return version * 4 + 17
+}
+
+/**
+ * Returns the total number of codewords used to store data and EC information.
+ *
+ * @param  {Number} version QR Code version
+ * @return {Number}         Data length in bits
+ */
+exports.getSymbolTotalCodewords = function getSymbolTotalCodewords (version) {
+  return CODEWORDS_COUNT[version]
+}
+
+/**
+ * Encode data with Bose-Chaudhuri-Hocquenghem
+ *
+ * @param  {Number} data Value to encode
+ * @return {Number}      Encoded value
+ */
+exports.getBCHDigit = function (data) {
+  var digit = 0
+
+  while (data !== 0) {
+    digit++
+    data >>>= 1
+  }
+
+  return digit
+}
+
+exports.setToSJISFunction = function setToSJISFunction (f) {
+  if (typeof f !== 'function') {
+    throw new Error('"toSJISFunc" is not a valid function.')
+  }
+
+  toSJISFunction = f
+}
+
+exports.isKanjiModeEnabled = function () {
+  return typeof toSJISFunction !== 'undefined'
+}
+
+exports.toSJIS = function toSJIS (kanji) {
+  return toSJISFunction(kanji)
+}
+
+},{}],528:[function(require,module,exports){
+/**
+ * Check if QR Code version is valid
+ *
+ * @param  {Number}  version QR Code version
+ * @return {Boolean}         true if valid version, false otherwise
+ */
+exports.isValid = function isValid (version) {
+  return !isNaN(version) && version >= 1 && version <= 40
+}
+
+},{}],529:[function(require,module,exports){
+var Utils = require('./utils')
+var ECCode = require('./error-correction-code')
+var ECLevel = require('./error-correction-level')
+var Mode = require('./mode')
+var VersionCheck = require('./version-check')
+var isArray = require('isarray')
+
+// Generator polynomial used to encode version information
+var G18 = (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0)
+var G18_BCH = Utils.getBCHDigit(G18)
+
+function getBestVersionForDataLength (mode, length, errorCorrectionLevel) {
+  for (var currentVersion = 1; currentVersion <= 40; currentVersion++) {
+    if (length <= exports.getCapacity(currentVersion, errorCorrectionLevel, mode)) {
+      return currentVersion
+    }
+  }
+
+  return undefined
+}
+
+function getReservedBitsCount (mode, version) {
+  // Character count indicator + mode indicator bits
+  return Mode.getCharCountIndicator(mode, version) + 4
+}
+
+function getTotalBitsFromDataArray (segments, version) {
+  var totalBits = 0
+
+  segments.forEach(function (data) {
+    var reservedBits = getReservedBitsCount(data.mode, version)
+    totalBits += reservedBits + data.getBitsLength()
+  })
+
+  return totalBits
+}
+
+function getBestVersionForMixedData (segments, errorCorrectionLevel) {
+  for (var currentVersion = 1; currentVersion <= 40; currentVersion++) {
+    var length = getTotalBitsFromDataArray(segments, currentVersion)
+    if (length <= exports.getCapacity(currentVersion, errorCorrectionLevel, Mode.MIXED)) {
+      return currentVersion
+    }
+  }
+
+  return undefined
+}
+
+/**
+ * Returns version number from a value.
+ * If value is not a valid version, returns defaultValue
+ *
+ * @param  {Number|String} value        QR Code version
+ * @param  {Number}        defaultValue Fallback value
+ * @return {Number}                     QR Code version number
+ */
+exports.from = function from (value, defaultValue) {
+  if (VersionCheck.isValid(value)) {
+    return parseInt(value, 10)
+  }
+
+  return defaultValue
+}
+
+/**
+ * Returns how much data can be stored with the specified QR code version
+ * and error correction level
+ *
+ * @param  {Number} version              QR Code version (1-40)
+ * @param  {Number} errorCorrectionLevel Error correction level
+ * @param  {Mode}   mode                 Data mode
+ * @return {Number}                      Quantity of storable data
+ */
+exports.getCapacity = function getCapacity (version, errorCorrectionLevel, mode) {
+  if (!VersionCheck.isValid(version)) {
+    throw new Error('Invalid QR Code version')
+  }
+
+  // Use Byte mode as default
+  if (typeof mode === 'undefined') mode = Mode.BYTE
+
+  // Total codewords for this QR code version (Data + Error correction)
+  var totalCodewords = Utils.getSymbolTotalCodewords(version)
+
+  // Total number of error correction codewords
+  var ecTotalCodewords = ECCode.getTotalCodewordsCount(version, errorCorrectionLevel)
+
+  // Total number of data codewords
+  var dataTotalCodewordsBits = (totalCodewords - ecTotalCodewords) * 8
+
+  if (mode === Mode.MIXED) return dataTotalCodewordsBits
+
+  var usableBits = dataTotalCodewordsBits - getReservedBitsCount(mode, version)
+
+  // Return max number of storable codewords
+  switch (mode) {
+    case Mode.NUMERIC:
+      return Math.floor((usableBits / 10) * 3)
+
+    case Mode.ALPHANUMERIC:
+      return Math.floor((usableBits / 11) * 2)
+
+    case Mode.KANJI:
+      return Math.floor(usableBits / 13)
+
+    case Mode.BYTE:
+    default:
+      return Math.floor(usableBits / 8)
+  }
+}
+
+/**
+ * Returns the minimum version needed to contain the amount of data
+ *
+ * @param  {Segment} data                    Segment of data
+ * @param  {Number} [errorCorrectionLevel=H] Error correction level
+ * @param  {Mode} mode                       Data mode
+ * @return {Number}                          QR Code version
+ */
+exports.getBestVersionForData = function getBestVersionForData (data, errorCorrectionLevel) {
+  var seg
+
+  var ecl = ECLevel.from(errorCorrectionLevel, ECLevel.M)
+
+  if (isArray(data)) {
+    if (data.length > 1) {
+      return getBestVersionForMixedData(data, ecl)
+    }
+
+    if (data.length === 0) {
+      return 1
+    }
+
+    seg = data[0]
+  } else {
+    seg = data
+  }
+
+  return getBestVersionForDataLength(seg.mode, seg.getLength(), ecl)
+}
+
+/**
+ * Returns version information with relative error correction bits
+ *
+ * The version information is included in QR Code symbols of version 7 or larger.
+ * It consists of an 18-bit sequence containing 6 data bits,
+ * with 12 error correction bits calculated using the (18, 6) Golay code.
+ *
+ * @param  {Number} version QR Code version
+ * @return {Number}         Encoded version info bits
+ */
+exports.getEncodedBits = function getEncodedBits (version) {
+  if (!VersionCheck.isValid(version) || version < 7) {
+    throw new Error('Invalid QR Code version')
+  }
+
+  var d = version << 12
+
+  while (Utils.getBCHDigit(d) - G18_BCH >= 0) {
+    d ^= (G18 << (Utils.getBCHDigit(d) - G18_BCH))
+  }
+
+  return (version << 12) | d
+}
+
+},{"./error-correction-code":513,"./error-correction-level":514,"./mode":520,"./utils":527,"./version-check":528,"isarray":534}],530:[function(require,module,exports){
+var Utils = require('./utils')
+
+function clearCanvas (ctx, canvas, size) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+  if (!canvas.style) canvas.style = {}
+  canvas.height = size
+  canvas.width = size
+  canvas.style.height = size + 'px'
+  canvas.style.width = size + 'px'
+}
+
+function getCanvasElement () {
+  try {
+    return document.createElement('canvas')
+  } catch (e) {
+    throw new Error('You need to specify a canvas element')
+  }
+}
+
+exports.render = function render (qrData, canvas, options) {
+  var opts = options
+  var canvasEl = canvas
+
+  if (typeof opts === 'undefined' && (!canvas || !canvas.getContext)) {
+    opts = canvas
+    canvas = undefined
+  }
+
+  if (!canvas) {
+    canvasEl = getCanvasElement()
+  }
+
+  opts = Utils.getOptions(opts)
+  var size = Utils.getImageWidth(qrData.modules.size, opts)
+
+  var ctx = canvasEl.getContext('2d')
+  var image = ctx.createImageData(size, size)
+  Utils.qrToImageData(image.data, qrData, opts)
+
+  clearCanvas(ctx, canvasEl, size)
+  ctx.putImageData(image, 0, 0)
+
+  return canvasEl
+}
+
+exports.renderToDataURL = function renderToDataURL (qrData, canvas, options) {
+  var opts = options
+
+  if (typeof opts === 'undefined' && (!canvas || !canvas.getContext)) {
+    opts = canvas
+    canvas = undefined
+  }
+
+  if (!opts) opts = {}
+
+  var canvasEl = exports.render(qrData, canvas, opts)
+
+  var type = opts.type || 'image/png'
+  var rendererOpts = opts.rendererOpts || {}
+
+  return canvasEl.toDataURL(type, rendererOpts.quality)
+}
+
+},{"./utils":532}],531:[function(require,module,exports){
+var Utils = require('./utils')
+
+function getColorAttrib (color, attrib) {
+  var alpha = color.a / 255
+  var str = attrib + '="' + color.hex + '"'
+
+  return alpha < 1
+    ? str + ' ' + attrib + '-opacity="' + alpha.toFixed(2).slice(1) + '"'
+    : str
+}
+
+function svgCmd (cmd, x, y) {
+  var str = cmd + x
+  if (typeof y !== 'undefined') str += ' ' + y
+
+  return str
+}
+
+function qrToPath (data, size, margin) {
+  var path = ''
+  var moveBy = 0
+  var newRow = false
+  var lineLength = 0
+
+  for (var i = 0; i < data.length; i++) {
+    var col = Math.floor(i % size)
+    var row = Math.floor(i / size)
+
+    if (!col && !newRow) newRow = true
+
+    if (data[i]) {
+      lineLength++
+
+      if (!(i > 0 && col > 0 && data[i - 1])) {
+        path += newRow
+          ? svgCmd('M', col + margin, 0.5 + row + margin)
+          : svgCmd('m', moveBy, 0)
+
+        moveBy = 0
+        newRow = false
+      }
+
+      if (!(col + 1 < size && data[i + 1])) {
+        path += svgCmd('h', lineLength)
+        lineLength = 0
+      }
+    } else {
+      moveBy++
+    }
+  }
+
+  return path
+}
+
+exports.render = function render (qrData, options, cb) {
+  var opts = Utils.getOptions(options)
+  var size = qrData.modules.size
+  var data = qrData.modules.data
+  var qrcodesize = size + opts.margin * 2
+
+  var bg = !opts.color.light.a
+    ? ''
+    : '<path ' + getColorAttrib(opts.color.light, 'fill') +
+      ' d="M0 0h' + qrcodesize + 'v' + qrcodesize + 'H0z"/>'
+
+  var path =
+    '<path ' + getColorAttrib(opts.color.dark, 'stroke') +
+    ' d="' + qrToPath(data, size, opts.margin) + '"/>'
+
+  var viewBox = 'viewBox="' + '0 0 ' + qrcodesize + ' ' + qrcodesize + '"'
+
+  var width = !opts.width ? '' : 'width="' + opts.width + '" height="' + opts.width + '" '
+
+  var svgTag = '<svg xmlns="http://www.w3.org/2000/svg" ' + width + viewBox + ' shape-rendering="crispEdges">' + bg + path + '</svg>\n'
+
+  if (typeof cb === 'function') {
+    cb(null, svgTag)
+  }
+
+  return svgTag
+}
+
+},{"./utils":532}],532:[function(require,module,exports){
+function hex2rgba (hex) {
+  if (typeof hex === 'number') {
+    hex = hex.toString()
+  }
+
+  if (typeof hex !== 'string') {
+    throw new Error('Color should be defined as hex string')
+  }
+
+  var hexCode = hex.slice().replace('#', '').split('')
+  if (hexCode.length < 3 || hexCode.length === 5 || hexCode.length > 8) {
+    throw new Error('Invalid hex color: ' + hex)
+  }
+
+  // Convert from short to long form (fff -> ffffff)
+  if (hexCode.length === 3 || hexCode.length === 4) {
+    hexCode = Array.prototype.concat.apply([], hexCode.map(function (c) {
+      return [c, c]
+    }))
+  }
+
+  // Add default alpha value
+  if (hexCode.length === 6) hexCode.push('F', 'F')
+
+  var hexValue = parseInt(hexCode.join(''), 16)
+
+  return {
+    r: (hexValue >> 24) & 255,
+    g: (hexValue >> 16) & 255,
+    b: (hexValue >> 8) & 255,
+    a: hexValue & 255,
+    hex: '#' + hexCode.slice(0, 6).join('')
+  }
+}
+
+exports.getOptions = function getOptions (options) {
+  if (!options) options = {}
+  if (!options.color) options.color = {}
+
+  var margin = typeof options.margin === 'undefined' ||
+    options.margin === null ||
+    options.margin < 0 ? 4 : options.margin
+
+  var width = options.width && options.width >= 21 ? options.width : undefined
+  var scale = options.scale || 4
+
+  return {
+    width: width,
+    scale: width ? 4 : scale,
+    margin: margin,
+    color: {
+      dark: hex2rgba(options.color.dark || '#000000ff'),
+      light: hex2rgba(options.color.light || '#ffffffff')
+    },
+    type: options.type,
+    rendererOpts: options.rendererOpts || {}
+  }
+}
+
+exports.getScale = function getScale (qrSize, opts) {
+  return opts.width && opts.width >= qrSize + opts.margin * 2
+    ? opts.width / (qrSize + opts.margin * 2)
+    : opts.scale
+}
+
+exports.getImageWidth = function getImageWidth (qrSize, opts) {
+  var scale = exports.getScale(qrSize, opts)
+  return Math.floor((qrSize + opts.margin * 2) * scale)
+}
+
+exports.qrToImageData = function qrToImageData (imgData, qr, opts) {
+  var size = qr.modules.size
+  var data = qr.modules.data
+  var scale = exports.getScale(size, opts)
+  var symbolSize = Math.floor((size + opts.margin * 2) * scale)
+  var scaledMargin = opts.margin * scale
+  var palette = [opts.color.light, opts.color.dark]
+
+  for (var i = 0; i < symbolSize; i++) {
+    for (var j = 0; j < symbolSize; j++) {
+      var posDst = (i * symbolSize + j) * 4
+      var pxColor = opts.color.light
+
+      if (i >= scaledMargin && j >= scaledMargin &&
+        i < symbolSize - scaledMargin && j < symbolSize - scaledMargin) {
+        var iSrc = Math.floor((i - scaledMargin) / scale)
+        var jSrc = Math.floor((j - scaledMargin) / scale)
+        pxColor = palette[data[iSrc * size + jSrc] ? 1 : 0]
+      }
+
+      imgData[posDst++] = pxColor.r
+      imgData[posDst++] = pxColor.g
+      imgData[posDst++] = pxColor.b
+      imgData[posDst] = pxColor.a
+    }
+  }
+}
+
+},{}],533:[function(require,module,exports){
+(function (Buffer){(function (){
+/**
+ * Implementation of a subset of node.js Buffer methods for the browser.
+ * Based on https://github.com/feross/buffer
+ */
+
+/* eslint-disable no-proto */
+
+'use strict'
+
+var isArray = require('isarray')
+
+function typedArraySupport () {
+  // Can typed array instances be augmented?
+  try {
+    var arr = new Uint8Array(1)
+    arr.__proto__ = {__proto__: Uint8Array.prototype, foo: function () { return 42 }}
+    return arr.foo() === 42
+  } catch (e) {
+    return false
+  }
+}
+
+Buffer.TYPED_ARRAY_SUPPORT = typedArraySupport()
+
+var K_MAX_LENGTH = Buffer.TYPED_ARRAY_SUPPORT
+    ? 0x7fffffff
+    : 0x3fffffff
+
+function Buffer (arg, offset, length) {
+  if (!Buffer.TYPED_ARRAY_SUPPORT && !(this instanceof Buffer)) {
+    return new Buffer(arg, offset, length)
+  }
+
+  if (typeof arg === 'number') {
+    return allocUnsafe(this, arg)
+  }
+
+  return from(this, arg, offset, length)
+}
+
+if (Buffer.TYPED_ARRAY_SUPPORT) {
+  Buffer.prototype.__proto__ = Uint8Array.prototype
+  Buffer.__proto__ = Uint8Array
+
+  // Fix subarray() in ES2016. See: https://github.com/feross/buffer/pull/97
+  if (typeof Symbol !== 'undefined' && Symbol.species &&
+      Buffer[Symbol.species] === Buffer) {
+    Object.defineProperty(Buffer, Symbol.species, {
+      value: null,
+      configurable: true,
+      enumerable: false,
+      writable: false
+    })
+  }
+}
+
+function checked (length) {
+  // Note: cannot use `length < K_MAX_LENGTH` here because that fails when
+  // length is NaN (which is otherwise coerced to zero.)
+  if (length >= K_MAX_LENGTH) {
+    throw new RangeError('Attempt to allocate Buffer larger than maximum ' +
+                         'size: 0x' + K_MAX_LENGTH.toString(16) + ' bytes')
+  }
+  return length | 0
+}
+
+function isnan (val) {
+  return val !== val // eslint-disable-line no-self-compare
+}
+
+function createBuffer (that, length) {
+  var buf
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    buf = new Uint8Array(length)
+    buf.__proto__ = Buffer.prototype
+  } else {
+    // Fallback: Return an object instance of the Buffer class
+    buf = that
+    if (buf === null) {
+      buf = new Buffer(length)
+    }
+    buf.length = length
+  }
+
+  return buf
+}
+
+function allocUnsafe (that, size) {
+  var buf = createBuffer(that, size < 0 ? 0 : checked(size) | 0)
+
+  if (!Buffer.TYPED_ARRAY_SUPPORT) {
+    for (var i = 0; i < size; ++i) {
+      buf[i] = 0
+    }
+  }
+
+  return buf
+}
+
+function fromString (that, string) {
+  var length = byteLength(string) | 0
+  var buf = createBuffer(that, length)
+
+  var actual = buf.write(string)
+
+  if (actual !== length) {
+    // Writing a hex string, for example, that contains invalid characters will
+    // cause everything after the first invalid character to be ignored. (e.g.
+    // 'abxxcd' will be treated as 'ab')
+    buf = buf.slice(0, actual)
+  }
+
+  return buf
+}
+
+function fromArrayLike (that, array) {
+  var length = array.length < 0 ? 0 : checked(array.length) | 0
+  var buf = createBuffer(that, length)
+  for (var i = 0; i < length; i += 1) {
+    buf[i] = array[i] & 255
+  }
+  return buf
+}
+
+function fromArrayBuffer (that, array, byteOffset, length) {
+  if (byteOffset < 0 || array.byteLength < byteOffset) {
+    throw new RangeError('\'offset\' is out of bounds')
+  }
+
+  if (array.byteLength < byteOffset + (length || 0)) {
+    throw new RangeError('\'length\' is out of bounds')
+  }
+
+  var buf
+  if (byteOffset === undefined && length === undefined) {
+    buf = new Uint8Array(array)
+  } else if (length === undefined) {
+    buf = new Uint8Array(array, byteOffset)
+  } else {
+    buf = new Uint8Array(array, byteOffset, length)
+  }
+
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    // Return an augmented `Uint8Array` instance, for best performance
+    buf.__proto__ = Buffer.prototype
+  } else {
+    // Fallback: Return an object instance of the Buffer class
+    buf = fromArrayLike(that, buf)
+  }
+
+  return buf
+}
+
+function fromObject (that, obj) {
+  if (Buffer.isBuffer(obj)) {
+    var len = checked(obj.length) | 0
+    var buf = createBuffer(that, len)
+
+    if (buf.length === 0) {
+      return buf
+    }
+
+    obj.copy(buf, 0, 0, len)
+    return buf
+  }
+
+  if (obj) {
+    if ((typeof ArrayBuffer !== 'undefined' &&
+        obj.buffer instanceof ArrayBuffer) || 'length' in obj) {
+      if (typeof obj.length !== 'number' || isnan(obj.length)) {
+        return createBuffer(that, 0)
+      }
+      return fromArrayLike(that, obj)
+    }
+
+    if (obj.type === 'Buffer' && Array.isArray(obj.data)) {
+      return fromArrayLike(that, obj.data)
+    }
+  }
+
+  throw new TypeError('First argument must be a string, Buffer, ArrayBuffer, Array, or array-like object.')
+}
+
+function utf8ToBytes (string, units) {
+  units = units || Infinity
+  var codePoint
+  var length = string.length
+  var leadSurrogate = null
+  var bytes = []
+
+  for (var i = 0; i < length; ++i) {
+    codePoint = string.charCodeAt(i)
+
+    // is surrogate component
+    if (codePoint > 0xD7FF && codePoint < 0xE000) {
+      // last char was a lead
+      if (!leadSurrogate) {
+        // no lead yet
+        if (codePoint > 0xDBFF) {
+          // unexpected trail
+          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
+          continue
+        } else if (i + 1 === length) {
+          // unpaired lead
+          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
+          continue
+        }
+
+        // valid lead
+        leadSurrogate = codePoint
+
+        continue
+      }
+
+      // 2 leads in a row
+      if (codePoint < 0xDC00) {
+        if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
+        leadSurrogate = codePoint
+        continue
+      }
+
+      // valid surrogate pair
+      codePoint = (leadSurrogate - 0xD800 << 10 | codePoint - 0xDC00) + 0x10000
+    } else if (leadSurrogate) {
+      // valid bmp char, but last char was a lead
+      if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
+    }
+
+    leadSurrogate = null
+
+    // encode utf8
+    if (codePoint < 0x80) {
+      if ((units -= 1) < 0) break
+      bytes.push(codePoint)
+    } else if (codePoint < 0x800) {
+      if ((units -= 2) < 0) break
+      bytes.push(
+        codePoint >> 0x6 | 0xC0,
+        codePoint & 0x3F | 0x80
+      )
+    } else if (codePoint < 0x10000) {
+      if ((units -= 3) < 0) break
+      bytes.push(
+        codePoint >> 0xC | 0xE0,
+        codePoint >> 0x6 & 0x3F | 0x80,
+        codePoint & 0x3F | 0x80
+      )
+    } else if (codePoint < 0x110000) {
+      if ((units -= 4) < 0) break
+      bytes.push(
+        codePoint >> 0x12 | 0xF0,
+        codePoint >> 0xC & 0x3F | 0x80,
+        codePoint >> 0x6 & 0x3F | 0x80,
+        codePoint & 0x3F | 0x80
+      )
+    } else {
+      throw new Error('Invalid code point')
+    }
+  }
+
+  return bytes
+}
+
+function byteLength (string) {
+  if (Buffer.isBuffer(string)) {
+    return string.length
+  }
+  if (typeof ArrayBuffer !== 'undefined' && typeof ArrayBuffer.isView === 'function' &&
+      (ArrayBuffer.isView(string) || string instanceof ArrayBuffer)) {
+    return string.byteLength
+  }
+  if (typeof string !== 'string') {
+    string = '' + string
+  }
+
+  var len = string.length
+  if (len === 0) return 0
+
+  return utf8ToBytes(string).length
+}
+
+function blitBuffer (src, dst, offset, length) {
+  for (var i = 0; i < length; ++i) {
+    if ((i + offset >= dst.length) || (i >= src.length)) break
+    dst[i + offset] = src[i]
+  }
+  return i
+}
+
+function utf8Write (buf, string, offset, length) {
+  return blitBuffer(utf8ToBytes(string, buf.length - offset), buf, offset, length)
+}
+
+function from (that, value, offset, length) {
+  if (typeof value === 'number') {
+    throw new TypeError('"value" argument must not be a number')
+  }
+
+  if (typeof ArrayBuffer !== 'undefined' && value instanceof ArrayBuffer) {
+    return fromArrayBuffer(that, value, offset, length)
+  }
+
+  if (typeof value === 'string') {
+    return fromString(that, value, offset)
+  }
+
+  return fromObject(that, value)
+}
+
+Buffer.prototype.write = function write (string, offset, length) {
+  // Buffer#write(string)
+  if (offset === undefined) {
+    length = this.length
+    offset = 0
+  // Buffer#write(string, encoding)
+  } else if (length === undefined && typeof offset === 'string') {
+    length = this.length
+    offset = 0
+  // Buffer#write(string, offset[, length])
+  } else if (isFinite(offset)) {
+    offset = offset | 0
+    if (isFinite(length)) {
+      length = length | 0
+    } else {
+      length = undefined
+    }
+  }
+
+  var remaining = this.length - offset
+  if (length === undefined || length > remaining) length = remaining
+
+  if ((string.length > 0 && (length < 0 || offset < 0)) || offset > this.length) {
+    throw new RangeError('Attempt to write outside buffer bounds')
+  }
+
+  return utf8Write(this, string, offset, length)
+}
+
+Buffer.prototype.slice = function slice (start, end) {
+  var len = this.length
+  start = ~~start
+  end = end === undefined ? len : ~~end
+
+  if (start < 0) {
+    start += len
+    if (start < 0) start = 0
+  } else if (start > len) {
+    start = len
+  }
+
+  if (end < 0) {
+    end += len
+    if (end < 0) end = 0
+  } else if (end > len) {
+    end = len
+  }
+
+  if (end < start) end = start
+
+  var newBuf
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    newBuf = this.subarray(start, end)
+    // Return an augmented `Uint8Array` instance
+    newBuf.__proto__ = Buffer.prototype
+  } else {
+    var sliceLen = end - start
+    newBuf = new Buffer(sliceLen, undefined)
+    for (var i = 0; i < sliceLen; ++i) {
+      newBuf[i] = this[i + start]
+    }
+  }
+
+  return newBuf
+}
+
+Buffer.prototype.copy = function copy (target, targetStart, start, end) {
+  if (!start) start = 0
+  if (!end && end !== 0) end = this.length
+  if (targetStart >= target.length) targetStart = target.length
+  if (!targetStart) targetStart = 0
+  if (end > 0 && end < start) end = start
+
+  // Copy 0 bytes; we're done
+  if (end === start) return 0
+  if (target.length === 0 || this.length === 0) return 0
+
+  // Fatal error conditions
+  if (targetStart < 0) {
+    throw new RangeError('targetStart out of bounds')
+  }
+  if (start < 0 || start >= this.length) throw new RangeError('sourceStart out of bounds')
+  if (end < 0) throw new RangeError('sourceEnd out of bounds')
+
+  // Are we oob?
+  if (end > this.length) end = this.length
+  if (target.length - targetStart < end - start) {
+    end = target.length - targetStart + start
+  }
+
+  var len = end - start
+  var i
+
+  if (this === target && start < targetStart && targetStart < end) {
+    // descending copy from end
+    for (i = len - 1; i >= 0; --i) {
+      target[i + targetStart] = this[i + start]
+    }
+  } else if (len < 1000 || !Buffer.TYPED_ARRAY_SUPPORT) {
+    // ascending copy from start
+    for (i = 0; i < len; ++i) {
+      target[i + targetStart] = this[i + start]
+    }
+  } else {
+    Uint8Array.prototype.set.call(
+      target,
+      this.subarray(start, start + len),
+      targetStart
+    )
+  }
+
+  return len
+}
+
+Buffer.prototype.fill = function fill (val, start, end) {
+  // Handle string cases:
+  if (typeof val === 'string') {
+    if (typeof start === 'string') {
+      start = 0
+      end = this.length
+    } else if (typeof end === 'string') {
+      end = this.length
+    }
+    if (val.length === 1) {
+      var code = val.charCodeAt(0)
+      if (code < 256) {
+        val = code
+      }
+    }
+  } else if (typeof val === 'number') {
+    val = val & 255
+  }
+
+  // Invalid ranges are not set to a default, so can range check early.
+  if (start < 0 || this.length < start || this.length < end) {
+    throw new RangeError('Out of range index')
+  }
+
+  if (end <= start) {
+    return this
+  }
+
+  start = start >>> 0
+  end = end === undefined ? this.length : end >>> 0
+
+  if (!val) val = 0
+
+  var i
+  if (typeof val === 'number') {
+    for (i = start; i < end; ++i) {
+      this[i] = val
+    }
+  } else {
+    var bytes = Buffer.isBuffer(val)
+      ? val
+      : new Buffer(val)
+    var len = bytes.length
+    for (i = 0; i < end - start; ++i) {
+      this[i + start] = bytes[i % len]
+    }
+  }
+
+  return this
+}
+
+Buffer.concat = function concat (list, length) {
+  if (!isArray(list)) {
+    throw new TypeError('"list" argument must be an Array of Buffers')
+  }
+
+  if (list.length === 0) {
+    return createBuffer(null, 0)
+  }
+
+  var i
+  if (length === undefined) {
+    length = 0
+    for (i = 0; i < list.length; ++i) {
+      length += list[i].length
+    }
+  }
+
+  var buffer = allocUnsafe(null, length)
+  var pos = 0
+  for (i = 0; i < list.length; ++i) {
+    var buf = list[i]
+    if (!Buffer.isBuffer(buf)) {
+      throw new TypeError('"list" argument must be an Array of Buffers')
+    }
+    buf.copy(buffer, pos)
+    pos += buf.length
+  }
+  return buffer
+}
+
+Buffer.byteLength = byteLength
+
+Buffer.prototype._isBuffer = true
+Buffer.isBuffer = function isBuffer (b) {
+  return !!(b != null && b._isBuffer)
+}
+
+module.exports.alloc = function (size) {
+  var buffer = new Buffer(size)
+  buffer.fill(0)
+  return buffer
+}
+
+module.exports.from = function (data) {
+  return new Buffer(data)
+}
+
+}).call(this)}).call(this,require("buffer").Buffer)
+},{"buffer":68,"isarray":534}],534:[function(require,module,exports){
+var toString = {}.toString;
+
+module.exports = Array.isArray || function (arr) {
+  return toString.call(arr) == '[object Array]';
+};
+
+},{}],535:[function(require,module,exports){
+arguments[4][172][0].apply(exports,arguments)
+},{"_process":160,"dup":172,"safe-buffer":542}],536:[function(require,module,exports){
+arguments[4][173][0].apply(exports,arguments)
+},{"_process":160,"dup":173,"randombytes":535,"safe-buffer":542}],537:[function(require,module,exports){
+module.exports = window.crypto;
+},{}],538:[function(require,module,exports){
 module.exports = require('crypto');
-},{"crypto":507}],509:[function(require,module,exports){
+},{"crypto":537}],539:[function(require,module,exports){
 var randomHex = function(size, callback) {
     var crypto = require('./crypto.js');
     var isCallback = (typeof callback === 'function');
@@ -74396,9 +77767,9 @@ var randomHex = function(size, callback) {
 
 module.exports = randomHex;
 
-},{"./crypto.js":508}],510:[function(require,module,exports){
+},{"./crypto.js":538}],540:[function(require,module,exports){
 arguments[4][174][0].apply(exports,arguments)
-},{"buffer":68,"dup":174,"hash-base":440,"inherits":456}],511:[function(require,module,exports){
+},{"buffer":68,"dup":174,"hash-base":441,"inherits":457}],541:[function(require,module,exports){
 (function (Buffer){(function (){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -74641,7 +78012,7 @@ function toBuffer(v) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"bn.js":297,"buffer":68}],512:[function(require,module,exports){
+},{"bn.js":297,"buffer":68}],542:[function(require,module,exports){
 /* eslint-disable node/no-deprecated-api */
 var buffer = require('buffer')
 var Buffer = buffer.Buffer
@@ -74705,10 +78076,10 @@ SafeBuffer.allocUnsafeSlow = function (size) {
   return buffer.SlowBuffer(size)
 }
 
-},{"buffer":68}],513:[function(require,module,exports){
+},{"buffer":68}],543:[function(require,module,exports){
 module.exports = require('scryptsy')
 
-},{"scryptsy":514}],514:[function(require,module,exports){
+},{"scryptsy":544}],544:[function(require,module,exports){
 (function (Buffer){(function (){
 var pbkdf2Sync = require('pbkdf2').pbkdf2Sync
 
@@ -74891,13 +78262,13 @@ function arraycopy (src, srcPos, dest, destPos, length) {
 module.exports = scrypt
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":68,"pbkdf2":494}],515:[function(require,module,exports){
-arguments[4][469][0].apply(exports,arguments)
-},{"./lib":519,"./lib/elliptic":518,"dup":469}],516:[function(require,module,exports){
+},{"buffer":68,"pbkdf2":495}],545:[function(require,module,exports){
 arguments[4][470][0].apply(exports,arguments)
-},{"C:/Program Files/nodejs/node_modules/browserify/node_modules/is-buffer/index.js":140,"dup":470}],517:[function(require,module,exports){
+},{"./lib":549,"./lib/elliptic":548,"dup":470}],546:[function(require,module,exports){
 arguments[4][471][0].apply(exports,arguments)
-},{"bip66":296,"dup":471,"safe-buffer":512}],518:[function(require,module,exports){
+},{"C:/Program Files/nodejs/node_modules/browserify/node_modules/is-buffer/index.js":140,"dup":471}],547:[function(require,module,exports){
+arguments[4][472][0].apply(exports,arguments)
+},{"bip66":296,"dup":472,"safe-buffer":542}],548:[function(require,module,exports){
 'use strict'
 var Buffer = require('safe-buffer').Buffer
 var createHash = require('create-hash')
@@ -75162,27 +78533,27 @@ exports.ecdhUnsafe = function (publicKey, privateKey, compressed) {
   return Buffer.from(pair.pub.mul(scalar).encode(true, compressed))
 }
 
-},{"../messages.json":520,"bn.js":297,"create-hash":330,"elliptic":365,"safe-buffer":512}],519:[function(require,module,exports){
-arguments[4][473][0].apply(exports,arguments)
-},{"./assert":516,"./der":517,"./messages.json":520,"dup":473}],520:[function(require,module,exports){
+},{"../messages.json":550,"bn.js":297,"create-hash":330,"elliptic":366,"safe-buffer":542}],549:[function(require,module,exports){
 arguments[4][474][0].apply(exports,arguments)
-},{"dup":474}],521:[function(require,module,exports){
+},{"./assert":546,"./der":547,"./messages.json":550,"dup":474}],550:[function(require,module,exports){
+arguments[4][475][0].apply(exports,arguments)
+},{"dup":475}],551:[function(require,module,exports){
 arguments[4][177][0].apply(exports,arguments)
-},{"dup":177,"safe-buffer":512}],522:[function(require,module,exports){
+},{"dup":177,"safe-buffer":542}],552:[function(require,module,exports){
 arguments[4][178][0].apply(exports,arguments)
-},{"./sha":523,"./sha1":524,"./sha224":525,"./sha256":526,"./sha384":527,"./sha512":528,"dup":178}],523:[function(require,module,exports){
+},{"./sha":553,"./sha1":554,"./sha224":555,"./sha256":556,"./sha384":557,"./sha512":558,"dup":178}],553:[function(require,module,exports){
 arguments[4][179][0].apply(exports,arguments)
-},{"./hash":521,"dup":179,"inherits":456,"safe-buffer":512}],524:[function(require,module,exports){
+},{"./hash":551,"dup":179,"inherits":457,"safe-buffer":542}],554:[function(require,module,exports){
 arguments[4][180][0].apply(exports,arguments)
-},{"./hash":521,"dup":180,"inherits":456,"safe-buffer":512}],525:[function(require,module,exports){
+},{"./hash":551,"dup":180,"inherits":457,"safe-buffer":542}],555:[function(require,module,exports){
 arguments[4][181][0].apply(exports,arguments)
-},{"./hash":521,"./sha256":526,"dup":181,"inherits":456,"safe-buffer":512}],526:[function(require,module,exports){
+},{"./hash":551,"./sha256":556,"dup":181,"inherits":457,"safe-buffer":542}],556:[function(require,module,exports){
 arguments[4][182][0].apply(exports,arguments)
-},{"./hash":521,"dup":182,"inherits":456,"safe-buffer":512}],527:[function(require,module,exports){
+},{"./hash":551,"dup":182,"inherits":457,"safe-buffer":542}],557:[function(require,module,exports){
 arguments[4][183][0].apply(exports,arguments)
-},{"./hash":521,"./sha512":528,"dup":183,"inherits":456,"safe-buffer":512}],528:[function(require,module,exports){
+},{"./hash":551,"./sha512":558,"dup":183,"inherits":457,"safe-buffer":542}],558:[function(require,module,exports){
 arguments[4][184][0].apply(exports,arguments)
-},{"./hash":521,"dup":184,"inherits":456,"safe-buffer":512}],529:[function(require,module,exports){
+},{"./hash":551,"dup":184,"inherits":457,"safe-buffer":542}],559:[function(require,module,exports){
 "use strict";var sjcl={cipher:{},hash:{},keyexchange:{},mode:{},misc:{},codec:{},exception:{corrupt:function(a){this.toString=function(){return"CORRUPT: "+this.message};this.message=a},invalid:function(a){this.toString=function(){return"INVALID: "+this.message};this.message=a},bug:function(a){this.toString=function(){return"BUG: "+this.message};this.message=a},notReady:function(a){this.toString=function(){return"NOT READY: "+this.message};this.message=a}}};
 sjcl.cipher.aes=function(a){this.s[0][0][0]||this.O();var b,c,d,e,f=this.s[0][4],g=this.s[1];b=a.length;var h=1;if(4!==b&&6!==b&&8!==b)throw new sjcl.exception.invalid("invalid aes key size");this.b=[d=a.slice(0),e=[]];for(a=b;a<4*b+28;a++){c=d[a-1];if(0===a%b||8===b&&4===a%b)c=f[c>>>24]<<24^f[c>>16&255]<<16^f[c>>8&255]<<8^f[c&255],0===a%b&&(c=c<<8^c>>>24^h<<24,h=h<<1^283*(h>>7));d[a]=d[a-b]^c}for(b=0;a;b++,a--)c=d[b&3?a:a-4],e[b]=4>=a||4>b?c:g[0][f[c>>>24]]^g[1][f[c>>16&255]]^g[2][f[c>>8&255]]^g[3][f[c&
 255]]};
@@ -75244,7 +78615,7 @@ null!=d[3]?b[d[2]]=parseInt(d[3],10):null!=d[4]?b[d[2]]=d[2].match(/^(ct|adata|s
 b){var c={},d;for(d=0;d<b.length;d++)void 0!==a[b[d]]&&(c[b[d]]=a[b[d]]);return c}};sjcl.encrypt=sjcl.json.encrypt;sjcl.decrypt=sjcl.json.decrypt;sjcl.misc.pa={};sjcl.misc.cachedPbkdf2=function(a,b){var c=sjcl.misc.pa,d;b=b||{};d=b.iter||1E3;c=c[a]=c[a]||{};d=c[d]=c[d]||{firstSalt:b.salt&&b.salt.length?b.salt.slice(0):sjcl.random.randomWords(2,0)};c=void 0===b.salt?d.firstSalt:b.salt;d[c]=d[c]||sjcl.misc.pbkdf2(a,c,b.iter);return{key:d[c].slice(0),salt:c.slice(0)}};
 "undefined"!==typeof module&&module.exports&&(module.exports=sjcl);"function"===typeof define&&define([],function(){return sjcl});
 
-},{"crypto":77}],530:[function(require,module,exports){
+},{"crypto":77}],560:[function(require,module,exports){
 'use strict';
 module.exports = function (str) {
 	return encodeURIComponent(str).replace(/[!'()*]/g, function (c) {
@@ -75252,7 +78623,7 @@ module.exports = function (str) {
 	});
 };
 
-},{}],531:[function(require,module,exports){
+},{}],561:[function(require,module,exports){
 'use strict';
 
 var bind = require('function-bind');
@@ -75267,7 +78638,7 @@ module.exports = function trim() {
 	return replace(replace(S, leftWhitespace, ''), rightWhitespace, '');
 };
 
-},{"es-abstract/es5":382,"function-bind":437}],532:[function(require,module,exports){
+},{"es-abstract/es5":383,"function-bind":438}],562:[function(require,module,exports){
 'use strict';
 
 var bind = require('function-bind');
@@ -75287,7 +78658,7 @@ define(boundTrim, {
 
 module.exports = boundTrim;
 
-},{"./implementation":531,"./polyfill":533,"./shim":534,"define-properties":336,"function-bind":437}],533:[function(require,module,exports){
+},{"./implementation":561,"./polyfill":563,"./shim":564,"define-properties":336,"function-bind":438}],563:[function(require,module,exports){
 'use strict';
 
 var implementation = require('./implementation');
@@ -75301,7 +78672,7 @@ module.exports = function getPolyfill() {
 	return implementation;
 };
 
-},{"./implementation":531}],534:[function(require,module,exports){
+},{"./implementation":561}],564:[function(require,module,exports){
 'use strict';
 
 var define = require('define-properties');
@@ -75313,7 +78684,7 @@ module.exports = function shimStringTrim() {
 	return polyfill;
 };
 
-},{"./polyfill":533,"define-properties":336}],535:[function(require,module,exports){
+},{"./polyfill":563,"define-properties":336}],565:[function(require,module,exports){
 var isHexPrefixed = require('is-hex-prefixed');
 
 /**
@@ -75329,7 +78700,7 @@ module.exports = function stripHexPrefix(str) {
   return isHexPrefixed(str) ? str.slice(2) : str;
 }
 
-},{"is-hex-prefixed":459}],536:[function(require,module,exports){
+},{"is-hex-prefixed":460}],566:[function(require,module,exports){
 var unavailable = function unavailable() {
   throw "This swarm.js function isn't available on the browser.";
 };
@@ -75362,7 +78733,7 @@ module.exports = swarm({
   hash: hash,
   pick: pick
 });
-},{"./pick.js":537,"./swarm":539,"./swarm-hash.js":538,"eth-lib/lib/bytes":541,"xhr-request-promise":610}],537:[function(require,module,exports){
+},{"./pick.js":567,"./swarm":569,"./swarm-hash.js":568,"eth-lib/lib/bytes":571,"xhr-request-promise":640}],567:[function(require,module,exports){
 var picker = function picker(type) {
   return function () {
     return new Promise(function (resolve, reject) {
@@ -75420,7 +78791,7 @@ module.exports = {
   file: picker("file"),
   directory: picker("directory")
 };
-},{}],538:[function(require,module,exports){
+},{}],568:[function(require,module,exports){
 // Thanks https://github.com/axic/swarmhash
 
 var keccak = require("eth-lib/lib/hash").keccak256;
@@ -75461,7 +78832,7 @@ var swarmHash = function swarmHash(data) {
 };
 
 module.exports = swarmHash;
-},{"eth-lib/lib/bytes":541,"eth-lib/lib/hash":542}],539:[function(require,module,exports){
+},{"eth-lib/lib/bytes":571,"eth-lib/lib/hash":572}],569:[function(require,module,exports){
 // TODO: this is a temporary fix to hide those libraries from the browser. A
 // slightly better long-term solution would be to split this file into two,
 // separating the functions that are used on Node.js from the functions that
@@ -76088,7 +79459,7 @@ module.exports = function (_ref) {
   };
 };
 
-},{}],540:[function(require,module,exports){
+},{}],570:[function(require,module,exports){
 var generate = function generate(num, fn) {
   var a = [];
   for (var i = 0; i < num; ++i) {
@@ -76129,7 +79500,7 @@ module.exports = {
   flatten: flatten,
   chunksOf: chunksOf
 };
-},{}],541:[function(require,module,exports){
+},{}],571:[function(require,module,exports){
 var A = require("./array.js");
 
 var at = function at(bytes, index) {
@@ -76318,7 +79689,7 @@ module.exports = {
   fromUint8Array: fromUint8Array,
   toUint8Array: toUint8Array
 };
-},{"./array.js":540}],542:[function(require,module,exports){
+},{"./array.js":570}],572:[function(require,module,exports){
 // This was ported from https://github.com/emn178/js-sha3, with some minor
 // modifications and pruning. It is licensed under MIT:
 //
@@ -76658,7 +80029,7 @@ module.exports = {
   keccak256s: keccak(256),
   keccak512s: keccak(512)
 };
-},{}],543:[function(require,module,exports){
+},{}],573:[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
 //     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -78208,7 +81579,7 @@ module.exports = {
   }
 }.call(this));
 
-},{}],544:[function(require,module,exports){
+},{}],574:[function(require,module,exports){
 module.exports = urlSetQuery
 function urlSetQuery (url, query) {
   if (query) {
@@ -78233,7 +81604,7 @@ function urlSetQuery (url, query) {
   return url
 }
 
-},{}],545:[function(require,module,exports){
+},{}],575:[function(require,module,exports){
 (function (global){(function (){
 /*! https://mths.be/utf8js v2.0.0 by @mathias */
 ;(function(root) {
@@ -78481,7 +81852,7 @@ function urlSetQuery (url, query) {
 }(this));
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],546:[function(require,module,exports){
+},{}],576:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -78571,7 +81942,7 @@ Bzz.prototype.setProvider = function(provider) {
 module.exports = Bzz;
 
 
-},{"swarm-js":536,"underscore":543}],547:[function(require,module,exports){
+},{"swarm-js":566,"underscore":573}],577:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -78620,7 +81991,7 @@ module.exports = {
     }
 };
 
-},{}],548:[function(require,module,exports){
+},{}],578:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -79065,7 +82436,7 @@ module.exports = {
 };
 
 
-},{"underscore":543,"web3-eth-iban":591,"web3-utils":602}],549:[function(require,module,exports){
+},{"underscore":573,"web3-eth-iban":621,"web3-utils":632}],579:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -79099,7 +82470,7 @@ module.exports = {
 };
 
 
-},{"./errors":547,"./formatters":548}],550:[function(require,module,exports){
+},{"./errors":577,"./formatters":578}],580:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -79708,7 +83079,7 @@ Method.prototype.request = function () {
 
 module.exports = Method;
 
-},{"underscore":543,"web3-core-helpers":549,"web3-core-promievent":552,"web3-core-subscriptions":558,"web3-utils":602}],551:[function(require,module,exports){
+},{"underscore":573,"web3-core-helpers":579,"web3-core-promievent":582,"web3-core-subscriptions":588,"web3-utils":632}],581:[function(require,module,exports){
 'use strict';
 
 //
@@ -79972,7 +83343,7 @@ if ('undefined' !== typeof module) {
   module.exports = EventEmitter;
 }
 
-},{}],552:[function(require,module,exports){
+},{}],582:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -80049,7 +83420,7 @@ PromiEvent.resolve = function(value) {
 
 module.exports = PromiEvent;
 
-},{"any-promise":225,"eventemitter3":551}],553:[function(require,module,exports){
+},{"any-promise":225,"eventemitter3":581}],583:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -80126,7 +83497,7 @@ Batch.prototype.execute = function () {
 module.exports = Batch;
 
 
-},{"./jsonrpc":556,"web3-core-helpers":549}],554:[function(require,module,exports){
+},{"./jsonrpc":586,"web3-core-helpers":579}],584:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -80214,7 +83585,7 @@ if(typeof global.ethereumProvider !== 'undefined') {
 
 module.exports = givenProvider;
 
-},{}],555:[function(require,module,exports){
+},{}],585:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -80462,7 +83833,7 @@ module.exports = {
     BatchManager: BatchManager
 };
 
-},{"./batch.js":553,"./givenProvider.js":554,"./jsonrpc.js":556,"underscore":543,"web3-core-helpers":549,"web3-providers-http":596,"web3-providers-ipc":597,"web3-providers-ws":598}],556:[function(require,module,exports){
+},{"./batch.js":583,"./givenProvider.js":584,"./jsonrpc.js":586,"underscore":573,"web3-core-helpers":579,"web3-providers-http":626,"web3-providers-ipc":627,"web3-providers-ws":628}],586:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -80553,9 +83924,9 @@ Jsonrpc.toBatchPayload = function (messages) {
 module.exports = Jsonrpc;
 
 
-},{}],557:[function(require,module,exports){
-arguments[4][551][0].apply(exports,arguments)
-},{"dup":551}],558:[function(require,module,exports){
+},{}],587:[function(require,module,exports){
+arguments[4][581][0].apply(exports,arguments)
+},{"dup":581}],588:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -80632,7 +84003,7 @@ module.exports = {
     subscription: Subscription
 };
 
-},{"./subscription.js":559}],559:[function(require,module,exports){
+},{"./subscription.js":589}],589:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -80941,7 +84312,7 @@ Subscription.prototype.subscribe = function() {
 
 module.exports = Subscription;
 
-},{"eventemitter3":557,"underscore":543,"web3-core-helpers":549}],560:[function(require,module,exports){
+},{"eventemitter3":587,"underscore":573,"web3-core-helpers":579}],590:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -81012,7 +84383,7 @@ var extend = function (pckg) {
 module.exports = extend;
 
 
-},{"web3-core-helpers":549,"web3-core-method":550,"web3-utils":602}],561:[function(require,module,exports){
+},{"web3-core-helpers":579,"web3-core-method":580,"web3-utils":632}],591:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -81100,7 +84471,7 @@ module.exports = {
 };
 
 
-},{"./extend.js":560,"web3-core-requestmanager":555}],562:[function(require,module,exports){
+},{"./extend.js":590,"web3-core-requestmanager":585}],592:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -82019,7 +85390,7 @@ var AbiCoder = /** @class */ (function () {
 exports.AbiCoder = AbiCoder;
 exports.defaultAbiCoder = new AbiCoder();
 
-},{"./address":563,"./bignumber":564,"./bytes":565,"./errors":566,"./properties":568,"./utf8":571}],563:[function(require,module,exports){
+},{"./address":593,"./bignumber":594,"./bytes":595,"./errors":596,"./properties":598,"./utf8":601}],593:[function(require,module,exports){
 'use strict';
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -82145,7 +85516,7 @@ function getContractAddress(transaction) {
 }
 exports.getContractAddress = getContractAddress;
 
-},{"./bytes":565,"./errors":566,"./keccak256":567,"./rlp":569,"bn.js":297}],564:[function(require,module,exports){
+},{"./bytes":595,"./errors":596,"./keccak256":597,"./rlp":599,"bn.js":297}],594:[function(require,module,exports){
 'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -82339,7 +85710,7 @@ exports.ConstantOne = bigNumberify(1);
 exports.ConstantTwo = bigNumberify(2);
 exports.ConstantWeiPerEther = bigNumberify('1000000000000000000');
 
-},{"./bytes":565,"./errors":566,"./properties":568,"./types":570,"bn.js":297}],565:[function(require,module,exports){
+},{"./bytes":595,"./errors":596,"./properties":598,"./types":600,"bn.js":297}],595:[function(require,module,exports){
 "use strict";
 /**
  *  Conversion Utilities
@@ -82603,7 +85974,7 @@ function joinSignature(signature) {
 }
 exports.joinSignature = joinSignature;
 
-},{"./errors":566}],566:[function(require,module,exports){
+},{"./errors":596}],596:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 // Unknown Error
@@ -82707,7 +86078,7 @@ function setCensorship(censorship, permanent) {
 }
 exports.setCensorship = setCensorship;
 
-},{}],567:[function(require,module,exports){
+},{}],597:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var sha3 = require("js-sha3");
@@ -82717,7 +86088,7 @@ function keccak256(data) {
 }
 exports.keccak256 = keccak256;
 
-},{"./bytes":565,"js-sha3":460}],568:[function(require,module,exports){
+},{"./bytes":595,"js-sha3":461}],598:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 function defineReadOnly(object, name, value) {
@@ -82769,7 +86140,7 @@ function jsonCopy(object) {
 }
 exports.jsonCopy = jsonCopy;
 
-},{}],569:[function(require,module,exports){
+},{}],599:[function(require,module,exports){
 "use strict";
 //See: https://github.com/ethereum/wiki/wiki/RLP
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -82887,7 +86258,7 @@ function decode(data) {
 }
 exports.decode = decode;
 
-},{"./bytes":565}],570:[function(require,module,exports){
+},{"./bytes":595}],600:[function(require,module,exports){
 "use strict";
 ///////////////////////////////
 // Bytes
@@ -82944,7 +86315,7 @@ var HDNode = /** @class */ (function () {
 }());
 exports.HDNode = HDNode;
 
-},{}],571:[function(require,module,exports){
+},{}],601:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 var bytes_1 = require("./bytes");
@@ -83069,7 +86440,7 @@ function toUtf8String(bytes) {
 }
 exports.toUtf8String = toUtf8String;
 
-},{"./bytes":565}],572:[function(require,module,exports){
+},{"./bytes":595}],602:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -83382,7 +86753,7 @@ var coder = new ABICoder();
 
 module.exports = coder;
 
-},{"ethers/utils/abi-coder":562,"underscore":543,"web3-utils":602}],573:[function(require,module,exports){
+},{"ethers/utils/abi-coder":592,"underscore":573,"web3-utils":632}],603:[function(require,module,exports){
 (function (Buffer){(function (){
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
@@ -83466,13 +86837,13 @@ module.exports = {
   decodeSignature: decodeSignature
 };
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./bytes":575,"./hash":576,"./nat":577,"./rlp":578,"buffer":68,"elliptic":365}],574:[function(require,module,exports){
-arguments[4][540][0].apply(exports,arguments)
-},{"dup":540}],575:[function(require,module,exports){
-arguments[4][541][0].apply(exports,arguments)
-},{"./array.js":574,"dup":541}],576:[function(require,module,exports){
-arguments[4][542][0].apply(exports,arguments)
-},{"dup":542}],577:[function(require,module,exports){
+},{"./bytes":605,"./hash":606,"./nat":607,"./rlp":608,"buffer":68,"elliptic":366}],604:[function(require,module,exports){
+arguments[4][570][0].apply(exports,arguments)
+},{"dup":570}],605:[function(require,module,exports){
+arguments[4][571][0].apply(exports,arguments)
+},{"./array.js":604,"dup":571}],606:[function(require,module,exports){
+arguments[4][572][0].apply(exports,arguments)
+},{"dup":572}],607:[function(require,module,exports){
 var BN = require("bn.js");
 var Bytes = require("./bytes");
 
@@ -83537,7 +86908,7 @@ module.exports = {
   div: div,
   sub: sub
 };
-},{"./bytes":575,"bn.js":297}],578:[function(require,module,exports){
+},{"./bytes":605,"bn.js":297}],608:[function(require,module,exports){
 // The RLP format
 // Serialization and deserialization for the BytesTree type, under the following grammar:
 // | First byte | Meaning                                                                    |
@@ -83611,7 +86982,7 @@ var decode = function decode(hex) {
 };
 
 module.exports = { encode: encode, decode: decode };
-},{}],579:[function(require,module,exports){
+},{}],609:[function(require,module,exports){
 (function (global){(function (){
 
 var rng;
@@ -83646,7 +87017,7 @@ module.exports = rng;
 
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],580:[function(require,module,exports){
+},{}],610:[function(require,module,exports){
 //     uuid.js
 //
 //     Copyright (c) 2010-2012 Robert Kieffer
@@ -83831,7 +87202,7 @@ uuid.unparse = unparse;
 
 module.exports = uuid;
 
-},{"./rng":579}],581:[function(require,module,exports){
+},{"./rng":609}],611:[function(require,module,exports){
 (function (global,Buffer){(function (){
 /*
  This file is part of web3.js.
@@ -84369,7 +87740,7 @@ if (typeof localStorage === 'undefined') {
 module.exports = Accounts;
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
-},{"any-promise":225,"buffer":68,"crypto":77,"crypto-browserify":334,"eth-lib/lib/account":573,"eth-lib/lib/bytes":575,"eth-lib/lib/hash":576,"eth-lib/lib/nat":577,"eth-lib/lib/rlp":578,"scrypt.js":513,"underscore":543,"uuid":580,"web3-core":561,"web3-core-helpers":549,"web3-core-method":550,"web3-utils":602}],582:[function(require,module,exports){
+},{"any-promise":225,"buffer":68,"crypto":77,"crypto-browserify":334,"eth-lib/lib/account":603,"eth-lib/lib/bytes":605,"eth-lib/lib/hash":606,"eth-lib/lib/nat":607,"eth-lib/lib/rlp":608,"scrypt.js":543,"underscore":573,"uuid":610,"web3-core":591,"web3-core-helpers":579,"web3-core-method":580,"web3-utils":632}],612:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -85276,7 +88647,7 @@ Contract.prototype._executeMethod = function _executeMethod(){
 
 module.exports = Contract;
 
-},{"underscore":543,"web3-core":561,"web3-core-helpers":549,"web3-core-method":550,"web3-core-promievent":552,"web3-core-subscriptions":558,"web3-eth-abi":572,"web3-utils":602}],583:[function(require,module,exports){
+},{"underscore":573,"web3-core":591,"web3-core-helpers":579,"web3-core-method":580,"web3-core-promievent":582,"web3-core-subscriptions":588,"web3-eth-abi":602,"web3-utils":632}],613:[function(require,module,exports){
 /*
     This file is part of web3.js.
     web3.js is free software: you can redistribute it and/or modify
@@ -85467,7 +88838,7 @@ ENS.prototype.checkNetwork = function () {
 
 module.exports = ENS;
 
-},{"./config":584,"./contracts/Registry":585,"./lib/ResolverMethodHandler":587}],584:[function(require,module,exports){
+},{"./config":614,"./contracts/Registry":615,"./lib/ResolverMethodHandler":617}],614:[function(require,module,exports){
 "use strict";
 
 var config = {
@@ -85480,7 +88851,7 @@ var config = {
 
 module.exports = config;
 
-},{}],585:[function(require,module,exports){
+},{}],615:[function(require,module,exports){
 /*
     This file is part of web3.js.
     web3.js is free software: you can redistribute it and/or modify
@@ -85582,7 +88953,7 @@ Registry.prototype.resolver = function (name) {
 
 module.exports = Registry;
 
-},{"../ressources/ABI/Registry":588,"../ressources/ABI/Resolver":589,"eth-ens-namehash":407,"underscore":543,"web3-core-promievent":552,"web3-eth-contract":582}],586:[function(require,module,exports){
+},{"../ressources/ABI/Registry":618,"../ressources/ABI/Resolver":619,"eth-ens-namehash":408,"underscore":573,"web3-core-promievent":582,"web3-eth-contract":612}],616:[function(require,module,exports){
 /*
     This file is part of web3.js.
     web3.js is free software: you can redistribute it and/or modify
@@ -85609,7 +88980,7 @@ var ENS = require('./ENS');
 
 module.exports = ENS;
 
-},{"./ENS":583}],587:[function(require,module,exports){
+},{"./ENS":613}],617:[function(require,module,exports){
 /*
     This file is part of web3.js.
     web3.js is free software: you can redistribute it and/or modify
@@ -85800,7 +89171,7 @@ ResolverMethodHandler.prototype.prepareArguments = function (name, methodArgumen
 
 module.exports = ResolverMethodHandler;
 
-},{"eth-ens-namehash":407,"underscore":543,"web3-core-promievent":552}],588:[function(require,module,exports){
+},{"eth-ens-namehash":408,"underscore":573,"web3-core-promievent":582}],618:[function(require,module,exports){
 "use strict";
 
 var REGISTRY = [
@@ -86007,7 +89378,7 @@ var REGISTRY = [
 
 module.exports = REGISTRY;
 
-},{}],589:[function(require,module,exports){
+},{}],619:[function(require,module,exports){
 "use strict";
 
 var RESOLVER = [
@@ -86365,9 +89736,9 @@ var RESOLVER = [
 
 module.exports = RESOLVER;
 
-},{}],590:[function(require,module,exports){
-arguments[4][432][0].apply(exports,arguments)
-},{"dup":432}],591:[function(require,module,exports){
+},{}],620:[function(require,module,exports){
+arguments[4][433][0].apply(exports,arguments)
+},{"dup":433}],621:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -86636,7 +90007,7 @@ Iban.prototype.toString = function () {
 
 module.exports = Iban;
 
-},{"bn.js":590,"web3-utils":602}],592:[function(require,module,exports){
+},{"bn.js":620,"web3-utils":632}],622:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -86788,7 +90159,7 @@ module.exports = Personal;
 
 
 
-},{"web3-core":561,"web3-core-helpers":549,"web3-core-method":550,"web3-net":595,"web3-utils":602}],593:[function(require,module,exports){
+},{"web3-core":591,"web3-core-helpers":579,"web3-core-method":580,"web3-net":625,"web3-utils":632}],623:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -86868,7 +90239,7 @@ var getNetworkType = function (callback) {
 
 module.exports = getNetworkType;
 
-},{"underscore":543}],594:[function(require,module,exports){
+},{"underscore":573}],624:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -87336,7 +90707,7 @@ core.addProviders(Eth);
 module.exports = Eth;
 
 
-},{"./getNetworkType.js":593,"underscore":543,"web3-core":561,"web3-core-helpers":549,"web3-core-method":550,"web3-core-subscriptions":558,"web3-eth-abi":572,"web3-eth-accounts":581,"web3-eth-contract":582,"web3-eth-ens":586,"web3-eth-iban":591,"web3-eth-personal":592,"web3-net":595,"web3-utils":602}],595:[function(require,module,exports){
+},{"./getNetworkType.js":623,"underscore":573,"web3-core":591,"web3-core-helpers":579,"web3-core-method":580,"web3-core-subscriptions":588,"web3-eth-abi":602,"web3-eth-accounts":611,"web3-eth-contract":612,"web3-eth-ens":616,"web3-eth-iban":621,"web3-eth-personal":622,"web3-net":625,"web3-utils":632}],625:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -87405,7 +90776,7 @@ module.exports = Net;
 
 
 
-},{"web3-core":561,"web3-core-method":550,"web3-utils":602}],596:[function(require,module,exports){
+},{"web3-core":591,"web3-core-method":580,"web3-utils":632}],626:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -87520,7 +90891,7 @@ HttpProvider.prototype.disconnect = function () {
 
 module.exports = HttpProvider;
 
-},{"http":200,"https":137,"web3-core-helpers":549,"xhr2-cookies":617}],597:[function(require,module,exports){
+},{"http":200,"https":137,"web3-core-helpers":579,"xhr2-cookies":647}],627:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -87837,7 +91208,7 @@ IpcProvider.prototype.reset = function () {
 module.exports = IpcProvider;
 
 
-},{"oboe":487,"underscore":543,"web3-core-helpers":549}],598:[function(require,module,exports){
+},{"oboe":488,"underscore":573,"web3-core-helpers":579}],628:[function(require,module,exports){
 (function (Buffer){(function (){
 /*
  This file is part of web3.js.
@@ -88242,7 +91613,7 @@ WebsocketProvider.prototype.disconnect = function () {
 module.exports = WebsocketProvider;
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":68,"underscore":543,"url":220,"web3-core-helpers":549,"websocket":607}],599:[function(require,module,exports){
+},{"buffer":68,"underscore":573,"url":220,"web3-core-helpers":579,"websocket":637}],629:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -88433,11 +91804,11 @@ module.exports = Shh;
 
 
 
-},{"web3-core":561,"web3-core-method":550,"web3-core-subscriptions":558,"web3-net":595}],600:[function(require,module,exports){
-arguments[4][432][0].apply(exports,arguments)
-},{"dup":432}],601:[function(require,module,exports){
-arguments[4][542][0].apply(exports,arguments)
-},{"dup":542}],602:[function(require,module,exports){
+},{"web3-core":591,"web3-core-method":580,"web3-core-subscriptions":588,"web3-net":625}],630:[function(require,module,exports){
+arguments[4][433][0].apply(exports,arguments)
+},{"dup":433}],631:[function(require,module,exports){
+arguments[4][572][0].apply(exports,arguments)
+},{"dup":572}],632:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -88803,7 +92174,7 @@ module.exports = {
 };
 
 
-},{"./soliditySha3.js":603,"./utils.js":604,"ethjs-unit":431,"randomhex":509,"underscore":543}],603:[function(require,module,exports){
+},{"./soliditySha3.js":633,"./utils.js":634,"ethjs-unit":432,"randomhex":539,"underscore":573}],633:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -89050,7 +92421,7 @@ var soliditySha3 = function () {
 
 module.exports = soliditySha3;
 
-},{"./utils.js":604,"bn.js":600,"underscore":543}],604:[function(require,module,exports){
+},{"./utils.js":634,"bn.js":630,"underscore":573}],634:[function(require,module,exports){
 /*
  This file is part of web3.js.
 
@@ -89519,7 +92890,7 @@ module.exports = {
     sha3: sha3
 };
 
-},{"bn.js":600,"eth-lib/lib/hash":601,"number-to-bn":482,"underscore":543,"utf8":545}],605:[function(require,module,exports){
+},{"bn.js":630,"eth-lib/lib/hash":631,"number-to-bn":483,"underscore":573,"utf8":575}],635:[function(require,module,exports){
 module.exports={
   "_args": [
     [
@@ -89607,7 +92978,7 @@ module.exports={
   "version": "1.0.0-beta.36"
 }
 
-},{}],606:[function(require,module,exports){
+},{}],636:[function(require,module,exports){
 /*
     This file is part of web3.js.
 
@@ -89688,7 +93059,7 @@ core.addProviders(Web3);
 module.exports = Web3;
 
 
-},{"../package.json":605,"web3-bzz":546,"web3-core":561,"web3-eth":594,"web3-eth-personal":592,"web3-net":595,"web3-shh":599,"web3-utils":602}],607:[function(require,module,exports){
+},{"../package.json":635,"web3-bzz":576,"web3-core":591,"web3-eth":624,"web3-eth-personal":622,"web3-net":625,"web3-shh":629,"web3-utils":632}],637:[function(require,module,exports){
 var _global = (function() { return this || {}; })();
 var NativeWebSocket = _global.WebSocket || _global.MozWebSocket;
 var websocket_version = require('./version');
@@ -89732,10 +93103,10 @@ module.exports = {
     'version'      : websocket_version
 };
 
-},{"./version":608}],608:[function(require,module,exports){
+},{"./version":638}],638:[function(require,module,exports){
 module.exports = require('../package.json').version;
 
-},{"../package.json":609}],609:[function(require,module,exports){
+},{"../package.json":639}],639:[function(require,module,exports){
 module.exports={
   "_args": [
     [
@@ -89832,7 +93203,7 @@ module.exports={
   "version": "1.0.26"
 }
 
-},{}],610:[function(require,module,exports){
+},{}],640:[function(require,module,exports){
 var request = require('xhr-request')
 
 module.exports = function (url, options) {
@@ -89844,7 +93215,7 @@ module.exports = function (url, options) {
   });
 };
 
-},{"xhr-request":611}],611:[function(require,module,exports){
+},{"xhr-request":641}],641:[function(require,module,exports){
 var queryString = require('query-string')
 var setQuery = require('url-set-query')
 var assign = require('object-assign')
@@ -89905,7 +93276,7 @@ function xhrRequest (url, opt, cb) {
   return request(opt, cb)
 }
 
-},{"./lib/ensure-header.js":612,"./lib/request.js":614,"object-assign":483,"query-string":615,"url-set-query":544}],612:[function(require,module,exports){
+},{"./lib/ensure-header.js":642,"./lib/request.js":644,"object-assign":484,"query-string":645,"url-set-query":574}],642:[function(require,module,exports){
 module.exports = ensureHeader
 function ensureHeader (headers, key, value) {
   var lower = key.toLowerCase()
@@ -89914,7 +93285,7 @@ function ensureHeader (headers, key, value) {
   }
 }
 
-},{}],613:[function(require,module,exports){
+},{}],643:[function(require,module,exports){
 module.exports = getResponse
 function getResponse (opt, resp) {
   if (!resp) return null
@@ -89928,7 +93299,7 @@ function getResponse (opt, resp) {
   }
 }
 
-},{}],614:[function(require,module,exports){
+},{}],644:[function(require,module,exports){
 var xhr = require('xhr')
 var normalize = require('./normalize-response')
 var noop = function () {}
@@ -89972,7 +93343,7 @@ function xhrRequest (opt, cb) {
   return req
 }
 
-},{"./normalize-response":613,"xhr":622}],615:[function(require,module,exports){
+},{"./normalize-response":643,"xhr":652}],645:[function(require,module,exports){
 'use strict';
 var strictUriEncode = require('strict-uri-encode');
 var objectAssign = require('object-assign');
@@ -90198,7 +93569,7 @@ exports.parseUrl = function (str, opts) {
 	};
 };
 
-},{"decode-uri-component":335,"object-assign":483,"strict-uri-encode":530}],616:[function(require,module,exports){
+},{"decode-uri-component":335,"object-assign":484,"strict-uri-encode":560}],646:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -90244,7 +93615,7 @@ var SyntaxError = /** @class */ (function (_super) {
 }(Error));
 exports.SyntaxError = SyntaxError;
 
-},{}],617:[function(require,module,exports){
+},{}],647:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -90254,7 +93625,7 @@ __export(require("./xml-http-request"));
 var xml_http_request_event_target_1 = require("./xml-http-request-event-target");
 exports.XMLHttpRequestEventTarget = xml_http_request_event_target_1.XMLHttpRequestEventTarget;
 
-},{"./xml-http-request":621,"./xml-http-request-event-target":619}],618:[function(require,module,exports){
+},{"./xml-http-request":651,"./xml-http-request-event-target":649}],648:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ProgressEvent = /** @class */ (function () {
@@ -90270,7 +93641,7 @@ var ProgressEvent = /** @class */ (function () {
 }());
 exports.ProgressEvent = ProgressEvent;
 
-},{}],619:[function(require,module,exports){
+},{}],649:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var XMLHttpRequestEventTarget = /** @class */ (function () {
@@ -90312,7 +93683,7 @@ var XMLHttpRequestEventTarget = /** @class */ (function () {
 }());
 exports.XMLHttpRequestEventTarget = XMLHttpRequestEventTarget;
 
-},{}],620:[function(require,module,exports){
+},{}],650:[function(require,module,exports){
 (function (Buffer){(function (){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
@@ -90393,7 +93764,7 @@ var XMLHttpRequestUpload = /** @class */ (function (_super) {
 exports.XMLHttpRequestUpload = XMLHttpRequestUpload;
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./xml-http-request-event-target":619,"buffer":68}],621:[function(require,module,exports){
+},{"./xml-http-request-event-target":649,"buffer":68}],651:[function(require,module,exports){
 (function (process,Buffer){(function (){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
@@ -90843,7 +94214,7 @@ XMLHttpRequest.prototype.nodejsHttpsAgent = https.globalAgent;
 XMLHttpRequest.prototype.nodejsBaseUrl = null;
 
 }).call(this)}).call(this,require('_process'),require("buffer").Buffer)
-},{"./errors":616,"./progress-event":618,"./xml-http-request-event-target":619,"./xml-http-request-upload":620,"_process":160,"buffer":68,"cookiejar":328,"http":200,"https":137,"os":147,"url":220}],622:[function(require,module,exports){
+},{"./errors":646,"./progress-event":648,"./xml-http-request-event-target":649,"./xml-http-request-upload":650,"_process":160,"buffer":68,"cookiejar":328,"http":200,"https":137,"os":147,"url":220}],652:[function(require,module,exports){
 "use strict";
 var window = require("global/window")
 var isFunction = require("is-function")
@@ -91092,9 +94463,9 @@ function getXml(xhr) {
 
 function noop() {}
 
-},{"global/window":438,"is-function":458,"parse-headers":493,"xtend":623}],623:[function(require,module,exports){
+},{"global/window":439,"is-function":459,"parse-headers":494,"xtend":653}],653:[function(require,module,exports){
 arguments[4][224][0].apply(exports,arguments)
-},{"dup":224}],624:[function(require,module,exports){
+},{"dup":224}],654:[function(require,module,exports){
 var assurance_config_temp = {
     infura_node: 'https://mainnet.infura.io/v3/c3a8017424324e47be615fb4028275bb',
     dentacoins_to_approve: 10000000000000,
@@ -91109,7 +94480,7 @@ var assurance_config_temp = {
 };
 
 module.exports = {assurance_config_temp};
-},{}],625:[function(require,module,exports){
+},{}],655:[function(require,module,exports){
 var assurance_config_temp = {
     infura_node: 'https://rinkeby.infura.io/v3/c3a8017424324e47be615fb4028275bb',
     dentacoins_to_approve: 10000000000000,
@@ -91124,14 +94495,14 @@ var assurance_config_temp = {
 };
 
 module.exports = {assurance_config_temp};
-},{}],626:[function(require,module,exports){
+},{}],656:[function(require,module,exports){
 var config_variable = {
     bidali_api_key: 'pk_n6mvpompwzm83egzrz2vnh',
     etherscan_api_key: 'XN7GZYF83IDW6MRBK8NWJPQ9U86XQWQ4CC'
 };
 
 module.exports = {config_variable};
-},{}],627:[function(require,module,exports){
+},{}],657:[function(require,module,exports){
 const Web3 = require('../../../node_modules/web3'); // import web3 v1.0 constructor
 const keythereum = require('../../../node_modules/keythereum');
 const EthCrypto = require('../../../node_modules/eth-crypto');
@@ -91234,7 +94605,7 @@ function generateKeystoreFromPrivateKey(private_key, password, callback) {
 module.exports = {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey};
 
 
-},{"../../../node_modules/eth-crypto":397,"../../../node_modules/keythereum":467,"../../../node_modules/web3":606}],628:[function(require,module,exports){
+},{"../../../node_modules/eth-crypto":398,"../../../node_modules/keythereum":468,"../../../node_modules/web3":636}],658:[function(require,module,exports){
 (function (Buffer){(function (){
 var closeOnLoadLoader = true;
 //importing methods for keystore import, export, decrypt
@@ -93163,63 +96534,92 @@ var projectData = {
                 }
             }
         },
-        generatePrivateKeyFile: async function(privateKey) {
+        generatePrivateKeyFile: function(privateKey) {
+            console.log(privateKey, 'privateKey');
+
             var qrCodeBase64Data;
-            $('body').append('<div id="dummy-qr-code-image" class="hide"></div>');
-            var qrcode = new QRCode(document.getElementById('dummy-qr-code-image'), {
-                width: 180,
-                height: 180
-            });
+            if (is_hybrid && basic.getMobileOperatingSystem() == 'Android') {
+                var QRCode = require('qrcode');
 
-            await qrcode.makeCode(privateKey);
-            var dummyQrCodeChecker = setInterval(function() {
-                if ($('#dummy-qr-code-image img').length) {
-                    clearInterval(dummyQrCodeChecker);
+                QRCode.toDataURL(privateKey, function (err, url) {
+                    console.log(url, 'url');
 
-                    qrCodeBase64Data = $('#dummy-qr-code-image img').attr('src');
+                    proceedWithPrinting('<img src="' + url + '" style=" height: auto; width: 160px;">');
+                })
+            } else {
+                $('body').append('<div id="dummy-qr-code-image" class="hide"></div>');
+                var qrcode = new QRCode(document.getElementById('dummy-qr-code-image'), {
+                    width: 160,
+                    height: 160
+                });
 
-                    $('#dummy-qr-code-image').remove();
+                qrcode.makeCode(privateKey);
+                var dummyQrCodeChecker = setInterval(function() {
+                    if ($('#dummy-qr-code-image img').length) {
+                        clearInterval(dummyQrCodeChecker);
 
-                    var borderImage = '';
-                    var borderStyle = 'height: 95vh';
-                    if (is_hybrid) {
-                        if (basic.getMobileOperatingSystem() == 'Android') {
-                            borderImage = 'src="assets/images/private-key-background.png"';
-                        } else if (basic.getMobileOperatingSystem() == 'iOS') {
-                            borderImage = 'src="https://dentacoin.com/assets/uploads/private-key-background.png"';
-                            borderStyle = 'width: 100%';
-                        }
+                        qrCodeBase64Data = '<img src="' + $('#dummy-qr-code-image img').attr('src') + '" style=" height: auto; width: 160px;">';
+                        $('#dummy-qr-code-image').remove();
+
+                        proceedWithPrinting(qrCodeBase64Data);
                     }
-                    var printingHtml = '<html><head><style>body, html {margin: 0; padding: 0;text-align: center;color: black;font-family: “Helvetica Neue”,Helvetica,Arial,sans-serif;} .border-parent{text-align: left;position:relative; display: inline-block;} img {'+borderStyle+'} .absolute-content{position: absolute;z-index: 100;width: 80%;height: 80%;top: 0;left: 0;padding: 10%;}</style></head><body><div class="border-parent"><img '+borderImage+' id="border-image"/><div class="absolute-content"><div style="text-align:center;"><i>'+$('.translates-holder').attr('confidential')+'</i><h1 style="margin-top: 20px;font-weight:bold;color: black; margin-bottom: 10px;">DENTACOIN</h1><div style="font-size: 18px;color: #2a3575;padding-bottom: 20px;"><b>'+$('.translates-holder').attr('unlock-funds')+'</b></div><div style="background-color: white;padding: 25px 10px;text-align: left;"><div style="color: #888888;padding-bottom: 5px;font-weight: bold;">'+$('.translates-holder').attr('pk-label')+':</div><div style="font-size: 14px;">'+privateKey+'</div></div><div style="font-size: 22px;padding: 30px 0 10px;"><b>'+$('.translates-holder').attr('pk-as-qr')+'</b></div><div><img src="'+qrCodeBase64Data+'" style=" height: auto; width: 160px;"></div><div style=" text-align: left; "><div style="font-size: 20px;color: #2a3575;padding-bottom: 15px;padding-top: 20px;font-weight: bold;">'+$('.translates-holder').attr('important')+'</div><div style=" padding-bottom: 15px;"><b>1.</b> '+$('.translates-holder').attr('provides')+'<div></div>'+projectData.utils.checksumAddress(window.localStorage.getItem('current_account'))+'</div><div style=" padding-bottom: 15px;"><b>2.</b> '+$('.translates-holder').attr('secure-place')+'</div><div style=" padding-bottom: 15px;"><b>3. '+$('.translates-holder').attr('never-share')+'</div><div><b>4.</b> '+$('.translates-holder').attr('to-unlock')+'</div></div></div></div></div></body></html>';
+                }, 300);
+            }
 
-                    if (is_hybrid) {
-                        cordova.plugins.printer.print(printingHtml, {
-                            paper: {
-                                name: 'IsoA4'
-                            }
-                        });
-                    } else {
-                        var mywindow = window.open('', 'PRINT');
-                        mywindow.document.write(printingHtml);
+            function proceedWithPrinting(qrCodeBase64Data) {
+                console.log(qrCodeBase64Data, 'qrCodeBase64Data');
 
-                        var imgTag = mywindow.document.getElementById('border-image');
-                        var newImg = new Image;
-                        newImg.onload = function() {
-                            imgTag.src = this.src;
+                var borderImage = '';
+                var borderStyle = 'height: 95vh';
+                var printingHtml;
+                if (is_hybrid) {
+                    if (basic.getMobileOperatingSystem() == 'Android') {
+                        borderImage = 'src="assets/images/private-key-background.png"';
+                        borderStyle = 'height: 97.5vh';
 
-                            setTimeout(function() {
-                                mywindow.document.close(); // necessary for IE >= 10
-                                mywindow.focus(); // necessary for IE >= 10*/
+                        printingHtml = '<html><head><style>body, html {margin: 0; padding: 0;text-align: center;color: black;font-family: “Helvetica Neue”,Helvetica,Arial,sans-serif;} .border-parent{text-align: left;position:relative; display: inline-block;} img {'+borderStyle+'} .absolute-content{position: absolute;z-index: 100;width: 80%;height: 80%;top: 0;left: 0;padding: 10%;}</style></head><body><div class="border-parent"><img '+borderImage+' id="border-image"/><div class="absolute-content"><div style="text-align:center;"><i>'+$('.translates-holder').attr('confidential')+'</i><h1 style="margin-top: 10px;font-weight:bold;color: black; margin-bottom: 10px;">DENTACOIN</h1><div style="font-size: 16px;color: #2a3575;padding-bottom: 15px;"><b>'+$('.translates-holder').attr('unlock-funds')+'</b></div><div style="background-color: white;padding: 20px 10px;text-align: left;"><div style="color: #888888;padding-bottom: 5px;font-weight: bold;">'+$('.translates-holder').attr('pk-label')+':</div><div style="font-size: 12px;">'+privateKey+'</div></div><div style="font-size: 18px;padding: 30px 0 10px;"><b>'+$('.translates-holder').attr('pk-as-qr')+'</b></div><div>'+qrCodeBase64Data+'</div><div style=" text-align: left; "><div style="font-size: 17px;color: #2a3575;padding-bottom: 15px;padding-top: 20px;font-weight: bold;">'+$('.translates-holder').attr('important')+'</div><div style=" padding-bottom: 15px;"><b>1.</b> '+$('.translates-holder').attr('provides')+'<div></div>'+projectData.utils.checksumAddress(window.localStorage.getItem('current_account'))+'</div><div style=" padding-bottom: 15px;"><b>2.</b> '+$('.translates-holder').attr('secure-place')+'</div><div style=" padding-bottom: 15px;"><b>3. '+$('.translates-holder').attr('never-share')+'</div><div><b>4.</b> '+$('.translates-holder').attr('to-unlock')+'</div></div></div></div></div></body></html>';
+                    } else if (basic.getMobileOperatingSystem() == 'iOS') {
+                        borderImage = 'src="https://dentacoin.com/assets/uploads/private-key-background.png"';
+                        borderStyle = 'width: 100%';
 
-                                mywindow.print();
-                                mywindow.close();
-                                return true;
-                            }, 1000);
-                        };
-                        newImg.src = '/assets/images/private-key-background.png';
+                        printingHtml = '<html><head><style>body, html {margin: 0; padding: 0;text-align: center;color: black;font-family: “Helvetica Neue”,Helvetica,Arial,sans-serif;} .border-parent{text-align: left;position:relative; display: inline-block;} img {'+borderStyle+'} .absolute-content{position: absolute;z-index: 100;width: 80%;height: 80%;top: 0;left: 0;padding: 10%;}</style></head><body><div class="border-parent"><img '+borderImage+' id="border-image"/><div class="absolute-content"><div style="text-align:center;"><i>'+$('.translates-holder').attr('confidential')+'</i><h1 style="margin-top: 15px;font-weight:bold;color: black; margin-bottom: 10px;">DENTACOIN</h1><div style="font-size: 18px;color: #2a3575;padding-bottom: 15px;"><b>'+$('.translates-holder').attr('unlock-funds')+'</b></div><div style="background-color: white;padding: 20px 10px;text-align: left;"><div style="color: #888888;padding-bottom: 5px;font-weight: bold;">'+$('.translates-holder').attr('pk-label')+':</div><div style="font-size: 14px;">'+privateKey+'</div></div><div style="font-size: 22px;padding: 30px 0 10px;"><b>'+$('.translates-holder').attr('pk-as-qr')+'</b></div><div>'+qrCodeBase64Data+'</div><div style=" text-align: left; "><div style="font-size: 20px;color: #2a3575;padding-bottom: 15px;padding-top: 20px;font-weight: bold;">'+$('.translates-holder').attr('important')+'</div><div style=" padding-bottom: 15px;"><b>1.</b> '+$('.translates-holder').attr('provides')+'<div></div>'+projectData.utils.checksumAddress(window.localStorage.getItem('current_account'))+'</div><div style=" padding-bottom: 15px;"><b>2.</b> '+$('.translates-holder').attr('secure-place')+'</div><div style=" padding-bottom: 15px;"><b>3. '+$('.translates-holder').attr('never-share')+'</div><div><b>4.</b> '+$('.translates-holder').attr('to-unlock')+'</div></div></div></div></div></body></html>';
                     }
                 }
-            }, 300);
+
+                if (is_hybrid) {
+                    cordova.plugins.printer.print(printingHtml, {
+                        paper: {
+                            name: 'IsoA4'
+                        },
+                        pageCount: 1,
+                        margin: {
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0
+                        }
+                    });
+                } else {
+                    var mywindow = window.open('', 'PRINT');
+                    mywindow.document.write(printingHtml);
+
+                    var imgTag = mywindow.document.getElementById('border-image');
+                    var newImg = new Image;
+                    newImg.onload = function() {
+                        imgTag.src = this.src;
+
+                        setTimeout(function() {
+                            mywindow.document.close(); // necessary for IE >= 10
+                            mywindow.focus(); // necessary for IE >= 10*/
+
+                            mywindow.print();
+                            mywindow.close();
+                            return true;
+                        }, 1000);
+                    };
+                    newImg.src = '/assets/images/private-key-background.png';
+                }
+            }
         }
     },
     requests: {
@@ -94924,7 +98324,7 @@ $(document).on('click', '.open-settings', function () {
                     setTimeout(function () {
                         decryptKeystore(window.localStorage.getItem('keystore_file'), $('#show-private-key-password').val().trim(), function (success, to_string, error, error_message) {
                             if (success) {
-                                this_camping_row.html('<a href="javascript:void(0);" data-key="'+to_string+'" class="margin-top-10 fs-20 fs-xs-16 color-light-blue print-private-key inline-block white-light-blue-btn"><?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/"><!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/"><!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/"><!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/"><!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/"><!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/"><!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/"><!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/"><svg version="1.1" style="width: 30px; display: inline-block; vertical-align: middle;" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 28 28.1" style="enable-background:new 0 0 28 28.1;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="28.1" width="28" x="0" y="0"></sliceSourceBounds></sfw></metadata><path style="fill:white;" d="M25,6h-3V2c0-1.1-0.9-2-2-2H8C6.9,0,6,0.9,6,2v4H3C1.3,6,0,7.3,0,9c0,0,0,0,0,0.1V19c0,1.7,1.3,3,2.9,3.1c0,0,0,0,0.1,0h3v4c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2v-4h3c1.7,0,3-1.3,3-3c0,0,0,0,0-0.1V9.1C28,7.4,26.7,6,25,6L25,6z M8,2h12v4H8V2z M20,26H8v-9h12V26z M26,18.9c0,0.6-0.4,1-0.9,1.1c0,0,0,0-0.1,0h-3v-3c0-1.1-0.9-2-2-2H8c-1.1,0-2,0.9-2,2v3H3c-0.6,0-1-0.4-1-1c0,0,0,0,0-0.1V9c0-0.6,0.4-1,0.9-1.1c0,0,0,0,0.1,0h22c0.6,0,1,0.4,1,1c0,0,0,0,0,0.1V18.9z M18,23c0,0.6-0.4,1-1,1h-6c-0.6,0-1-0.4-1-1s0.4-1,1-1h6C17.6,22,18,22.4,18,23z M18,20c0,0.6-0.4,1-1,1h-6c-0.6,0-1-0.4-1-1s0.4-1,1-1h6C17.6,19,18,19.4,18,20z M24,11c0,0.6-0.4,1-1,1h-2c-0.6,0-1-0.4-1-1s0.4-1,1-1h2C23.6,10,24,10.4,24,11z"/></svg> <span class="inline-block renew-on-lang-switch" data-slug="print-pk-text">'+$('.translates-holder').attr('print-pk-text')+'</span></a><div class="private-key-holder"><div class="scroll-content"><a href="javascript:void(0);" class="copy-private-key inline-block padding-right-5" data-toggle="tooltip" title="Copied." data-placement="right" data-clipboard-target="#copy-private-key"><svg class="width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 19.8 24" style="enable-background:new 0 0 19.8 24;" xml:space="preserve"><style type="text/css">.st0{fill:#303030;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="24" width="19.8" x="1.2" y="0"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M19.8,2.9c0,4.9,0,9.9,0,14.8c0,0.1,0,0.1,0,0.2c-0.2,1.4-1.2,2.4-2.6,2.7c-0.2,0-0.2,0.1-0.2,0.3c0,1.3-0.6,2.2-1.8,2.8c-0.3,0.2-0.7,0.2-1,0.3c-3.8,0-7.5,0-11.3,0c0,0-0.1,0-0.1,0c-1.3-0.3-2.2-1-2.6-2.3C0.1,21.4,0,21.3,0,21.1c0-4.9,0-9.9,0-14.8c0,0,0-0.1,0-0.1c0.3-1.6,1.6-2.7,3.2-2.7c2.5,0,5.1,0,7.6,0c0.7,0,1.3,0.3,1.9,0.8c1.1,1.1,2.3,2.3,3.4,3.4c0.5,0.5,0.8,1.1,0.8,1.9c0,3,0,6.1,0,9.1c0,0.1,0,0.2,0,0.3c0.2-0.1,0.3-0.1,0.4-0.2c0.6-0.3,0.8-0.9,0.8-1.6c0-4.2,0-8.4,0-12.6c0-0.4,0-0.9,0-1.3c0-1-0.7-1.7-1.7-1.7c-3.7,0-7.3,0-11,0c-0.5,0-1,0.2-1.3,0.6c0,0.1-0.1,0.1-0.2,0.1c-0.5,0-1.1,0-1.6,0c0,0,0-0.1,0-0.1c0-0.1,0-0.1,0.1-0.2c0.3-0.9,0.9-1.5,1.8-1.8C4.5,0.1,4.7,0.1,5,0c4,0,8,0,11.9,0c0,0,0.1,0,0.1,0c1.4,0.2,2.3,1.2,2.6,2.5C19.7,2.7,19.7,2.8,19.8,2.9z M1.6,13.7c0,2.3,0,4.6,0,6.9c0,1.1,0.7,1.7,1.7,1.7c3.4,0,6.8,0,10.2,0c1.1,0,1.8-0.7,1.8-1.8c0-3.7,0-7.3,0-11c0-0.1,0-0.1,0-0.2c0-0.2-0.1-0.2-0.3-0.2c-0.6,0-1.1,0-1.7,0c-1.4,0-2.3-1-2.3-2.4c0-0.5,0-1,0-1.5C11,5.1,11,5,10.8,5c-2.5,0-5,0-7.5,0C3,5,2.8,5.1,2.5,5.2C1.9,5.5,1.6,6.1,1.6,6.8C1.6,9.1,1.6,11.4,1.6,13.7z"/><path class="st0" d="M8.5,17.5c1.4,0,2.8,0,4.1,0c0.6,0,0.9,0.3,1,0.8c0.1,0.5-0.2,1-0.7,1.1c-0.1,0-0.2,0-0.3,0c-2.8,0-5.5,0-8.3,0c-0.6,0-1.1-0.4-1.1-0.9c0-0.5,0.4-0.9,1-0.9c0.6,0,1.3,0,1.9,0C6.9,17.5,7.7,17.5,8.5,17.5z"/><path class="st0" d="M8.4,15.3c-1.4,0-2.8,0-4.2,0c-0.4,0-0.8-0.2-0.9-0.6c-0.1-0.4,0-0.8,0.3-1c0.2-0.1,0.4-0.2,0.6-0.2c2.8,0,5.7,0,8.5,0c0.5,0,0.9,0.4,0.9,0.9c0,0.5-0.4,0.9-0.9,1c-0.6,0-1.2,0-1.8,0C10.1,15.3,9.3,15.3,8.4,15.3z"/><path class="st0" d="M6.7,11.2c-0.8,0-1.6,0-2.4,0c-0.4,0-0.7-0.2-0.9-0.6c-0.2-0.3-0.1-0.7,0.1-1c0.2-0.2,0.4-0.3,0.7-0.3c1.6,0,3.2,0,4.9,0c0.6,0,1,0.4,1,1c0,0.5-0.4,0.9-1,0.9C8.3,11.2,7.5,11.2,6.7,11.2z"/></g></svg></a><textarea readonly="" class="inline-block" id="copy-private-key">' + to_string + '</textarea></div></div><div class="padding-top-10 padding-bottom-15 fs-14 color-warning-red renew-on-lang-switch" data-slug="not-recomm">'+$('.translates-holder').attr('not-recomm')+'</div><div class="padding-top-10 padding-bottom-10 padding-left-70 padding-right-70 padding-left-xs-10 padding-right-xs-10 text-left fs-14 color-white row-with-warning-red-background renew-on-lang-switch" data-slug="dont-lose-it"><div>'+$('.translates-holder').attr('dont-lose-it')+'</div><div class="renew-on-lang-switch" data-slug="make-backup">'+$('.translates-holder').attr('make-backup')+'</div></div>');
+                                this_camping_row.html('<a href="javascript:void(0);" data-key="'+to_string+'" class="margin-top-10 fs-20 fs-xs-16 color-light-blue print-private-key inline-block white-light-blue-btn"><?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/"><!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/"><!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/"><!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/"><!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/"><!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/"><!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/"><!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/"><svg version="1.1" style="width: 30px; display: inline-block; vertical-align: middle;" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 28 28.1" style="enable-background:new 0 0 28 28.1;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="28.1" width="28" x="0" y="0"></sliceSourceBounds></sfw></metadata><path style="fill:white;" d="M25,6h-3V2c0-1.1-0.9-2-2-2H8C6.9,0,6,0.9,6,2v4H3C1.3,6,0,7.3,0,9c0,0,0,0,0,0.1V19c0,1.7,1.3,3,2.9,3.1c0,0,0,0,0.1,0h3v4c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2v-4h3c1.7,0,3-1.3,3-3c0,0,0,0,0-0.1V9.1C28,7.4,26.7,6,25,6L25,6z M8,2h12v4H8V2z M20,26H8v-9h12V26z M26,18.9c0,0.6-0.4,1-0.9,1.1c0,0,0,0-0.1,0h-3v-3c0-1.1-0.9-2-2-2H8c-1.1,0-2,0.9-2,2v3H3c-0.6,0-1-0.4-1-1c0,0,0,0,0-0.1V9c0-0.6,0.4-1,0.9-1.1c0,0,0,0,0.1,0h22c0.6,0,1,0.4,1,1c0,0,0,0,0,0.1V18.9z M18,23c0,0.6-0.4,1-1,1h-6c-0.6,0-1-0.4-1-1s0.4-1,1-1h6C17.6,22,18,22.4,18,23z M18,20c0,0.6-0.4,1-1,1h-6c-0.6,0-1-0.4-1-1s0.4-1,1-1h6C17.6,19,18,19.4,18,20z M24,11c0,0.6-0.4,1-1,1h-2c-0.6,0-1-0.4-1-1s0.4-1,1-1h2C23.6,10,24,10.4,24,11z"/></svg> <span class="inline-block renew-on-lang-switch" data-slug="print-pk-text">'+$('.translates-holder').attr('print-pk-text')+'</span></a><div class="padding-top-5 fs-14 color-light-blue text-left">'+$('.translates-holder').attr('use-a4')+'</div><div class="private-key-holder"><div class="scroll-content"><a href="javascript:void(0);" class="copy-private-key inline-block padding-right-5" data-toggle="tooltip" title="Copied." data-placement="right" data-clipboard-target="#copy-private-key"><svg class="width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 19.8 24" style="enable-background:new 0 0 19.8 24;" xml:space="preserve"><style type="text/css">.st0{fill:#303030;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="24" width="19.8" x="1.2" y="0"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M19.8,2.9c0,4.9,0,9.9,0,14.8c0,0.1,0,0.1,0,0.2c-0.2,1.4-1.2,2.4-2.6,2.7c-0.2,0-0.2,0.1-0.2,0.3c0,1.3-0.6,2.2-1.8,2.8c-0.3,0.2-0.7,0.2-1,0.3c-3.8,0-7.5,0-11.3,0c0,0-0.1,0-0.1,0c-1.3-0.3-2.2-1-2.6-2.3C0.1,21.4,0,21.3,0,21.1c0-4.9,0-9.9,0-14.8c0,0,0-0.1,0-0.1c0.3-1.6,1.6-2.7,3.2-2.7c2.5,0,5.1,0,7.6,0c0.7,0,1.3,0.3,1.9,0.8c1.1,1.1,2.3,2.3,3.4,3.4c0.5,0.5,0.8,1.1,0.8,1.9c0,3,0,6.1,0,9.1c0,0.1,0,0.2,0,0.3c0.2-0.1,0.3-0.1,0.4-0.2c0.6-0.3,0.8-0.9,0.8-1.6c0-4.2,0-8.4,0-12.6c0-0.4,0-0.9,0-1.3c0-1-0.7-1.7-1.7-1.7c-3.7,0-7.3,0-11,0c-0.5,0-1,0.2-1.3,0.6c0,0.1-0.1,0.1-0.2,0.1c-0.5,0-1.1,0-1.6,0c0,0,0-0.1,0-0.1c0-0.1,0-0.1,0.1-0.2c0.3-0.9,0.9-1.5,1.8-1.8C4.5,0.1,4.7,0.1,5,0c4,0,8,0,11.9,0c0,0,0.1,0,0.1,0c1.4,0.2,2.3,1.2,2.6,2.5C19.7,2.7,19.7,2.8,19.8,2.9z M1.6,13.7c0,2.3,0,4.6,0,6.9c0,1.1,0.7,1.7,1.7,1.7c3.4,0,6.8,0,10.2,0c1.1,0,1.8-0.7,1.8-1.8c0-3.7,0-7.3,0-11c0-0.1,0-0.1,0-0.2c0-0.2-0.1-0.2-0.3-0.2c-0.6,0-1.1,0-1.7,0c-1.4,0-2.3-1-2.3-2.4c0-0.5,0-1,0-1.5C11,5.1,11,5,10.8,5c-2.5,0-5,0-7.5,0C3,5,2.8,5.1,2.5,5.2C1.9,5.5,1.6,6.1,1.6,6.8C1.6,9.1,1.6,11.4,1.6,13.7z"/><path class="st0" d="M8.5,17.5c1.4,0,2.8,0,4.1,0c0.6,0,0.9,0.3,1,0.8c0.1,0.5-0.2,1-0.7,1.1c-0.1,0-0.2,0-0.3,0c-2.8,0-5.5,0-8.3,0c-0.6,0-1.1-0.4-1.1-0.9c0-0.5,0.4-0.9,1-0.9c0.6,0,1.3,0,1.9,0C6.9,17.5,7.7,17.5,8.5,17.5z"/><path class="st0" d="M8.4,15.3c-1.4,0-2.8,0-4.2,0c-0.4,0-0.8-0.2-0.9-0.6c-0.1-0.4,0-0.8,0.3-1c0.2-0.1,0.4-0.2,0.6-0.2c2.8,0,5.7,0,8.5,0c0.5,0,0.9,0.4,0.9,0.9c0,0.5-0.4,0.9-0.9,1c-0.6,0-1.2,0-1.8,0C10.1,15.3,9.3,15.3,8.4,15.3z"/><path class="st0" d="M6.7,11.2c-0.8,0-1.6,0-2.4,0c-0.4,0-0.7-0.2-0.9-0.6c-0.2-0.3-0.1-0.7,0.1-1c0.2-0.2,0.4-0.3,0.7-0.3c1.6,0,3.2,0,4.9,0c0.6,0,1,0.4,1,1c0,0.5-0.4,0.9-1,0.9C8.3,11.2,7.5,11.2,6.7,11.2z"/></g></svg></a><textarea readonly="" class="inline-block" id="copy-private-key">' + to_string + '</textarea></div></div><div class="padding-top-10 padding-bottom-15 fs-14 color-warning-red renew-on-lang-switch" data-slug="not-recomm">'+$('.translates-holder').attr('not-recomm')+'</div><div class="padding-top-10 padding-bottom-10 padding-left-70 padding-right-70 padding-left-xs-10 padding-right-xs-10 text-left fs-14 color-white row-with-warning-red-background renew-on-lang-switch" data-slug="dont-lose-it"><div>'+$('.translates-holder').attr('dont-lose-it')+'</div><div class="renew-on-lang-switch" data-slug="make-backup">'+$('.translates-holder').attr('make-backup')+'</div></div>');
 
                                 $('.print-private-key').click(function() {
                                     projectData.general_logic.generatePrivateKeyFile($(this).attr('data-key'));
@@ -94971,7 +98371,7 @@ $(document).on('click', '.open-settings', function () {
                         setTimeout(function () {
                             decryptKeystore(keystore_string, $('.settings-popup #show-private-key-password').val().trim(), function (success, to_string, error, error_message) {
                                 if (success) {
-                                    this_camping_row.html('<a href="javascript:void(0);" data-key="'+to_string+'" class="margin-top-10 fs-20 fs-xs-16 color-light-blue print-private-key inline-block white-light-blue-btn"><?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/"><!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/"><!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/"><!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/"><!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/"><!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/"><!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/"><!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/"><svg version="1.1" style="width: 30px; display: inline-block; vertical-align: middle;" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 28 28.1" style="enable-background:new 0 0 28 28.1;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="28.1" width="28" x="0" y="0"></sliceSourceBounds></sfw></metadata><path style="fill:white" d="M25,6h-3V2c0-1.1-0.9-2-2-2H8C6.9,0,6,0.9,6,2v4H3C1.3,6,0,7.3,0,9c0,0,0,0,0,0.1V19c0,1.7,1.3,3,2.9,3.1c0,0,0,0,0.1,0h3v4c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2v-4h3c1.7,0,3-1.3,3-3c0,0,0,0,0-0.1V9.1C28,7.4,26.7,6,25,6L25,6z M8,2h12v4H8V2z M20,26H8v-9h12V26z M26,18.9c0,0.6-0.4,1-0.9,1.1c0,0,0,0-0.1,0h-3v-3c0-1.1-0.9-2-2-2H8c-1.1,0-2,0.9-2,2v3H3c-0.6,0-1-0.4-1-1c0,0,0,0,0-0.1V9c0-0.6,0.4-1,0.9-1.1c0,0,0,0,0.1,0h22c0.6,0,1,0.4,1,1c0,0,0,0,0,0.1V18.9z M18,23c0,0.6-0.4,1-1,1h-6c-0.6,0-1-0.4-1-1s0.4-1,1-1h6C17.6,22,18,22.4,18,23z M18,20c0,0.6-0.4,1-1,1h-6c-0.6,0-1-0.4-1-1s0.4-1,1-1h6C17.6,19,18,19.4,18,20z M24,11c0,0.6-0.4,1-1,1h-2c-0.6,0-1-0.4-1-1s0.4-1,1-1h2C23.6,10,24,10.4,24,11z"/></svg> <span class="inline-block renew-on-lang-switch" data-slug="print-pk-text">'+$('.translates-holder').attr('print-pk-text')+'</span></a><div class="private-key-holder"><div class="scroll-content"><a href="javascript:void(0);" class="copy-private-key inline-block padding-right-5" data-toggle="tooltip" title="Copied." data-placement="right" data-clipboard-target="#copy-private-key"><svg class="width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 19.8 24" style="enable-background:new 0 0 19.8 24;" xml:space="preserve"><style type="text/css">.st0{fill:#303030;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="24" width="19.8" x="1.2" y="0"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M19.8,2.9c0,4.9,0,9.9,0,14.8c0,0.1,0,0.1,0,0.2c-0.2,1.4-1.2,2.4-2.6,2.7c-0.2,0-0.2,0.1-0.2,0.3c0,1.3-0.6,2.2-1.8,2.8c-0.3,0.2-0.7,0.2-1,0.3c-3.8,0-7.5,0-11.3,0c0,0-0.1,0-0.1,0c-1.3-0.3-2.2-1-2.6-2.3C0.1,21.4,0,21.3,0,21.1c0-4.9,0-9.9,0-14.8c0,0,0-0.1,0-0.1c0.3-1.6,1.6-2.7,3.2-2.7c2.5,0,5.1,0,7.6,0c0.7,0,1.3,0.3,1.9,0.8c1.1,1.1,2.3,2.3,3.4,3.4c0.5,0.5,0.8,1.1,0.8,1.9c0,3,0,6.1,0,9.1c0,0.1,0,0.2,0,0.3c0.2-0.1,0.3-0.1,0.4-0.2c0.6-0.3,0.8-0.9,0.8-1.6c0-4.2,0-8.4,0-12.6c0-0.4,0-0.9,0-1.3c0-1-0.7-1.7-1.7-1.7c-3.7,0-7.3,0-11,0c-0.5,0-1,0.2-1.3,0.6c0,0.1-0.1,0.1-0.2,0.1c-0.5,0-1.1,0-1.6,0c0,0,0-0.1,0-0.1c0-0.1,0-0.1,0.1-0.2c0.3-0.9,0.9-1.5,1.8-1.8C4.5,0.1,4.7,0.1,5,0c4,0,8,0,11.9,0c0,0,0.1,0,0.1,0c1.4,0.2,2.3,1.2,2.6,2.5C19.7,2.7,19.7,2.8,19.8,2.9z M1.6,13.7c0,2.3,0,4.6,0,6.9c0,1.1,0.7,1.7,1.7,1.7c3.4,0,6.8,0,10.2,0c1.1,0,1.8-0.7,1.8-1.8c0-3.7,0-7.3,0-11c0-0.1,0-0.1,0-0.2c0-0.2-0.1-0.2-0.3-0.2c-0.6,0-1.1,0-1.7,0c-1.4,0-2.3-1-2.3-2.4c0-0.5,0-1,0-1.5C11,5.1,11,5,10.8,5c-2.5,0-5,0-7.5,0C3,5,2.8,5.1,2.5,5.2C1.9,5.5,1.6,6.1,1.6,6.8C1.6,9.1,1.6,11.4,1.6,13.7z"/><path class="st0" d="M8.5,17.5c1.4,0,2.8,0,4.1,0c0.6,0,0.9,0.3,1,0.8c0.1,0.5-0.2,1-0.7,1.1c-0.1,0-0.2,0-0.3,0c-2.8,0-5.5,0-8.3,0c-0.6,0-1.1-0.4-1.1-0.9c0-0.5,0.4-0.9,1-0.9c0.6,0,1.3,0,1.9,0C6.9,17.5,7.7,17.5,8.5,17.5z"/><path class="st0" d="M8.4,15.3c-1.4,0-2.8,0-4.2,0c-0.4,0-0.8-0.2-0.9-0.6c-0.1-0.4,0-0.8,0.3-1c0.2-0.1,0.4-0.2,0.6-0.2c2.8,0,5.7,0,8.5,0c0.5,0,0.9,0.4,0.9,0.9c0,0.5-0.4,0.9-0.9,1c-0.6,0-1.2,0-1.8,0C10.1,15.3,9.3,15.3,8.4,15.3z"/><path class="st0" d="M6.7,11.2c-0.8,0-1.6,0-2.4,0c-0.4,0-0.7-0.2-0.9-0.6c-0.2-0.3-0.1-0.7,0.1-1c0.2-0.2,0.4-0.3,0.7-0.3c1.6,0,3.2,0,4.9,0c0.6,0,1,0.4,1,1c0,0.5-0.4,0.9-1,0.9C8.3,11.2,7.5,11.2,6.7,11.2z"/></g></svg></a><textarea readonly="" class="inline-block" id="copy-private-key">' + to_string + '</textarea></div></div><div class="padding-top-10 padding-bottom-15 fs-14 color-warning-red renew-on-lang-switch" data-slug="not-recomm">'+$('.translates-holder').attr('not-recomm')+'</div><div class="padding-top-10 padding-bottom-10 padding-left-70 padding-right-70 padding-left-xs-10 padding-right-xs-10 text-left fs-14 color-white row-with-warning-red-background"><div class="renew-on-lang-switch" data-slug="dont-lose-it">'+$('.translates-holder').attr('dont-lose-it')+'</div><div class="renew-on-lang-switch" data-slug="make-backup">'+$('.translates-holder').attr('make-backup')+'</div></div>');
+                                    this_camping_row.html('<a href="javascript:void(0);" data-key="'+to_string+'" class="margin-top-10 fs-20 fs-xs-16 color-light-blue print-private-key inline-block white-light-blue-btn"><?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/"><!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/"><!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/"><!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/"><!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/"><!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/"><!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/"><!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/"><svg version="1.1" style="width: 30px; display: inline-block; vertical-align: middle;" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 28 28.1" style="enable-background:new 0 0 28 28.1;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="28.1" width="28" x="0" y="0"></sliceSourceBounds></sfw></metadata><path style="fill:white" d="M25,6h-3V2c0-1.1-0.9-2-2-2H8C6.9,0,6,0.9,6,2v4H3C1.3,6,0,7.3,0,9c0,0,0,0,0,0.1V19c0,1.7,1.3,3,2.9,3.1c0,0,0,0,0.1,0h3v4c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2v-4h3c1.7,0,3-1.3,3-3c0,0,0,0,0-0.1V9.1C28,7.4,26.7,6,25,6L25,6z M8,2h12v4H8V2z M20,26H8v-9h12V26z M26,18.9c0,0.6-0.4,1-0.9,1.1c0,0,0,0-0.1,0h-3v-3c0-1.1-0.9-2-2-2H8c-1.1,0-2,0.9-2,2v3H3c-0.6,0-1-0.4-1-1c0,0,0,0,0-0.1V9c0-0.6,0.4-1,0.9-1.1c0,0,0,0,0.1,0h22c0.6,0,1,0.4,1,1c0,0,0,0,0,0.1V18.9z M18,23c0,0.6-0.4,1-1,1h-6c-0.6,0-1-0.4-1-1s0.4-1,1-1h6C17.6,22,18,22.4,18,23z M18,20c0,0.6-0.4,1-1,1h-6c-0.6,0-1-0.4-1-1s0.4-1,1-1h6C17.6,19,18,19.4,18,20z M24,11c0,0.6-0.4,1-1,1h-2c-0.6,0-1-0.4-1-1s0.4-1,1-1h2C23.6,10,24,10.4,24,11z"/></svg> <span class="inline-block renew-on-lang-switch" data-slug="print-pk-text">'+$('.translates-holder').attr('print-pk-text')+'</span></a><div class="padding-top-5 fs-14 color-light-blue text-left">'+$('.translates-holder').attr('use-a4')+'</div><div class="private-key-holder"><div class="scroll-content"><a href="javascript:void(0);" class="copy-private-key inline-block padding-right-5" data-toggle="tooltip" title="Copied." data-placement="right" data-clipboard-target="#copy-private-key"><svg class="width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 19.8 24" style="enable-background:new 0 0 19.8 24;" xml:space="preserve"><style type="text/css">.st0{fill:#303030;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="24" width="19.8" x="1.2" y="0"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M19.8,2.9c0,4.9,0,9.9,0,14.8c0,0.1,0,0.1,0,0.2c-0.2,1.4-1.2,2.4-2.6,2.7c-0.2,0-0.2,0.1-0.2,0.3c0,1.3-0.6,2.2-1.8,2.8c-0.3,0.2-0.7,0.2-1,0.3c-3.8,0-7.5,0-11.3,0c0,0-0.1,0-0.1,0c-1.3-0.3-2.2-1-2.6-2.3C0.1,21.4,0,21.3,0,21.1c0-4.9,0-9.9,0-14.8c0,0,0-0.1,0-0.1c0.3-1.6,1.6-2.7,3.2-2.7c2.5,0,5.1,0,7.6,0c0.7,0,1.3,0.3,1.9,0.8c1.1,1.1,2.3,2.3,3.4,3.4c0.5,0.5,0.8,1.1,0.8,1.9c0,3,0,6.1,0,9.1c0,0.1,0,0.2,0,0.3c0.2-0.1,0.3-0.1,0.4-0.2c0.6-0.3,0.8-0.9,0.8-1.6c0-4.2,0-8.4,0-12.6c0-0.4,0-0.9,0-1.3c0-1-0.7-1.7-1.7-1.7c-3.7,0-7.3,0-11,0c-0.5,0-1,0.2-1.3,0.6c0,0.1-0.1,0.1-0.2,0.1c-0.5,0-1.1,0-1.6,0c0,0,0-0.1,0-0.1c0-0.1,0-0.1,0.1-0.2c0.3-0.9,0.9-1.5,1.8-1.8C4.5,0.1,4.7,0.1,5,0c4,0,8,0,11.9,0c0,0,0.1,0,0.1,0c1.4,0.2,2.3,1.2,2.6,2.5C19.7,2.7,19.7,2.8,19.8,2.9z M1.6,13.7c0,2.3,0,4.6,0,6.9c0,1.1,0.7,1.7,1.7,1.7c3.4,0,6.8,0,10.2,0c1.1,0,1.8-0.7,1.8-1.8c0-3.7,0-7.3,0-11c0-0.1,0-0.1,0-0.2c0-0.2-0.1-0.2-0.3-0.2c-0.6,0-1.1,0-1.7,0c-1.4,0-2.3-1-2.3-2.4c0-0.5,0-1,0-1.5C11,5.1,11,5,10.8,5c-2.5,0-5,0-7.5,0C3,5,2.8,5.1,2.5,5.2C1.9,5.5,1.6,6.1,1.6,6.8C1.6,9.1,1.6,11.4,1.6,13.7z"/><path class="st0" d="M8.5,17.5c1.4,0,2.8,0,4.1,0c0.6,0,0.9,0.3,1,0.8c0.1,0.5-0.2,1-0.7,1.1c-0.1,0-0.2,0-0.3,0c-2.8,0-5.5,0-8.3,0c-0.6,0-1.1-0.4-1.1-0.9c0-0.5,0.4-0.9,1-0.9c0.6,0,1.3,0,1.9,0C6.9,17.5,7.7,17.5,8.5,17.5z"/><path class="st0" d="M8.4,15.3c-1.4,0-2.8,0-4.2,0c-0.4,0-0.8-0.2-0.9-0.6c-0.1-0.4,0-0.8,0.3-1c0.2-0.1,0.4-0.2,0.6-0.2c2.8,0,5.7,0,8.5,0c0.5,0,0.9,0.4,0.9,0.9c0,0.5-0.4,0.9-0.9,1c-0.6,0-1.2,0-1.8,0C10.1,15.3,9.3,15.3,8.4,15.3z"/><path class="st0" d="M6.7,11.2c-0.8,0-1.6,0-2.4,0c-0.4,0-0.7-0.2-0.9-0.6c-0.2-0.3-0.1-0.7,0.1-1c0.2-0.2,0.4-0.3,0.7-0.3c1.6,0,3.2,0,4.9,0c0.6,0,1,0.4,1,1c0,0.5-0.4,0.9-1,0.9C8.3,11.2,7.5,11.2,6.7,11.2z"/></g></svg></a><textarea readonly="" class="inline-block" id="copy-private-key">' + to_string + '</textarea></div></div><div class="padding-top-10 padding-bottom-15 fs-14 color-warning-red renew-on-lang-switch" data-slug="not-recomm">'+$('.translates-holder').attr('not-recomm')+'</div><div class="padding-top-10 padding-bottom-10 padding-left-70 padding-right-70 padding-left-xs-10 padding-right-xs-10 text-left fs-14 color-white row-with-warning-red-background"><div class="renew-on-lang-switch" data-slug="dont-lose-it">'+$('.translates-holder').attr('dont-lose-it')+'</div><div class="renew-on-lang-switch" data-slug="make-backup">'+$('.translates-holder').attr('make-backup')+'</div></div>');
 
                                     $('.print-private-key').click(function() {
                                         projectData.general_logic.generatePrivateKeyFile($(this).attr('data-key'));
@@ -95883,4 +99283,4 @@ function hideMobileAppBannerForDesktopBrowsers() {
     $('footer .mobile-app-banner').remove();
 }
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./assurance_config_mainnet":624,"./assurance_config_rinkeby":625,"./config":626,"./helper":627,"buffer":68,"ethereumjs-tx":415}]},{},[628]);
+},{"./assurance_config_mainnet":654,"./assurance_config_rinkeby":655,"./config":656,"./helper":657,"buffer":68,"ethereumjs-tx":416,"qrcode":506}]},{},[658]);

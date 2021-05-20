@@ -233,5 +233,6 @@
   "provides" : "This private key provides full access to the funds in digital wallet: ",
   "secure-place" : "Print this document and store it in a secure place.",
   "never-share" : "Never share this document with anyone to prevent theft of your money!",
-  "to-unlock" : "To unlock your funds, open Dentacoin Wallet app or go to: wallet.dentacoin.com. Choose <b>\"Import an existing wallet\"</b>, write the private key in the corresponding field or scan the QR code. You will see the tokens you own."
+  "to-unlock" : "To unlock your funds, open Dentacoin Wallet app or go to: wallet.dentacoin.com. Choose <b>\"Import an existing wallet\"</b>, write the private key in the corresponding field or scan the QR code. You will see the tokens you own.",
+  "use-a4" : "Please, choose A4 paper size for best display."
 }
