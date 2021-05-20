@@ -1926,40 +1926,13 @@ var projectData = {
             }
         },
         generatePrivateKeyFile: function(privateKey) {
-            console.log(privateKey, 'privateKey');
-
-            var qrCodeBase64Data;
-            if (is_hybrid && basic.getMobileOperatingSystem() == 'Android') {
-                var QRCode = require('qrcode');
-
-                QRCode.toDataURL(privateKey, function (err, url) {
-                    console.log(url, 'url');
-
-                    proceedWithPrinting('<img src="' + url + '" style=" height: auto; width: 160px;">');
-                })
-            } else {
-                $('body').append('<div id="dummy-qr-code-image" class="hide"></div>');
-                var qrcode = new QRCode(document.getElementById('dummy-qr-code-image'), {
-                    width: 160,
-                    height: 160
-                });
-
-                qrcode.makeCode(privateKey);
-                var dummyQrCodeChecker = setInterval(function() {
-                    if ($('#dummy-qr-code-image img').length) {
-                        clearInterval(dummyQrCodeChecker);
-
-                        qrCodeBase64Data = '<img src="' + $('#dummy-qr-code-image img').attr('src') + '" style=" height: auto; width: 160px;">';
-                        $('#dummy-qr-code-image').remove();
-
-                        proceedWithPrinting(qrCodeBase64Data);
-                    }
-                }, 300);
-            }
+            var QRCode = require('qrcode');
+            QRCode.toDataURL(privateKey, function (err, url) {
+                console.log(url, 'url');
+                proceedWithPrinting('<img src="' + url + '" style=" height: auto; width: 160px;">');
+            });
 
             function proceedWithPrinting(qrCodeBase64Data) {
-                console.log(qrCodeBase64Data, 'qrCodeBase64Data');
-
                 var borderImage = '';
                 var borderStyle = 'height: 95vh';
                 var printingHtml;
@@ -3005,6 +2978,14 @@ function initAccountChecker() {
                                 $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
                                 $('.custom-auth-popup .popup-left .popup-element.second').removeClass('hide');
                                 $('.custom-auth-popup .popup-header .nav-steps').removeClass('first-step').addClass('second-step');
+
+                                if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
+                                    var cachedPrintingImage = new Image();
+                                    cachedPrintingImage.addEventListener('load', function () {
+                                        console.log('Cached image loaded');
+                                    });
+                                    cachedPrintingImage.src = 'https://dentacoin.com/assets/uploads/private-key-background.png';
+                                }
                             }
 
                             function loginIntoWallet() {
