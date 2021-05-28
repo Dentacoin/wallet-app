@@ -22,7 +22,7 @@
   "_resolved": "https://registry.npmjs.org/cordova-plugin-wifiwizard2/-/cordova-plugin-wifiwizard2-3.1.1.tgz",
   "_shasum": "4efd08c663eb4855cfa414c6d98043732dfd0ef8",
   "_spec": "cordova-plugin-wifiwizard2@3.1.1",
-  "_where": "D:\\wamp\\www\\wallet-v2\\hybrid-app",
+  "_where": "/Users/dentacoin/Documents/projects/wallet-app/hybrid-app",
   "author": {
     "name": "Myles McNamara"
   },
