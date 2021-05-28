@@ -51,12 +51,17 @@ document.addEventListener('deviceready', function () {
             console.log(err, 'WifiWizard2.connect');
         });
     } else if (basic.getMobileOperatingSystem() == 'iOS') {
-        console.log('iOS Wifi connect');
-        WifiWizard2.iOSConnectNetwork(config_variable.dp_wifi_user, config_variable.dp_wifi_pass).then(function(res) {
-            console.log(res, 'WifiWizard2.connect');
-        }).catch(function(err) {
-            console.log(err, 'WifiWizard2.connect');
-        });
+        setTimeout(function() {
+            console.log('iOS Wifi connect');
+            console.log(config_variable.dp_wifi_user);
+            console.log(config_variable.dp_wifi_pass);
+
+            WifiWizard2.iOSConnectNetwork(config_variable.dp_wifi_user, config_variable.dp_wifi_pass).then(function(res) {
+                console.log(res, 'WifiWizard2.connect');
+            }).catch(function(err) {
+                console.log(err, 'WifiWizard2.connect');
+            });
+        }, 5000);
     }
 
     // overwrite window.open to work with inappbrowser
