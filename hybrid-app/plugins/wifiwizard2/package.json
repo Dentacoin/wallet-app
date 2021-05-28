@@ -1,0 +1,67 @@
+{
+  "_from": "cordova-plugin-wifiwizard2@3.1.1",
+  "_id": "cordova-plugin-wifiwizard2@3.1.1",
+  "_inBundle": false,
+  "_integrity": "sha512-Vd4aYUAxCTR6+zhhSOToWi67wT4Vycq4lYB4HnnxFWxrL3ewuKshq9eLxrrwIHwPvPI4u4g06+5jO9PnwEiKOw==",
+  "_location": "/cordova-plugin-wifiwizard2",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "cordova-plugin-wifiwizard2@3.1.1",
+    "name": "cordova-plugin-wifiwizard2",
+    "escapedName": "cordova-plugin-wifiwizard2",
+    "rawSpec": "3.1.1",
+    "saveSpec": null,
+    "fetchSpec": "3.1.1"
+  },
+  "_requiredBy": [
+    "#DEV:/",
+    "#USER"
+  ],
+  "_resolved": "https://registry.npmjs.org/cordova-plugin-wifiwizard2/-/cordova-plugin-wifiwizard2-3.1.1.tgz",
+  "_shasum": "4efd08c663eb4855cfa414c6d98043732dfd0ef8",
+  "_spec": "cordova-plugin-wifiwizard2@3.1.1",
+  "_where": "D:\\wamp\\www\\wallet-v2\\hybrid-app",
+  "author": {
+    "name": "Myles McNamara"
+  },
+  "bugs": {
+    "url": "https://github.com/tripflex/wifiwizard2/issues"
+  },
+  "bundleDependencies": false,
+  "cordova": {
+    "id": "wifiwizard2",
+    "platforms": [
+      "android",
+      "ios"
+    ]
+  },
+  "deprecated": false,
+  "description": "Cordova WiFi Manager for Android and iOS",
+  "devDependencies": {
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "cordova": "^5.0.0"
+  },
+  "engines": {
+    "cordovaDependencies": {
+      "3.0.0": {
+        "cordova-android": ">=5.0.0"
+      }
+    }
+  },
+  "homepage": "https://github.com/tripflex/wifiwizard2#readme",
+  "keywords": [
+    "ecosystem:cordova",
+    "cordova-android",
+    "cordova-ios"
+  ],
+  "license": "Apache 2.0",
+  "name": "cordova-plugin-wifiwizard2",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tripflex/wifiwizard2.git"
+  },
+  "version": "3.1.1"
+}

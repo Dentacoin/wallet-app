@@ -94498,7 +94498,9 @@ module.exports = {assurance_config_temp};
 },{}],656:[function(require,module,exports){
 var config_variable = {
     bidali_api_key: 'pk_n6mvpompwzm83egzrz2vnh',
-    etherscan_api_key: 'XN7GZYF83IDW6MRBK8NWJPQ9U86XQWQ4CC'
+    etherscan_api_key: 'XN7GZYF83IDW6MRBK8NWJPQ9U86XQWQ4CC',
+    dp_wifi_user: 'DP_Guests',
+    dp_wifi_pass: 'TheDPClinic'
 };
 
 module.exports = {config_variable};
@@ -94650,8 +94652,23 @@ window.addEventListener('load', function () {
 // event called only on hybrid app
 document.addEventListener('deviceready', function () {
     console.log('================= deviceready ===================');
-    console.log(cordova.InAppBrowser, 'cordova.InAppBrowser');
     isDeviceReady = true;
+
+    if (basic.getMobileOperatingSystem() == 'Android') {
+        console.log('Android Wifi connect');
+        WifiWizard2.connect(config_variable.dp_wifi_user, false, config_variable.dp_wifi_pass, 'WPA').then(function(res) {
+            console.log(res, 'WifiWizard2.connect');
+        }).catch(function(err) {
+            console.log(err, 'WifiWizard2.connect');
+        });
+    } else if (basic.getMobileOperatingSystem() == 'iOS') {
+        console.log('iOS Wifi connect');
+        WifiWizard2.iOSConnectNetwork(config_variable.dp_wifi_user, config_variable.dp_wifi_pass).then(function(res) {
+            console.log(res, 'WifiWizard2.connect');
+        }).catch(function(err) {
+            console.log(err, 'WifiWizard2.connect');
+        });
+    }
 
     // overwrite window.open to work with inappbrowser
     window.open = cordova.InAppBrowser.open;
