@@ -22,7 +22,7 @@
   "_resolved": "https://registry.npmjs.org/cordova-plugin-printer/-/cordova-plugin-printer-0.8.0.tgz",
   "_shasum": "9ae2e9e85dc1adfcce9d37a42d273e20b0914d0e",
   "_spec": "cordova-plugin-printer",
-  "_where": "D:\\wamp\\www\\wallet-v2\\hybrid-app",
+  "_where": "/Users/dentacoin/Documents/projects/wallet-app/hybrid-app",
   "author": {
     "name": "Sebastián Katzer"
   },
