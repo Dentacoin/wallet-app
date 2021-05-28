@@ -25,6 +25,8 @@
 /hybrid-app/plugins/cordova-plugin-androidx
 /hybrid-app/plugins/cordova-plugin-androidx-adapter
 /hybrid-app/plugins/cordova-support-android-plugin
+/hybrid-app/plugins/cordova-plugin-printer
+/hybrid-app/plugins/wifiwizard2
 
 # profiling files
 chrome-profiler-events.json
