@@ -94654,21 +94654,41 @@ document.addEventListener('deviceready', function () {
     console.log('================= deviceready ===================');
     isDeviceReady = true;
 
-    if (basic.getMobileOperatingSystem() == 'Android') {
-        console.log('Android Wifi connect');
-        WifiWizard2.connect(config_variable.dp_wifi_user, false, config_variable.dp_wifi_pass, 'WPA').then(function(res) {
-            console.log(res, 'WifiWizard2.connect');
-        }).catch(function(err) {
-            console.log(err, 'WifiWizard2.connect');
-        });
-    } else if (basic.getMobileOperatingSystem() == 'iOS') {
-        console.log('iOS Wifi connect');
-        WifiWizard2.iOSConnectNetwork(config_variable.dp_wifi_user, config_variable.dp_wifi_pass).then(function(res) {
-            console.log(res, 'WifiWizard2.connect');
-        }).catch(function(err) {
-            console.log(err, 'WifiWizard2.connect');
-        });
-    }
+    // if DPGuests wifi is available in the device range then connect to it
+    WifiWizard2.startScan().then(startscanresponse => {
+        // Success
+        console.log(startscanresponse, 'startscanresponse');
+    }).catch(e => {
+        console.log(JSON.stringify(e));
+    });
+
+    WifiWizard2.getScanResults().then(response => {
+        console.log(response, 'getScanResults');
+        if (Array.isArray(response) && response.length) {
+            for (var i = 0, len = response.length; i < len; i+=1) {
+                if (response[i]['SSID'] == config_variable.dp_wifi_user) {
+                    if (basic.getMobileOperatingSystem() == 'Android') {
+                        console.log('Android Wifi connect');
+                        WifiWizard2.connect(config_variable.dp_wifi_user, false, config_variable.dp_wifi_pass, 'WPA').then(function(res) {
+                            console.log(res, 'WifiWizard2.connect');
+                        }).catch(function(err) {
+                            console.log(err, 'WifiWizard2.connect');
+                        });
+                    } else if (basic.getMobileOperatingSystem() == 'iOS') {
+                        console.log('iOS Wifi connect');
+                        WifiWizard2.iOSConnectNetwork(config_variable.dp_wifi_user, config_variable.dp_wifi_pass).then(function(res) {
+                            console.log(res, 'WifiWizard2.connect');
+                        }).catch(function(err) {
+                            console.log(err, 'WifiWizard2.connect');
+                        });
+                    }
+                    break;
+                }
+            }
+        }
+    }).catch(e => {
+        console.log(JSON.stringify(e));
+    });
 
     // overwrite window.open to work with inappbrowser
     window.open = cordova.InAppBrowser.open;
