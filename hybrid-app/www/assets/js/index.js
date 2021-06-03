@@ -1966,7 +1966,6 @@ var projectData = {
         generatePrivateKeyFile: function(privateKey) {
             var QRCode = require('qrcode');
             QRCode.toDataURL(privateKey, function (err, url) {
-                console.log(url, 'url');
                 proceedWithPrinting('<img src="' + url + '" style=" height: auto; width: 160px;">');
             });
 
@@ -1999,18 +1998,20 @@ var projectData = {
                         var newImg = new Image;
                         newImg.onload = function() {
                             console.log('loaded image');
-                            cordova.plugins.printer.print(printingHtml, {
-                                paper: {
-                                    name: 'IsoA4'
-                                },
-                                pageCount: 1,
-                                margin: {
-                                    top: 0,
-                                    left: 0,
-                                    right: 0,
-                                    bottom: 0
-                                }
-                            });
+                            setTimeout(function() {
+                                cordova.plugins.printer.print(printingHtml, {
+                                    paper: {
+                                        name: 'IsoA4'
+                                    },
+                                    pageCount: 1,
+                                    margin: {
+                                        top: 0,
+                                        left: 0,
+                                        right: 0,
+                                        bottom: 0
+                                    }
+                                });
+                            }, 1000);
                         };
                         newImg.src = imgSrc;
                     } else {
