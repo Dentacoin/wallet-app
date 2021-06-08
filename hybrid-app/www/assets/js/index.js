@@ -8,15 +8,11 @@ var iframeHeightListenerInit = true;
 var isDeviceReady = false;
 var lastHybridScreen;
 var inAppBrowserSettings = 'location=yes,zoom=no,toolbarposition=top,closebuttoncaption=Back,presentationstyle=fullscreen,fullscreen=yes';
-if (basic.getMobileOperatingSystem() == 'iOS') {
+if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
     inAppBrowserSettings = 'location=no,hardwareback=no,zoom=no,toolbarposition=top,closebuttoncaption=Back,presentationstyle=fullscreen,fullscreen=yes';
 }
 
 console.log("( ͡° ͜ʖ ͡°) I see you.");
-
-setInterval(function() {
-    console.log(basic.getMobileOperatingSystem(), 'OS');
-});
 
 $(document).ready(function () {
     loadMobileBottomFixedNav();
@@ -1552,7 +1548,7 @@ var projectData = {
 
             function bidaliWidgetInit() {
                 $('.buy-gift-cards').click(function () {
-                    if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
+                    if (is_hybrid && (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel')) {
                         window.open('https://wallet.dentacoin.com/spend-gift-cards?show-vouchers=true', '_system');
                         return false;
                     } else {
@@ -1985,7 +1981,7 @@ var projectData = {
                         printingHtml = '<html><head><style>body, html {margin: 0; padding: 0;text-align: center;color: black;font-family: “Helvetica Neue”,Helvetica,Arial,sans-serif;} .border-parent{text-align: left;position:relative; display: inline-block;} img {'+borderStyle+'} .absolute-content{position: absolute;z-index: 100;width: 80%;height: 80%;top: 0;left: 0;padding: 10%;}</style></head><body><div class="border-parent"><img '+borderImage+' id="border-image"/><div class="absolute-content"><div style="text-align:center;"><i>'+$('.translates-holder').attr('confidential')+'</i><h1 style="margin-top: 10px;font-weight:bold;color: black; margin-bottom: 10px;">DENTACOIN</h1><div style="font-size: 16px;color: #2a3575;padding-bottom: 15px;"><b>'+$('.translates-holder').attr('unlock-funds')+'</b></div><div style="background-color: white;padding: 20px 10px;text-align: left;"><div style="color: #888888;padding-bottom: 5px;font-weight: bold;">'+$('.translates-holder').attr('pk-label')+':</div><div style="font-size: 12px;">'+privateKey+'</div></div><div style="font-size: 18px;padding: 30px 0 10px;"><b>'+$('.translates-holder').attr('pk-as-qr')+'</b></div><div>'+qrCodeBase64Data+'</div><div style=" text-align: left; "><div style="font-size: 17px;color: #2a3575;padding-bottom: 15px;padding-top: 20px;font-weight: bold;">'+$('.translates-holder').attr('important')+'</div><div style=" padding-bottom: 15px;"><b>1.</b> '+$('.translates-holder').attr('provides')+'<div></div>'+projectData.utils.checksumAddress(window.localStorage.getItem('current_account'))+'</div><div style=" padding-bottom: 15px;"><b>2.</b> '+$('.translates-holder').attr('secure-place')+'</div><div style=" padding-bottom: 15px;"><b>3. '+$('.translates-holder').attr('never-share')+'</div><div><b>4.</b> '+$('.translates-holder').attr('to-unlock')+'</div></div></div></div></div></body></html>';
 
                         proceedWithPriting('assets/images/private-key-background.png');
-                    } else if (basic.getMobileOperatingSystem() == 'iOS') {
+                    } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                         borderImage = 'src="https://dentacoin.com/assets/uploads/private-key-background.png"';
                         borderStyle = 'width: 100%';
 
@@ -2291,7 +2287,7 @@ function styleKeystoreUploadBtnForTx(callback) {
                         console.log(err);
                         alert($('.translates-holder').attr('upload-failed'));
                     });
-                } else if (basic.getMobileOperatingSystem() == 'iOS') {
+                } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                     iOSFileUpload(function (keystore_string) {
                         proceedWithTransactionFiringAfterHavingTheKeystoreFile(keystore_string);
                     });
@@ -2679,7 +2675,7 @@ window.initdApp = function () {
 function loadMobileBottomFixedNav() {
     if (basic.isMobile()) {
         //if iOS adding space to bottom fixed mobile nav, because iPhones X, XS and so on have their home button inside the screen
-        if (basic.getMobileOperatingSystem() == 'iOS') {
+        if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
             $('.camp-for-fixed-mobile-nav').addClass('padding-bottom-20');
         }
         $('.camp-for-fixed-mobile-nav').fadeIn(1000);
@@ -2866,7 +2862,7 @@ function initAccountChecker() {
                                 fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
 
                                 if (is_hybrid) {
-                                    if (basic.getMobileOperatingSystem() == 'iOS') {
+                                    if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                                         window.localStorage.setItem('keystore_file_ios_saved', true);
                                         if ($('.ios-camper .ios-reminder-for-downloading-keystore-file').length) {
                                             $('.ios-camper .ios-reminder-for-downloading-keystore-file').remove();
@@ -2974,7 +2970,7 @@ function initAccountChecker() {
 
                                         }, cordova.file.externalDataDirectory, false);
                                     }, cordova.file.externalRootDirectory, true);
-                                } else if (basic.getMobileOperatingSystem() == 'iOS') {
+                                } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                                     //saving keystore file to App folder
                                     /*hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
                                         loginIntoWallet();
@@ -2997,7 +2993,7 @@ function initAccountChecker() {
                                     });
                                 }
                             } else {
-                                if (basic.getMobileOperatingSystem() == 'iOS') {
+                                if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                                     //mobile browser from iPhone
                                     basic.showAlert($('.translates-holder').attr('opened-new-tab'), 'mobile-safari-keystore-creation overlap-loading-popup', true);
 
@@ -3037,7 +3033,7 @@ function initAccountChecker() {
                                 $('.custom-auth-popup .popup-left .popup-element.second').removeClass('hide');
                                 $('.custom-auth-popup .popup-header .nav-steps').removeClass('first-step').addClass('second-step');
 
-                                if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
+                                if (is_hybrid && (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel')) {
                                     var cachedPrintingImage = new Image();
                                     cachedPrintingImage.addEventListener('load', function () {
                                         console.log('Cached image loaded');
@@ -3148,7 +3144,7 @@ function styleKeystoreUploadBtn() {
                                                 fileWriter.onwriteend = function (e) {
                                                     fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
 
-                                                    if (basic.getMobileOperatingSystem() == 'iOS') {
+                                                    if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                                                         window.localStorage.setItem('keystore_file_ios_saved', true);
                                                         if ($('.ios-camper .ios-reminder-for-downloading-keystore-file').length) {
                                                             $('.ios-camper .ios-reminder-for-downloading-keystore-file').remove();
@@ -3238,7 +3234,7 @@ function styleKeystoreUploadBtn() {
                     alert($('.translates-holder').attr('upload-failed'));
                 });
             });
-        } else if (basic.getMobileOperatingSystem() == 'iOS') {
+        } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
             //iOS
             $('.custom-upload-button').click(function () {
                 iOSFileUpload(function (keystore_string) {
@@ -3427,7 +3423,7 @@ $(document).on('click', '.open-settings', function () {
     basic.closeDialog();
     var settings_html = '';
 
-    if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
+    if (is_hybrid && (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel')) {
         var cachedPrintingImage = new Image();
         cachedPrintingImage.addEventListener('load', function () {
             console.log('Cached image loaded');
@@ -3498,7 +3494,7 @@ $(document).on('click', '.open-settings', function () {
                             $('<div class="error-handle renew-on-lang-switch" data-slug="upload-failed">'+$('.translates-holder').attr('upload-failed')+'</div>').insertAfter(this_camping_row);
                         });
                     });
-                } else if (basic.getMobileOperatingSystem() == 'iOS') {
+                } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                     //iOS
                     $('.remember-keystore-upload').click(function () {
                         this_row.find('.error-handle').remove();
@@ -3637,7 +3633,7 @@ $(document).on('click', '.open-settings', function () {
 
             var downloadBtnLabel = $('.translates-holder').attr('download');
             var attrSlug = 'download';
-            if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
+            if (is_hybrid && (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel')) {
                 downloadBtnLabel = $('.translates-holder').attr('export-btn');
                 attrSlug = 'export-btn';
             }
@@ -3678,7 +3674,7 @@ $(document).on('click', '.open-settings', function () {
                                             hideLoader();
                                         }, cordova.file.externalRootDirectory, true);
                                     }, 500);
-                                } else if (basic.getMobileOperatingSystem() == 'iOS') {
+                                } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                                     hideLoader();
                                     window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
                                     $('#download-keystore-password').val('');
@@ -3869,7 +3865,7 @@ $(document).on('click', '.open-settings', function () {
                             $('<div class="error-handle renew-on-lang-switch" data-slug="upload-failed">'+$('.translates-holder').attr('upload-failed')+'</div>').insertAfter(this_camping_row);
                         });
                     });
-                } else if (basic.getMobileOperatingSystem() == 'iOS') {
+                } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                     //iOS
                     $('.show-private-key-keystore-upload').click(function () {
                         this_row.find('.error-handle').remove();
@@ -3965,7 +3961,7 @@ $(document).on('click', '.open-settings', function () {
                                         basic.showAlert($('.translates-holder').attr('file') +keystore_file_name + $('.translates-holder').attr('has-been-downloaded'), '', true);
                                         hideLoader();
                                     }, cordova.file.externalRootDirectory, true);
-                                } else if (basic.getMobileOperatingSystem() == 'iOS') {
+                                } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                                     hideLoader();
                                     //using export plugin, because in iOS there is no such thing as direct file download
                                     window.plugins.socialsharing.share(keystore_file);
@@ -4095,7 +4091,7 @@ function checkIfLoadingFromMobileBrowser() {
         basic.cookies.set('show-download-mobile-app', 1);
         if (basic.getMobileOperatingSystem() == 'Android') {
             basic.showDialog('<div><h2 class="fs-24 lato-bold text-center padding-top-15 padding-bottom-25">'+$('.translates-holder').attr('wallet-app-here')+'<br>'+$('.translates-holder').attr('free-download')+'</h2><figure itemscope="" itemtype="http://schema.org/Organization" class="text-center phone-container"><img src="assets/images/download-android-app.png" class="max-width-300 width-100" itemprop="logo" alt="Phone"/><a class="inline-block max-width-150 absolute-content" href="https://play.google.com/store/apps/details?id=wallet.dentacoin.com" target="_blank" itemprop="url"><img src="assets/images/google-play-badge.svg" class="width-100" itemprop="logo" alt="Google play icon"/></a></figure></div>', 'download-mobile-app', null, null);
-        } else if (basic.getMobileOperatingSystem() == 'iOS') {
+        } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
             basic.showDialog('<div><h2 class="fs-24 lato-bold text-center padding-top-15 padding-bottom-25">'+$('.translates-holder').attr('wallet-app-here')+'<br>'+$('.translates-holder').attr('free-download')+'</h2><figure itemscope="" itemtype="http://schema.org/Organization" class="text-center phone-container"><img src="assets/images/download-ios-app.png" class="max-width-300 width-100" itemprop="logo" alt="Phone"/><a class="inline-block max-width-150 absolute-content" href="https://apps.apple.com/us/app/dentacoin-wallet/id1478732657" target="_blank" itemprop="url"><img src="assets/images/app-store.svg" class="width-100" itemprop="logo" alt="App store icon"/></a></figure></div>', 'download-mobile-app', null, null);
         }
     }
