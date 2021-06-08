@@ -96130,8 +96130,6 @@ var projectData = {
 
                 window.addEventListener('message', function(event) {
                     var height = event.data.data.height;
-
-                    console.log(height, 'height');
                     if(event.data.event_id === 'iframe_size_event' && (height != undefined && height > 0)){
                         $('.main-wrapper iframe').height(height + 50);
                     }
@@ -97087,7 +97085,6 @@ function displayMessageOnTransactionSend(token_label, tx_hash) {
 
 //method for 'refreshing' the mobile app
 window.refreshApp = function () {
-    console.log(22);
     $('.account-checker-container').addClass('hide').removeClass('visible');
     basic.closeDialog();
     hideLoader();
@@ -97131,7 +97128,6 @@ window.refreshApp = function () {
 };
 
 window.getHomepageData = function () {
-    console.log('getHomepageData');
     executeGlobalLogic();
     initAccountChecker();
 
@@ -97696,7 +97692,6 @@ function initAccountChecker() {
 }
 
 function removeAccountChecker() {
-    console.log('removeAccountChecker');
     $('.account-checker-container').addClass('hide').removeClass('visible');
 }
 
@@ -97823,7 +97818,6 @@ function styleKeystoreUploadBtn() {
                 var this_btn = $(this);
                 fileChooser.open(function (file_uri) {
                     androidFileUpload(file_uri, function (file) {
-                        console.log(file, 'file');
                         var reader = new FileReader();
 
                         if (this_btn != undefined) {
@@ -97831,7 +97825,6 @@ function styleKeystoreUploadBtn() {
                         }
 
                         reader.onloadend = function () {
-                            console.log(this, 'this');
                             var keystore_string = this.result;
                             setTimeout(function () {
                                 proceedWithImportingAfterKeystoreUploading(keystore_string);
@@ -98601,9 +98594,7 @@ $(document).on('click', '.open-settings', function () {
 
 //method to download files in Download folder in Android device
 function hybridAppFileDownload(file_name, file_content, callback, location, download_folder) {
-    console.log(location, 'location');
     window.resolveLocalFileSystemURL(location, function (fileSystem) {
-        console.log(fileSystem, 'fileSystem');
         if (download_folder) {
             fileSystem.getDirectory('Download', {create: true, exclusive: false}, function (dirEntry) {
                 proceedWithDownload(dirEntry, file_name);
@@ -98618,7 +98609,6 @@ function hybridAppFileDownload(file_name, file_content, callback, location, down
 
         function proceedWithDownload(dirEntry, file_name) {
             dirEntry.getFile(file_name, {create: true, exclusive: true}, function (fileEntry) {
-                console.log(fileEntry, 'fileEntry');
                 fileEntry.createWriter(function (fileWriter) {
                     fileWriter.onwriteend = function (e) {
                         console.log('file saved');
@@ -98634,7 +98624,6 @@ function hybridAppFileDownload(file_name, file_content, callback, location, down
 
                     // Create a new Blob and write they keystore content inside of it
                     var blob = new Blob([file_content], {type: 'text/plain'});
-                    console.log(blob, 'blob');
                     fileWriter.write(blob);
                 }, function (err) {
                     console.log(err, 'err');
