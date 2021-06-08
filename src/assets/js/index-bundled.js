@@ -94625,6 +94625,10 @@ if (basic.getMobileOperatingSystem() == 'iOS') {
 
 console.log("( ͡° ͜ʖ ͡°) I see you.");
 
+setInterval(function() {
+    console.log(basic.getMobileOperatingSystem(), 'OS');
+});
+
 $(document).ready(function () {
     loadMobileBottomFixedNav();
 });
