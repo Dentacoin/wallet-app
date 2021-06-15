@@ -94498,7 +94498,9 @@ module.exports = {assurance_config_temp};
 },{}],656:[function(require,module,exports){
 var config_variable = {
     bidali_api_key: 'pk_n6mvpompwzm83egzrz2vnh',
-    etherscan_api_key: 'XN7GZYF83IDW6MRBK8NWJPQ9U86XQWQ4CC'
+    etherscan_api_key: 'XN7GZYF83IDW6MRBK8NWJPQ9U86XQWQ4CC',
+    dp_wifi_user: 'DP_Guests',
+    dp_wifi_pass: 'TheDPClinic'
 };
 
 module.exports = {config_variable};
@@ -94617,7 +94619,7 @@ var iframeHeightListenerInit = true;
 var isDeviceReady = false;
 var lastHybridScreen;
 var inAppBrowserSettings = 'location=yes,zoom=no,toolbarposition=top,closebuttoncaption=Back,presentationstyle=fullscreen,fullscreen=yes';
-if (basic.getMobileOperatingSystem() == 'iOS') {
+if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
     inAppBrowserSettings = 'location=no,hardwareback=no,zoom=no,toolbarposition=top,closebuttoncaption=Back,presentationstyle=fullscreen,fullscreen=yes';
 }
 
@@ -94650,8 +94652,46 @@ window.addEventListener('load', function () {
 // event called only on hybrid app
 document.addEventListener('deviceready', function () {
     console.log('================= deviceready ===================');
-    console.log(cordova.InAppBrowser, 'cordova.InAppBrowser');
     isDeviceReady = true;
+
+    // if DPGuests wifi is available in the device range then connect to it
+    /*WifiWizard2.startScan().then(startscanresponse => {
+        // Success
+        console.log(startscanresponse, 'startscanresponse');
+    }).catch(e => {
+        console.log(JSON.stringify(e));
+    });*/
+
+    // Wifi scanning works only for Android
+    /*if (basic.getMobileOperatingSystem() == 'Android') {
+        console.log('Android Wifi connect');
+
+        WifiWizard2.getScanResults().then(response => {
+            console.log(response, 'getScanResults');
+            if (Array.isArray(response) && response.length) {
+                for (var i = 0, len = response.length; i < len; i+=1) {
+                    if (response[i]['SSID'] == config_variable.dp_wifi_user) {
+                        console.log('Android Wifi connect');
+                        WifiWizard2.connect(config_variable.dp_wifi_user, false, config_variable.dp_wifi_pass, 'WPA').then(function(res) {
+                            console.log(res, 'WifiWizard2.connect');
+                        }).catch(function(err) {
+                            console.log(err, 'WifiWizard2.connect');
+                        });
+                        break;
+                    }
+                }
+            }
+        }).catch(e => {
+            console.log(JSON.stringify(e));
+        });
+    }*/ /*else if (basic.getMobileOperatingSystem() == 'iOS') {
+        console.log('iOS Wifi connect');
+        WifiWizard2.iOSConnectNetwork(config_variable.dp_wifi_user, config_variable.dp_wifi_pass).then(function(res) {
+            console.log(res, 'WifiWizard2.connect');
+        }).catch(function(err) {
+            console.log(err, 'WifiWizard2.connect');
+        });
+    }*/
 
     // overwrite window.open to work with inappbrowser
     window.open = cordova.InAppBrowser.open;
@@ -96090,8 +96130,6 @@ var projectData = {
 
                 window.addEventListener('message', function(event) {
                     var height = event.data.data.height;
-
-                    console.log(height, 'height');
                     if(event.data.event_id === 'iframe_size_event' && (height != undefined && height > 0)){
                         $('.main-wrapper iframe').height(height + 50);
                     }
@@ -96119,7 +96157,7 @@ var projectData = {
 
             function bidaliWidgetInit() {
                 $('.buy-gift-cards').click(function () {
-                    if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
+                    if (is_hybrid && (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel')) {
                         window.open('https://wallet.dentacoin.com/spend-gift-cards?show-vouchers=true', '_system');
                         return false;
                     } else {
@@ -96535,40 +96573,12 @@ var projectData = {
             }
         },
         generatePrivateKeyFile: function(privateKey) {
-            console.log(privateKey, 'privateKey');
-
-            var qrCodeBase64Data;
-            if (is_hybrid && basic.getMobileOperatingSystem() == 'Android') {
-                var QRCode = require('qrcode');
-
-                QRCode.toDataURL(privateKey, function (err, url) {
-                    console.log(url, 'url');
-
-                    proceedWithPrinting('<img src="' + url + '" style=" height: auto; width: 160px;">');
-                })
-            } else {
-                $('body').append('<div id="dummy-qr-code-image" class="hide"></div>');
-                var qrcode = new QRCode(document.getElementById('dummy-qr-code-image'), {
-                    width: 160,
-                    height: 160
-                });
-
-                qrcode.makeCode(privateKey);
-                var dummyQrCodeChecker = setInterval(function() {
-                    if ($('#dummy-qr-code-image img').length) {
-                        clearInterval(dummyQrCodeChecker);
-
-                        qrCodeBase64Data = '<img src="' + $('#dummy-qr-code-image img').attr('src') + '" style=" height: auto; width: 160px;">';
-                        $('#dummy-qr-code-image').remove();
-
-                        proceedWithPrinting(qrCodeBase64Data);
-                    }
-                }, 300);
-            }
+            var QRCode = require('qrcode');
+            QRCode.toDataURL(privateKey, function (err, url) {
+                proceedWithPrinting('<img src="' + url + '" style=" height: auto; width: 160px;">');
+            });
 
             function proceedWithPrinting(qrCodeBase64Data) {
-                console.log(qrCodeBase64Data, 'qrCodeBase64Data');
-
                 var borderImage = '';
                 var borderStyle = 'height: 95vh';
                 var printingHtml;
@@ -96578,46 +96588,67 @@ var projectData = {
                         borderStyle = 'height: 97.5vh';
 
                         printingHtml = '<html><head><style>body, html {margin: 0; padding: 0;text-align: center;color: black;font-family: “Helvetica Neue”,Helvetica,Arial,sans-serif;} .border-parent{text-align: left;position:relative; display: inline-block;} img {'+borderStyle+'} .absolute-content{position: absolute;z-index: 100;width: 80%;height: 80%;top: 0;left: 0;padding: 10%;}</style></head><body><div class="border-parent"><img '+borderImage+' id="border-image"/><div class="absolute-content"><div style="text-align:center;"><i>'+$('.translates-holder').attr('confidential')+'</i><h1 style="margin-top: 10px;font-weight:bold;color: black; margin-bottom: 10px;">DENTACOIN</h1><div style="font-size: 16px;color: #2a3575;padding-bottom: 15px;"><b>'+$('.translates-holder').attr('unlock-funds')+'</b></div><div style="background-color: white;padding: 20px 10px;text-align: left;"><div style="color: #888888;padding-bottom: 5px;font-weight: bold;">'+$('.translates-holder').attr('pk-label')+':</div><div style="font-size: 12px;">'+privateKey+'</div></div><div style="font-size: 18px;padding: 30px 0 10px;"><b>'+$('.translates-holder').attr('pk-as-qr')+'</b></div><div>'+qrCodeBase64Data+'</div><div style=" text-align: left; "><div style="font-size: 17px;color: #2a3575;padding-bottom: 15px;padding-top: 20px;font-weight: bold;">'+$('.translates-holder').attr('important')+'</div><div style=" padding-bottom: 15px;"><b>1.</b> '+$('.translates-holder').attr('provides')+'<div></div>'+projectData.utils.checksumAddress(window.localStorage.getItem('current_account'))+'</div><div style=" padding-bottom: 15px;"><b>2.</b> '+$('.translates-holder').attr('secure-place')+'</div><div style=" padding-bottom: 15px;"><b>3. '+$('.translates-holder').attr('never-share')+'</div><div><b>4.</b> '+$('.translates-holder').attr('to-unlock')+'</div></div></div></div></div></body></html>';
-                    } else if (basic.getMobileOperatingSystem() == 'iOS') {
+
+                        proceedWithPriting('assets/images/private-key-background.png');
+                    } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                         borderImage = 'src="https://dentacoin.com/assets/uploads/private-key-background.png"';
                         borderStyle = 'width: 100%';
 
                         printingHtml = '<html><head><style>body, html {margin: 0; padding: 0;text-align: center;color: black;font-family: “Helvetica Neue”,Helvetica,Arial,sans-serif;} .border-parent{text-align: left;position:relative; display: inline-block;} img {'+borderStyle+'} .absolute-content{position: absolute;z-index: 100;width: 80%;height: 80%;top: 0;left: 0;padding: 10%;}</style></head><body><div class="border-parent"><img '+borderImage+' id="border-image"/><div class="absolute-content"><div style="text-align:center;"><i>'+$('.translates-holder').attr('confidential')+'</i><h1 style="margin-top: 15px;font-weight:bold;color: black; margin-bottom: 10px;">DENTACOIN</h1><div style="font-size: 18px;color: #2a3575;padding-bottom: 15px;"><b>'+$('.translates-holder').attr('unlock-funds')+'</b></div><div style="background-color: white;padding: 20px 10px;text-align: left;"><div style="color: #888888;padding-bottom: 5px;font-weight: bold;">'+$('.translates-holder').attr('pk-label')+':</div><div style="font-size: 14px;">'+privateKey+'</div></div><div style="font-size: 22px;padding: 30px 0 10px;"><b>'+$('.translates-holder').attr('pk-as-qr')+'</b></div><div>'+qrCodeBase64Data+'</div><div style=" text-align: left; "><div style="font-size: 20px;color: #2a3575;padding-bottom: 15px;padding-top: 20px;font-weight: bold;">'+$('.translates-holder').attr('important')+'</div><div style=" padding-bottom: 15px;"><b>1.</b> '+$('.translates-holder').attr('provides')+'<div></div>'+projectData.utils.checksumAddress(window.localStorage.getItem('current_account'))+'</div><div style=" padding-bottom: 15px;"><b>2.</b> '+$('.translates-holder').attr('secure-place')+'</div><div style=" padding-bottom: 15px;"><b>3. '+$('.translates-holder').attr('never-share')+'</div><div><b>4.</b> '+$('.translates-holder').attr('to-unlock')+'</div></div></div></div></div></body></html>';
+
+                        proceedWithPriting('/assets/images/private-key-background.png');
                     }
+                } else {
+                    borderImage = 'src="assets/images/private-key-background.png"';
+                    borderStyle = 'height: 97.5vh';
+                    printingHtml = '<html><head><style>body, html {margin: 0; padding: 0;text-align: center;color: black;font-family: “Helvetica Neue”,Helvetica,Arial,sans-serif;} .border-parent{text-align: left;position:relative; display: inline-block;} img {'+borderStyle+'} .absolute-content{position: absolute;z-index: 100;width: 80%;height: 80%;top: 0;left: 0;padding: 10%;}</style></head><body><div class="border-parent"><img '+borderImage+' id="border-image"/><div class="absolute-content"><div style="text-align:center;"><i>'+$('.translates-holder').attr('confidential')+'</i><h1 style="margin-top: 15px;font-weight:bold;color: black; margin-bottom: 10px;">DENTACOIN</h1><div style="font-size: 18px;color: #2a3575;padding-bottom: 15px;"><b>'+$('.translates-holder').attr('unlock-funds')+'</b></div><div style="background-color: white;padding: 20px 10px;text-align: left;"><div style="color: #888888;padding-bottom: 5px;font-weight: bold;">'+$('.translates-holder').attr('pk-label')+':</div><div style="font-size: 14px;">'+privateKey+'</div></div><div style="font-size: 22px;padding: 30px 0 10px;"><b>'+$('.translates-holder').attr('pk-as-qr')+'</b></div><div>'+qrCodeBase64Data+'</div><div style=" text-align: left; "><div style="font-size: 20px;color: #2a3575;padding-bottom: 15px;padding-top: 20px;font-weight: bold;">'+$('.translates-holder').attr('important')+'</div><div style=" padding-bottom: 15px;"><b>1.</b> '+$('.translates-holder').attr('provides')+'<div></div>'+projectData.utils.checksumAddress(window.localStorage.getItem('current_account'))+'</div><div style=" padding-bottom: 15px;"><b>2.</b> '+$('.translates-holder').attr('secure-place')+'</div><div style=" padding-bottom: 15px;"><b>3. '+$('.translates-holder').attr('never-share')+'</div><div><b>4.</b> '+$('.translates-holder').attr('to-unlock')+'</div></div></div></div></div></body></html>';
+
+                    proceedWithPriting('/assets/images/private-key-background.png');
                 }
 
-                if (is_hybrid) {
-                    cordova.plugins.printer.print(printingHtml, {
-                        paper: {
-                            name: 'IsoA4'
-                        },
-                        pageCount: 1,
-                        margin: {
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0
-                        }
-                    });
-                } else {
-                    var mywindow = window.open('', 'PRINT');
-                    mywindow.document.write(printingHtml);
+                function proceedWithPriting(imgSrc) {
+                    if (is_hybrid) {
+                        var newImg = new Image;
+                        newImg.onload = function() {
+                            console.log('loaded image');
+                            setTimeout(function() {
+                                cordova.plugins.printer.print(printingHtml, {
+                                    paper: {
+                                        name: 'IsoA4'
+                                    },
+                                    pageCount: 1,
+                                    margin: {
+                                        top: 0,
+                                        left: 0,
+                                        right: 0,
+                                        bottom: 0
+                                    }
+                                });
+                            }, 1000);
+                        };
+                        newImg.src = imgSrc;
+                    } else {
+                        var mywindow = window.open('', 'PRINT');
+                        mywindow.document.write(printingHtml);
 
-                    var imgTag = mywindow.document.getElementById('border-image');
-                    var newImg = new Image;
-                    newImg.onload = function() {
-                        imgTag.src = this.src;
+                        var imgTag = mywindow.document.getElementById('border-image');
+                        var newImg = new Image;
+                        newImg.onload = function() {
+                            console.log('loaded image');
+                            imgTag.src = this.src;
 
-                        setTimeout(function() {
-                            mywindow.document.close(); // necessary for IE >= 10
-                            mywindow.focus(); // necessary for IE >= 10*/
+                            setTimeout(function() {
+                                mywindow.document.close(); // necessary for IE >= 10
+                                mywindow.focus(); // necessary for IE >= 10*/
 
-                            mywindow.print();
-                            mywindow.close();
-                            return true;
-                        }, 1000);
-                    };
-                    newImg.src = '/assets/images/private-key-background.png';
+                                mywindow.print();
+                                mywindow.close();
+
+                                return true;
+                            }, 1000);
+                        };
+                        newImg.src = imgSrc;
+                    }
                 }
             }
         }
@@ -96869,7 +96900,7 @@ function styleKeystoreUploadBtnForTx(callback) {
                         console.log(err);
                         alert($('.translates-holder').attr('upload-failed'));
                     });
-                } else if (basic.getMobileOperatingSystem() == 'iOS') {
+                } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                     iOSFileUpload(function (keystore_string) {
                         proceedWithTransactionFiringAfterHavingTheKeystoreFile(keystore_string);
                     });
@@ -97058,7 +97089,6 @@ function displayMessageOnTransactionSend(token_label, tx_hash) {
 
 //method for 'refreshing' the mobile app
 window.refreshApp = function () {
-    console.log(22);
     $('.account-checker-container').addClass('hide').removeClass('visible');
     basic.closeDialog();
     hideLoader();
@@ -97102,7 +97132,6 @@ window.refreshApp = function () {
 };
 
 window.getHomepageData = function () {
-    console.log('getHomepageData');
     executeGlobalLogic();
     initAccountChecker();
 
@@ -97257,7 +97286,7 @@ window.initdApp = function () {
 function loadMobileBottomFixedNav() {
     if (basic.isMobile()) {
         //if iOS adding space to bottom fixed mobile nav, because iPhones X, XS and so on have their home button inside the screen
-        if (basic.getMobileOperatingSystem() == 'iOS') {
+        if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
             $('.camp-for-fixed-mobile-nav').addClass('padding-bottom-20');
         }
         $('.camp-for-fixed-mobile-nav').fadeIn(1000);
@@ -97444,7 +97473,7 @@ function initAccountChecker() {
                                 fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
 
                                 if (is_hybrid) {
-                                    if (basic.getMobileOperatingSystem() == 'iOS') {
+                                    if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                                         window.localStorage.setItem('keystore_file_ios_saved', true);
                                         if ($('.ios-camper .ios-reminder-for-downloading-keystore-file').length) {
                                             $('.ios-camper .ios-reminder-for-downloading-keystore-file').remove();
@@ -97552,7 +97581,7 @@ function initAccountChecker() {
 
                                         }, cordova.file.externalDataDirectory, false);
                                     }, cordova.file.externalRootDirectory, true);
-                                } else if (basic.getMobileOperatingSystem() == 'iOS') {
+                                } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                                     //saving keystore file to App folder
                                     /*hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
                                         loginIntoWallet();
@@ -97575,7 +97604,7 @@ function initAccountChecker() {
                                     });
                                 }
                             } else {
-                                if (basic.getMobileOperatingSystem() == 'iOS') {
+                                if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                                     //mobile browser from iPhone
                                     basic.showAlert($('.translates-holder').attr('opened-new-tab'), 'mobile-safari-keystore-creation overlap-loading-popup', true);
 
@@ -97614,6 +97643,14 @@ function initAccountChecker() {
                                 $('.custom-auth-popup .popup-left .popup-element').addClass('hide');
                                 $('.custom-auth-popup .popup-left .popup-element.second').removeClass('hide');
                                 $('.custom-auth-popup .popup-header .nav-steps').removeClass('first-step').addClass('second-step');
+
+                                if (is_hybrid && (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel')) {
+                                    var cachedPrintingImage = new Image();
+                                    cachedPrintingImage.addEventListener('load', function () {
+                                        console.log('Cached image loaded');
+                                    });
+                                    cachedPrintingImage.src = 'https://dentacoin.com/assets/uploads/private-key-background.png';
+                                }
                             }
 
                             function loginIntoWallet() {
@@ -97659,7 +97696,6 @@ function initAccountChecker() {
 }
 
 function removeAccountChecker() {
-    console.log('removeAccountChecker');
     $('.account-checker-container').addClass('hide').removeClass('visible');
 }
 
@@ -97718,7 +97754,7 @@ function styleKeystoreUploadBtn() {
                                                 fileWriter.onwriteend = function (e) {
                                                     fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
 
-                                                    if (basic.getMobileOperatingSystem() == 'iOS') {
+                                                    if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                                                         window.localStorage.setItem('keystore_file_ios_saved', true);
                                                         if ($('.ios-camper .ios-reminder-for-downloading-keystore-file').length) {
                                                             $('.ios-camper .ios-reminder-for-downloading-keystore-file').remove();
@@ -97786,7 +97822,6 @@ function styleKeystoreUploadBtn() {
                 var this_btn = $(this);
                 fileChooser.open(function (file_uri) {
                     androidFileUpload(file_uri, function (file) {
-                        console.log(file, 'file');
                         var reader = new FileReader();
 
                         if (this_btn != undefined) {
@@ -97794,7 +97829,6 @@ function styleKeystoreUploadBtn() {
                         }
 
                         reader.onloadend = function () {
-                            console.log(this, 'this');
                             var keystore_string = this.result;
                             setTimeout(function () {
                                 proceedWithImportingAfterKeystoreUploading(keystore_string);
@@ -97808,7 +97842,7 @@ function styleKeystoreUploadBtn() {
                     alert($('.translates-holder').attr('upload-failed'));
                 });
             });
-        } else if (basic.getMobileOperatingSystem() == 'iOS') {
+        } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
             //iOS
             $('.custom-upload-button').click(function () {
                 iOSFileUpload(function (keystore_string) {
@@ -97997,6 +98031,14 @@ $(document).on('click', '.open-settings', function () {
     basic.closeDialog();
     var settings_html = '';
 
+    if (is_hybrid && (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel')) {
+        var cachedPrintingImage = new Image();
+        cachedPrintingImage.addEventListener('load', function () {
+            console.log('Cached image loaded');
+        });
+        cachedPrintingImage.src = 'https://dentacoin.com/assets/uploads/private-key-background.png';
+    }
+
     if (window.localStorage.getItem('keystore_file') != null/* || (is_hybrid && basic.getMobileOperatingSystem() == 'iOS' && window.localStorage.getItem('keystore_file_ios_saved') == null)*/) {
         var download_btn_label = $('.translates-holder').attr('download');
         var slug_attr = 'download';
@@ -98060,7 +98102,7 @@ $(document).on('click', '.open-settings', function () {
                             $('<div class="error-handle renew-on-lang-switch" data-slug="upload-failed">'+$('.translates-holder').attr('upload-failed')+'</div>').insertAfter(this_camping_row);
                         });
                     });
-                } else if (basic.getMobileOperatingSystem() == 'iOS') {
+                } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                     //iOS
                     $('.remember-keystore-upload').click(function () {
                         this_row.find('.error-handle').remove();
@@ -98199,7 +98241,7 @@ $(document).on('click', '.open-settings', function () {
 
             var downloadBtnLabel = $('.translates-holder').attr('download');
             var attrSlug = 'download';
-            if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
+            if (is_hybrid && (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel')) {
                 downloadBtnLabel = $('.translates-holder').attr('export-btn');
                 attrSlug = 'export-btn';
             }
@@ -98240,7 +98282,7 @@ $(document).on('click', '.open-settings', function () {
                                             hideLoader();
                                         }, cordova.file.externalRootDirectory, true);
                                     }, 500);
-                                } else if (basic.getMobileOperatingSystem() == 'iOS') {
+                                } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                                     hideLoader();
                                     window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
                                     $('#download-keystore-password').val('');
@@ -98431,7 +98473,7 @@ $(document).on('click', '.open-settings', function () {
                             $('<div class="error-handle renew-on-lang-switch" data-slug="upload-failed">'+$('.translates-holder').attr('upload-failed')+'</div>').insertAfter(this_camping_row);
                         });
                     });
-                } else if (basic.getMobileOperatingSystem() == 'iOS') {
+                } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                     //iOS
                     $('.show-private-key-keystore-upload').click(function () {
                         this_row.find('.error-handle').remove();
@@ -98527,7 +98569,7 @@ $(document).on('click', '.open-settings', function () {
                                         basic.showAlert($('.translates-holder').attr('file') +keystore_file_name + $('.translates-holder').attr('has-been-downloaded'), '', true);
                                         hideLoader();
                                     }, cordova.file.externalRootDirectory, true);
-                                } else if (basic.getMobileOperatingSystem() == 'iOS') {
+                                } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                                     hideLoader();
                                     //using export plugin, because in iOS there is no such thing as direct file download
                                     window.plugins.socialsharing.share(keystore_file);
@@ -98556,9 +98598,7 @@ $(document).on('click', '.open-settings', function () {
 
 //method to download files in Download folder in Android device
 function hybridAppFileDownload(file_name, file_content, callback, location, download_folder) {
-    console.log(location, 'location');
     window.resolveLocalFileSystemURL(location, function (fileSystem) {
-        console.log(fileSystem, 'fileSystem');
         if (download_folder) {
             fileSystem.getDirectory('Download', {create: true, exclusive: false}, function (dirEntry) {
                 proceedWithDownload(dirEntry, file_name);
@@ -98573,7 +98613,6 @@ function hybridAppFileDownload(file_name, file_content, callback, location, down
 
         function proceedWithDownload(dirEntry, file_name) {
             dirEntry.getFile(file_name, {create: true, exclusive: true}, function (fileEntry) {
-                console.log(fileEntry, 'fileEntry');
                 fileEntry.createWriter(function (fileWriter) {
                     fileWriter.onwriteend = function (e) {
                         console.log('file saved');
@@ -98589,7 +98628,6 @@ function hybridAppFileDownload(file_name, file_content, callback, location, down
 
                     // Create a new Blob and write they keystore content inside of it
                     var blob = new Blob([file_content], {type: 'text/plain'});
-                    console.log(blob, 'blob');
                     fileWriter.write(blob);
                 }, function (err) {
                     console.log(err, 'err');
@@ -98657,7 +98695,7 @@ function checkIfLoadingFromMobileBrowser() {
         basic.cookies.set('show-download-mobile-app', 1);
         if (basic.getMobileOperatingSystem() == 'Android') {
             basic.showDialog('<div><h2 class="fs-24 lato-bold text-center padding-top-15 padding-bottom-25">'+$('.translates-holder').attr('wallet-app-here')+'<br>'+$('.translates-holder').attr('free-download')+'</h2><figure itemscope="" itemtype="http://schema.org/Organization" class="text-center phone-container"><img src="assets/images/download-android-app.png" class="max-width-300 width-100" itemprop="logo" alt="Phone"/><a class="inline-block max-width-150 absolute-content" href="https://play.google.com/store/apps/details?id=wallet.dentacoin.com" target="_blank" itemprop="url"><img src="assets/images/google-play-badge.svg" class="width-100" itemprop="logo" alt="Google play icon"/></a></figure></div>', 'download-mobile-app', null, null);
-        } else if (basic.getMobileOperatingSystem() == 'iOS') {
+        } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
             basic.showDialog('<div><h2 class="fs-24 lato-bold text-center padding-top-15 padding-bottom-25">'+$('.translates-holder').attr('wallet-app-here')+'<br>'+$('.translates-holder').attr('free-download')+'</h2><figure itemscope="" itemtype="http://schema.org/Organization" class="text-center phone-container"><img src="assets/images/download-ios-app.png" class="max-width-300 width-100" itemprop="logo" alt="Phone"/><a class="inline-block max-width-150 absolute-content" href="https://apps.apple.com/us/app/dentacoin-wallet/id1478732657" target="_blank" itemprop="url"><img src="assets/images/app-store.svg" class="width-100" itemprop="logo" alt="App store icon"/></a></figure></div>', 'download-mobile-app', null, null);
         }
     }
