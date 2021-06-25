@@ -95532,7 +95532,7 @@ var projectData = {
                         });
                     }
 
-                    function ifCoreDBReturnsClinics() {
+                    async function ifCoreDBReturnsClinics() {
                         if (core_db_clinics.success) {
                             var clinics_select_html = '';
                             for (var i = 0, len = core_db_clinics.data.length; i < len; i += 1) {
@@ -95541,7 +95541,12 @@ var projectData = {
                                 }
                             }
 
-                            clinics_select_html += '<li><a href="javascript:void(0);" class="display-block-important" data-value="0x65D5a4fc19DBb1d5da873bc5a7fe1b03F46eda5B">Swiss Dentaprime - V <span>(0x65D5a4fc19DBb1d5da873bc5a7fe1b03F46eda5B)</span></a></li><li><a href="javascript:void(0);" class="display-block-important" data-value="0x90336e8F76c720B449eE64976aF98696CabA36FB">Swiss Dentaprime - N <span>(0x90336e8F76c720B449eE64976aF98696CabA36FB)</span></a></li><li><a href="javascript:void(0);" class="display-block-important" data-value="0x4Db7E0A6474f39f4FBFFd96bD0B39C83a9F291C8">Swiss Dentaprime - New V <span>(0x4Db7E0A6474f39f4FBFFd96bD0B39C83a9F291C8)</span></a></li>';
+                            var clinicsRequest = await projectData.requests.getDentaprimeClinicAddresses();
+                            if (clinicsRequest.success && clinicsRequest.data.length) {
+                                for (var i = 0, len = clinicsRequest.data.length; i < len; i+=1) {
+                                    clinics_select_html += '<li><a href="javascript:void(0);" class="display-block-important" data-value="' + clinicsRequest.data[i].dcn_address + '">' + clinicsRequest.data[i].dcn_address_label + ' <span>(' + clinicsRequest.data[i].dcn_address + ')</span></a></li>';
+                                }
+                            }
 
                             $('.clinics-list').append(clinics_select_html);
                             sortList('clinics-list');
@@ -96669,6 +96674,13 @@ var projectData = {
                     hideLoader();
                     alert($('.translates-holder').attr('smth-went-wrong') + ' (Code error 10.0).');
                 }
+            });
+        },
+        getDentaprimeClinicAddresses: async function () {
+            return await $.ajax({
+                type: 'GET',
+                url: 'https://api.dentacoin.com/api/wallet-addresses/72716',
+                dataType: 'json'
             });
         },
         /*getDentacoinDataByExternalProvider: async function (callback) {
