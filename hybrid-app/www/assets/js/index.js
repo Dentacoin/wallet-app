@@ -921,7 +921,7 @@ var projectData = {
                         });
                     }
 
-                    function ifCoreDBReturnsClinics() {
+                    async function ifCoreDBReturnsClinics() {
                         if (core_db_clinics.success) {
                             var clinics_select_html = '';
                             for (var i = 0, len = core_db_clinics.data.length; i < len; i += 1) {
@@ -930,7 +930,12 @@ var projectData = {
                                 }
                             }
 
-                            clinics_select_html += '<li><a href="javascript:void(0);" class="display-block-important" data-value="0x65D5a4fc19DBb1d5da873bc5a7fe1b03F46eda5B">Swiss Dentaprime - V <span>(0x65D5a4fc19DBb1d5da873bc5a7fe1b03F46eda5B)</span></a></li><li><a href="javascript:void(0);" class="display-block-important" data-value="0x90336e8F76c720B449eE64976aF98696CabA36FB">Swiss Dentaprime - N <span>(0x90336e8F76c720B449eE64976aF98696CabA36FB)</span></a></li><li><a href="javascript:void(0);" class="display-block-important" data-value="0x4Db7E0A6474f39f4FBFFd96bD0B39C83a9F291C8">Swiss Dentaprime - New V <span>(0x4Db7E0A6474f39f4FBFFd96bD0B39C83a9F291C8)</span></a></li>';
+                            var clinicsRequest = await projectData.requests.getDentaprimeClinicAddresses();
+                            if (clinicsRequest.success && clinicsRequest.data.length) {
+                                for (var i = 0, len = clinicsRequest.data.length; i < len; i+=1) {
+                                    clinics_select_html += '<li><a href="javascript:void(0);" class="display-block-important" data-value="' + clinicsRequest.data[i].dcn_address + '">' + clinicsRequest.data[i].dcn_address_label + ' <span>(' + clinicsRequest.data[i].dcn_address + ')</span></a></li>';
+                                }
+                            }
 
                             $('.clinics-list').append(clinics_select_html);
                             sortList('clinics-list');
@@ -1988,6 +1993,10 @@ var projectData = {
                         proceedWithPriting('/assets/images/private-key-background.png');
                     }
                 } else {
+                    borderImage = 'src="assets/images/private-key-background.png"';
+                    borderStyle = 'height: 97.5vh';
+                    printingHtml = '<html><head><style>body, html {margin: 0; padding: 0;text-align: center;color: black;font-family: “Helvetica Neue”,Helvetica,Arial,sans-serif;} .border-parent{text-align: left;position:relative; display: inline-block;} img {'+borderStyle+'} .absolute-content{position: absolute;z-index: 100;width: 80%;height: 80%;top: 0;left: 0;padding: 10%;}</style></head><body><div class="border-parent"><img '+borderImage+' id="border-image"/><div class="absolute-content"><div style="text-align:center;"><i>'+$('.translates-holder').attr('confidential')+'</i><h1 style="margin-top: 15px;font-weight:bold;color: black; margin-bottom: 10px;">DENTACOIN</h1><div style="font-size: 18px;color: #2a3575;padding-bottom: 15px;"><b>'+$('.translates-holder').attr('unlock-funds')+'</b></div><div style="background-color: white;padding: 20px 10px;text-align: left;"><div style="color: #888888;padding-bottom: 5px;font-weight: bold;">'+$('.translates-holder').attr('pk-label')+':</div><div style="font-size: 14px;">'+privateKey+'</div></div><div style="font-size: 22px;padding: 30px 0 10px;"><b>'+$('.translates-holder').attr('pk-as-qr')+'</b></div><div>'+qrCodeBase64Data+'</div><div style=" text-align: left; "><div style="font-size: 20px;color: #2a3575;padding-bottom: 15px;padding-top: 20px;font-weight: bold;">'+$('.translates-holder').attr('important')+'</div><div style=" padding-bottom: 15px;"><b>1.</b> '+$('.translates-holder').attr('provides')+'<div></div>'+projectData.utils.checksumAddress(window.localStorage.getItem('current_account'))+'</div><div style=" padding-bottom: 15px;"><b>2.</b> '+$('.translates-holder').attr('secure-place')+'</div><div style=" padding-bottom: 15px;"><b>3. '+$('.translates-holder').attr('never-share')+'</div><div><b>4.</b> '+$('.translates-holder').attr('to-unlock')+'</div></div></div></div></div></body></html>';
+
                     proceedWithPriting('/assets/images/private-key-background.png');
                 }
 
@@ -2054,6 +2063,13 @@ var projectData = {
                     hideLoader();
                     alert($('.translates-holder').attr('smth-went-wrong') + ' (Code error 10.0).');
                 }
+            });
+        },
+        getDentaprimeClinicAddresses: async function () {
+            return await $.ajax({
+                type: 'GET',
+                url: 'https://api.dentacoin.com/api/wallet-addresses/72716',
+                dataType: 'json'
             });
         },
         /*getDentacoinDataByExternalProvider: async function (callback) {
