@@ -3523,7 +3523,8 @@ function submitTransactionToBlockchain(web3_provider, transactionType, function_
                 $('.section-send').fadeIn(500);
                 $('#search').val('');
 
-                projectData.general_logic.firePushNotification('Dentacoin transaction', token_val + ' ' + token_label + ' sent successfully.');
+                var formattedTo = to.substr(0, 5) + '...' + to.substr(to.length -5, 5);
+                projectData.general_logic.firePushNotification('Sent: ' + token_val + ' ' + symbol, 'To: ' + formattedTo);
             });
         } else if (symbol == 'ETH' || symbol == 'ETH2.0') {
             projectData.requests.getEthereumDataByCoingecko(function (request_response) {
@@ -3541,7 +3542,8 @@ function submitTransactionToBlockchain(web3_provider, transactionType, function_
                 $('.section-amount-to').hide();
                 $('.section-send').fadeIn(500);
 
-                projectData.general_logic.firePushNotification('Ethereum transaction', token_val + ' ' + token_label + ' sent successfully.');
+                var formattedTo = to.substr(0, 5) + '...' + to.substr(to.length -5, 5);
+                projectData.general_logic.firePushNotification('Sent: ' + token_val + ' ' + symbol, 'To: ' + formattedTo);
             });
         }
     });
@@ -5007,6 +5009,10 @@ function router() {
             getHomepageData();
             $('.nav-row .nav-link.home').addClass('active');
             $('.camp-for-fixed-mobile-nav a.home').addClass('active');
+
+            if ($('header .camping-buy-page-notice').hasClass('shown')) {
+                $('header .camping-buy-page-notice').html('').fadeOut(500);
+            }
         } else if ($('.main-holder app-buy-page').length && current_route != 'buy') {
             current_route = 'buy';
             getBuyPageData();
@@ -5017,26 +5023,46 @@ function router() {
             getSendPageData();
             $('.nav-row .nav-link.send').addClass('active');
             $('.camp-for-fixed-mobile-nav a.send').addClass('active');
+
+            if ($('header .camping-buy-page-notice').hasClass('shown')) {
+                $('header .camping-buy-page-notice').html('').fadeOut(500);
+            }
         } else if ($('.main-holder app-swap-page').length && current_route != 'swap') {
             current_route = 'swap';
             getSwapPageData();
             $('.nav-row .nav-link.swap').addClass('active');
             $('.camp-for-fixed-mobile-nav a.swap').addClass('active');
+
+            if ($('header .camping-buy-page-notice').hasClass('shown')) {
+                $('header .camping-buy-page-notice').html('').fadeOut(500);
+            }
         } else if ($('.main-holder app-spend-page-pay-for-dental-services').length && current_route != 'pay-for-dental-services') {
             current_route = 'pay-for-dental-services';
             getSpendPageDentalServices();
             $('.nav-row .nav-link.spend').addClass('active');
             $('.camp-for-fixed-mobile-nav a.spend').addClass('active');
+
+            if ($('header .camping-buy-page-notice').hasClass('shown')) {
+                $('header .camping-buy-page-notice').html('').fadeOut(500);
+            }
         } else if ($('.main-holder app-spend-page-exchanges').length && current_route != 'page-exchanges') {
             current_route = 'page-exchanges';
             getSpendPageExchanges();
             $('.nav-row .nav-link.spend').addClass('active');
             $('.camp-for-fixed-mobile-nav a.spend').addClass('active');
+
+            if ($('header .camping-buy-page-notice').hasClass('shown')) {
+                $('header .camping-buy-page-notice').html('').fadeOut(500);
+            }
         } else if ($('.main-holder app-spend-page-pay-assurance-fees').length && current_route != 'pay-assurance-fees') {
             current_route = 'pay-assurance-fees';
             getSpendPageAssuranceFees();
             $('.nav-row .nav-link.spend').addClass('active');
             $('.camp-for-fixed-mobile-nav a.spend').addClass('active');
+
+            if ($('header .camping-buy-page-notice').hasClass('shown')) {
+                $('header .camping-buy-page-notice').html('').fadeOut(500);
+            }
         }
 
         if (current_route != 'home' && !$('.camp-for-custom-popover').hasClass('hide')) {
@@ -5046,6 +5072,7 @@ function router() {
 
         // saving mobile_device_id to send push notifications
         if (window.localStorage.getItem('current_account') != null && window.localStorage.getItem('saved_mobile_id') == null && is_hybrid) {
+            console.log(1111111111);
             if (basic.getMobileOperatingSystem() == 'Android') {
                 window.localStorage.setItem('saved_mobile_id', true);
                 window.FirebasePlugin.hasPermission(function(hasPermission) {
@@ -5065,8 +5092,10 @@ function router() {
             } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                 window.localStorage.setItem('saved_mobile_id', true);
                 if (await FCM.hasPermission()) {
+                    console.log(2222222222);
                     // if permission is given save the firebase mobile device id
                     projectData.general_logic.addMobileDeviceId(function(response) {
+                        console.log(333333333, response);
                         if (response.success) {
                             console.log('Mobile device id saved.');
                         } else {
