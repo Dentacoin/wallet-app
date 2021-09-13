@@ -5051,7 +5051,7 @@ function router() {
                     console.log(hasPermission, 'hasPermission');
                     if (basic.property_exists(hasPermission, 'isEnabled') && hasPermission.isEnabled) {
                         // if permission is given save the firebase mobile device id
-                        projectData.requests.addMobileDeviceId(function() {
+                        projectData.general_logic.addMobileDeviceId(function() {
                             window.localStorage.setItem('saved_mobile_id', true);
                             console.log('Mobile device id saved.');
                         }, window.localStorage.getItem('mobile_device_id'))
@@ -5060,7 +5060,7 @@ function router() {
             } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                 console.log(await FCM.hasPermission(), 'await FCM.hasPermission()');
                 if (await FCM.hasPermission()) {
-                    projectData.requests.addMobileDeviceId(function() {
+                    projectData.general_logic.addMobileDeviceId(function() {
                         window.localStorage.setItem('saved_mobile_id', true);
                         console.log('Mobile device id saved.');
                     }, window.localStorage.getItem('mobile_device_id'))
