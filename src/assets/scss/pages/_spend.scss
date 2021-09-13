@@ -5,9 +5,6 @@ app-spend-page-pay-for-dental-services, app-spend-page-exchanges, app-spend-page
         }
     }
     @include breakpoint($xs) {
-        .main-wrapper {
-            @include rounded(0);
-        }
         .module.spend-navigation {
             display: none;
         }

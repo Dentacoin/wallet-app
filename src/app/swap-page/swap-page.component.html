@@ -1,0 +1,54 @@
+<div class="main-wrapper">
+    <figure itemscope="" itemtype="http://schema.org/ImageObject" class="page-absolute-icon">
+        <img alt="Spend icon" itemprop="contentUrl" src="assets/images/swap-icon.svg"/>
+    </figure>
+    <div class="padding-top-50 padding-top-xs-20 padding-bottom-50">
+        <div class="latest-dcn-popup color-white background-light-blue-gradient padding-top-15 padding-bottom-15 text-center">
+            <figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block width-100 max-width-120">
+                <img alt="Coin icon" itemprop="contentUrl" src="assets/images/fast-coins.png"/>
+            </figure>
+            <div class="inline-block fs-20 fs-xs-16 padding-top-xs-10 padding-bottom-xs-10 padding-left-xs-15 padding-right-xs-15 padding-left-30 padding-right-30">{{'latest-dcn' | translate}}</div>
+            <div class="inline-block">
+                <a href="javascript:void(0);" class="black-white-btn fs-18">{{'learn-more-btn' | translate}}</a>
+            </div>
+            <a href="javascript:void(0);" class="close-btn fs-34 line-height-26 color-white">×</a>
+        </div>
+        <h1 class="padding-top-10 padding-bottom-15 text-center fs-30 color-black">{{'swap-tokens-title' | translate}}</h1>
+        <div class="swapping-section">
+            <div class="from-box module">
+                <div class="balance-line">
+                    <a href="javascript:void(0);" class="inline-block line-height-26 white-light-blue-btn padding-top-0 padding-left-5 padding-bottom-0 padding-right-5 fs-14 light-blue-border max-btn">MAX</a>
+                    <div class="inline-block balance-value fs-20">Balance: <span class="color-light-blue"><span class="amount"></span> DCN</span></div>
+                </div>
+                <div class="padding-top-20 inputable-line">
+                    <input type="number" class="inputable-amount inline-block" data-type="dcn-l1" placeholder="0.0"/>
+                    <select class="inline-block fs-24 fs-xs-22 padding-left-10 current-from" data-current-layer="l1">
+                        <option value="dcn-l1">DCN</option><option value="eth-l1">ETH</option>
+                    </select>
+                </div>
+            </div>
+            <div class="padding-top-15 padding-bottom-15 text-center switch-layers-btn">
+                <a href="javascript:void(0);" class="inline-block padding-top-5 padding-bottom-5 padding-left-40 padding-right-40 background-light-blue-gradient"><img alt="Switch icon" itemprop="contentUrl" src="assets/images/change-swapping-layers-icon.svg" class="width-100 max-width-30"/></a>
+            </div>
+            <div class="to-box module">
+                <div class="balance-line">
+                    <span class="inline-block you-get-label fs-20">{{'you-get-swap' | translate}}</span>
+                    <div class="inline-block balance-value fs-20">Balance: <span class="color-light-blue"><span class="amount"></span> DCN2.0</span></div>
+                </div>
+                <div class="padding-top-20 inputable-line">
+                    <div class="transfer-to-amount inline-block">0.0</div>
+                    <select class="inline-block fs-24 fs-xs-22 padding-left-10 current-to">
+                        <option value="dcn-l2">DCN2.0</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="padding-top-25 padding-bottom-40 calibri-bold text-center">
+            <div class="fs-18 padding-bottom-5">{{'swapping-to-dcn2' | translate}}</div>
+            <div class="fs-16 checkbox-row"><input type="checkbox" class="zoom-checkbox" id="checkbox-understand"/> <label class="padding-left-10" for="checkbox-understand">{{'swap-understand' | translate}}</label></div>
+        </div>
+        <div class="bottom-absolute-btn text-center">
+            <a class="white-light-blue-btn light-blue-border swap-btn" href="javascript:void(0)">{{'swap-btn' | translate}}</a>
+        </div>
+    </div>
+</div>

@@ -22,7 +22,7 @@ $(window).on('beforeunload', function () {
 
 });
 
-$(window).on("load", function () {
+$(window).on('load', function () {
 
 });
 
@@ -39,48 +39,9 @@ window.addEventListener('load', function () {
 });
 
 // event called only on hybrid app
-document.addEventListener('deviceready', function () {
+document.addEventListener('deviceready', async function () {
     console.log('================= deviceready ===================');
     isDeviceReady = true;
-
-    // if DPGuests wifi is available in the device range then connect to it
-    /*WifiWizard2.startScan().then(startscanresponse => {
-        // Success
-        console.log(startscanresponse, 'startscanresponse');
-    }).catch(e => {
-        console.log(JSON.stringify(e));
-    });*/
-
-    // Wifi scanning works only for Android
-    /*if (basic.getMobileOperatingSystem() == 'Android') {
-        console.log('Android Wifi connect');
-
-        WifiWizard2.getScanResults().then(response => {
-            console.log(response, 'getScanResults');
-            if (Array.isArray(response) && response.length) {
-                for (var i = 0, len = response.length; i < len; i+=1) {
-                    if (response[i]['SSID'] == config_variable.dp_wifi_user) {
-                        console.log('Android Wifi connect');
-                        WifiWizard2.connect(config_variable.dp_wifi_user, false, config_variable.dp_wifi_pass, 'WPA').then(function(res) {
-                            console.log(res, 'WifiWizard2.connect');
-                        }).catch(function(err) {
-                            console.log(err, 'WifiWizard2.connect');
-                        });
-                        break;
-                    }
-                }
-            }
-        }).catch(e => {
-            console.log(JSON.stringify(e));
-        });
-    }*/ /*else if (basic.getMobileOperatingSystem() == 'iOS') {
-        console.log('iOS Wifi connect');
-        WifiWizard2.iOSConnectNetwork(config_variable.dp_wifi_user, config_variable.dp_wifi_pass).then(function(res) {
-            console.log(res, 'WifiWizard2.connect');
-        }).catch(function(err) {
-            console.log(err, 'WifiWizard2.connect');
-        });
-    }*/
 
     // overwrite window.open to work with inappbrowser
     window.open = cordova.InAppBrowser.open;
@@ -110,14 +71,43 @@ document.addEventListener('deviceready', function () {
         console.log('===== we are online =====');
         $('header .camping-currently-offline').html('');
     }, false);
-
     //=================================== /internet connection check ONLY for MOBILE DEVICES ===================================
+
+    // save firebase mobile ID
+    if (basic.getMobileOperatingSystem() == 'Android') {
+        window.FirebasePlugin.hasPermission(function(hasPermission) {
+            console.log(hasPermission, 'hasPermission');
+            if (basic.property_exists(hasPermission, 'isEnabled') && !hasPermission.isEnabled) {
+                // ask for push notifications permission
+                window.FirebasePlugin.grantPermission();
+            } else{
+                console.log('Permission already granted');
+            }
+        });
+
+        window.FirebasePlugin.getToken(function(token) {
+            // save this server-side and use it to push notifications to this device
+            localStorage.setItem('mobile_device_id', token);
+        }, function(error) {
+            console.error(error);
+        });
+    } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
+        const wasPermissionGiven = await FCM.requestPushPermission({
+            ios9Support: {
+                timeout: 10,  // How long it will wait for a decision from the user before returning `false`
+                interval: 0.3 // How long between each permission verification
+            }
+        });
+
+        console.log(wasPermissionGiven, 'wasPermissionGiven');
+        var FCMToken = await FCM.getToken();
+        localStorage.setItem('mobile_device_id', FCMToken);
+    }
 }, false);
 
 //=================================== internet connection check ONLY for BROWSERS ===================================
 
 var internet_variable = navigator.onLine;
-
 function checkIfInternetConnection() {
     if (!is_hybrid) {
         setInterval(function () {
@@ -133,7 +123,6 @@ function checkIfInternetConnection() {
         }, 1000);
     }
 }
-
 checkIfInternetConnection();
 
 //=================================== /internet connection check ONLY for BROWSERS ===================================
@@ -163,21 +152,25 @@ var is_hybrid = $('body').hasClass('hybrid-app');
 var meta_mask_installed = false;
 var temporally_timestamps = {};
 var global_state = {};
-var getInstance;
-var DCNContract;
+var getL1Instance;
+var getL2Instance;
+var L1DCNContract;
+var L2DCNContract;
+var L2OptimismGatewayProxyContract;
+var L2OptimismL2StandardBridgeContract;
 var core_db_clinics;
 var core_db_clinics_time_to_request;
 var block_number_of_dcn_creation = 3170000;
 var load_qr_code_lib = true;
 var indacoin_data = {};
+var tx_history = [];
 
 //dApp init
 var dApp = {
     loaded: false,
-    contract_address: '0x08d32b0da63e2C3bcF8019c9c5d849d7a9d791e6',
     web3Provider: null,
-    web3_0_2: null,
-    web3_1_0: null,
+    web3_l1: null,
+    web3_l2: null,
     init: function (callback) {
         dApp.loaded = true;
 
@@ -230,7 +223,7 @@ var dApp = {
                         global_state.account = account;
 
                         web3 = getWeb3(window['ethereum']);
-                        dApp.web3_1_0 = web3;
+                        dApp.web3_l1 = web3;
                         meta_mask_installed = true;
 
                         basic.closeDialog();
@@ -244,7 +237,7 @@ var dApp = {
                 global_state.account = web3.eth.defaultAccount;
                 //overwrite web3 0.2 with web 1.0
                 web3 = getWeb3(web3.currentProvider);
-                dApp.web3_1_0 = web3;
+                dApp.web3_l1 = web3;
 
                 continueWithContractInstanceInit();
             }
@@ -254,8 +247,9 @@ var dApp = {
                 global_state.account = window.localStorage.getItem('current_account');
             }
 
-            dApp.web3_1_0 = getWeb3(new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/c6ab28412b494716bc5315550c0d4071'));
-            dApp.web3_1_0_assurance = getWeb3(new Web3.providers.HttpProvider(assurance_config.infura_node));
+            dApp.web3_l1 = getWeb3(new Web3.providers.HttpProvider(config_variable.l1.provider));
+            dApp.web3_l2 = getWeb3(new Web3.providers.HttpProvider(config_variable.l2.provider));
+            dApp.web3_l1_assurance = getWeb3(new Web3.providers.HttpProvider(assurance_config.infura_node));
 
             continueWithContractInstanceInit();
         }
@@ -265,274 +259,40 @@ var dApp = {
                 $('.logo-and-settings-row .open-settings-col').remove();
             }
 
-            // global_state.account = projectData.utils.checksumAddress(global_state.account);
-
             //init contract
             if (typeof(global_state.account) != 'undefined' && projectData.utils.innerAddressCheck(global_state.account)) {
-                $.getJSON('assets/jsons/DentacoinToken.json', function (DCNArtifact) {
-                    if ((typeof(web3) === 'undefined' || window.localStorage.getItem('custom_wallet_over_external_web3_provider') == 'true') && $('.logo-and-settings-row .open-settings-col').length == 0 && $('.logo-and-settings-row').length > 0) {
-                        $('.logo-and-settings-row').append('<div class="col-xs-6 inline-block open-settings-col"><figure itemscope="" itemtype="http://schema.org/Organization" class="text-right"><a href="javascript:void(0)" itemprop="url" class="open-settings"><img src="assets/images/settings-icon.svg" class="max-width-30" itemprop="logo" alt="Settings icon"/></a></figure></div>');
-                    }
+                if ((typeof(web3) === 'undefined' || window.localStorage.getItem('custom_wallet_over_external_web3_provider') == 'true') && $('.logo-and-settings-row .open-settings-col').length == 0 && $('.logo-and-settings-row').length > 0) {
+                    $('.logo-and-settings-row').append('<div class="col-xs-6 inline-block open-settings-col"><figure itemscope="" itemtype="http://schema.org/Organization" class="text-right"><a href="javascript:void(0)" itemprop="url" class="open-wallet-menu"><ul><li></li><li></li><li></li></ul></a></figure></div>');
+                }
 
-                    // get the contract artifact file and use it to instantiate a truffle contract abstraction
-                    getInstance = getContractInstance(dApp.web3_1_0);
-                    DCNContract = getInstance(DCNArtifact, dApp.contract_address);
+                // get the contract artifact file and use it to instantiate a truffle contract abstraction
+                getL1Instance = getContractInstance(dApp.web3_l1);
+                L1DCNContract = getL1Instance(config_variable.l1.dcn_contract_abi, config_variable.l1.dcn_contract_address);
+                getL2Instance = getContractInstance(dApp.web3_l2);
+                L2DCNContract = getL2Instance(config_variable.l2.dcn_contract_abi, config_variable.l2.dcn_contract_address);
+                L2OptimismGatewayProxyContract = getL2Instance(config_variable.l2.optimism_eth_gateway_bridge_contract_abi, config_variable.l2.optimism_eth_gateway_bridge_contract_address);
+                L2OptimismL2StandardBridgeContract = getL2Instance(config_variable.l2.optimism_L2StandardBridge_abi, config_variable.l2.optimism_L2StandardBridge_address);
 
-                    if (callback != undefined) {
-                        callback();
-                    }
+                if (callback != undefined) {
+                    callback();
+                }
 
-                    dApp.buildTransactionHistory();
-                });
+                projectData.general_logic.buildTransactionHistory();
             }
         }
     },
-    buildTransactionHistory: function () {
-        //getting transactions data by etherscan
-        $.ajax({
-            type: 'GET',
-            url: 'https://api.etherscan.io/api?module=account&action=txlist&address=' + global_state.account + '&startblock=' + block_number_of_dcn_creation,
-            dataType: 'json',
-            success: function (response) {
-                var etherscan_transactions = response;
-
-                var ethereum_transactions_arr = [];
-                if (etherscan_transactions.result) {
-                    for (var i = 0, len = etherscan_transactions.result.length; i < len; i += 1) {
-                        if (etherscan_transactions.result[i].input == '0x') {
-                            etherscan_transactions.result[i].type = 'eth_transaction';
-                            ethereum_transactions_arr.push(etherscan_transactions.result[i]);
-                        }
-                    }
-                }
-
-                //getting blockchain events where the logged user was the sender of the transaction
-                DCNContract.getPastEvents('Transfer', {
-                    filter: {_from: global_state.account},
-                    fromBlock: block_number_of_dcn_creation,
-                    toBlock: 'latest'
-                }, function (events_from_user_err, events_from_user) {
-                    if (!events_from_user_err) {
-                        //getting blockchain events where the logged user was the receiver of the transaction
-                        DCNContract.getPastEvents('Transfer', {
-                            filter: {_to: global_state.account},
-                            fromBlock: block_number_of_dcn_creation,
-                            toBlock: 'latest'
-                        }, function (events_to_user_err, events_to_user) {
-                            if (!events_to_user_err) {
-                                //combining both events arrays ( from + to )
-                                var merged_events_arr = events_from_user.concat(events_to_user, ethereum_transactions_arr);
-
-                                if (merged_events_arr.length > 0) {
-                                    //sorting the mixed array by blockNumber
-                                    projectData.utils.sortByKey(merged_events_arr, 'blockNumber');
-                                    merged_events_arr = merged_events_arr.reverse();
-
-                                    projectData.requests.getEthereumDataByCoingecko(function (ethereumResponse) {
-                                        var ethereum_data = ethereumResponse;
-                                        projectData.requests.getDentacoinDataByCoingeckoProvider(function (dentacoinResponse) {
-                                            var dentacoin_data = dentacoinResponse;
-
-                                            $('.camping-transaction-history').html('<h2 class="lato-bold fs-25 text-center white-crossed-label color-white"><span class="renew-on-lang-switch" data-slug="tx-history">'+$('.translates-holder').attr('tx-history')+'</span></h2><div class="transaction-history container"><div class="row"><div class="col-xs-12 no-gutter-xs col-md-10 col-md-offset-1 padding-top-20"><table class="color-white"><tbody></tbody></table></div></div><div class="row camping-show-more"></div></div>');
-
-                                            $(document).on('click', '.camping-transaction-history .show-more', function () {
-                                                $(this).fadeOut();
-                                                $(this).attr('show-all-transactions', 'true');
-                                                $('.camping-transaction-history table tr').addClass('show-this');
-                                            });
-
-                                            var transaction_history_html = '';
-                                            var array_with_already_shown_transactions = [];
-
-                                            //clearing the array with transactions from dupped ones
-                                            for (var i = 0, len = merged_events_arr.length; i < len; i += 1) {
-                                                if (basic.property_exists(merged_events_arr[i], 'hash')) {
-                                                    if (array_with_already_shown_transactions.includes(merged_events_arr[i].hash)) {
-                                                        merged_events_arr.splice(i, 1);
-                                                    } else {
-                                                        array_with_already_shown_transactions.push(merged_events_arr[i].hash);
-                                                    }
-                                                } else if (basic.property_exists(merged_events_arr[i], 'transactionHash')) {
-                                                    if (array_with_already_shown_transactions.includes(merged_events_arr[i].transactionHash)) {
-                                                        merged_events_arr.splice(i, 1);
-                                                    } else {
-                                                        array_with_already_shown_transactions.push(merged_events_arr[i].transactionHash);
-                                                    }
-                                                }
-                                            }
-
-                                            //requesting blockchain for a lot of transactions data takes sometime and this is why first we select the latest 5 transactions for the logged user (which are shown on page load) and then we make a second query to select everything before these 5 latest transactions and show loader until they are ready to be shown
-                                            var intervals_stopper = 5;
-                                            if (merged_events_arr.length < 5) {
-                                                intervals_stopper = merged_events_arr.length;
-                                            }
-
-                                            var stop_intervals = false;
-
-                                            function recursiveLoop(custom_iterator) {
-                                                if (custom_iterator < 5 && custom_iterator < intervals_stopper) {
-                                                    if (basic.property_exists(merged_events_arr[custom_iterator], 'type') && merged_events_arr[custom_iterator].type == 'eth_transaction') {
-                                                        //eth transaction
-                                                        transaction_history_html += buildEthereumHistoryTransaction(ethereum_data, projectData.utils.fromWei(merged_events_arr[custom_iterator].value, 'ether'), merged_events_arr[custom_iterator].to, merged_events_arr[custom_iterator].from, merged_events_arr[custom_iterator].timeStamp, merged_events_arr[custom_iterator].hash);
-
-                                                        if (custom_iterator < 5) {
-                                                            custom_iterator += 1;
-                                                            recursiveLoop(custom_iterator);
-                                                        } else {
-                                                            stop_intervals = true;
-                                                        }
-                                                    } else {
-                                                        //dcn transaction
-                                                        dApp.helper.addBlockTimestampToTransaction(merged_events_arr[custom_iterator].blockNumber, custom_iterator);
-
-                                                        var request_interval = setInterval(function () {
-                                                            if (!stop_intervals) {
-                                                                if (temporally_timestamps[custom_iterator] != 0 && temporally_timestamps[custom_iterator] != undefined) {
-                                                                    clearInterval(request_interval);
-
-                                                                    transaction_history_html += buildDentacoinHistoryTransaction(dentacoin_data, merged_events_arr[custom_iterator].returnValues._value, merged_events_arr[custom_iterator].returnValues._to, merged_events_arr[custom_iterator].returnValues._from, temporally_timestamps[custom_iterator], merged_events_arr[custom_iterator].transactionHash);
-
-                                                                    if (custom_iterator < 5) {
-                                                                        custom_iterator += 1;
-                                                                        recursiveLoop(custom_iterator);
-                                                                    } else {
-                                                                        stop_intervals = true;
-                                                                    }
-                                                                }
-                                                            }
-                                                        }, 300);
-                                                    }
-                                                } else {
-                                                    stop_intervals = false;
-
-                                                    if (merged_events_arr.length > 5) {
-                                                        transaction_history_html += '<tr class="loading-tr"><td class="text-center" colspan="5"><figure class="inline-block rotate-animation"><img src="assets/images/exchange.png" alt="Exchange icon"/></figure></td></tr>';
-                                                        $('.camping-transaction-history .camping-show-more').html('<div class="col-xs-12 text-center padding-top-30"><a href="javascript:void(0)" class="white-light-blue-btn show-more renew-on-lang-switch" data-slug="show-more">'+$('.translates-holder').attr('show-more')+'</a></div>');
-                                                        recursiveLoopForRestOfHistory(5);
-                                                    }
-
-                                                    $('.camping-transaction-history table tbody').html(transaction_history_html);
-                                                    updateExternalURLsForiOSDevice();
-                                                }
-                                            }
-
-                                            recursiveLoop(0);
-
-                                            //requesting all transactions before the latest 5
-                                            var next_transaction_history_html = '';
-
-                                            function recursiveLoopForRestOfHistory(custom_iterator) {
-                                                if (custom_iterator < merged_events_arr.length) {
-                                                    if (custom_iterator > 5 && custom_iterator % 5 == 0) {
-                                                        $('.camping-transaction-history table tbody tr.loading-tr').before(next_transaction_history_html);
-                                                        next_transaction_history_html = '';
-                                                        updateExternalURLsForiOSDevice();
-
-                                                        if ($('.camping-transaction-history .show-more').attr('show-all-transactions') == 'true') {
-                                                            $('.camping-transaction-history table tr').addClass('show-this');
-                                                        }
-                                                    }
-
-                                                    if (basic.property_exists(merged_events_arr[custom_iterator], 'type') && merged_events_arr[custom_iterator].type == 'eth_transaction') {
-                                                        //eth transaction
-                                                        next_transaction_history_html += buildEthereumHistoryTransaction(ethereum_data, projectData.utils.fromWei(merged_events_arr[custom_iterator].value, 'ether'), merged_events_arr[custom_iterator].to, merged_events_arr[custom_iterator].from, merged_events_arr[custom_iterator].timeStamp, merged_events_arr[custom_iterator].hash);
-
-                                                        if (custom_iterator < merged_events_arr.length) {
-                                                            custom_iterator += 1;
-                                                            recursiveLoopForRestOfHistory(custom_iterator);
-                                                        } else {
-                                                            stop_intervals = true;
-                                                        }
-                                                    } else {
-                                                        //dcn transaction
-                                                        dApp.helper.addBlockTimestampToTransaction(merged_events_arr[custom_iterator].blockNumber, custom_iterator);
-
-                                                        request_interval_for_rest_of_transaction_history = setInterval(function () {
-                                                            if (!stop_intervals) {
-                                                                if (temporally_timestamps[custom_iterator] != 0 && temporally_timestamps[custom_iterator] != undefined) {
-                                                                    clearInterval(request_interval_for_rest_of_transaction_history);
-
-                                                                    next_transaction_history_html += buildDentacoinHistoryTransaction(dentacoin_data, merged_events_arr[custom_iterator].returnValues._value, merged_events_arr[custom_iterator].returnValues._to, merged_events_arr[custom_iterator].returnValues._from, temporally_timestamps[custom_iterator], merged_events_arr[custom_iterator].transactionHash);
-
-                                                                    if (custom_iterator < merged_events_arr.length) {
-                                                                        custom_iterator += 1;
-                                                                        recursiveLoopForRestOfHistory(custom_iterator);
-                                                                    } else {
-                                                                        stop_intervals = true;
-                                                                    }
-                                                                }
-                                                            }
-                                                        }, 300);
-                                                    }
-                                                } else {
-                                                    $('.camping-transaction-history table tbody tr.loading-tr').remove();
-                                                    $('.camping-transaction-history table tbody').append(next_transaction_history_html);
-                                                    updateExternalURLsForiOSDevice();
-
-                                                    if ($('.camping-transaction-history .show-more').attr('show-all-transactions') == 'true') {
-                                                        $('.camping-transaction-history table tr').addClass('show-this');
-                                                    }
-
-                                                    //updating transaction history every 10 minutes, because the project is SPA and pages are not really refreshed on route change, routes are dynamicly loaded with AngularJS
-                                                    setTimeout(function () {
-                                                        dApp.buildTransactionHistory();
-                                                    }, 600000);
-                                                }
-                                            }
-                                        });
-                                    });
-                                } else {
-                                    $('.camping-transaction-history').html('<h2 class="lato-bold fs-16 text-center color-white"><span class="renew-on-lang-switch" data-slug="no-tx">'+$('.translates-holder').attr('no-tx')+'</span></h2>');
-                                }
-                            }
-                        });
-                    }
-                });
-            }
-        });
-    },
-    getTransferFromEvents: function () {
-        return new Promise(function (resolve, reject) {
-            DCNContract.getPastEvents('Transfer', {
-                filter: {_from: global_state.account},
-                fromBlock: block_number_of_dcn_creation,
-                toBlock: 'latest'
-            }, function (error, event) {
-                if (!error) {
-                    resolve(event);
-                } else {
-                    resolve(error);
-                }
-            });
-        });
-    },
-    getTransferToEvents: function () {
-        return new Promise(function (resolve, reject) {
-            DCNContract.getPastEvents('Transfer', {
-                filter: {_to: global_state.account},
-                fromBlock: block_number_of_dcn_creation,
-                toBlock: 'latest'
-            }, function (error, event) {
-                if (!error) {
-                    resolve(event);
-                } else {
-                    resolve(error);
-                }
-            });
-        });
-    },
     methods: {
-        getDCNBalance: function (address, callback) {
-            DCNContract.methods.balanceOf(address).call({from: address}, function (err, response) {
+        getDCNBalance: function (contract, address, callback) {
+            contract.methods.balanceOf(address).call({from: address}, function (err, response) {
                 callback(err, response);
             });
         },
         transfer: function (send_addr, value) {
-            return DCNContract.methods.transfer(send_addr, value).send({
+            return L1DCNContract.methods.transfer(send_addr, value).send({
                 from: global_state.account,
                 gas: 60000
             }).on('transactionHash', function (hash) {
-                displayMessageOnTransactionSend('Dentacoin tokens', hash);
+                projectData.general_logic.displayMessageOnTransactionSend('Dentacoin tokens', hash);
             }).catch(function (err) {
                 basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
             });
@@ -541,7 +301,7 @@ var dApp = {
     helper: {
         getBlockNum: function () {
             return new Promise(function (resolve, reject) {
-                dApp.web3_1_0.eth.getBlockNumber(function (error, result) {
+                dApp.web3_l1.eth.getBlockNumber(function (error, result) {
                     if (!error) {
                         global_state.curr_block = result;
                         resolve(global_state.curr_block);
@@ -550,7 +310,7 @@ var dApp = {
             });
         },
         addBlockTimestampToTransaction: function (blockNumber, object_key) {
-            dApp.web3_1_0.eth.getBlock(blockNumber, function (error, result) {
+            dApp.web3_l1.eth.getBlock(blockNumber, function (error, result) {
                 if (error !== null) {
 
                 }
@@ -561,87 +321,91 @@ var dApp = {
         },
         getAddressETHBalance: function (address) {
             return new Promise(function (resolve, reject) {
-                resolve(dApp.web3_1_0.eth.getBalance(address));
-            });
-        },
-        estimateGas: function (address, function_abi) {
-            return new Promise(function (resolve, reject) {
-                dApp.web3_1_0.eth.estimateGas({
-                    to: address,
-                    data: function_abi
-                }, function (error, result) {
-                    if (!error) {
-                        resolve(result);
-                    }
-                });
+                resolve(dApp.web3_l1.eth.getBalance(address));
             });
         }
     }
 };
 
 //logic splitted by pages
-var bidali_lib_loaded = false;
 var projectData = {
     pages: {
         homepage: function () {
             projectData.utils.saveHybridAppCurrentScreen();
 
             if (typeof(global_state.account) != 'undefined') {
-                showMobileAppBannerForDesktopBrowsers();
+                projectData.general_logic.showMobileAppBannerForDesktopBrowsers();
 
                 function refreshAccountDataButtonLogic(init_loader) {
                     if (init_loader != undefined) {
-                        showLoader();
+                        projectData.general_logic.showLoader();
 
                         clearInterval(request_interval_for_rest_of_transaction_history);
-                        dApp.buildTransactionHistory();
+                        projectData.general_logic.buildTransactionHistory();
+                        
                         setTimeout(function () {
                             updateUserAccountData(true);
-                        }, 500);
+                        }, 1000);
                     } else {
                         updateUserAccountData();
                     }
                 }
-
                 refreshAccountDataButtonLogic();
 
-                function updateUserAccountData(hide_loader) {
+                async function updateUserAccountData(hide_loader) {
                     //show user ethereum address
                     $('.eth-address-container .address-value').val(projectData.utils.checksumAddress(global_state.account));
 
-                    //update dentacoin amount
-                    dApp.methods.getDCNBalance(global_state.account, function (err, response) {
-                        var dcn_balance = parseInt(response);
+                    var l1_dcn_balance = parseInt(await L1DCNContract.methods.balanceOf(global_state.account).call());
+                    var l2_dcn_balance = parseInt(await L2DCNContract.methods.balanceOf(global_state.account).call());
+                    var l1_eth_balance = await dApp.web3_l1.eth.getBalance(global_state.account);
+                    var l2_eth_balance = await dApp.web3_l2.eth.getBalance(global_state.account);
+                    $('.main-wrapper .dcn-amount').html((l1_dcn_balance + l2_dcn_balance).toLocaleString());
 
-                        $('.main-wrapper .dcn-amount').html(dcn_balance);
+                    projectData.requests.getDentacoinDataByCoingeckoProvider(function (dentacoin_data) {
+                        if (l1_dcn_balance > 0) {
+                            $('.single-currency.l1-dcn-currency .l1-dcn-balance').html(l1_dcn_balance.toLocaleString());
+                            $('.single-currency.l1-dcn-currency .l1-dcn-balance-in-usd').html(parseFloat((l1_dcn_balance * dentacoin_data).toFixed(2)).toLocaleString());
+                            $('.single-currency.l1-dcn-currency').removeClass('hide');
+                        }
 
-                        //update usd amount (dentacoins in usd)
-                        projectData.requests.getDentacoinDataByCoingeckoProvider(function (request_response) {
-                            var dentacoin_data = request_response;
-                            if (dentacoin_data != 0) {
-                                $('.usd-amount').html((dcn_balance * dentacoin_data).toFixed(2));
-                            } else {
-                                $('.usd-amount-parent').hide();
-                            }
+                        if (l2_dcn_balance > 0) {
+                            $('.single-currency.l2-dcn-currency .l2-dcn-balance').html(l2_dcn_balance.toLocaleString());
+                            $('.single-currency.l2-dcn-currency .l2-dcn-balance-in-usd').html(parseFloat((l2_dcn_balance * dentacoin_data).toFixed(2)).toLocaleString());
+                        }
 
-                            //update ether amount
-                            dApp.web3_1_0.eth.getBalance(global_state.account, function (error, result) {
-                                if (error) {
-                                    console.log(error);
-                                } else {
-                                    if (parseFloat(projectData.utils.fromWei(result)).toFixed(8) != 0) {
-                                        $('.eth-amount').html(parseFloat(projectData.utils.fromWei(result)).toFixedNoRounding(8));
-                                    } else {
-                                        $('.eth-amount').html('0.00000000');
-                                    }
+                        if (l1_eth_balance > 0) {
+                            $('.single-currency.l1-eth-currency .l1-eth-balance').html(parseFloat(projectData.utils.fromWei(l1_eth_balance)).toFixedNoRounding(8));
+                            $('.single-currency.l1-eth-currency').removeClass('hide');
+                        }
 
-                                    if (hide_loader != undefined) {
-                                        hideLoader();
-                                    }
-                                }
-                            });
-                        });
+                        if (l2_eth_balance > 0) {
+                            $('.single-currency.l2-eth-currency .l2-eth-balance').html(parseFloat(projectData.utils.fromWei(l2_eth_balance)).toFixedNoRounding(8));
+                        }
+
+                        if ($('.bottom-side').hasClass('hide')) {
+                            $('.bottom-side').removeClass('hide');
+                        }
+
+                        if (hide_loader != undefined) {
+                            projectData.general_logic.hideLoader();
+                        }
                     });
+
+                    $('.more-info').popover({
+                        trigger: 'click'
+                    });
+
+
+                    $('.join-the-future .close-btn').click(function() {
+                        $('.join-the-future').remove();
+                    });
+
+                    if ($('.join-the-future .open-popup').length) {
+                        $('.join-the-future .open-popup').click(function() {
+                            projectData.general_logic.openL2InformationPopups('what-is-dcn2');
+                        });
+                    }
                 }
 
                 $(document).on('click', '.refresh-account-data', function () {
@@ -729,12 +493,22 @@ var projectData = {
                 if (!$('.camp-for-custom-popover').hasClass('hide')) {
                     $('.camp-for-custom-popover').offset({
                         top: $('.more-info').height() + $('.more-info').offset().top + 15,
-                        left: $('.more-info').offset().left - $('.camp-for-custom-popover').width()
+                        left: $('.more-info').offset().left - 10
                     });
                 }
             }
         },
         buy_page: function () {
+            if (window.localStorage.getItem('hide_buy_page_notice') == null && !$('header .camping-buy-page-notice').hasClass('shown')) {
+                setTimeout(function() {
+                    $('header .camping-buy-page-notice').addClass('shown').html('<div class="wrapper fs-0"><figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block icon"><img src="assets/images/attention-icon-white.svg" alt="Attention icon" itemprop="contentUrl"/></figure><div class="inline-block fs-20 fs-xs-16 description">For the moment, you can only buy DCN on the main Ethereum network (used for trading). If you want to stake it or use it for Assurance fees, use the SWAP to DCN2 function after purchase.</div><div class="inline-block close-btn"><a href="javascript:void(0);" class="close-notice fs-30 color-white">×</a></div></div>').fadeIn(500);
+                    $('header .camping-buy-page-notice .close-notice').click(function() {
+                        window.localStorage.setItem('hide_buy_page_notice', 'true');
+                        $('header .camping-buy-page-notice').html('').fadeOut(500);
+                    });
+                }, 3000);
+            }
+
             projectData.utils.saveHybridAppCurrentScreen();
 
             projectData.requests.getMinimumUsdValueFromIndacoin(function (minimumIndacoinUsdForTransaction) {
@@ -742,7 +516,7 @@ var projectData = {
                 minimumIndacoinUsdForTransaction = Math.ceil(minimumIndacoinUsdForTransaction / 5) * 5;
                 $('.min-usd-amount').html(minimumIndacoinUsdForTransaction);
 
-                showMobileAppBannerForDesktopBrowsers();
+                projectData.general_logic.showMobileAppBannerForDesktopBrowsers();
 
                 if (typeof(global_state.account) != 'undefined') {
                     $('section.ready-to-purchase-with-external-api input#dcn_address').parent().find('label').addClass('active-label');
@@ -751,7 +525,7 @@ var projectData = {
 
                 //getting DCN data from Indacoin every 10 minutes
                 if (!basic.property_exists(indacoin_data, 'dcn') || (basic.property_exists(indacoin_data, 'dcn') && indacoin_data.dcn.timestamp < Date.now())) {
-                    showLoader();
+                    projectData.general_logic.showLoader();
                     projectData.requests.getCryptoDataByIndacoin('DCN', minimumIndacoinUsdForTransaction, function (indacoin_dcn_data) {
                         passedGetDCNDataRequest(indacoin_dcn_data);
                     });
@@ -765,7 +539,7 @@ var projectData = {
 
                     //getting ETH data from Indacoin every 10 minutes
                     if (!basic.property_exists(indacoin_data, 'eth') || (basic.property_exists(indacoin_data, 'eth') && indacoin_data.eth.timestamp < Date.now())) {
-                        showLoader();
+                        projectData.general_logic.showLoader();
                         projectData.requests.getCryptoDataByIndacoin('ETH', minimumIndacoinUsdForTransaction, function (indacoin_eth_data) {
                             passedGetETHDataRequest(indacoin_eth_data);
                         });
@@ -786,13 +560,13 @@ var projectData = {
                             $('.camping-for-issue-with-the-external-provider').html('<div class="col-xs-12"><div class="alert alert-info">'+$('.translates-holder').attr('smth-wrong')+'</div></div>');
                         }
 
-                        hideLoader();
+                        projectData.general_logic.hideLoader();
 
                         // on currency switch from the dropdown
                         $('section.ready-to-purchase-with-external-api #active-crypto').unbind().on('change', function () {
                             var thisValue = $(this);
 
-                            showLoader();
+                            projectData.general_logic.showLoader();
                             setTimeout(function() {
                                 projectData.requests.getMinimumUsdValueFromIndacoin(function (onChangeMinimumIndacoinUsdForTransaction) {
                                     // rounding to 5 or 0
@@ -802,16 +576,18 @@ var projectData = {
                                     if (thisValue.val() == 'dcn') {
                                         projectData.requests.getCryptoDataByIndacoin('DCN', onChangeMinimumIndacoinUsdForTransaction, function (onChangeDcnData) {
                                             $('.ready-to-purchase-with-external-api .address-to-receive').html('DCN');
-                                            $('section.ready-to-purchase-with-external-api #crypto-amount').val(onChangeDcnData.dcn.value);
+                                            $('section.ready-to-purchase-with-external-api #crypto-amount').val(parseInt(onChangeDcnData.dcn.value));
 
-                                            hideLoader();
+                                            projectData.general_logic.hideLoader();
                                         });
                                     } else if (thisValue.val() == 'eth') {
+                                        console.log(onChangeMinimumIndacoinUsdForTransaction, 'onChangeMinimumIndacoinUsdForTransaction');
                                         projectData.requests.getCryptoDataByIndacoin('ETH', onChangeMinimumIndacoinUsdForTransaction, function (onChangeEthData) {
+                                            console.log(onChangeEthData, 'onChangeEthData');
                                             $('.ready-to-purchase-with-external-api .address-to-receive').html('ETH');
                                             $('section.ready-to-purchase-with-external-api #crypto-amount').val(onChangeEthData.eth.value);
 
-                                            hideLoader();
+                                            projectData.general_logic.hideLoader();
                                         });
                                     }
                                 });
@@ -869,10 +645,10 @@ var projectData = {
             projectData.utils.saveHybridAppCurrentScreen();
 
             if (typeof(global_state.account) != 'undefined') {
-                showMobileAppBannerForDesktopBrowsers();
+                projectData.general_logic.showMobileAppBannerForDesktopBrowsers();
 
                 //reading all clinics/ dentists from the CoreDB EVERY 1h
-                showLoader();
+                projectData.general_logic.showLoader();
 
                 setTimeout(async function () {
                     if (core_db_clinics == undefined || core_db_clinics_time_to_request < Date.now()) {
@@ -907,7 +683,7 @@ var projectData = {
                         }
                     });
 
-                    initScan($('.scan-qr-code'), $('#search'));
+                    projectData.general_logic.initScan($('.scan-qr-code'), $('#search'));
 
                     //sorting both clinics and address book lists in alphabetic order
                     function sortList(id) {
@@ -1042,10 +818,10 @@ var projectData = {
                                     } else {
                                         //BROWSER SCAN
                                         if (load_qr_code_lib) {
-                                            showLoader();
+                                            projectData.general_logic.showLoader();
                                             $.getScript('https://rawgit.com/schmich/instascan-builds/master/instascan.min.js', function () {
                                                 load_qr_code_lib = false;
-                                                hideLoader();
+                                                projectData.general_logic.hideLoader();
 
                                                 initQRCodePopupForAddressBook();
                                             });
@@ -1140,68 +916,66 @@ var projectData = {
 
                     var gasPriceObject = await projectData.requests.getGasPrice();
                     // var ethgasstation_json = await $.getJSON('https://ethgasstation.info/json/ethgasAPI.json');
-                    // var gasPrice = await dApp.web3_1_0.eth.getGasPrice();
+                    // var gasPrice = await dApp.web3_l1.eth.getGasPrice();
 
                     function bindSendPageElementsEvents() {
-                        hideLoader();
+                        projectData.general_logic.hideLoader();
 
                         $('.section-send .next-send').click(function () {
                             if (!$(this).hasClass('disabled')) {
-                                fireGoogleAnalyticsEvent('Pay', 'Next', 'DCN Address');
+                                projectData.general_logic.fireGoogleAnalyticsEvent('Pay', 'Next', 'DCN Address');
 
-                                showLoader();
+                                projectData.general_logic.showLoader();
                                 projectData.requests.getEthereumDataByCoingecko(function (request_response) {
                                     var ethereum_data = request_response;
 
                                     //getting dentacoin data by Coingecko
-                                    projectData.requests.getDentacoinDataByCoingeckoProvider(function (request_response) {
+                                    projectData.requests.getDentacoinDataByCoingeckoProvider(async function (request_response) {
                                         $('.section-send').hide();
                                         $('.section-amount-to .address-cell').html($('.search-field #search').val().trim()).attr('data-receiver', $('.search-field #search').val().trim());
                                         window.scrollTo(0, 0);
 
                                         // remove loader from send page when all external requests are made
-                                        hideLoader();
+                                        projectData.general_logic.hideLoader();
 
                                         $('.section-amount-to').fadeIn(500);
 
                                         var dentacoin_data = request_response;
 
                                         // if user has enough dcn balance show maximum spending balance shortcut
-                                        dApp.methods.getDCNBalance(global_state.account, function (err, response) {
-                                            var dcn_balance = parseInt(response);
+                                        var l1_dcn_balance = parseInt(await L1DCNContract.methods.balanceOf(global_state.account).call());
+                                        /*$('.spendable-amount').addClass('active').html('<div class="spendable-dcn-amount fs-18 fs-xs-16 lato-bold" data-value="' + l1_dcn_balance + '"><label class="color-light-blue renew-on-lang-switch" data-slug="spendable-amount">'+$('.translates-holder').attr('spendable-amount')+' </label><span></span></div>');
+                                        $('.spendable-amount .spendable-dcn-amount span').html(l1_dcn_balance.toLocaleString() + ' DCN');*/
+                                        $('.from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+l1_dcn_balance.toLocaleString()+'</span> DCN</span>');
+                                        $('.section-amount-to #active-crypto').val('dcn-l1');
 
-                                            $('.spendable-amount').addClass('active').html('<div class="spendable-dcn-amount inline-block fs-18 fs-xs-16 lato-bold" data-value="' + dcn_balance + '"><label class="color-light-blue renew-on-lang-switch" data-slug="spendable-amount">'+$('.translates-holder').attr('spendable-amount')+' </label><span></span></div><div class="max-btn inline-block"><button class="white-light-blue-btn use-max-dcn-amount renew-on-lang-switch" data-slug="max">'+$('.translates-holder').attr('max')+'</button></div>');
-                                            $('.spendable-amount .spendable-dcn-amount span').html(dcn_balance + ' DCN');
-                                            $('.section-amount-to #active-crypto').val('dcn');
+                                        $('.max-btn').click(function () {
+                                            //$('.section-amount-to input#crypto-amount').val($('.spendable-dcn-amount').attr('data-value'));
+                                            $('.section-amount-to input#crypto-amount').val($('.from-box .balance-line .balance-value .amount').html().replaceAll(',', ''));
 
-                                            $('.use-max-dcn-amount').click(function () {
-                                                $('.section-amount-to input#crypto-amount').val($('.spendable-dcn-amount').attr('data-value'));
-                                                $('.section-amount-to input#crypto-amount').closest('.custom-google-label-style').find('label').addClass('active-label');
-
-                                                var to_fixed_num = 2;
-                                                if ($('.section-amount-to #active-crypto').val() == 'dcn') {
-                                                    if (($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data) < 0.01) {
-                                                        to_fixed_num = 4;
-                                                    }
-                                                    $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data).toFixed(to_fixed_num)).trigger('change');
-                                                } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
-                                                    if (($('.section-amount-to input#crypto-amount').val().trim() * ethereum_data.market_data.current_price.usd) < 0.01) {
-                                                        to_fixed_num = 4;
-                                                    }
-                                                    $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * ethereum_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
+                                            var to_fixed_num = 2;
+                                            if ($('.section-amount-to #active-crypto').val() == 'dcn-l1' || $('.section-amount-to #active-crypto').val() == 'dcn-l2') {
+                                                if (($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data) < 0.01) {
+                                                    to_fixed_num = 4;
                                                 }
-                                            });
+                                                $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data).toFixed(to_fixed_num)).trigger('change');
+                                            } else if ($('.section-amount-to #active-crypto').val() == 'eth-l1' || $('.section-amount-to #active-crypto').val() == 'eth-l2') {
+                                                if (($('.section-amount-to input#crypto-amount').val().trim() * ethereum_data.market_data.current_price.usd) < 0.01) {
+                                                    to_fixed_num = 4;
+                                                }
+                                                $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * ethereum_data.market_data.current_price.usd).toFixed(to_fixed_num)).trigger('change');
+                                            }
                                         });
 
                                         //on input in dcn/ eth input change usd input
                                         $('.section-amount-to input#crypto-amount').unbind().on('input', function () {
                                             var to_fixed_num = 2;
-                                            if ($('.section-amount-to #active-crypto').val() == 'dcn') {
+                                            if ($('.section-amount-to #active-crypto').val() == 'dcn-l1' || $('.section-amount-to #active-crypto').val() == 'dcn-l2') {
                                                 if (($(this).val().trim() * dentacoin_data) < 0.01) {
                                                     to_fixed_num = 4;
                                                 }
                                                 $('.section-amount-to input#usd-val').val(($(this).val().trim() * dentacoin_data).toFixed(to_fixed_num)).trigger('change');
-                                            } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
+                                            } else if ($('.section-amount-to #active-crypto').val() == 'eth-l1' || $('.section-amount-to #active-crypto').val() == 'eth-l2') {
                                                 if (($(this).val().trim() * ethereum_data.market_data.current_price.usd) < 0.01) {
                                                     to_fixed_num = 4;
                                                 }
@@ -1211,55 +985,80 @@ var projectData = {
 
                                         //on input in usd input change dcn/ eth input
                                         $('.section-amount-to input#usd-val').unbind().on('input', function () {
-                                            if ($('.section-amount-to #active-crypto').val() == 'dcn') {
+                                            if ($('.section-amount-to #active-crypto').val() == 'dcn-l1' || $('.section-amount-to #active-crypto').val() == 'dcn-l2') {
                                                 $('.section-amount-to input#crypto-amount').val(Math.floor($(this).val().trim() / dentacoin_data)).trigger('change');
-                                            } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
+                                            } else if ($('.section-amount-to #active-crypto').val() == 'eth-l1' || $('.section-amount-to #active-crypto').val() == 'eth-l2') {
                                                 $('.section-amount-to input#crypto-amount').val($(this).val().trim() / ethereum_data.market_data.current_price.usd).trigger('change');
                                             }
                                         });
 
                                         //on select with cryptocurrencies options change
-                                        $('.section-amount-to #active-crypto').unbind().on('change', function () {
+                                        $('.section-amount-to #active-crypto').unbind().on('change', async function () {
+                                            $('.section-amount-to input#crypto-amount').val('');
+                                            $('.section-amount-to input#usd-val').val('');
+
                                             var to_fixed_num = 2;
-                                            if ($(this).val() == 'dcn') {
-                                                dApp.methods.getDCNBalance(global_state.account, function (err, response) {
-                                                    var dcn_balance = parseInt(response);
-                                                    $('.spendable-dcn-amount').attr('data-value', dcn_balance);
-                                                    $('.spendable-amount .spendable-dcn-amount span').html(dcn_balance + ' DCN');
-                                                });
+                                            if ($(this).val() == 'dcn-l1' || $(this).val() == 'dcn-l2') {
+                                                if ($(this).val() == 'dcn-l1') {
+                                                    // LAYER1 BALANCE
+                                                    var dcn_balance = parseInt(await L1DCNContract.methods.balanceOf(global_state.account).call());
+                                                    $('.from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+dcn_balance.toLocaleString()+'</span> DCN</span>');
+                                                    /*$('.spendable-dcn-amount').attr('data-value', dcn_balance);
+                                                    $('.spendable-amount .spendable-dcn-amount span').html(dcn_balance.toLocaleString() + ' DCN');*/
+                                                } else if($(this).val() == 'dcn-l2') {
+                                                    // LAYER2 BALANCE
+                                                    var dcn_balance = parseInt(await L2DCNContract.methods.balanceOf(global_state.account).call());
+                                                    $('.from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+dcn_balance.toLocaleString()+'</span> DCN2.0</span>');
+                                                    /*$('.spendable-dcn-amount').attr('data-value', dcn_balance);
+                                                    $('.spendable-amount .spendable-dcn-amount span').html(dcn_balance.toLocaleString() + ' DCN2.0');*/
+                                                }
 
                                                 if (($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data) < 0.01) {
                                                     to_fixed_num = 4;
                                                 }
                                                 $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data).toFixed(to_fixed_num)).trigger('change');
-                                            } else if ($(this).val() == 'eth') {
-                                                dApp.web3_1_0.eth.getBalance(global_state.account, async function (error, eth_balance) {
-                                                    if (error) {
-                                                        console.log(error);
-                                                    } else {
-                                                        var newDecimal = new Decimal(projectData.utils.fromWei(eth_balance));
-                                                        var ethSendGasEstimation = await dApp.web3_1_0.eth.estimateGas({
-                                                            to: $('.section-amount-to .address-cell').attr('data-receiver')
-                                                        });
+                                            } else if ($(this).val() == 'eth-l1' || $(this).val() == 'eth-l2') {
+                                                var tokenLabel;
+                                                if ($(this).val() == 'eth-l1') {
+                                                    // LAYER1 BALANCE
+                                                    var eth_balance = await dApp.web3_l1.eth.getBalance(global_state.account);
 
-                                                        var ethSendGasEstimationNumber = new BigNumber(ethSendGasEstimation);
-                                                        //calculating the fee from the gas price and the estimated gas price
-                                                        var on_popup_load_gwei = gasPriceObject.result.SafeGasPrice;
-                                                        //adding 10% of the outcome just in case transactions don't take so long
-                                                        var on_popup_load_gas_price = on_popup_load_gwei * 1000000000 + ((on_popup_load_gwei * 1000000000) * 0.1);
-                                                        var cost = ethSendGasEstimationNumber * on_popup_load_gas_price;
+                                                    //calculating the fee from the gas price and the estimated gas price
+                                                    var on_popup_load_gwei = gasPriceObject.result.SafeGasPrice;
+                                                    //adding 10% of the outcome just in case transactions don't take so long
+                                                    var on_popup_load_gas_price = on_popup_load_gwei * 1000000000 + ((on_popup_load_gwei * 1000000000) * 0.1);
 
-                                                        var eth_fee = projectData.utils.fromWei(cost.toString(), 'ether');
-                                                        var correctSendAmount = newDecimal.minus(eth_fee).toString();
-                                                        if (parseInt(eth_balance) > parseInt(ethSendGasEstimation)) {
-                                                            $('.spendable-dcn-amount').attr('data-value', correctSendAmount);
-                                                            $('.spendable-amount .spendable-dcn-amount span').html(correctSendAmount + ' ETH');
-                                                        } else {
-                                                            $('.spendable-dcn-amount').attr('data-value', 0);
-                                                            $('.spendable-amount .spendable-dcn-amount span').html('0 ETH');
-                                                        }
-                                                    }
-                                                });
+                                                    var ethSendGasEstimation = await dApp.web3_l1.eth.estimateGas({
+                                                        to: $('.section-amount-to .address-cell').attr('data-receiver')
+                                                    });
+                                                    tokenLabel = 'ETH';
+                                                } else if($(this).val() == 'eth-l2') {
+                                                    // LAYER2 BALANCE
+                                                    var eth_balance = await dApp.web3_l2.eth.getBalance(global_state.account);
+                                                    var on_popup_load_gas_price = parseInt(await dApp.web3_l2.eth.getGasPrice());
+
+                                                    var ethSendGasEstimation = await dApp.web3_l2.eth.estimateGas({
+                                                        to: $('.section-amount-to .address-cell').attr('data-receiver')
+                                                    });
+                                                    tokenLabel = 'ETH2.0';
+                                                }
+
+                                                var newDecimal = new Decimal(projectData.utils.fromWei(eth_balance));
+
+                                                var ethSendGasEstimationNumber = new BigNumber(ethSendGasEstimation);
+                                                var cost = ethSendGasEstimationNumber * on_popup_load_gas_price;
+
+                                                var eth_fee = projectData.utils.fromWei(cost.toString(), 'ether');
+                                                var correctSendAmount = newDecimal.minus(eth_fee).toString();
+                                                if (parseInt(eth_balance) > parseInt(ethSendGasEstimation)) {
+                                                    $('.from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+correctSendAmount+'</span> '+tokenLabel+'</span>');
+                                                    /*$('.spendable-dcn-amount').attr('data-value', correctSendAmount);
+                                                    $('.spendable-amount .spendable-dcn-amount span').html(correctSendAmount + ' ' + tokenLabel);*/
+                                                } else {
+                                                    $('.from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">0</span> '+tokenLabel+'</span>');
+                                                    /*$('.spendable-dcn-amount').attr('data-value', 0);
+                                                    $('.spendable-amount .spendable-dcn-amount span').html('0 ' + tokenLabel);*/
+                                                }
 
                                                 if (($('.section-amount-to input#crypto-amount').val().trim() * ethereum_data.market_data.current_price.usd) < 0.01) {
                                                     to_fixed_num = 4;
@@ -1268,25 +1067,130 @@ var projectData = {
                                             }
                                         });
 
-                                        $('.section-amount-to .open-transaction-recipe').unbind().click(function () {
-                                            var crypto_val = $('.section-amount-to input#crypto-amount').val().trim();
+                                        $('.section-amount-to .open-transaction-recipe').unbind().click(async function () {
+                                            var amount = $('.section-amount-to input#crypto-amount').val().trim();
                                             var usd_val = $('.section-amount-to input#usd-val').val().trim();
                                             var sending_to_address = $('.section-amount-to .address-cell').attr('data-receiver');
 
-                                            if (isNaN(crypto_val) || crypto_val == '' || crypto_val == 0 || ((isNaN(usd_val) || usd_val == '' || usd_val == 0) && dentacoin_data > 0)) {
+                                            if (!projectData.utils.innerAddressCheck(sending_to_address)) {
+                                                //checking if valid address
+                                                basic.showAlert($('.translates-holder').attr('enter-valid-address'), '', true);
+                                                return false;
+                                            } else if (!$('.section-amount-to #verified-receiver-address').is(':checked')) {
+                                                //checkbox
+                                                basic.showAlert($('.translates-holder').attr('checkbox'), '', true);
+                                                return false;
+                                            } else if (isNaN(amount) || amount == '' || amount == 0 || ((isNaN(usd_val) || usd_val == '' || usd_val == 0) && dentacoin_data > 0)) {
                                                 //checking if not a number or empty values
                                                 basic.showAlert($('.translates-holder').attr('ly-numbers'), '', true);
                                                 return false;
                                             }
 
-                                            if (parseFloat(crypto_val).countDecimals() > 17) {
-                                                crypto_val = parseFloat(crypto_val).toFixedNoRounding(17).toString();
+                                            if (parseFloat(amount).countDecimals() > 17) {
+                                                amount = parseFloat(amount).toFixedNoRounding(17).toString();
                                             }
 
-                                            dApp.methods.getDCNBalance(global_state.account, function (err, response) {
+                                            if (meta_mask_installed) {
+                                                basic.showAlert('MetaMask currently not supported.', '', true);
+                                                return false;
+                                                /*if ($('.section-amount-to #active-crypto').val() == 'dcn') {
+                                                    dApp.methods.transfer(sending_to_address, crypto_val);
+                                                } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
+                                                    dApp.web3_l1.eth.sendTransaction({
+                                                        from: global_state.account,
+                                                        to: sending_to_address,
+                                                        value: projectData.utils.toWei(crypto_val)
+                                                    }).on('transactionHash', function (hash) {
+                                                        projectData.general_logic.displayMessageOnTransactionSend('Ethers', hash);
+                                                    }).catch(function (err) {
+                                                        basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
+                                                    });
+                                                }*/
+                                            } else {
+                                                if ($('select#active-crypto').val() == 'dcn-l1') {
+                                                    projectData.general_logic.showLoader();
+                                                    setTimeout(async function() {
+                                                        var l1_dcn_balance = parseInt(await L1DCNContract.methods.balanceOf(global_state.account).call());
+                                                        if (l1_dcn_balance < amount) {
+                                                            projectData.general_logic.hideLoader();
+                                                            basic.showAlert($('.translates-holder').attr('higher-than-balance'), '', true);
+                                                        } else {
+                                                            var gasLimit = await L1DCNContract.methods.transfer(sending_to_address, amount).estimateGas({
+                                                                from: global_state.account
+                                                            });
+
+                                                            // adding 25 percent to the gas limit just in case
+                                                            gasLimit = Math.round(gasLimit + (gasLimit * 0.25));
+
+                                                            projectData.general_logic.openTxConfirmationPopup('Send confirmation', config_variable.l1.dcn_contract_address, amount, 'DCN', gasLimit, L1DCNContract.methods.transfer(sending_to_address, amount).encodeABI(), 'l1', 'transfer', null, null, sending_to_address);
+                                                        }
+                                                    }, 500);
+                                                } else if ($('select#active-crypto').val() == 'eth-l1') {
+                                                    projectData.general_logic.showLoader();
+                                                    setTimeout(async function() {
+                                                        var l1_eth_balance = await dApp.web3_l1.eth.getBalance(global_state.account);
+                                                        if (l1_eth_balance < parseInt(projectData.utils.toWei(amount.toString()))) {
+                                                            projectData.general_logic.hideLoader();
+                                                            basic.showAlert($('.translates-holder').attr('higher-than-balance'), '', true);
+                                                        } else {
+                                                            var gasLimit = await dApp.web3_l1.eth.estimateGas({
+                                                                to: sending_to_address
+                                                            });
+
+                                                            projectData.general_logic.openTxConfirmationPopup('Send confirmation', sending_to_address, amount, 'ETH', gasLimit, null, 'l1', 'transfer');
+                                                        }
+                                                    }, 500);
+                                                } else if ($('select#active-crypto').val() == 'dcn-l2' ) {
+                                                    basic.showDialog('<figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/attention-icon.svg" alt="Attention icon" itemprop="contentUrl" class="width-100 max-width-60"/></figure><div class="fs-30 fs-xs-22 calibri-bold padding-top-5 padding-bottom-5">Attention</div><div class="fs-20 fs-xs-16">Check if the sender\'s wallet supports <b>DCN2.0</b> before procceding. Sending <b>DCN2.0</b> to any wallet address or exchange which doesn\'t support <b>DCN2.0</b> will result in loss of your funds. <b>Currently, DCN2.0 is not traded on exchanges.</b><div class="padding-top-15"><b>If you still want to proceed,<br>type <span class="color-light-blue">CONFIRM</span> in the field below.</b></div></div><div class="margin-top-15 max-width-300 margin-0-auto confirm-container"><input type="text" class="confirm-text"/><a href="javascript:void(0);"><img src="assets/images/confirm-btn.png" alt="Confirm btn icon" itemprop="contentUrl"/></a></div>', 'sending-to-l2-wallet-confirmation-popup', true);
+
+                                                    $('.sending-to-l2-wallet-confirmation-popup .confirm-container a').click(async function() {
+                                                        if ($('.sending-to-l2-wallet-confirmation-popup .confirm-container .confirm-text').val().trim() == 'CONFIRM') {
+                                                            basic.closeDialog();
+                                                            projectData.general_logic.showLoader();
+                                                            setTimeout(async function() {
+                                                                var l2_dcn_balance = parseInt(await L2DCNContract.methods.balanceOf(global_state.account).call());
+                                                                if (l2_dcn_balance < amount) {
+                                                                    projectData.general_logic.hideLoader();
+                                                                    basic.showAlert($('.translates-holder').attr('higher-than-balance'), '', true);
+                                                                } else {
+                                                                    var gasLimit = await L2DCNContract.methods.transfer(sending_to_address, amount).estimateGas({
+                                                                        from: global_state.account
+                                                                    });
+
+                                                                    projectData.general_logic.openTxConfirmationPopup('Send confirmation', config_variable.l2.dcn_contract_address, amount, 'DCN2.0', gasLimit, L2DCNContract.methods.transfer(sending_to_address, amount).encodeABI(), 'l2', 'transfer', null, null, sending_to_address);
+                                                                }
+                                                            }, 500);
+                                                        }
+                                                    });
+                                                } else if ($('select#active-crypto').val() == 'eth-l2') {
+                                                    basic.showDialog('<figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/attention-icon.svg" alt="Attention icon" itemprop="contentUrl" class="width-100 max-width-60"/></figure><div class="fs-30 fs-xs-22 calibri-bold padding-top-5 padding-bottom-5">Attention</div><div class="fs-20 fs-xs-16">Check if the sender\'s wallet supports <b>ETH2.0</b> before procceding. Sending <b>ETH2.0</b> to any wallet address or exchange which doesn\'t support <b>ETH2.0</b> will result in loss of your funds. <b>Currently, ETH2.0 is not traded on exchanges.</b><div class="padding-top-15"><b>If you still want to proceed,<br>type <span class="color-light-blue">CONFIRM</span> in the field below.</b></div></div><div class="margin-top-15 max-width-300 margin-0-auto confirm-container"><input type="text" class="confirm-text"/><a href="javascript:void(0);"><img src="assets/images/confirm-btn.png" alt="Confirm btn icon" itemprop="contentUrl"/></a></div>', 'sending-to-l2-wallet-confirmation-popup', true);
+
+                                                    $('.sending-to-l2-wallet-confirmation-popup .confirm-container a').click(async function() {
+                                                        if ($('.sending-to-l2-wallet-confirmation-popup .confirm-container .confirm-text').val().trim() == 'CONFIRM') {
+                                                            basic.closeDialog();
+                                                            projectData.general_logic.showLoader();
+                                                            setTimeout(async function() {
+                                                                var l2_eth_balance = await dApp.web3_l2.eth.getBalance(global_state.account);
+                                                                if (l2_eth_balance < parseInt(projectData.utils.toWei(amount.toString()))) {
+                                                                    basic.showAlert($('.translates-holder').attr('higher-than-balance'), '', true);
+                                                                    projectData.general_logic.hideLoader();
+                                                                } else {
+                                                                    var gasLimit = await dApp.web3_l2.eth.estimateGas({
+                                                                        to: sending_to_address
+                                                                    });
+
+                                                                    projectData.general_logic.openTxConfirmationPopup('Send confirmation', sending_to_address, amount, 'ETH2.0', gasLimit, null, 'l2', 'transfer');
+                                                                }
+                                                            }, 500);
+                                                        }
+                                                    });
+                                                }
+                                            }
+
+                                            /*dApp.methods.getDCNBalance(L1DCNContract, global_state.account, function (err, response) {
                                                 var dcn_balance = parseInt(response);
 
-                                                dApp.web3_1_0.eth.getBalance(global_state.account, async function (error, eth_balance) {
+                                                dApp.web3_l1.eth.getBalance(global_state.account, async function (error, eth_balance) {
                                                     if (error) {
                                                         console.log(error);
                                                     } else {
@@ -1298,7 +1202,7 @@ var projectData = {
                                                             //checking if dcn value is lesser than 10 (contract condition)
                                                             basic.showAlert($('.translates-holder').attr('greater-dcn-value'), '', true);
                                                             return false;
-                                                        }/* else if (0.005 > parseFloat(projectData.utils.fromWei(eth_balance))) {
+                                                        }/!* else if (0.005 > parseFloat(projectData.utils.fromWei(eth_balance))) {
                                                             //checking if current balance is lower than the desired value to send
                                                             if ($('.section-amount-to #active-crypto').val() == 'dcn') {
                                                                 basic.showAlert('For sending Dentacoins you need at least 0.005 ETH. Please refill.', '', true);
@@ -1306,7 +1210,7 @@ var projectData = {
                                                                 basic.showAlert('For sending Ethereum you need at least 0.005 ETH. Please refill.', '', true);
                                                             }
                                                             return false;
-                                                        }*/ else if ($('.section-amount-to #active-crypto').val() == 'dcn' && crypto_val > parseInt(dcn_balance)) {
+                                                        }*!/ else if ($('.section-amount-to #active-crypto').val() == 'dcn' && crypto_val > parseInt(dcn_balance)) {
                                                             basic.showAlert($('.translates-holder').attr('higher-than-balance'), '', true);
                                                             return false;
                                                         } else if ($('.section-amount-to #active-crypto').val() == 'eth' && crypto_val > parseFloat(projectData.utils.fromWei(eth_balance))) {
@@ -1323,21 +1227,29 @@ var projectData = {
                                                         }
 
                                                         if (meta_mask_installed) {
-                                                            if ($('.section-amount-to #active-crypto').val() == 'dcn') {
+                                                            basic.showAlert('MetaMask currently not supported.', '', true);
+                                                            return false;
+                                                            /!*if ($('.section-amount-to #active-crypto').val() == 'dcn') {
                                                                 dApp.methods.transfer(sending_to_address, crypto_val);
                                                             } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
-                                                                dApp.web3_1_0.eth.sendTransaction({
+                                                                dApp.web3_l1.eth.sendTransaction({
                                                                     from: global_state.account,
                                                                     to: sending_to_address,
                                                                     value: projectData.utils.toWei(crypto_val)
                                                                 }).on('transactionHash', function (hash) {
-                                                                    displayMessageOnTransactionSend('Ethers', hash);
+                                                                    projectData.general_logic.displayMessageOnTransactionSend('Ethers', hash);
                                                                 }).catch(function (err) {
                                                                     basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
                                                                 });
-                                                            }
+                                                            }*!/
                                                         } else {
-                                                            showLoader();
+
+
+
+
+
+                                                            return false;
+                                                            projectData.general_logic.showLoader();
 
                                                             var function_abi;
                                                             var token_symbol;
@@ -1345,16 +1257,16 @@ var projectData = {
                                                             var on_popup_load_gwei;
                                                             var on_popup_load_gas_price;
                                                             var visibleGasPriceNumber;
-                                                            var nonce = await dApp.web3_1_0_assurance.eth.getTransactionCount(global_state.account);
-                                                            var pendingNonce = await dApp.web3_1_0_assurance.eth.getTransactionCount(global_state.account, 'pending');
+                                                            var nonce = await dApp.web3_l1_assurance.eth.getTransactionCount(global_state.account);
+                                                            var pendingNonce = await dApp.web3_l1_assurance.eth.getTransactionCount(global_state.account, 'pending');
                                                             sending_to_address = projectData.utils.checksumAddress(sending_to_address);
 
                                                             if ($('.section-amount-to #active-crypto').val() == 'dcn') {
                                                                 token_symbol = 'DCN';
-                                                                function_abi = DCNContract.methods.transfer(sending_to_address, crypto_val).encodeABI();
+                                                                function_abi = L1DCNContract.methods.transfer(sending_to_address, crypto_val).encodeABI();
 
                                                                 //gasLimit = 65000;
-                                                                gasLimit = await DCNContract.methods.transfer(sending_to_address, crypto_val).estimateGas({
+                                                                gasLimit = await L1DCNContract.methods.transfer(sending_to_address, crypto_val).estimateGas({
                                                                     from: global_state.account
                                                                 });
 
@@ -1362,7 +1274,7 @@ var projectData = {
                                                                 gasLimit = Math.round(gasLimit + (gasLimit * 0.1));
                                                             } else if ($('.section-amount-to #active-crypto').val() == 'eth') {
                                                                 token_symbol = 'ETH';
-                                                                gasLimit = await dApp.web3_1_0.eth.estimateGas({
+                                                                gasLimit = await dApp.web3_l1.eth.estimateGas({
                                                                     to: sending_to_address
                                                                 });
                                                             }
@@ -1382,7 +1294,7 @@ var projectData = {
                                                             var eth_fee = projectData.utils.fromWei((on_popup_load_gas_price * gasLimit).toString(), 'ether');
                                                             var transaction_popup_html = '<div class="tx-data-holder" data-visibleGasPriceNumber="'+visibleGasPriceNumber+'" data-initial-visibleGasPriceNumber="'+visibleGasPriceNumber+'" data-gasLimit="'+gasLimit+'" data-nonce="'+pendingNonce+'" data-initial-nonce="'+pendingNonce+'" data-on_popup_load_gas_price="'+on_popup_load_gas_price+'"></div><div class="title">'+$('.translates-holder').attr('sending-conf')+'</div><div class="pictogram-and-dcn-usd-price"><svg version="1.1" class="width-100 max-width-100 margin-bottom-10" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><style type="text/css">.st0-recipe{fill:#FFFFFF;}.st1-recipe{fill:#CA675A;}.st2-recipe{fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="100" width="105.7" x="-7.2" y="-6.4"></sliceSourceBounds></sfw></metadata><circle class="st0-recipe" cx="50" cy="50" r="50"/><g><g><g><path class="st1-recipe" d="M50.1,93.7c-18.7,0-36-12.4-41.3-31.3C2.4,39.6,15.8,16,38.5,9.6C48.9,6.7,60,7.8,69.6,12.8c1.2,0.6,1.6,2,1,3.2s-2,1.6-3.2,1c-8.6-4.4-18.4-5.4-27.7-2.8c-20.1,5.6-32,26.7-26.3,46.9s26.7,32.1,46.9,26.4s32.1-26.7,26.4-46.9c-1.1-3.9-2.8-7.6-5-10.9c-0.7-1.1-0.4-2.6,0.7-3.3c1.1-0.7,2.6-0.4,3.3,0.7c2.5,3.8,4.4,7.9,5.6,12.3c6.4,22.8-7,46.5-29.7,52.8C57.8,93.2,53.9,93.7,50.1,93.7z"/></g><g><path class="st1-recipe" d="M33.1,78.6c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.4l40.4-50.5c0.8-1,2.3-1.2,3.4-0.4c1,0.8,1.2,2.3,0.4,3.4L35,77.7C34.5,78.3,33.8,78.6,33.1,78.6z"/></g><g><g><path class="st2-recipe" d="M105.7,56.9"/></g></g></g><g><path class="st1-recipe" d="M73.7,54.2c-0.1,0-0.2,0-0.2,0c-1.3-0.2-2.3-1.4-2.2-2.7L74,23.9L47.6,39.8c-1.1,0.7-2.6,0.3-3.3-0.8c-0.7-1.1-0.3-2.6,0.8-3.3l34.5-20.8L76.1,52C76,53.2,74.9,54.2,73.7,54.2z"/></g></g></svg><div class="dcn-amount">-' + crypto_val + ' ' + token_symbol + '</div>' + usdHtml + '</div><div class="confirm-row to"> <div class="label inline-block">'+$('.translates-holder').attr('to-label')+'</div><div class="value inline-block">' + projectData.utils.checksumAddress(sending_to_address) + '</div></div><div class="confirm-row from"> <div class="label inline-block">'+$('.translates-holder').attr('from-label')+'</div><div class="value inline-block">' + global_state.account + '</div></div><div class="confirm-row nonce"> <div class="label inline-block">'+$('.translates-holder').attr('nonce')+'</div><div class="value inline-block">' + pendingNonce + '</div></div><div class="confirm-row fee"> <div class="label inline-block">'+$('.translates-holder').attr('eth-fee')+'</div><div class="value inline-block"><div class="inline-block eth-value">' + parseFloat(eth_fee).toFixed(8) + '</div><div class="inline-block tx-settings-icon"><a href="javascript:void(0);"><svg id="e68760ed-3659-43b9-ad7b-73b5b189fe7a" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 56.81 61"><defs><clipPath id="f9d5df6d-58de-4fe9-baeb-2948a9aeab40"><rect class="bb542d8f-936a-4524-831e-8152ec1848dd" x="-3.59" y="-1.5" width="64" height="64"/></clipPath></defs><g class="e20091d8-5cd8-4fc6-97bc-34f6a53a9fd6"><path style="fill:#888;" d="M28.29,61a25,25,0,0,1-4.05-.3,2.46,2.46,0,0,1-1.83-1.63L20.8,53.51a2.8,2.8,0,0,0-1.06-1.36l-5.86-3.38a2.67,2.67,0,0,0-1.69-.22L6.67,50a2.48,2.48,0,0,1-2.33-.73A28,28,0,0,1,.16,42.1a2.47,2.47,0,0,1,.5-2.39l4.15-4.33a2.76,2.76,0,0,0,.64-1.6V27a2.6,2.6,0,0,0-.65-1.57L.66,21.31a2.43,2.43,0,0,1-.52-2.38A31.86,31.86,0,0,1,2,15.27a30.47,30.47,0,0,1,2.33-3.49A2.48,2.48,0,0,1,6.61,11l5.9,1.45a2.69,2.69,0,0,0,1.7-.24l5.86-3.38a2.67,2.67,0,0,0,1-1.35L22.6,1.93A2.4,2.4,0,0,1,24.4.29a27.62,27.62,0,0,1,8.22,0A2.42,2.42,0,0,1,34.41,2L35.89,7.5a2.67,2.67,0,0,0,1,1.35l5.86,3.38a2.63,2.63,0,0,0,1.68.22L50,11a2.44,2.44,0,0,1,2.33.73,27.84,27.84,0,0,1,4.3,7.48,2.46,2.46,0,0,1-.54,2.39L52.2,25.45A2.66,2.66,0,0,0,51.55,27v6.76a2.72,2.72,0,0,0,.65,1.58l3.94,3.94a2.46,2.46,0,0,1,.54,2.38,29.28,29.28,0,0,1-2,4,29,29,0,0,1-2.32,3.5,2.44,2.44,0,0,1-2.33.73l-5.24-1.4a2.67,2.67,0,0,0-1.69.22l-5.86,3.38a2.71,2.71,0,0,0-1,1.35l-1.46,5.44A2.48,2.48,0,0,1,33,60.61h0A25.92,25.92,0,0,1,28.29,61ZM12.68,47.49a3.62,3.62,0,0,1,1.7.41l5.86,3.39a3.67,3.67,0,0,1,1.52,1.94l1.61,5.56a1.48,1.48,0,0,0,1,.92,27.08,27.08,0,0,0,8.38-.08h0a1.49,1.49,0,0,0,1-.94l1.46-5.45a3.65,3.65,0,0,1,1.5-2l5.86-3.39a3.64,3.64,0,0,1,2.45-.32L50.31,49a1.42,1.42,0,0,0,1.3-.41,29.64,29.64,0,0,0,2.23-3.36,30,30,0,0,0,1.9-3.87,1.5,1.5,0,0,0-.3-1.35l-3.95-3.94a3.6,3.6,0,0,1-.94-2.28V27a3.64,3.64,0,0,1,.94-2.28l3.89-3.88a1.48,1.48,0,0,0,.3-1.34,26.75,26.75,0,0,0-4.12-7.17,1.45,1.45,0,0,0-1.31-.41l-5.52,1.48a3.57,3.57,0,0,1-2.44-.33L36.43,9.71a3.59,3.59,0,0,1-1.5-2L33.45,2.24a1.43,1.43,0,0,0-1-.93,26.61,26.61,0,0,0-7.87,0,1.4,1.4,0,0,0-1,.92l-1.5,5.56a3.54,3.54,0,0,1-1.5,2l-5.86,3.38a3.68,3.68,0,0,1-2.44.35L6.37,12a1.5,1.5,0,0,0-1.32.43,31.07,31.07,0,0,0-2.22,3.35,29.61,29.61,0,0,0-1.75,3.51,1.41,1.41,0,0,0,.29,1.32l4.14,4.14A3.64,3.64,0,0,1,6.45,27v6.76a3.73,3.73,0,0,1-.92,2.29L1.38,40.4a1.47,1.47,0,0,0-.28,1.35,26.44,26.44,0,0,0,4,6.9,1.41,1.41,0,0,0,1.3.41l5.52-1.48A3,3,0,0,1,12.68,47.49Zm15.72-3a14,14,0,1,1,14-14A14,14,0,0,1,28.4,44.53Zm0-27.06a13,13,0,1,0,13,13A13,13,0,0,0,28.4,17.47Z"/><path style="fill:#888;" d="M28.29,60.87a25.85,25.85,0,0,1-4.11-.31,4.3,4.3,0,0,1-3.29-3l-1.51-5.17s-.07-.07-.12-.11l-5.37-3.1s0,0-.09,0L8.74,50.61A4.27,4.27,0,0,1,4.5,49.27,27.7,27.7,0,0,1,.26,42a4.32,4.32,0,0,1,.9-4.33l3.86-4s0-.1,0-.16V27.27s0,0-.06-.08L1.2,23.4a4.23,4.23,0,0,1-1-4.35,29.26,29.26,0,0,1,1.84-3.71A31.23,31.23,0,0,1,4.44,11.8a4.32,4.32,0,0,1,4.21-1.37l5.48,1.35s.1,0,.15,0l5.3-3.07a.41.41,0,0,0,.1-.13l1.37-5.1a4.24,4.24,0,0,1,3.3-3,27.69,27.69,0,0,1,8.33,0,4.26,4.26,0,0,1,3.27,3l1.36,5a.6.6,0,0,0,.09.13l5.32,3.07.16,0,5-1.36a4.28,4.28,0,0,1,4.24,1.33,28.05,28.05,0,0,1,4.36,7.58,4.31,4.31,0,0,1-1,4.34L52,27.19a.67.67,0,0,0-.07.18v6.18s0,0,.06.07l3.61,3.61a4.29,4.29,0,0,1,1,4.33,30.43,30.43,0,0,1-2,4.1,31.86,31.86,0,0,1-2.36,3.53A4.28,4.28,0,0,1,48,50.54l-4.8-1.29-.18,0-5.3,3.06-.1.15-1.33,5a4.31,4.31,0,0,1-3.23,3h0A26.57,26.57,0,0,1,28.29,60.87Zm-2.88-4a25.3,25.3,0,0,0,6.33-.07L33,52.05a5.63,5.63,0,0,1,2.46-3.2l5.69-3.28a5.59,5.59,0,0,1,4-.53l4.51,1.21c.39-.54,1-1.48,1.61-2.51a29.91,29.91,0,0,0,1.48-2.91l-3.42-3.42a5.61,5.61,0,0,1-1.54-3.72V27.12a5.61,5.61,0,0,1,1.54-3.72L52.7,20a25.27,25.27,0,0,0-3.08-5.36L44.82,16a5.6,5.6,0,0,1-4-.53l-5.69-3.29A5.61,5.61,0,0,1,32.68,9L31.4,4.15a24.46,24.46,0,0,0-5.8,0L24.31,9a5.64,5.64,0,0,1-2.45,3.2l-5.69,3.28a5.71,5.71,0,0,1-4,.56L7,14.72A28.64,28.64,0,0,0,5.4,17.26c-.57,1-1.05,2-1.33,2.55L7.66,23.4A5.59,5.59,0,0,1,9.2,27.12v6.57a5.77,5.77,0,0,1-1.48,3.7l-3.65,3.8a24.17,24.17,0,0,0,3,5.14L11.85,45a5.65,5.65,0,0,1,4,.53l5.69,3.28A5.7,5.7,0,0,1,24,52ZM25,55.63h0Zm12.64-3.26h0ZM7.45,15.28h0ZM8.27,15ZM19.65,8.62h0Zm0,0h0Zm17.66,0h0ZM28.4,44.85A14.35,14.35,0,1,1,42.75,30.5,14.37,14.37,0,0,1,28.4,44.85Zm0-24.42A10.07,10.07,0,1,0,38.47,30.5,10.08,10.08,0,0,0,28.4,20.43Z"/></g></svg></a></div></div></div>';
 
-                                                            dApp.web3_1_0.eth.getBalance(global_state.account, function (error, eth_balance) {
+                                                            dApp.web3_l1.eth.getBalance(global_state.account, function (error, eth_balance) {
                                                                 if (error) {
                                                                     console.log(error);
                                                                 } else {
@@ -1410,7 +1322,7 @@ var projectData = {
                                                                                 if ($('.cached-keystore-file #your-secret-key-password').val().trim() == '') {
                                                                                     basic.showAlert($('.translates-holder').attr('valid-password'), '', true);
                                                                                 } else {
-                                                                                    showLoader($('.translates-holder').attr('hold-on'));
+                                                                                    projectData.general_logic.showLoader($('.translates-holder').attr('hold-on'));
 
                                                                                     setTimeout(function () {
                                                                                         decryptKeystore(window.localStorage.getItem('keystore_file'), $('.cached-keystore-file #your-secret-key-password').val().trim(), function (success, to_string, error, error_message) {
@@ -1418,7 +1330,7 @@ var projectData = {
                                                                                                 submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, success);
                                                                                             } else if (error) {
                                                                                                 basic.showAlert(error_message, '', true);
-                                                                                                hideLoader();
+                                                                                                projectData.general_logic.hideLoader();
                                                                                             }
                                                                                         });
                                                                                     }, 2000);
@@ -1455,7 +1367,7 @@ var projectData = {
                                                                                     if ($('.proof-of-address #your-private-key').val().trim() == '') {
                                                                                         basic.showAlert($('.translates-holder').attr('enter-priv-key-error'), '', true);
                                                                                     } else {
-                                                                                        showLoader($('.translates-holder').attr('hold-on'));
+                                                                                        projectData.general_logic.showLoader($('.translates-holder').attr('hold-on'));
 
                                                                                         setTimeout(function () {
                                                                                             var validating_private_key = validatePrivateKey($('.proof-of-address #your-private-key').val().trim());
@@ -1464,11 +1376,11 @@ var projectData = {
                                                                                                     submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, new Buffer($('.proof-of-address #your-private-key').val().trim(), 'hex'));
                                                                                                 } else {
                                                                                                     basic.showAlert($('.translates-holder').attr('key-related'), '', true);
-                                                                                                    hideLoader();
+                                                                                                    projectData.general_logic.hideLoader();
                                                                                                 }
                                                                                             } else if (validating_private_key.error) {
                                                                                                 basic.showAlert(validating_private_key.message, '', true);
-                                                                                                hideLoader();
+                                                                                                projectData.general_logic.hideLoader();
                                                                                             }
                                                                                         }, 2000);
                                                                                     }
@@ -1489,19 +1401,19 @@ var projectData = {
                                                                             if (eth_balance.lessThan(eth_fee_check)) {
                                                                                 basic.showAlert($('.translates-holder').attr('no-balance'), '', true);
                                                                                 $('.transaction-confirmation-popup .on-change-result').html('');
-                                                                                hideLoader();
+                                                                                projectData.general_logic.hideLoader();
                                                                             } else {
                                                                                 submitTransactionToBlockchain(function_abi, token_symbol, crypto_val, sending_to_address, key);
                                                                             }
                                                                         });
                                                                     }
-                                                                    hideLoader();
+                                                                    projectData.general_logic.hideLoader();
                                                                 }
                                                             });
                                                         }
                                                     }
                                                 });
-                                            });
+                                            });*/
                                         });
                                     });
                                 });
@@ -1517,6 +1429,171 @@ var projectData = {
                 }, 500);
             }
         },
+        swap_page: async function () {
+            $(document).on('click', '.latest-dcn-popup .close-btn', function() {
+                $('.latest-dcn-popup').remove();
+                $('app-swap-page h1').addClass('padding-top-30').removeClass('padding-top-10');
+            });
+
+            var l1_dcn_balance = parseInt(await L1DCNContract.methods.balanceOf(global_state.account).call());
+            var l2_dcn_balance = parseInt(await L2DCNContract.methods.balanceOf(global_state.account).call());
+            var l1_eth_balance = await dApp.web3_l1.eth.getBalance(global_state.account);
+            var l2_eth_balance = await dApp.web3_l2.eth.getBalance(global_state.account);
+
+            $('.swapping-section .from-box .balance-line .amount').html(l1_dcn_balance.toLocaleString());
+            $('.swapping-section .to-box .balance-line .amount').html(l2_dcn_balance.toLocaleString());
+
+            $('.swapping-section .from-box .max-btn').click(function() {
+                $('.swapping-section .from-box .inputable-line input[type="number"]').val($('.swapping-section .from-box .balance-line .amount').html().replaceAll(',', '')).focus();
+                $('.swapping-section .to-box .inputable-line .transfer-to-amount').html($('.swapping-section .from-box .balance-line .amount').html().replaceAll(',', ''));
+            });
+
+            $('.inputable-amount').on('input paste change', function() {
+                var thisValue = $(this).val().trim();
+                if (thisValue < 0) {
+                    $(this).val(0);
+                }
+
+                if (thisValue > 0) {
+                    if ($('select.current-from').val() == 'eth-l1' && $('select.current-to').val() == 'dcn-l2') {
+                        projectData.requests.getDentacoinDataByCoingeckoProvider(function(dentacoin_data) {
+                            $('.swapping-section .to-box .inputable-line .transfer-to-amount').html(parseInt(thisValue / dentacoin_data.market_data.current_price.eth));
+                        }, true);
+                    } else {
+                        $('.swapping-section .to-box .inputable-line .transfer-to-amount').html(thisValue);
+                    }
+                }
+            });
+
+            $(document).on('change', 'select.current-to', function() {
+                if ($('select.current-from').val() == 'eth-l1' && $(this).val() == 'dcn-l2') {
+                    projectData.requests.getDentacoinDataByCoingeckoProvider(function(dentacoin_data) {
+                        $('.swapping-section .to-box .inputable-line .transfer-to-amount').html(parseInt($('.inputable-amount').val().trim() / dentacoin_data.market_data.current_price.eth));
+                    }, true);
+                } else {
+                    $('.swapping-section .to-box .inputable-line .transfer-to-amount').html($('.inputable-amount').val().trim());
+                }
+            });
+
+            $(document).on('change', 'select.current-from', function() {
+                $('.inputable-amount').val('').trigger('change');
+                switch($(this).val()) {
+                    case 'dcn-l1':
+                        $('.swapping-section .from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+l1_dcn_balance.toLocaleString()+'</span> DCN</span>');
+                        $('.swapping-section .to-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+l2_dcn_balance.toLocaleString()+'</span> DCN2.0</span>');
+                        $('.swapping-section .to-box .inputable-line').html('<div class="transfer-to-amount inline-block">0.0</div><select class="inline-block fs-24 padding-left-10 current-to"><option selected value="dcn-l2">DCN2.0</option></select>');
+                        break;
+                    case 'eth-l1':
+                        $('.swapping-section .from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+projectData.utils.fromWei(l1_eth_balance, 'ether')+'</span> ETH</span>');
+                        $('.swapping-section .to-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+projectData.utils.fromWei(l2_eth_balance, 'ether')+'</span> ETH2.0</span>');
+                        $('.swapping-section .to-box .inputable-line').html('<div class="transfer-to-amount inline-block">0.0</div><select class="inline-block fs-24 padding-left-10 current-to"><option selected value="eth-l2">ETH2.0</option><option value="dcn-l2">DCN2.0</option></select>');
+                        break;
+                    case 'dcn-l2':
+                        $('.swapping-section .from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+l2_dcn_balance.toLocaleString()+'</span> DCN2.0</span>');
+                        $('.swapping-section .to-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+l1_dcn_balance.toLocaleString()+'</span> DCN</span>');
+                        $('.swapping-section .to-box .inputable-line').html('<div class="transfer-to-amount inline-block">0.0</div><select class="inline-block fs-24 padding-left-10 current-to"><option selected value="dcn-l1">DCN</option></select>');
+                        break;
+                    case 'eth-l2':
+                        $('.swapping-section .from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+projectData.utils.fromWei(l2_eth_balance, 'ether')+'</span> ETH2.0</span>');
+                        $('.swapping-section .to-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+projectData.utils.fromWei(l1_eth_balance, 'ether')+'</span> ETH</span>');
+                        $('.swapping-section .to-box .inputable-line').html('<div class="transfer-to-amount inline-block">0.0</div><select class="inline-block fs-24 padding-left-10 current-to"><option selected value="eth-l1">ETH</option></select>');
+                        break;
+                }
+            });
+
+            $('.switch-layers-btn a').click(function() {
+                if ($('select.current-from').attr('data-current-layer') == 'l1') {
+                    $('select.current-from').attr('data-current-layer', 'l2');
+                    if ($('select.current-from').val() == 'eth-l1') {
+                        $('select.current-from').html('<option value="dcn-l2">DCN2.0</option><option value="eth-l2" selected>ETH2.0</option>');
+                    } else {
+                        $('select.current-from').html('<option value="dcn-l2">DCN2.0</option><option value="eth-l2">ETH2.0</option>');
+                    }
+                } else if ($('select.current-from').attr('data-current-layer') == 'l2') {
+                    $('select.current-from').attr('data-current-layer', 'l1');
+                    if ($('select.current-from').val() == 'eth-l2') {
+                        $('select.current-from').html('<option value="dcn-l1">DCN</option><option value="eth-l1" selected>ETH</option>');
+                    } else {
+                        $('select.current-from').html('<option value="dcn-l1">DCN</option><option value="eth-l1">ETH</option>');
+                    }
+                }
+                $('select.current-from').trigger('change');
+            });
+
+            $('.swap-btn').click(function() {
+                var amount = parseFloat($('.inputable-amount').val().trim());
+                if (!$('#checkbox-understand').is(':checked')) {
+                    basic.showAlert('Please check the checkbox.', '', true);
+                } else if (amount <= 0 || Number.isNaN(amount)) {
+                    basic.showAlert('Please enter correct swapping value.', '', true);
+                } else {
+                    projectData.general_logic.showLoader();
+                    setTimeout(async function() {
+                        if ($('select.current-from').val() == 'dcn-l1' && $('select.current-to').val() == 'dcn-l2') {
+                            if (l1_dcn_balance < amount) {
+                                projectData.general_logic.hideLoader();
+                                basic.showAlert('You don\'t have enough DCN balance to complete the swap.', '', true);
+                            } else {
+                                var to = projectData.utils.checksumAddress('0xa4D508dC72f5ce2B688d05ACFfe8E1AeF326831C');
+                                var gasLimit = await L1DCNContract.methods.transfer(to, amount).estimateGas({
+                                    from: global_state.account
+                                });
+
+                                // adding 25 percent to the gas limit just in case
+                                gasLimit = Math.round(gasLimit + (gasLimit * 0.25));
+                                projectData.general_logic.openTxConfirmationPopup('Swap confirmation', to, amount, 'DCN', gasLimit, L1DCNContract.methods.transfer(to, amount).encodeABI(), 'l1', 'swap', 'dcn-l1-to-dcn-l2');
+                            }
+                        } else if ($('select.current-from').val() == 'eth-l1' && $('select.current-to').val() == 'eth-l2') {
+                            if (l1_eth_balance < parseInt(projectData.utils.toWei(amount.toString()))) {
+                                projectData.general_logic.hideLoader();
+                                basic.showAlert('You don\'t have enough ETH balance to complete the swap.', '', true);
+                            } else {
+                                var to = projectData.utils.checksumAddress('0x7cFF2b3b3702ED7deCc57fAa32940DCf855D2d29');
+                                var gasLimit = await dApp.web3_l1.eth.estimateGas({
+                                    to: to
+                                });
+                                projectData.general_logic.openTxConfirmationPopup('Swap confirmation', to, amount, 'ETH', gasLimit, null, 'l1', 'swap', 'eth-l1-to-eth-l2');
+                            }
+                        } else if ($('select.current-from').val() == 'eth-l1' && $('select.current-to').val() == 'dcn-l2') {
+                            if (l1_eth_balance < parseInt(projectData.utils.toWei(amount.toString()))) {
+                                projectData.general_logic.hideLoader();
+                                basic.showAlert('You don\'t have enough ETH balance to complete the swap.', '', true);
+                            } else {
+                                var to = projectData.utils.checksumAddress('0x1D611d469704b95525C96B5c4921a5b78807ae4e');
+                                var gasLimit = await dApp.web3_l1.eth.estimateGas({
+                                    to: to
+                                });
+                                projectData.general_logic.openTxConfirmationPopup('Swap confirmation', to, amount, 'ETH', gasLimit, null, 'l1', 'swap', 'eth-l1-to-dcn-l2', $('.swapping-section .to-box .inputable-line .transfer-to-amount').html());
+                            }
+                        } else if ($('select.current-from').val() == 'dcn-l2' && $('select.current-to').val() == 'dcn-l1') {
+                            if (l2_dcn_balance < amount) {
+                                basic.showAlert('You don\'t have enough DCN2.0 balance to complete the swap.', '', true);
+                                projectData.general_logic.hideLoader();
+                            } else {
+                                var gasLimit = await L2DCNContract.methods.withdraw(amount).estimateGas({
+                                    from: global_state.account
+                                });
+
+                                projectData.general_logic.openTxConfirmationPopup('Swap confirmation', config_variable.l2.dcn_contract_address, amount, 'DCN2.0', gasLimit, L2DCNContract.methods.withdraw(amount).encodeABI(), 'l2', 'swap', 'dcn-l2-to-dcn-l1', $('.swapping-section .to-box .inputable-line .transfer-to-amount').html());
+                            }
+                        } else if ($('select.current-from').val() == 'eth-l2' && $('select.current-to').val() == 'eth-l1') {
+                            if (l2_eth_balance < parseInt(projectData.utils.toWei(amount.toString()))) {
+                                basic.showAlert('You don\'t have enough ETH2.0 balance to complete the swap.', '', true);
+                                projectData.general_logic.hideLoader();
+                            } else {
+                                console.log(L2OptimismL2StandardBridgeContract.methods, 'L2OptimismL2StandardBridgeContract.methods');
+                                var gasLimit = await L2OptimismL2StandardBridgeContract.methods.withdraw(/*'0x4200000000000000000000000000000000000006', */projectData.utils.toWei(amount.toString())/*, '0x', '0x'*/).estimateGas({
+                                    from: global_state.account
+                                });
+                                console.log(gasLimit, 'gasLimit');
+
+                                projectData.general_logic.openTxConfirmationPopup('Swap confirmation', '0x4200000000000000000000000000000000000010', amount, 'ETH2.0', gasLimit, L2OptimismL2StandardBridgeContract.methods.withdraw(/*'0x4200000000000000000000000000000000000006', */projectData.utils.toWei(amount.toString())/*, '0x', '0x'*/).encodeABI(), 'l2', 'swap', 'eth-l2-to-eth-l1', $('.swapping-section .to-box .inputable-line .transfer-to-amount').html());
+                            }
+                        }
+                    }, 500);
+                }
+            });
+        },
         spend_page_dental_services: function () {
             projectData.utils.saveHybridAppCurrentScreen();
             if (iframeHeightListenerInit) {
@@ -1530,49 +1607,13 @@ var projectData = {
                 });
             }
 
-            showMobileAppBannerForDesktopBrowsers();
-        },
-        spend_page_gift_cards: function () {
-            projectData.utils.saveHybridAppCurrentScreen();
-
-            showMobileAppBannerForDesktopBrowsers();
-
-            if (!bidali_lib_loaded) {
-                //loading bidali lib for buying tickets with DCN api
-                showLoader();
-                $.getScript('https://wallet.dentacoin.com/assets/libs/bidali/bidali-commerce.js', function () {
-                    bidali_lib_loaded = true;
-                    hideLoader();
-                    bidaliWidgetInit();
-                });
-            } else {
-                bidaliWidgetInit();
-            }
-
-            function bidaliWidgetInit() {
-                $('.buy-gift-cards').click(function () {
-                    if (is_hybrid && (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel')) {
-                        window.open('https://wallet.dentacoin.com/spend-gift-cards?show-vouchers=true', '_system');
-                        return false;
-                    } else {
-                        bidaliSdk.Commerce.render({
-                            apiKey: config_variable.bidali_api_key,
-                            paymentCurrencies: ['DCN']
-                        });
-                    }
-                });
-
-                var get_params = getGETParameters();
-                if (basic.property_exists(get_params, 'show-vouchers')) {
-                    $('.buy-gift-cards').click();
-                }
-            }
+            projectData.general_logic.showMobileAppBannerForDesktopBrowsers();
         },
         spend_page_exchanges: function () {
             projectData.utils.saveHybridAppCurrentScreen();
 
-            showMobileAppBannerForDesktopBrowsers();
-            showLoader();
+            projectData.general_logic.showMobileAppBannerForDesktopBrowsers();
+            projectData.general_logic.showLoader();
 
             //getting exchanges from dentacoin.com DB
             $.ajax({
@@ -1588,16 +1629,15 @@ var projectData = {
                     }
 
                     $('.camping-for-exchanges').html(exchanges_html);
-                    updateExternalURLsForiOSDevice();
 
-                    hideLoader();
+                    projectData.general_logic.hideLoader();
                 }
             });
         },
         spend_page_assurance_fees: function () {
             projectData.utils.saveHybridAppCurrentScreen();
 
-            showMobileAppBannerForDesktopBrowsers();
+            projectData.general_logic.showMobileAppBannerForDesktopBrowsers();
 
             /*if (is_hybrid) {
                 $('.camp-assurance-mobile-phone-scanning').html('<div class="padding-top-15 padding-bottom-20 fs-16 max-width-600 margin-0-auto">You can handle all Dentacoin Assurance contract actions - such as contract creation or cancellation for patients or contact approvals and withdrawals for dentists - directly from here!</div><div class="text-center padding-bottom-30"><a href="javascript:void(0)" class="light-blue-white-btn no-hover open-transaction-scanner min-width-270 margin-right-10 margin-bottom-10 width-xs-100 max-width-400 margin-right-xs-0 padding-left-5 padding-right-5 fs-18 text-center">SCAN TRANSACTION <figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block max-width-30 width-100 margin-left-5"><img src="assets/images/scan-qr-code-blue.svg" alt="Scan icon"/></figure></a></div>');
@@ -1613,7 +1653,7 @@ var projectData = {
                     });
                 } else {
                     executeGlobalLogic();
-                    initScan($('.open-transaction-scanner'), null, function (content) {
+                    projectData.general_logic.initScan($('.open-transaction-scanner'), null, function (content) {
                         var content = decodeURIComponent(content);
 
                         if (basic.isJsonString(content)) {
@@ -1655,11 +1695,11 @@ var projectData = {
                                                                 network: $('#main-container').attr('network')
                                                             },
                                                             success: function (response) {
-                                                                hideLoader();
+                                                                projectData.general_logic.hideLoader();
                                                                 basic.closeDialog();
                                                                 if (response.success) {
                                                                     basic.showAlert($('.translates-holder').attr('data-assurance-success'), '', true);
-                                                                    firePushNotification('Assurance transaction', 'Contract created successfully.');
+                                                                    projectData.general_logic.firePushNotification('Assurance transaction', 'Contract created successfully.');
                                                                 } else {
                                                                     basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
                                                                 }
@@ -1683,11 +1723,11 @@ var projectData = {
                                                             network: $('#main-container').attr('network')
                                                         },
                                                         success: function (response) {
-                                                            hideLoader();
+                                                            projectData.general_logic.hideLoader();
                                                             basic.closeDialog();
                                                             if (response.success) {
                                                                 basic.showAlert($('.translates-holder').attr('data-assurance-success'), '', true);
-                                                                firePushNotification('Assurance transaction', 'Contract created successfully.');
+                                                                projectData.general_logic.firePushNotification('Assurance transaction', 'Contract created successfully.');
                                                             } else {
                                                                 basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
                                                             }
@@ -1710,11 +1750,11 @@ var projectData = {
                                                             network: $('#main-container').attr('network')
                                                         },
                                                         success: function (response) {
-                                                            hideLoader();
+                                                            projectData.general_logic.hideLoader();
                                                             basic.closeDialog();
                                                             if (response.success) {
                                                                 basic.showAlert($('.translates-holder').attr('data-assurance-success'), '', true);
-                                                                firePushNotification('Assurance transaction', 'Contract approved successfully.');
+                                                                projectData.general_logic.firePushNotification('Assurance transaction', 'Contract approved successfully.');
                                                             } else {
                                                                 basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
                                                             }
@@ -1737,11 +1777,11 @@ var projectData = {
                                                             network: $('#main-container').attr('network')
                                                         },
                                                         success: function (response) {
-                                                            hideLoader();
+                                                            projectData.general_logic.hideLoader();
                                                             basic.closeDialog();
                                                             if (response.success) {
                                                                 basic.showAlert($('.translates-holder').attr('data-assurance-success'), '', true);
-                                                                firePushNotification('Assurance transaction', 'Successful withdraw.');
+                                                                projectData.general_logic.firePushNotification('Assurance transaction', 'Successful withdraw.');
                                                             } else {
                                                                 basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
                                                             }
@@ -1766,11 +1806,11 @@ var projectData = {
                                                             network: $('#main-container').attr('network')
                                                         },
                                                         success: function (response) {
-                                                            hideLoader();
+                                                            projectData.general_logic.hideLoader();
                                                             basic.closeDialog();
                                                             if (response.success) {
                                                                 basic.showAlert($('.translates-holder').attr('data-assurance-success'), '', true);
-                                                                firePushNotification('Assurance transaction', 'Contract cancelled successfully.');
+                                                                projectData.general_logic.firePushNotification('Assurance transaction', 'Contract cancelled successfully.');
                                                             } else {
                                                                 basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
                                                             }
@@ -1804,7 +1844,7 @@ var projectData = {
                                                 if ($('.cached-keystore-file #your-secret-key-password').val().trim() == '') {
                                                     basic.showAlert($('.translates-holder').attr('valid-password'), '', true);
                                                 } else {
-                                                    showLoader($('.translates-holder').attr('hold-on'));
+                                                    projectData.general_logic.showLoader($('.translates-holder').attr('hold-on'));
 
                                                     setTimeout(function () {
                                                         decryptKeystore(window.localStorage.getItem('keystore_file'), $('.cached-keystore-file #your-secret-key-password').val().trim(), function (success, to_string, error, error_message) {
@@ -1812,7 +1852,7 @@ var projectData = {
                                                                 scanningRouter(success);
                                                             } else if (error) {
                                                                 basic.showAlert(error_message, '', true);
-                                                                hideLoader();
+                                                                projectData.general_logic.hideLoader();
                                                             }
                                                         });
                                                     }, 2000);
@@ -1835,7 +1875,7 @@ var projectData = {
                                                     if ($('.proof-of-address #your-private-key').val().trim() == '') {
                                                         basic.showAlert($('.translates-holder').attr('enter-priv-key-error'), '', true);
                                                     } else {
-                                                        showLoader($('.translates-holder').attr('hold-on'));
+                                                        projectData.general_logic.showLoader($('.translates-holder').attr('hold-on'));
 
                                                         setTimeout(function () {
                                                             var validating_private_key = validatePrivateKey($('.proof-of-address #your-private-key').val().trim());
@@ -1844,11 +1884,11 @@ var projectData = {
                                                                     scanningRouter(new Buffer($('.proof-of-address #your-private-key').val().trim(), 'hex'));
                                                                 } else {
                                                                     basic.showAlert('Please enter private key related to your Wallet Address.', '', true);
-                                                                    hideLoader();
+                                                                    projectData.general_logic.hideLoader();
                                                                 }
                                                             } else if (validating_private_key.error) {
                                                                 basic.showAlert(validating_private_key.message, '', true);
-                                                                hideLoader();
+                                                                projectData.general_logic.hideLoader();
                                                             }
                                                         }, 2000);
                                                     }
@@ -1875,6 +1915,544 @@ var projectData = {
         }
     },
     general_logic: {
+        openL2InformationPopups: function(type) {
+            var popupHtml;
+            switch(type) {
+                case 'what-is-dcn2':
+                    popupHtml = '<div class="text-center"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/pop-up-img1.png" alt="What is DCN2.0"></figure><h2 class="fs-26 fs-xs-24 padding-top-15">What is DCN2?</h2><div class="fs-20 padding-bottom-50">DCN2 is the b(igg)est upgrade of Dentacoin so far! It allows you to send and receive DCN2 tokens faster and with much lower transaction costs. It also protects the value of DCN from high fluctuations.</div></div><div class="bottom-menu padding-top-10 padding-bottom-30 fs-20 calibri-bold"><a href="javascript:void(0);" class="how-to-get-and-use-dcn2">• How to get and use DCN2?<i class="fa fa-arrow-right" aria-hidden="true"></i></a><a href="javascript:void(0);" class="whats-with-dcn">• What’s with the original version of DCN?<i class="fa fa-arrow-right" aria-hidden="true"></i></a></div><div class="popup-bullets text-center"><ul><li class="active"></li><li></li><li></li></ul></div>';
+                    break;
+                case 'how-to-get-and-use-dcn2':
+                    popupHtml = '<div class="text-center"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/pop-up-img2.png" alt="What is DCN2.0"></figure><h2 class="fs-26 fs-xs-24 padding-top-15">How to get and use DCN2?</h2><div class="fs-20 padding-bottom-50">DCN2 tokens are received as rewards from Dentacoin tools (eg. for writing a review on Dentacoin Trusted Reviews or taking DentaVox surveys). You can use them for staking to increase your savings, for payments at partner dentists, or for covering your Dentacoin Assurance fees. You can also easily swap DCN to DCN2 right here in your wallet.</div></div><div class="bottom-menu padding-top-10 padding-bottom-30 fs-20 calibri-bold"><a href="javascript:void(0);" class="whats-with-dcn">• What’s with the original version of DCN?<i class="fa fa-arrow-right" aria-hidden="true"></i></a><a href="javascript:void(0);" class="what-is-dcn2">• What is DCN2?<i class="fa fa-arrow-right" aria-hidden="true"></i></a></div><div class="popup-bullets text-center"><ul><li></li><li class="active"></li><li></li></ul></div>';
+                    break;
+                case 'whats-with-dcn':
+                    popupHtml = '<div class="text-center"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/pop-up-img3.png" alt="What is DCN2.0"></figure><h2 class="fs-26 fs-xs-24 padding-top-15">What’s with the original version of DCN?</h2><div class="fs-20 padding-bottom-50">It is alive and flourishing :) But its main use case would be for trading on exchange platforms.</div></div><div class="bottom-menu padding-top-10 padding-bottom-30 fs-20 calibri-bold"><a href="javascript:void(0);" class="what-is-dcn2">• What is DCN2?<i class="fa fa-arrow-right" aria-hidden="true"></i></a><a href="javascript:void(0);" class="how-to-get-and-use-dcn2">• How to get and use DCN2?<i class="fa fa-arrow-right" aria-hidden="true"></i></a></div><div class="popup-bullets text-center"><ul><li></li><li></li><li class="active"></li></ul></div>';
+                    break;
+            }
+
+            basic.showDialog(popupHtml, 'l2-information-popup', true);
+
+            if ($('.l2-information-popup .how-to-get-and-use-dcn2').length) {
+                $('.l2-information-popup .how-to-get-and-use-dcn2').click(function() {
+                    basic.closeDialog();
+                    projectData.general_logic.openL2InformationPopups('how-to-get-and-use-dcn2');
+                });
+            }
+
+            if ($('.l2-information-popup .whats-with-dcn').length) {
+                $('.l2-information-popup .whats-with-dcn').click(function() {
+                    basic.closeDialog();
+                    projectData.general_logic.openL2InformationPopups('whats-with-dcn');
+                });
+            }
+
+            if ($('.l2-information-popup .what-is-dcn2').length) {
+                $('.l2-information-popup .what-is-dcn2').click(function() {
+                    basic.closeDialog();
+                    projectData.general_logic.openL2InformationPopups('what-is-dcn2');
+                });
+            }
+        },
+        openTxConfirmationPopup: async function(popupTitle, to, amount, token_symbol, gasLimit, function_abi, layer, transactionType, swapType, swapToAmount, visible_to) {
+            console.log(popupTitle, to, amount, token_symbol, gasLimit, function_abi, layer, transactionType, swapType, swapToAmount);
+
+            var ethFeeLabel;
+            var web3_provider;
+            var currentGasPriceInGwei;
+            var on_popup_load_gas_price;
+            var visibleGasPriceNumber;
+            if (layer == 'l1') {
+                ethFeeLabel = 'ETH';
+                web3_provider = dApp.web3_l1;
+                nonce = await dApp.web3_l1.eth.getTransactionCount(global_state.account);
+                pendingNonce = await dApp.web3_l1.eth.getTransactionCount(global_state.account, 'pending');
+                var gasPriceObject = await projectData.requests.getGasPrice();
+                currentGasPriceInGwei = parseInt(gasPriceObject.result.SafeGasPrice);
+                //adding 10% of the outcome just in case transactions don't take too long
+                on_popup_load_gas_price = currentGasPriceInGwei * 1000000000 + ((currentGasPriceInGwei * 1000000000) * 10 / 100);
+                visibleGasPriceNumber = on_popup_load_gas_price / 1000000000;
+            } else if (layer == 'l2') {
+                ethFeeLabel = 'ETH2.0';
+                web3_provider = dApp.web3_l2;
+                currentGasPriceInGwei = parseInt(await dApp.web3_l2.eth.getGasPrice());
+                on_popup_load_gas_price = currentGasPriceInGwei;
+                visibleGasPriceNumber = on_popup_load_gas_price / 1000000000;
+            }
+
+            var nonce = await web3_provider.eth.getTransactionCount(global_state.account);
+            var pendingNonce = await web3_provider.eth.getTransactionCount(global_state.account, 'pending');
+            to = projectData.utils.checksumAddress(to);
+
+            if (transactionType == 'transfer') {
+                var txIcon = '<svg version="1.1" class="width-100 max-width-100 margin-bottom-10" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><style type="text/css">.st0-recipe{fill:#FFFFFF;}.st1-recipe{fill:#CA675A;}.st2-recipe{fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="100" width="105.7" x="-7.2" y="-6.4"></sliceSourceBounds></sfw></metadata><circle class="st0-recipe" cx="50" cy="50" r="50"/><g><g><g><path class="st1-recipe" d="M50.1,93.7c-18.7,0-36-12.4-41.3-31.3C2.4,39.6,15.8,16,38.5,9.6C48.9,6.7,60,7.8,69.6,12.8c1.2,0.6,1.6,2,1,3.2s-2,1.6-3.2,1c-8.6-4.4-18.4-5.4-27.7-2.8c-20.1,5.6-32,26.7-26.3,46.9s26.7,32.1,46.9,26.4s32.1-26.7,26.4-46.9c-1.1-3.9-2.8-7.6-5-10.9c-0.7-1.1-0.4-2.6,0.7-3.3c1.1-0.7,2.6-0.4,3.3,0.7c2.5,3.8,4.4,7.9,5.6,12.3c6.4,22.8-7,46.5-29.7,52.8C57.8,93.2,53.9,93.7,50.1,93.7z"/></g><g><path class="st1-recipe" d="M33.1,78.6c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.4l40.4-50.5c0.8-1,2.3-1.2,3.4-0.4c1,0.8,1.2,2.3,0.4,3.4L35,77.7C34.5,78.3,33.8,78.6,33.1,78.6z"/></g><g><g><path class="st2-recipe" d="M105.7,56.9"/></g></g></g><g><path class="st1-recipe" d="M73.7,54.2c-0.1,0-0.2,0-0.2,0c-1.3-0.2-2.3-1.4-2.2-2.7L74,23.9L47.6,39.8c-1.1,0.7-2.6,0.3-3.3-0.8c-0.7-1.1-0.3-2.6,0.8-3.3l34.5-20.8L76.1,52C76,53.2,74.9,54.2,73.7,54.2z"/></g></g></svg>';
+                if (token_symbol == 'DCN' || token_symbol == 'DCN2.0') {
+                    projectData.requests.getDentacoinDataByCoingeckoProvider(function(usdPrice) {
+                        proceedWithTxConfirmationPopupInitialization(txIcon, '<div class="dcn-amount">-' + parseInt(amount).toLocaleString() + ' ' + token_symbol + '</div>', '<div class="usd-amount">=$' + (amount * usdPrice).toFixed(2) + '</div>');
+                    });
+                } else if (token_symbol == 'ETH' || token_symbol == 'ETH2.0') {
+                    projectData.requests.getEthereumDataByCoingecko(function(ethereum_data) {
+                        proceedWithTxConfirmationPopupInitialization(txIcon, '<div class="dcn-amount">-' + amount + ' ' + token_symbol + '</div>', '<div class="usd-amount">=$' + (amount * ethereum_data.market_data.current_price.usd).toFixed(2) + '</div>');
+                    });
+                }
+            } else if (transactionType == 'swap') {
+                var txIcon = '<svg version="1.1" class="width-100 max-width-100 margin-bottom-10" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><style type="text/css">.st0{fill:#FFF}.st1{fill:none;stroke:#5CCB92;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10}.st2{fill:#57D3D9}.st3{fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10}</style><path class="st0" d="M50,0C22.4,0,0,22.4,0,50c0,27.6,22.4,50,50,50s50-22.4,50-50C100,22.4,77.6,0,50,0z M17.8,79.2 c0.2-0.1,0.3-0.3,0.4-0.5c0,0.6,0.2,1.1,0.5,1.5C18.4,79.9,18.1,79.5,17.8,79.2z"/> <g> <g> <g> <g> <path class="st1" d="M105.7,57"/> </g> </g> </g> <g> <g> <path class="st2" d="M36.3,83.5L41.3,56c0.2-1,1.1-1.6,2.1-1.5c1,0.2,1.6,1.1,1.5,2.1l-3.7,20.5l20.7-10.3c0.9-0.5,2-0.1,2.4,0.8 c0.5,0.9,0.1,2-0.8,2.4L36.3,83.5z"/> </g> <g> <path class="st2" d="M64.1,19.4l-6,27.3c-0.2,1-1.2,1.6-2.1,1.4c-1-0.2-1.6-1.2-1.4-2.1L59,25.7l-21.1,9.5c-0.9,0.4-2,0-2.4-0.9 c-0.4-0.9,0-2,0.9-2.4L64.1,19.4z"/> </g> <g> <path class="st2" d="M42.4,77.8c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.5l41-51.3c0.8-1,2.3-1.2,3.4-0.4 c1,0.8,1.2,2.3,0.4,3.5l-41,51.3C43.8,77.5,43.1,77.8,42.4,77.8z"/> </g> <g> <g> <path class="st2" d="M81.3,29c0.2,0.3,0.4,0.6,0.6,0.9L44.3,76.9c-0.5,0.6-1.2,0.9-1.9,0.9c-0.5,0-1-0.2-1.5-0.5 c-1-0.8-1.2-2.3-0.4-3.5l38.3-48.1c0.2,0.2,0.4,0.5,0.7,0.8C80.1,27.4,80.7,28.1,81.3,29z"/> </g> </g> </g> </g> <g> <g> <g> <path class="st2" d="M15.3,78.4c-0.5,0-1-0.2-1.5-0.6c-1-0.8-1.1-2.3-0.3-3.4l42.3-48.9c0.8-1,2.3-1.1,3.4-0.3 c1,0.8,1.1,2.3,0.3,3.4L17.2,77.6C16.7,78.2,16,78.5,15.3,78.4z"/> </g> <g> <g> <path class="st3" d="M219.1,57.2"/> </g> </g> </g> </g> <path class="st2" d="M79.7,19.7C79.7,19.7,79.7,19.7,79.7,19.7c-0.2-0.2-0.3-0.3-0.5-0.5c0,0,0,0,0,0c-7.6-7-17.9-11.3-29.1-11.3 c-23.8,0-43,19.3-43,43c0,7,1.7,13.5,4.6,19.3c0.6,1.2,2.3,1.4,3.1,0.4l0.7-0.8c0.5-0.6,0.6-1.5,0.3-2.2c-2.4-5-3.8-10.7-3.8-16.6 c0-21,17-38.1,38.1-38.1c10,0,19.1,3.9,26,10.2c0.4,0.5,1.1,0.7,1.8,0.7c1.4,0,2.5-1.1,2.5-2.5C80.3,20.7,80.1,20.2,79.7,19.7z M87.8,30.1C87.8,30.1,87.8,30.1,87.8,30.1c-0.1-0.2-0.2-0.4-0.3-0.5c0-0.1-0.1-0.1-0.1-0.2c0,0,0,0,0,0c-0.2-0.2-0.3-0.3-0.5-0.4 c0,0,0,0,0,0c-0.4-0.3-0.9-0.4-1.4-0.4c-0.8,0-1.4,0.3-1.9,0.9c-0.1,0.1-0.1,0.2-0.2,0.2c-0.3,0.4-0.4,0.9-0.4,1.4 c0,0.3,0.1,0.6,0.2,0.9c0,0,0,0,0,0c0.1,0.2,0.2,0.4,0.3,0.6c3,5.5,4.8,11.8,4.8,18.5c0,21-17,38.1-38.1,38.1 c-10.8,0-20.5-4.5-27.4-11.6c0,0,0,0,0,0c-0.1-0.1-0.3-0.3-0.4-0.4c-0.7-0.8-1.9-0.7-2.6,0.1l-1.4,1.6c0,0-0.1,0.1-0.1,0.1v0 c0,0.6,0.2,1.1,0.5,1.5c0.1,0.1,0.1,0.2,0.2,0.2c7.8,8.3,18.9,13.5,31.2,13.5c23.8,0,43-19.2,43-43C93.2,43.4,91.2,36.3,87.8,30.1z" /> <circle class="st2" cx="13.8" cy="69" r="2.4"/> <path class="st2" d="M80.3,21.3c0,1.4-1.1,2.5-2.5,2.5c-0.7,0-1.3-0.3-1.8-0.7c-0.5-0.4-0.7-1.1-0.7-1.7c0-1.4,1.1-2.5,2.5-2.5 c0.5,0,1,0.2,1.4,0.4c0,0,0,0,0,0c0.2,0.1,0.3,0.3,0.5,0.4c0,0,0,0,0,0C80.1,20.2,80.3,20.7,80.3,21.3z"/> <path class="st2" d="M87.9,30.9c0,1.4-1.1,2.5-2.5,2.5c-0.7,0-1.3-0.3-1.8-0.7c-0.1-0.1-0.2-0.2-0.2-0.3c-0.1-0.2-0.2-0.4-0.3-0.6 c0,0,0,0,0,0c-0.1-0.3-0.2-0.6-0.2-0.9c0-0.5,0.2-1,0.4-1.4c0.1-0.1,0.1-0.2,0.2-0.2c0.5-0.5,1.1-0.9,1.9-0.9c0.5,0,1,0.2,1.4,0.4 c0,0,0,0,0,0c0.2,0.1,0.3,0.3,0.5,0.4c0,0,0,0,0,0c0.1,0.1,0.1,0.1,0.1,0.2c0.1,0.2,0.2,0.3,0.3,0.5c0,0,0,0,0,0 C87.9,30.4,87.9,30.6,87.9,30.9z"/> <path class="st2" d="M23.1,78.7c0,1.4-1.1,2.4-2.4,2.4c-0.7,0-1.3-0.3-1.7-0.7c-0.1-0.1-0.1-0.2-0.2-0.2c-0.3-0.4-0.5-1-0.5-1.5v0 c0-1.3,1.1-2.4,2.4-2.4c0.5,0,0.9,0.2,1.3,0.4c0,0,0,0,0.1,0c0.3,0.2,0.5,0.4,0.6,0.6c0,0,0,0,0,0C23,77.7,23.1,78.2,23.1,78.7z"/></svg>';
+
+                var belowTxIconHtml;
+                switch(swapType) {
+                    case 'dcn-l1-to-dcn-l2':
+                        belowTxIconHtml = amount + 'DCN <=> ' + parseInt(amount).toLocaleString() + 'DCN2.0';
+                        break;
+                    case 'eth-l1-to-eth-l2':
+                        belowTxIconHtml = amount + 'ETH <=> ' + amount + 'ETH2.0';
+                        break;
+                    case 'eth-l1-to-dcn-l2':
+                        belowTxIconHtml = amount + 'ETH <=> ' + parseInt(swapToAmount).toLocaleString() + 'DCN2.0';
+                        break;
+                    case 'dcn-l2-to-dcn-l1':
+                        belowTxIconHtml = amount + 'DCN2.0 <=> ' + parseInt(amount).toLocaleString() + 'DCN';
+                        break;
+                    case 'eth-l2-to-eth-l1':
+                        belowTxIconHtml = amount + 'ETH2.0 <=> ' + amount + 'ETH';
+                        break;
+                }
+
+                proceedWithTxConfirmationPopupInitialization(txIcon, '', '<div class="dcn-amount">'+belowTxIconHtml+'</div>');
+            }
+
+            async function proceedWithTxConfirmationPopupInitialization(txIcon, belowTxIconHtml, usdHtml) {
+                var visibleToAddress = projectData.utils.checksumAddress(to);
+                if (visible_to != undefined) {
+                    visibleToAddress = projectData.utils.checksumAddress(visible_to);
+                }
+                var eth_fee = projectData.utils.fromWei((on_popup_load_gas_price * gasLimit).toString(), 'ether');
+                var transaction_popup_html = '<div class="tx-data-holder" data-visibleGasPriceNumber="'+visibleGasPriceNumber+'" data-initial-visibleGasPriceNumber="'+visibleGasPriceNumber+'" data-gasLimit="'+gasLimit+'" data-nonce="'+pendingNonce+'" data-initial-nonce="'+pendingNonce+'" data-on_popup_load_gas_price="'+on_popup_load_gas_price+'"></div><div class="title">'+popupTitle+'</div><div class="pictogram-and-dcn-usd-price">' + txIcon + belowTxIconHtml + usdHtml + '</div><div class="confirm-row to"> <div class="label inline-block">'+$('.translates-holder').attr('to-label')+'</div><div class="value inline-block">' + visibleToAddress + '</div></div><div class="confirm-row from"> <div class="label inline-block">'+$('.translates-holder').attr('from-label')+'</div><div class="value inline-block">' + global_state.account + '</div></div><div class="confirm-row nonce"> <div class="label inline-block">'+$('.translates-holder').attr('nonce')+'</div><div class="value inline-block">' + pendingNonce + '</div></div><div class="confirm-row fee"> <div class="label inline-block">'+ethFeeLabel+$('.translates-holder').attr('eth-fee')+'</div><div class="value inline-block"><div class="inline-block eth-value">' + parseFloat(eth_fee).toFixed(8) + '</div><div class="inline-block tx-settings-icon"><a href="javascript:void(0);"><svg id="e68760ed-3659-43b9-ad7b-73b5b189fe7a" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 56.81 61"><defs><clipPath id="f9d5df6d-58de-4fe9-baeb-2948a9aeab40"><rect class="bb542d8f-936a-4524-831e-8152ec1848dd" x="-3.59" y="-1.5" width="64" height="64"/></clipPath></defs><g class="e20091d8-5cd8-4fc6-97bc-34f6a53a9fd6"><path style="fill:#888;" d="M28.29,61a25,25,0,0,1-4.05-.3,2.46,2.46,0,0,1-1.83-1.63L20.8,53.51a2.8,2.8,0,0,0-1.06-1.36l-5.86-3.38a2.67,2.67,0,0,0-1.69-.22L6.67,50a2.48,2.48,0,0,1-2.33-.73A28,28,0,0,1,.16,42.1a2.47,2.47,0,0,1,.5-2.39l4.15-4.33a2.76,2.76,0,0,0,.64-1.6V27a2.6,2.6,0,0,0-.65-1.57L.66,21.31a2.43,2.43,0,0,1-.52-2.38A31.86,31.86,0,0,1,2,15.27a30.47,30.47,0,0,1,2.33-3.49A2.48,2.48,0,0,1,6.61,11l5.9,1.45a2.69,2.69,0,0,0,1.7-.24l5.86-3.38a2.67,2.67,0,0,0,1-1.35L22.6,1.93A2.4,2.4,0,0,1,24.4.29a27.62,27.62,0,0,1,8.22,0A2.42,2.42,0,0,1,34.41,2L35.89,7.5a2.67,2.67,0,0,0,1,1.35l5.86,3.38a2.63,2.63,0,0,0,1.68.22L50,11a2.44,2.44,0,0,1,2.33.73,27.84,27.84,0,0,1,4.3,7.48,2.46,2.46,0,0,1-.54,2.39L52.2,25.45A2.66,2.66,0,0,0,51.55,27v6.76a2.72,2.72,0,0,0,.65,1.58l3.94,3.94a2.46,2.46,0,0,1,.54,2.38,29.28,29.28,0,0,1-2,4,29,29,0,0,1-2.32,3.5,2.44,2.44,0,0,1-2.33.73l-5.24-1.4a2.67,2.67,0,0,0-1.69.22l-5.86,3.38a2.71,2.71,0,0,0-1,1.35l-1.46,5.44A2.48,2.48,0,0,1,33,60.61h0A25.92,25.92,0,0,1,28.29,61ZM12.68,47.49a3.62,3.62,0,0,1,1.7.41l5.86,3.39a3.67,3.67,0,0,1,1.52,1.94l1.61,5.56a1.48,1.48,0,0,0,1,.92,27.08,27.08,0,0,0,8.38-.08h0a1.49,1.49,0,0,0,1-.94l1.46-5.45a3.65,3.65,0,0,1,1.5-2l5.86-3.39a3.64,3.64,0,0,1,2.45-.32L50.31,49a1.42,1.42,0,0,0,1.3-.41,29.64,29.64,0,0,0,2.23-3.36,30,30,0,0,0,1.9-3.87,1.5,1.5,0,0,0-.3-1.35l-3.95-3.94a3.6,3.6,0,0,1-.94-2.28V27a3.64,3.64,0,0,1,.94-2.28l3.89-3.88a1.48,1.48,0,0,0,.3-1.34,26.75,26.75,0,0,0-4.12-7.17,1.45,1.45,0,0,0-1.31-.41l-5.52,1.48a3.57,3.57,0,0,1-2.44-.33L36.43,9.71a3.59,3.59,0,0,1-1.5-2L33.45,2.24a1.43,1.43,0,0,0-1-.93,26.61,26.61,0,0,0-7.87,0,1.4,1.4,0,0,0-1,.92l-1.5,5.56a3.54,3.54,0,0,1-1.5,2l-5.86,3.38a3.68,3.68,0,0,1-2.44.35L6.37,12a1.5,1.5,0,0,0-1.32.43,31.07,31.07,0,0,0-2.22,3.35,29.61,29.61,0,0,0-1.75,3.51,1.41,1.41,0,0,0,.29,1.32l4.14,4.14A3.64,3.64,0,0,1,6.45,27v6.76a3.73,3.73,0,0,1-.92,2.29L1.38,40.4a1.47,1.47,0,0,0-.28,1.35,26.44,26.44,0,0,0,4,6.9,1.41,1.41,0,0,0,1.3.41l5.52-1.48A3,3,0,0,1,12.68,47.49Zm15.72-3a14,14,0,1,1,14-14A14,14,0,0,1,28.4,44.53Zm0-27.06a13,13,0,1,0,13,13A13,13,0,0,0,28.4,17.47Z"/><path style="fill:#888;" d="M28.29,60.87a25.85,25.85,0,0,1-4.11-.31,4.3,4.3,0,0,1-3.29-3l-1.51-5.17s-.07-.07-.12-.11l-5.37-3.1s0,0-.09,0L8.74,50.61A4.27,4.27,0,0,1,4.5,49.27,27.7,27.7,0,0,1,.26,42a4.32,4.32,0,0,1,.9-4.33l3.86-4s0-.1,0-.16V27.27s0,0-.06-.08L1.2,23.4a4.23,4.23,0,0,1-1-4.35,29.26,29.26,0,0,1,1.84-3.71A31.23,31.23,0,0,1,4.44,11.8a4.32,4.32,0,0,1,4.21-1.37l5.48,1.35s.1,0,.15,0l5.3-3.07a.41.41,0,0,0,.1-.13l1.37-5.1a4.24,4.24,0,0,1,3.3-3,27.69,27.69,0,0,1,8.33,0,4.26,4.26,0,0,1,3.27,3l1.36,5a.6.6,0,0,0,.09.13l5.32,3.07.16,0,5-1.36a4.28,4.28,0,0,1,4.24,1.33,28.05,28.05,0,0,1,4.36,7.58,4.31,4.31,0,0,1-1,4.34L52,27.19a.67.67,0,0,0-.07.18v6.18s0,0,.06.07l3.61,3.61a4.29,4.29,0,0,1,1,4.33,30.43,30.43,0,0,1-2,4.1,31.86,31.86,0,0,1-2.36,3.53A4.28,4.28,0,0,1,48,50.54l-4.8-1.29-.18,0-5.3,3.06-.1.15-1.33,5a4.31,4.31,0,0,1-3.23,3h0A26.57,26.57,0,0,1,28.29,60.87Zm-2.88-4a25.3,25.3,0,0,0,6.33-.07L33,52.05a5.63,5.63,0,0,1,2.46-3.2l5.69-3.28a5.59,5.59,0,0,1,4-.53l4.51,1.21c.39-.54,1-1.48,1.61-2.51a29.91,29.91,0,0,0,1.48-2.91l-3.42-3.42a5.61,5.61,0,0,1-1.54-3.72V27.12a5.61,5.61,0,0,1,1.54-3.72L52.7,20a25.27,25.27,0,0,0-3.08-5.36L44.82,16a5.6,5.6,0,0,1-4-.53l-5.69-3.29A5.61,5.61,0,0,1,32.68,9L31.4,4.15a24.46,24.46,0,0,0-5.8,0L24.31,9a5.64,5.64,0,0,1-2.45,3.2l-5.69,3.28a5.71,5.71,0,0,1-4,.56L7,14.72A28.64,28.64,0,0,0,5.4,17.26c-.57,1-1.05,2-1.33,2.55L7.66,23.4A5.59,5.59,0,0,1,9.2,27.12v6.57a5.77,5.77,0,0,1-1.48,3.7l-3.65,3.8a24.17,24.17,0,0,0,3,5.14L11.85,45a5.65,5.65,0,0,1,4,.53l5.69,3.28A5.7,5.7,0,0,1,24,52ZM25,55.63h0Zm12.64-3.26h0ZM7.45,15.28h0ZM8.27,15ZM19.65,8.62h0Zm0,0h0Zm17.66,0h0ZM28.4,44.85A14.35,14.35,0,1,1,42.75,30.5,14.37,14.37,0,0,1,28.4,44.85Zm0-24.42A10.07,10.07,0,1,0,38.47,30.5,10.08,10.08,0,0,0,28.4,20.43Z"/></g></svg></a></div></div></div>';
+
+                web3_provider.eth.getBalance(global_state.account, function (error, eth_balance) {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        eth_balance = new Decimal(projectData.utils.fromWei(eth_balance));
+
+                        if (window.localStorage.getItem('keystore_file') != null) {
+                            //cached keystore path on mobile device or cached keystore file on browser
+                            transaction_popup_html += '<div class="container-fluid"><div class="row padding-top-25 cached-keystore-file"><div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">'+$('.translates-holder').attr('password-label')+'</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">'+$('.translates-holder').attr('confirm')+'</a></div></div></div>';
+                            basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
+                            projectData.general_logic.bindTxSettings(visibleGasPriceNumber, nonce);
+
+                            $('.cached-keystore-file .confirm-transaction.keystore-file').click(function () {
+                                var eth_fee_check;
+                                if (token_symbol == 'DCN' || token_symbol == 'DCN2.0') {
+                                    eth_fee_check = parseFloat(eth_fee).toFixed(8);
+                                } else if (token_symbol == 'ETH' || token_symbol == 'ETH2.0') {
+                                    var amount_decimal = new Decimal(amount);
+                                    eth_fee_check = amount_decimal.plus(parseFloat(eth_fee).toFixed(8));
+                                }
+
+                                if (eth_balance.lessThan(eth_fee_check)) {
+                                    basic.showAlert($('.translates-holder').attr('no-balance'), '', true);
+                                    $('.transaction-confirmation-popup .on-change-result').html('');
+                                } else {
+                                    if ($('.cached-keystore-file #your-secret-key-password').val().trim() == '') {
+                                        basic.showAlert($('.translates-holder').attr('valid-password'), '', true);
+                                    } else {
+                                        projectData.general_logic.showLoader($('.translates-holder').attr('hold-on'));
+
+                                        setTimeout(function () {
+                                            decryptKeystore(window.localStorage.getItem('keystore_file'), $('.cached-keystore-file #your-secret-key-password').val().trim(), function (success, to_string, error, error_message) {
+                                                if (success) {
+                                                    submitTransactionToBlockchain(web3_provider, transactionType, function_abi, token_symbol, amount, to, success);
+                                                } else if (error) {
+                                                    basic.showAlert(error_message, '', true);
+                                                    projectData.general_logic.hideLoader();
+                                                }
+                                            });
+                                        }, 2000);
+                                    }
+                                }
+                            });
+                        } else {
+                            //nothing is cached
+                            transaction_popup_html += '<div class="container-fluid proof-of-address padding-top-20 padding-bottom-20"> <div class="row fs-0"> <div class="col-xs-12 col-sm-5 inline-block padding-left-30 padding-left-xs-15 priv-key-btn"> <a href="javascript:void(0)" class="light-blue-white-btn text-center enter-private-key display-block-important fs-18 fs-xs-14 line-height-18"><span>'+$('.translates-holder').attr('enter-priv-key')+'</span></a> </div><div class="col-xs-12 col-sm-2 text-center calibri-bold fs-20 fs-xs-16 inline-block or-label">or</div><div class="col-xs-12 col-sm-5 inline-block padding-right-30 padding-right-xs-15 keystore-btn"><div class="upload-file-container" data-id="upload-keystore-file"><input type="file" id="upload-keystore-file" class="custom-upload-keystore-file hide-input"/> <div class="btn-wrapper"></div></div></div></div><div class="row on-change-result"></div></div>';
+                            basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
+                            projectData.general_logic.bindTxSettings(visibleGasPriceNumber, nonce);
+
+                            //init private key btn logic
+                            $(document).on('click', '.enter-private-key', function () {
+                                var eth_fee_check;
+                                if (token_symbol == 'DCN' || token_symbol == 'DCN2.0') {
+                                    eth_fee_check = parseFloat(eth_fee).toFixed(8);
+                                } else if (token_symbol == 'ETH' || token_symbol == 'ETH2.0') {
+                                    var amount_decimal = new Decimal(amount);
+                                    eth_fee_check = amount_decimal.plus(parseFloat(eth_fee).toFixed(8));
+                                }
+
+                                if (eth_balance.lessThan(eth_fee_check)) {
+                                    basic.showAlert($('.translates-holder').attr('no-balance'), '', true);
+                                    $('.transaction-confirmation-popup .on-change-result').html('');
+                                } else {
+                                    $('.proof-of-address #upload-keystore-file').val('');
+                                    $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-20"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-private-key">'+$('.translates-holder').attr('your-priv-key')+'</label><input type="text" id="your-private-key" maxlength="64" class="full-rounded"/></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction private-key">'+$('.translates-holder').attr('confirm-btn')+'</a></div>');
+
+                                    $('#your-private-key').focus();
+                                    $('label[for="your-private-key"]').addClass('active-label');
+
+                                    $('.confirm-transaction.private-key').click(function () {
+                                        if ($('.proof-of-address #your-private-key').val().trim() == '') {
+                                            basic.showAlert($('.translates-holder').attr('enter-priv-key-error'), '', true);
+                                        } else {
+                                            projectData.general_logic.showLoader($('.translates-holder').attr('hold-on'));
+
+                                            setTimeout(function () {
+                                                var validating_private_key = validatePrivateKey($('.proof-of-address #your-private-key').val().trim());
+                                                if (validating_private_key.success) {
+                                                    if (projectData.utils.checksumAddress(validating_private_key.success.address) == projectData.utils.checksumAddress(global_state.account)) {
+                                                        submitTransactionToBlockchain(web3_provider, transactionType, function_abi, token_symbol, amount, to, new Buffer($('.proof-of-address #your-private-key').val().trim(), 'hex'));
+                                                    } else {
+                                                        basic.showAlert($('.translates-holder').attr('key-related'), '', true);
+                                                        projectData.general_logic.hideLoader();
+                                                    }
+                                                } else if (validating_private_key.error) {
+                                                    basic.showAlert(validating_private_key.message, '', true);
+                                                    projectData.general_logic.hideLoader();
+                                                }
+                                            }, 2000);
+                                        }
+                                    });
+                                }
+                            });
+
+                            //init keystore btn logic
+                            styleKeystoreUploadBtnForTx(function (key) {
+                                var eth_fee_check;
+                                if (token_symbol == 'DCN' || token_symbol == 'DCN2.0') {
+                                    eth_fee_check = parseFloat(eth_fee).toFixed(8);
+                                } else if (token_symbol == 'ETH' || token_symbol == 'ETH2.0') {
+                                    var amount_decimal = new Decimal(amount);
+                                    eth_fee_check = amount_decimal.plus(parseFloat(eth_fee).toFixed(8));
+                                }
+
+                                if (eth_balance.lessThan(eth_fee_check)) {
+                                    basic.showAlert($('.translates-holder').attr('no-balance'), '', true);
+                                    $('.transaction-confirmation-popup .on-change-result').html('');
+                                    projectData.general_logic.hideLoader();
+                                } else {
+                                    submitTransactionToBlockchain(web3_provider, transactionType, function_abi, token_symbol, amount, to, key);
+                                }
+                            });
+                        }
+                        projectData.general_logic.hideLoader();
+                    }
+                });
+            }
+        },
+        getEthereumTransactionHistory: async function(url, layer) {
+            var etherscan_transactions = await $.ajax({
+                type: 'GET',
+                url: url,
+                dataType: 'json'
+            });
+
+            var ethereum_transactions_arr = [];
+            console.log(url, 'url');
+            if (etherscan_transactions.result) {
+                for (var i = 0, len = etherscan_transactions.result.length; i < len; i+=1) {
+                    if (etherscan_transactions.result[i].txreceipt_status == '1' && etherscan_transactions.result[i].input == '0x') {
+                        etherscan_transactions.result[i].type = 'eth_transaction';
+                        etherscan_transactions.result[i].layer = layer;
+                        ethereum_transactions_arr.push(etherscan_transactions.result[i]);
+                    }
+                }
+            }
+
+            return ethereum_transactions_arr;
+        },
+        getDentacoinTransactionHistory: async function(contract_instance, block_number, callback) {
+            //getting blockchain events where the logged user was the sender of the transaction
+            contract_instance.getPastEvents('Transfer', {
+                filter: {_from: global_state.account},
+                fromBlock: block_number,
+                toBlock: 'latest'
+            }, function (events_from_user_err, events_from_user) {
+                if (!events_from_user_err) {
+                    //getting blockchain events where the logged user was the receiver of the transaction
+                    contract_instance.getPastEvents('Transfer', {
+                        filter: {_to: global_state.account},
+                        fromBlock: block_number,
+                        toBlock: 'latest'
+                    }, async function (events_to_user_err, events_to_user) {
+                        if (!events_from_user_err && !events_to_user_err) {
+                            callback(events_from_user.concat(events_to_user));
+                        }
+                    });
+                }
+            });
+        },
+        buildTransactionHistory: async function () {
+            tx_history = [];
+            if (window.localStorage.getItem('tx_history') != null) {
+                var tx_history_storage = JSON.parse(window.localStorage.getItem('tx_history'));
+                var starting_l1_block = tx_history_storage.covered_l1_block + 1;
+                var starting_l2_block = tx_history_storage.covered_l2_block + 1;
+            } else {
+                var starting_l1_block = block_number_of_dcn_creation;
+                var starting_l2_block = config_variable.L2blockOfL1L2Integration;
+            }
+
+            //getting transactions data by etherscan
+            var l1_etherscan_transactions = await projectData.general_logic.getEthereumTransactionHistory(config_variable.etherscan_api_domain + '/api?module=account&action=txlist&address=' + global_state.account + '&startblock=' + starting_l1_block + '&apikey=' + config_variable.etherscan_api_key, 'L1');
+            var l2_etherscan_transactions = await projectData.general_logic.getEthereumTransactionHistory(config_variable.optimism_etherscan_api_domain + '/api?module=account&action=txlist&address=' + global_state.account + '&startblock=' + starting_l2_block + '&apikey=' + config_variable.etherscan_api_key, 'L2');
+
+            projectData.general_logic.getDentacoinTransactionHistory(L1DCNContract, starting_l1_block, function(l1_events) {
+                for (var i = 0, len = l1_events.length; i < len; i+=1) {
+                    l1_events[i].layer = 'L1';
+                }
+                projectData.general_logic.getDentacoinTransactionHistory(L2DCNContract, starting_l2_block, function(l2_events) {
+                    //var l1_transactions = l1_etherscan_transactions.concat(l1_events);
+
+                    var merged_events_arr = [];
+                    //if (l2_events.length) {
+                        for (var i = 0, len = l2_events.length; i < len; i+=1) {
+                            l2_events[i].layer = 'L2';
+                        }
+
+                        //if (l2_etherscan_transactions.length) {
+                            merged_events_arr = l1_etherscan_transactions.concat(l1_events, l2_events, l2_etherscan_transactions);
+                        /*} else {
+                            merged_events_arr = merged_events_arr.concat(l1_transactions);
+                        }*/
+                        proceedWithMixedL1L2TransactionHistoryBuilding();
+                    /*} else {
+                        merged_events_arr = l1_transactions;
+                        if (l2_etherscan_transactions.length) {
+                            merged_events_arr = merged_events_arr.concat(l2_etherscan_transactions);
+                        }
+
+                        proceedWithOnlyL1TransactionHistoryBuilding();
+                    }*/
+
+                    async function proceedWithMixedL1L2TransactionHistoryBuilding() {
+                        if (merged_events_arr.length || window.localStorage.getItem('tx_history') != null) {
+                            $('.camping-transaction-history').html('<h2 class="lato-bold fs-25 text-center white-crossed-label color-white"><span class="renew-on-lang-switch" data-slug="tx-history">'+$('.translates-holder').attr('tx-history')+'</span></h2><div class="transaction-history container"><div class="row"><div class="col-xs-12 no-gutter-xs col-md-10 col-md-offset-1 padding-top-20 tx-history-scroll-parent"><table class="color-white"><tbody><tr class="loading-tr"><td class="text-center" colspan="5"><figure class="inline-block rotate-animation"><img src="assets/images/exchange.png" alt="Exchange icon"/></figure></td></tr></tbody></table></div></div><div class="row camping-show-more"></div></div>');
+
+                            var counter = 0;
+                            async function iterateEvents(counter) {
+                                if (counter < merged_events_arr.length) {
+                                    if (basic.property_exists(merged_events_arr[counter], 'type') && merged_events_arr[counter].type == 'eth_transaction') {
+                                        counter+=1;
+                                        iterateEvents(counter);
+                                    } else {
+                                        if (basic.property_exists(merged_events_arr[counter], 'layer') && merged_events_arr[counter].layer == 'L2') {
+                                            var blockData = await dApp.web3_l2.eth.getBlock(merged_events_arr[counter].blockNumber);
+                                        } else {
+                                            var blockData = await dApp.web3_l1.eth.getBlock(merged_events_arr[counter].blockNumber);
+                                        }
+                                        merged_events_arr[counter].timeStamp = blockData.timestamp;
+                                        counter+=1;
+                                        iterateEvents(counter);
+                                    }
+                                } else {
+                                    projectData.utils.sortByKey(merged_events_arr, 'timeStamp');
+                                    merged_events_arr = merged_events_arr.reverse();
+
+                                    projectData.requests.getEthereumDataByCoingecko(function (ethereumResponse) {
+                                        var ethereum_data = ethereumResponse;
+                                        projectData.requests.getDentacoinDataByCoingeckoProvider(async function (dentacoinResponse) {
+                                            var dentacoin_data = dentacoinResponse;
+                                            var mixed_L1L2_transacton_history_html;
+
+                                            if (window.localStorage.getItem('tx_history') != null) {
+                                                merged_events_arr = merged_events_arr.concat(JSON.parse(window.localStorage.getItem('tx_history')).merged_events_arr);
+                                            }
+
+                                            window.localStorage.setItem('tx_history', JSON.stringify({
+                                                covered_l1_block: await dApp.web3_l1.eth.getBlockNumber(),
+                                                covered_l2_block: await dApp.web3_l2.eth.getBlockNumber(),
+                                                merged_events_arr: merged_events_arr
+                                            }));
+
+                                            for (var i = 0, len = merged_events_arr.length; i < len; i+=1) {
+                                                if (basic.property_exists(merged_events_arr[i], 'type') && merged_events_arr[i].type == 'eth_transaction') {
+                                                    //eth transaction
+                                                    mixed_L1L2_transacton_history_html += projectData.general_logic.buildEthereumHistoryTransaction(ethereum_data, projectData.utils.fromWei(merged_events_arr[i].value, 'ether'), merged_events_arr[i].to, merged_events_arr[i].from, merged_events_arr[i].timeStamp, merged_events_arr[i].hash, undefined, merged_events_arr[i].layer);
+                                                } else {
+                                                    //dcn transaction
+                                                    mixed_L1L2_transacton_history_html += projectData.general_logic.buildDentacoinHistoryTransaction(dentacoin_data, merged_events_arr[i].returnValues._value, merged_events_arr[i].returnValues._to, merged_events_arr[i].returnValues._from, merged_events_arr[i].timeStamp, merged_events_arr[i].transactionHash, undefined, merged_events_arr[i].layer);
+                                                }
+                                            }
+
+                                            $('.camping-transaction-history table tbody').append(mixed_L1L2_transacton_history_html);
+                                            $('.camping-transaction-history table tbody tr.loading-tr').remove();
+                                            $('.camping-transaction-history table tr').addClass('show-this');
+                                        });
+                                    });
+                                }
+                            }
+                            iterateEvents(counter);
+                        }
+                    }
+
+                    function proceedWithOnlyL1TransactionHistoryBuilding() {
+                        if (merged_events_arr.length || window.localStorage.getItem('tx_history') != null) {
+                            //sorting the mixed array by blockNumber
+                            projectData.utils.sortByKey(merged_events_arr, 'blockNumber');
+                            merged_events_arr = merged_events_arr.reverse();
+
+                            projectData.requests.getEthereumDataByCoingecko(function (ethereumResponse) {
+                                var ethereum_data = ethereumResponse;
+                                projectData.requests.getDentacoinDataByCoingeckoProvider(function (dentacoinResponse) {
+                                    var dentacoin_data = dentacoinResponse;
+
+                                    $('.camping-transaction-history').html('<h2 class="lato-bold fs-25 text-center white-crossed-label color-white"><span class="renew-on-lang-switch" data-slug="tx-history">'+$('.translates-holder').attr('tx-history')+'</span></h2><div class="transaction-history container"><div class="row"><div class="col-xs-12 no-gutter-xs col-md-10 col-md-offset-1 padding-top-20 tx-history-scroll-parent"><table class="color-white"><tbody></tbody></table></div></div><div class="row camping-show-more"></div></div>');
+
+                                    $(document).on('click', '.camping-transaction-history .show-more', function () {
+                                        $(this).fadeOut();
+                                        $(this).attr('show-all-transactions', 'true');
+                                        $('.camping-transaction-history table tr').addClass('show-this');
+                                    });
+
+                                    var transaction_history_html = '';
+                                    var array_with_already_shown_transactions = [];
+
+                                    //clearing the array with transactions from dupped ones
+                                    for (var i = 0, len = merged_events_arr.length; i < len; i += 1) {
+                                        if (basic.property_exists(merged_events_arr[i], 'hash')) {
+                                            if (array_with_already_shown_transactions.includes(merged_events_arr[i].hash)) {
+                                                merged_events_arr.splice(i, 1);
+                                            } else {
+                                                array_with_already_shown_transactions.push(merged_events_arr[i].hash);
+                                            }
+                                        } else if (basic.property_exists(merged_events_arr[i], 'transactionHash')) {
+                                            if (array_with_already_shown_transactions.includes(merged_events_arr[i].transactionHash)) {
+                                                merged_events_arr.splice(i, 1);
+                                            } else {
+                                                array_with_already_shown_transactions.push(merged_events_arr[i].transactionHash);
+                                            }
+                                        }
+                                    }
+
+                                    //requesting blockchain for a lot of transactions data takes sometime and this is why first we select the latest 5 transactions for the logged user (which are shown on page load) and then we make a second query to select everything before these 5 latest transactions and show loader until they are ready to be shown
+                                    var intervals_stopper = 5;
+                                    if (merged_events_arr.length < 5) {
+                                        intervals_stopper = merged_events_arr.length;
+                                    }
+
+                                    var stop_intervals = false;
+
+                                    function recursiveLoop(custom_iterator) {
+                                        if (custom_iterator < 5 && custom_iterator < intervals_stopper) {
+                                            if (basic.property_exists(merged_events_arr[custom_iterator], 'type') && merged_events_arr[custom_iterator].type == 'eth_transaction') {
+                                                //eth transaction
+                                                transaction_history_html += projectData.general_logic.buildEthereumHistoryTransaction(ethereum_data, projectData.utils.fromWei(merged_events_arr[custom_iterator].value, 'ether'), merged_events_arr[custom_iterator].to, merged_events_arr[custom_iterator].from, merged_events_arr[custom_iterator].timeStamp, merged_events_arr[custom_iterator].hash, undefined, merged_events_arr[custom_iterator].layer);
+
+                                                if (custom_iterator < 5) {
+                                                    custom_iterator += 1;
+                                                    recursiveLoop(custom_iterator);
+                                                } else {
+                                                    stop_intervals = true;
+                                                }
+                                            } else {
+                                                //dcn transaction
+                                                dApp.helper.addBlockTimestampToTransaction(merged_events_arr[custom_iterator].blockNumber, custom_iterator);
+
+                                                var request_interval = setInterval(function () {
+                                                    if (!stop_intervals) {
+                                                        if (temporally_timestamps[custom_iterator] != 0 && temporally_timestamps[custom_iterator] != undefined) {
+                                                            clearInterval(request_interval);
+
+                                                            transaction_history_html += projectData.general_logic.buildDentacoinHistoryTransaction(dentacoin_data, merged_events_arr[custom_iterator].returnValues._value, merged_events_arr[custom_iterator].returnValues._to, merged_events_arr[custom_iterator].returnValues._from, temporally_timestamps[custom_iterator], merged_events_arr[custom_iterator].transactionHash, undefined, merged_events_arr[custom_iterator].layer);
+
+                                                            if (custom_iterator < 5) {
+                                                                custom_iterator += 1;
+                                                                recursiveLoop(custom_iterator);
+                                                            } else {
+                                                                stop_intervals = true;
+                                                            }
+                                                        }
+                                                    }
+                                                }, 300);
+                                            }
+                                        } else {
+                                            stop_intervals = false;
+
+                                            if (merged_events_arr.length > 5) {
+                                                transaction_history_html += '<tr class="loading-tr"><td class="text-center" colspan="5"><figure class="inline-block rotate-animation"><img src="assets/images/exchange.png" alt="Exchange icon"/></figure></td></tr>';
+                                                $('.camping-transaction-history .camping-show-more').html('<div class="col-xs-12 text-center padding-top-30"><a href="javascript:void(0)" class="white-light-blue-btn show-more renew-on-lang-switch" data-slug="show-more">'+$('.translates-holder').attr('show-more')+'</a></div>');
+                                                recursiveLoopForRestOfHistory(5);
+                                            }
+
+                                            $('.camping-transaction-history table tbody').html(transaction_history_html);
+                                        }
+                                    }
+
+                                    recursiveLoop(0);
+
+                                    //requesting all transactions before the latest 5
+                                    var next_transaction_history_html = '';
+
+                                    function recursiveLoopForRestOfHistory(custom_iterator) {
+                                        if (custom_iterator < merged_events_arr.length) {
+                                            if (custom_iterator > 5 && custom_iterator % 5 == 0) {
+                                                $('.camping-transaction-history table tbody tr.loading-tr').before(next_transaction_history_html);
+                                                next_transaction_history_html = '';
+
+                                                if ($('.camping-transaction-history .show-more').attr('show-all-transactions') == 'true') {
+                                                    $('.camping-transaction-history table tr').addClass('show-this');
+                                                }
+                                            }
+
+                                            if (basic.property_exists(merged_events_arr[custom_iterator], 'type') && merged_events_arr[custom_iterator].type == 'eth_transaction') {
+                                                //eth transaction
+                                                next_transaction_history_html += projectData.general_logic.buildEthereumHistoryTransaction(ethereum_data, projectData.utils.fromWei(merged_events_arr[custom_iterator].value, 'ether'), merged_events_arr[custom_iterator].to, merged_events_arr[custom_iterator].from, merged_events_arr[custom_iterator].timeStamp, merged_events_arr[custom_iterator].hash, undefined, merged_events_arr[custom_iterator].layer);
+
+                                                if (custom_iterator < merged_events_arr.length) {
+                                                    custom_iterator += 1;
+                                                    recursiveLoopForRestOfHistory(custom_iterator);
+                                                } else {
+                                                    stop_intervals = true;
+                                                }
+                                            } else {
+                                                //dcn transaction
+                                                dApp.helper.addBlockTimestampToTransaction(merged_events_arr[custom_iterator].blockNumber, custom_iterator);
+
+                                                request_interval_for_rest_of_transaction_history = setInterval(function () {
+                                                    if (!stop_intervals) {
+                                                        if (temporally_timestamps[custom_iterator] != 0 && temporally_timestamps[custom_iterator] != undefined) {
+                                                            clearInterval(request_interval_for_rest_of_transaction_history);
+
+                                                            next_transaction_history_html += projectData.general_logic.buildDentacoinHistoryTransaction(dentacoin_data, merged_events_arr[custom_iterator].returnValues._value, merged_events_arr[custom_iterator].returnValues._to, merged_events_arr[custom_iterator].returnValues._from, temporally_timestamps[custom_iterator], merged_events_arr[custom_iterator].transactionHash, undefined, merged_events_arr[custom_iterator].layer);
+
+                                                            if (custom_iterator < merged_events_arr.length) {
+                                                                custom_iterator += 1;
+                                                                recursiveLoopForRestOfHistory(custom_iterator);
+                                                            } else {
+                                                                stop_intervals = true;
+                                                            }
+                                                        }
+                                                    }
+                                                }, 300);
+                                            }
+                                        } else {
+                                            $('.camping-transaction-history table tbody tr.loading-tr').remove();
+                                            $('.camping-transaction-history table tbody').append(next_transaction_history_html);
+
+                                            if ($('.camping-transaction-history .show-more').attr('show-all-transactions') == 'true') {
+                                                $('.camping-transaction-history table tr').addClass('show-this');
+                                            }
+
+                                            //updating transaction history every 10 minutes, because the project is SPA and pages are not really refreshed on route change, routes are dynamicly loaded with AngularJS
+                                            setTimeout(function () {
+                                                projectData.general_logic.buildTransactionHistory();
+                                            }, 300000);
+                                        }
+                                    }
+                                });
+                            });
+                        } else {
+                            $('.camping-transaction-history').html('<h2 class="lato-bold fs-16 text-center color-white"><span class="renew-on-lang-switch" data-slug="no-tx">'+$('.translates-holder').attr('no-tx')+'</span></h2>');
+                        }
+                    }
+                });
+            });
+        },
         bindTxSettings: function(visibleGasPriceNumber, nonce) {
             $('.tx-settings-icon').click(async function () {
                 basic.showDialog('<div class="lato-bold fs-22 text-center padding-top-30 padding-bottom-20">'+$('.translates-holder').attr('advanced-settings')+'</div><div class="padding-bottom-15 form-row"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label class="active-label" for="edit-gas-price">'+$('.translates-holder').attr('gas-price')+'</label><input type="text" id="edit-gas-price" maxlength="5" class="full-rounded light-blue-border" value="'+$('.tx-data-holder').attr('data-visibleGasPriceNumber')+'" data-value="'+$('.tx-data-holder').attr('data-visibleGasPriceNumber')+'"/></div></div><div class="padding-bottom-20 form-row"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label class="active-label" for="edit-nonce">'+$('.translates-holder').attr('nonce')+'</label><input type="text" id="edit-nonce" maxlength="10" class="full-rounded light-blue-border" value="'+$('.tx-data-holder').attr('data-nonce')+'" data-value="'+$('.tx-data-holder').attr('data-nonce')+'" data-min-value="'+nonce+'"/></div></div><div class="fs-0 btns-container"><div class="inline-block fs-18 lato-bold width-50"><a href="javascript:void(0);" class="reset-settings"><img alt="Reset icon" itemprop="contentUrl" src="assets/images/reset-icon.svg" class="width-100 max-width-20"/> '+$('.translates-holder').attr('reset')+'</a></div><div class="inline-block text-right width-50"><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border save-tx-settings padding-left-30 padding-right-30">'+$('.translates-holder').attr('save-btn')+'</a></div></div>', 'tx-settings-popup', null, true);
@@ -1896,7 +2474,7 @@ var projectData = {
                         $('.tx-settings-popup #edit-nonce').closest('.form-row').find('.error-handle').remove();
                         if (parseFloat($('.tx-data-holder').attr('data-initial-visibleGasPriceNumber')) > parseFloat($(this).val().trim())) {
                             $('.tx-settings-popup #edit-gas-price').closest('.form-row').find('.warning-handle').remove();
-                            customWarningHandle($('.tx-settings-popup #edit-gas-price').closest('.form-row'), $('.translates-holder').attr('low-gas'))
+                            projectData.general_logic.customWarningHandle($('.tx-settings-popup #edit-gas-price').closest('.form-row'), $('.translates-holder').attr('low-gas'))
                         } else {
                             $('.tx-settings-popup #edit-gas-price').closest('.form-row').find('.warning-handle').remove();
                         }
@@ -1912,9 +2490,9 @@ var projectData = {
 
                 $('.tx-settings-popup .save-tx-settings').click(function() {
                     if ($('.tx-settings-popup #edit-gas-price').val().trim() == '') {
-                        customErrorHandle($('.tx-settings-popup #gas-price').closest('.form-row'), $('.translates-holder').attr('enter-gas'));
+                        projectData.general_logic.customErrorHandle($('.tx-settings-popup #gas-price').closest('.form-row'), $('.translates-holder').attr('enter-gas'));
                     } else if (parseInt($('.tx-settings-popup #edit-nonce').val().trim()) < parseInt($('.tx-settings-popup #edit-nonce').attr('data-min-value'))) {
-                        customErrorHandle($('.tx-settings-popup #edit-nonce').closest('.form-row'), $('.translates-holder').attr('cant-submit'));
+                        projectData.general_logic.customErrorHandle($('.tx-settings-popup #edit-nonce').closest('.form-row'), $('.translates-holder').attr('cant-submit'));
                     } else {
                         $('.transaction-confirmation-popup .on-change-result').html('');
 
@@ -1983,24 +2561,24 @@ var projectData = {
 
                         printingHtml = '<html><head><style>body, html {margin: 0; padding: 0;text-align: center;color: black;font-family: “Helvetica Neue”,Helvetica,Arial,sans-serif;} .border-parent{text-align: left;position:relative; display: inline-block;} img {'+borderStyle+'} .absolute-content{position: absolute;z-index: 100;width: 80%;height: 80%;top: 0;left: 0;padding: 10%;}</style></head><body><div class="border-parent"><img '+borderImage+' id="border-image"/><div class="absolute-content"><div style="text-align:center;"><i>'+$('.translates-holder').attr('confidential')+'</i><h1 style="margin-top: 10px;font-weight:bold;color: black; margin-bottom: 10px;">DENTACOIN</h1><div style="font-size: 16px;color: #2a3575;padding-bottom: 15px;"><b>'+$('.translates-holder').attr('unlock-funds')+'</b></div><div style="background-color: white;padding: 20px 10px;text-align: left;"><div style="color: #888888;padding-bottom: 5px;font-weight: bold;">'+$('.translates-holder').attr('pk-label')+':</div><div style="font-size: 12px;">'+privateKey+'</div></div><div style="font-size: 18px;padding: 30px 0 10px;"><b>'+$('.translates-holder').attr('pk-as-qr')+'</b></div><div>'+qrCodeBase64Data+'</div><div style=" text-align: left; "><div style="font-size: 17px;color: #2a3575;padding-bottom: 15px;padding-top: 20px;font-weight: bold;">'+$('.translates-holder').attr('important')+'</div><div style=" padding-bottom: 15px;"><b>1.</b> '+$('.translates-holder').attr('provides')+'<div></div>'+projectData.utils.checksumAddress(window.localStorage.getItem('current_account'))+'</div><div style=" padding-bottom: 15px;"><b>2.</b> '+$('.translates-holder').attr('secure-place')+'</div><div style=" padding-bottom: 15px;"><b>3. '+$('.translates-holder').attr('never-share')+'</div><div><b>4.</b> '+$('.translates-holder').attr('to-unlock')+'</div></div></div></div></div></body></html>';
 
-                        proceedWithPriting('assets/images/private-key-background.png');
+                        proceedWithPrinting('assets/images/private-key-background.png');
                     } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                         borderImage = 'src="https://dentacoin.com/assets/uploads/private-key-background.png"';
                         borderStyle = 'width: 100%';
 
                         printingHtml = '<html><head><style>body, html {margin: 0; padding: 0;text-align: center;color: black;font-family: “Helvetica Neue”,Helvetica,Arial,sans-serif;} .border-parent{text-align: left;position:relative; display: inline-block;} img {'+borderStyle+'} .absolute-content{position: absolute;z-index: 100;width: 80%;height: 80%;top: 0;left: 0;padding: 10%;}</style></head><body><div class="border-parent"><img '+borderImage+' id="border-image"/><div class="absolute-content"><div style="text-align:center;"><i>'+$('.translates-holder').attr('confidential')+'</i><h1 style="margin-top: 15px;font-weight:bold;color: black; margin-bottom: 10px;">DENTACOIN</h1><div style="font-size: 18px;color: #2a3575;padding-bottom: 15px;"><b>'+$('.translates-holder').attr('unlock-funds')+'</b></div><div style="background-color: white;padding: 20px 10px;text-align: left;"><div style="color: #888888;padding-bottom: 5px;font-weight: bold;">'+$('.translates-holder').attr('pk-label')+':</div><div style="font-size: 14px;">'+privateKey+'</div></div><div style="font-size: 22px;padding: 30px 0 10px;"><b>'+$('.translates-holder').attr('pk-as-qr')+'</b></div><div>'+qrCodeBase64Data+'</div><div style=" text-align: left; "><div style="font-size: 20px;color: #2a3575;padding-bottom: 15px;padding-top: 20px;font-weight: bold;">'+$('.translates-holder').attr('important')+'</div><div style=" padding-bottom: 15px;"><b>1.</b> '+$('.translates-holder').attr('provides')+'<div></div>'+projectData.utils.checksumAddress(window.localStorage.getItem('current_account'))+'</div><div style=" padding-bottom: 15px;"><b>2.</b> '+$('.translates-holder').attr('secure-place')+'</div><div style=" padding-bottom: 15px;"><b>3. '+$('.translates-holder').attr('never-share')+'</div><div><b>4.</b> '+$('.translates-holder').attr('to-unlock')+'</div></div></div></div></div></body></html>';
 
-                        proceedWithPriting('/assets/images/private-key-background.png');
+                        proceedWithPrinting('/assets/images/private-key-background.png');
                     }
                 } else {
                     borderImage = 'src="assets/images/private-key-background.png"';
                     borderStyle = 'height: 97.5vh';
                     printingHtml = '<html><head><style>body, html {margin: 0; padding: 0;text-align: center;color: black;font-family: “Helvetica Neue”,Helvetica,Arial,sans-serif;} .border-parent{text-align: left;position:relative; display: inline-block;} img {'+borderStyle+'} .absolute-content{position: absolute;z-index: 100;width: 80%;height: 80%;top: 0;left: 0;padding: 10%;}</style></head><body><div class="border-parent"><img '+borderImage+' id="border-image"/><div class="absolute-content"><div style="text-align:center;"><i>'+$('.translates-holder').attr('confidential')+'</i><h1 style="margin-top: 15px;font-weight:bold;color: black; margin-bottom: 10px;">DENTACOIN</h1><div style="font-size: 18px;color: #2a3575;padding-bottom: 15px;"><b>'+$('.translates-holder').attr('unlock-funds')+'</b></div><div style="background-color: white;padding: 20px 10px;text-align: left;"><div style="color: #888888;padding-bottom: 5px;font-weight: bold;">'+$('.translates-holder').attr('pk-label')+':</div><div style="font-size: 14px;">'+privateKey+'</div></div><div style="font-size: 22px;padding: 30px 0 10px;"><b>'+$('.translates-holder').attr('pk-as-qr')+'</b></div><div>'+qrCodeBase64Data+'</div><div style=" text-align: left; "><div style="font-size: 20px;color: #2a3575;padding-bottom: 15px;padding-top: 20px;font-weight: bold;">'+$('.translates-holder').attr('important')+'</div><div style=" padding-bottom: 15px;"><b>1.</b> '+$('.translates-holder').attr('provides')+'<div></div>'+projectData.utils.checksumAddress(window.localStorage.getItem('current_account'))+'</div><div style=" padding-bottom: 15px;"><b>2.</b> '+$('.translates-holder').attr('secure-place')+'</div><div style=" padding-bottom: 15px;"><b>3. '+$('.translates-holder').attr('never-share')+'</div><div><b>4.</b> '+$('.translates-holder').attr('to-unlock')+'</div></div></div></div></div></body></html>';
 
-                    proceedWithPriting('/assets/images/private-key-background.png');
+                    proceedWithPrinting('/assets/images/private-key-background.png');
                 }
 
-                function proceedWithPriting(imgSrc) {
+                function proceedWithPrinting(imgSrc) {
                     if (is_hybrid) {
                         var newImg = new Image;
                         newImg.onload = function() {
@@ -2045,22 +2623,530 @@ var projectData = {
                     }
                 }
             }
+        },
+        fireGoogleAnalyticsEvent: function(category, action, label, value) {
+            //'Register', 'Create', 'Wallet'
+            if (is_hybrid) {
+                var hybridEventName = 'app_' + label.replace(/\s+/g, '_').toLowerCase();
+                if (value != undefined) {
+                    cordova.plugins.firebase.analytics.logEvent(hybridEventName, {category: category, action: action, label: label, value: value});
+                } else {
+                    cordova.plugins.firebase.analytics.logEvent(hybridEventName, {category: category, action: action, label: label});
+                }
+            } else {
+                var event_obj = {
+                    'event_action': action,
+                    'event_category': category,
+                    'event_label': label
+                };
+
+                if (value != undefined) {
+                    event_obj.value = value;
+                }
+
+                gtag('event', label, event_obj);
+            }
+        },
+        customWarningHandle: function(el, string) {
+            //method that appends front end warnings
+            el.append('<div class="warning-handle">' + string + '</div>');
+        },
+        customErrorHandle: function(el, string) {
+            //method that appends front end errors
+            el.append('<div class="error-handle">' + string + '</div>');
+        },
+        removeAccountChecker: function() {
+            $('.account-checker-container').addClass('hide').removeClass('visible');
+        },
+        displayMessageOnTransactionSend: function(message) {
+            window.scrollTo(0, 0);
+            $('.section-amount-to #crypto-amount').val('').trigger('change');
+            $('.section-amount-to #usd-val').val('').trigger('change');
+            $('.section-amount-to #verified-receiver-address').prop('checked', false);
+
+            basic.showAlert(message, '', true);
+        },
+        iOSFileUpload: function(callback) {
+            //opening filepicker for iOS
+            FilePicker.pickFile(function (path) {
+                var fileDir = cordova.file.tempDirectory.replace('file://', '');
+                var fileName = path.replace(fileDir, '');
+                console.log(fileName, 'fileName');
+
+                window.resolveLocalFileSystemURL(cordova.file.tempDirectory, function (rootEntry) {
+                    rootEntry.getFile(fileName, {create: false}, function (fileEntry) {
+                        fileEntry.file(function (file) {
+                            var reader = new FileReader();
+
+                            reader.onloadend = function () {
+                                var keystore_string = this.result;
+                                callback(keystore_string);
+                            };
+
+                            reader.readAsText(file);
+                        });
+                    }, function (err) {
+                        alert('Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.');
+                    });
+                });
+            }, function (err) {
+                alert('File importing failed. Please update to one of the latest iOS versions in order to have file importing working.');
+            });
+        },
+        initCustomInputFileAnimation: function(this_btn, file_name) {
+            //animation of the button which uploads keystore file
+            var btn = $(this_btn);
+            if (btn.parent().find('.file-name').length) {
+                btn.parent().find('.file-name').remove();
+            }
+            if (file_name != undefined) {
+                btn.parent().append('<span class="file-name fs-14 fs-xs-13" style="padding: 5px 10px 15px;display: block;max-width: 400px;margin: 0 auto;text-decoration: underline;color: #888;">'+file_name+'</span>');
+            }
+            var loadSVG = btn.children("a").children(".load");
+            var loadBar = btn.children("div").children("span");
+            var checkSVG = btn.children("a").children(".check");
+
+            var btn_width = 320;
+            $('body').addClass('overflow-hidden');
+            var window_width = $(window).width();
+            $('body').removeClass('overflow-hidden');
+            if (window_width < 768) {
+                btn_width = 260;
+            }
+
+            btn.children("a").children("span").fadeOut(200, function () {
+                btn.children("a").animate({
+                    width: 56
+                }, 100, function () {
+                    loadSVG.fadeIn(300);
+                    btn.animate({
+                        width: btn_width
+                    }, 200, function () {
+                        btn.children("div").fadeIn(200, function () {
+                            loadBar.animate({
+                                width: "100%"
+                            }, 500, function () {
+                                loadSVG.fadeOut(200, function () {
+                                    checkSVG.fadeIn(200, function () {
+                                        setTimeout(function () {
+                                            btn.children("div").fadeOut(200, function () {
+                                                loadBar.width(0);
+                                                checkSVG.fadeOut(200, function () {
+                                                    console.log(file_name, 'file_name');
+                                                    btn.children("a").animate({
+                                                        width: btn_width
+                                                    });
+                                                    btn.animate({
+                                                        width: btn_width
+                                                    }, 300, function () {
+                                                        btn.children("a").children("span").fadeIn(200);
+                                                    });
+                                                });
+                                            });
+                                        }, 500);
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        },
+        androidFileUpload: function(file_uri, callback) {
+            //opening filepicker for Android
+            window.FilePath.resolveNativePath(file_uri, successNative, function(e) {
+                console.log(e);
+                alert('Something went wrong with uploading your Backup file. Please contact admin@dentacoin.com.');
+            });
+
+            function successNative(finalPath) {
+                window.resolveLocalFileSystemURL(finalPath, function (entry) {
+                    entry.file(function (file) {
+                        callback(file);
+                    }, function (err) {
+                        alert('Something went wrong with uploading your Backup file. Please contact admin@dentacoin.com.');
+                    });
+                });
+            }
+        },
+        hybridAppFileDownload: function(file_name, file_content, callback, location, download_folder) {
+            //method to download files in Download folder in Android device
+            window.resolveLocalFileSystemURL(location, function (fileSystem) {
+                if (download_folder) {
+                    fileSystem.getDirectory('Download', {create: true, exclusive: false}, function (dirEntry) {
+                        proceedWithDownload(dirEntry, file_name);
+                    }, function (err) {
+                        console.log(err, 'err');
+                        projectData.general_logic.hideLoader();
+                        alert('Something went wrong with downloading your file (Core error 5). Please contact admin@dentacoin.com.');
+                    });
+                } else {
+                    proceedWithDownload(fileSystem, file_name);
+                }
+
+                function proceedWithDownload(dirEntry, file_name) {
+                    dirEntry.getFile(file_name, {create: true, exclusive: true}, function (fileEntry) {
+                        fileEntry.createWriter(function (fileWriter) {
+                            fileWriter.onwriteend = function (e) {
+                                console.log('file saved');
+
+                                callback();
+                            };
+
+                            fileWriter.onerror = function (e) {
+                                console.log(e, 'error');
+                                projectData.general_logic.hideLoader();
+                                alert('Something went wrong with caching your file (Core error 3). Please contact admin@dentacoin.com.');
+                            };
+
+                            // Create a new Blob and write they keystore content inside of it
+                            var blob = new Blob([file_content], {type: 'text/plain'});
+                            fileWriter.write(blob);
+                        }, function (err) {
+                            console.log(err, 'err');
+                            projectData.general_logic.hideLoader();
+                            alert('Something went wrong with downloading your file (Core error 4). Please contact admin@dentacoin.com.');
+                        });
+                    }, function (err) {
+                        // if download fails, try to download again, but with new unique name
+                        console.log(err, 'err');
+                        proceedWithDownload(dirEntry, file_name + ' (' + Math.floor(Date.now() / 1000) + ')');
+                    });
+                }
+            });
+        },
+        initScan: function(clicker, valueHolder, callback, warning, warningText) {
+            if (clicker === undefined) {
+                clicker = null;
+            }
+            if (valueHolder === undefined) {
+                valueHolder = null;
+            }
+            if (callback === undefined) {
+                callback = null;
+            }
+            if (warning === undefined) {
+                warning = null;
+            }
+            if (warningText === undefined) {
+                warningText = null;
+            }
+
+            clicker.click(function () {
+                if (warning != null) {
+                    var initScanWarning = {};
+                    initScanWarning.callback = function (warningResult) {
+                        if (warningResult) {
+                            proceedWithScanning();
+                        }
+                    };
+                    basic.showConfirm(warningText, '', initScanWarning, true);
+                } else {
+                    proceedWithScanning();
+                }
+
+                function proceedWithScanning() {
+                    if (is_hybrid) {
+                        cordova.plugins.barcodeScanner.scan(
+                            function (result) {
+                                if (valueHolder != null) {
+                                    valueHolder.val(result.text).trigger('change');
+                                }
+                                if (callback != null) {
+                                    callback(result.text);
+                                }
+                            },
+                            function (error) {
+                                alert($('.translates-holder').attr('scanning-failed'));
+                            }
+                        );
+                    } else {
+                        //BROWSER SCAN
+                        if (load_qr_code_lib) {
+                            projectData.general_logic.showLoader();
+                            $.getScript('https://rawgit.com/schmich/instascan-builds/master/instascan.min.js', function () {
+                                load_qr_code_lib = false;
+                                projectData.general_logic.hideLoader();
+
+                                initQRCodePopupForSendingTransaction();
+                            });
+                        } else {
+                            initQRCodePopupForSendingTransaction();
+                        }
+
+                        function initQRCodePopupForSendingTransaction() {
+                            basic.showDialog('<div class="video-container"><video id="qr-preview"></video></div>', 'popup-scan-qr-code', null, true);
+
+                            var cameras_global;
+                            var scanner = new Instascan.Scanner({video: document.getElementById('qr-preview')});
+                            scanner.addListener('scan', function (content) {
+                                if (valueHolder != null) {
+                                    valueHolder.val(content).trigger('change');
+                                }
+                                if (callback != null) {
+                                    callback(content);
+                                }
+                                $('.popup-scan-qr-code').modal('hide');
+                                scanner.stop(cameras_global[0]);
+                            });
+
+                            Instascan.Camera.getCameras().then(function (cameras) {
+                                if (cameras.length > 0) {
+                                    cameras_global = cameras;
+                                    scanner.start(cameras[0]);
+                                } else {
+                                    alert('No cameras found.');
+                                }
+                            }).catch(function (e) {
+                                console.error(e);
+                            });
+
+                            $('.popup-scan-qr-code .bootbox-close-button').click(function () {
+                                if (cameras_global.length > 0) {
+                                    scanner.stop(cameras_global[0]);
+                                }
+                            });
+                        }
+                    }
+                }
+            });
+        },
+        buildDentacoinHistoryTransaction: function(dentacoin_data, value, to, from, timestamp, transactionHash, pending, layer) {
+            //template to append dentacoin transactions while build the transactions history
+            var dcn_amount_symbol;
+            var other_address = '';
+            var class_name = '';
+            var label = '';
+            if (projectData.utils.checksumAddress(to) == projectData.utils.checksumAddress(global_state.account) && !tx_history.includes(transactionHash)) {
+                //IF THE CURRENT ACCOUNT IS RECEIVER
+                other_address = from;
+                label = $('.translates-holder').attr('received-from');
+                class_name = 'received_from';
+                dcn_amount_symbol = '+';
+            } else if (projectData.utils.checksumAddress(from) == projectData.utils.checksumAddress(global_state.account)) {
+                //IF THE CURRENT ACCOUNT IS SENDER
+                other_address = to;
+                label = $('.translates-holder').attr('sent-to');
+                class_name = 'sent_to';
+                dcn_amount_symbol = '-';
+            }
+
+            tx_history.push(transactionHash);
+
+            var dcn_amount = dcn_amount_symbol + value + ' DCN';
+            var etherscan_domain = config_variable.etherscan_domain;
+            if (layer == 'L2') {
+                dcn_amount+='2.0';
+                etherscan_domain = config_variable.optimism_etherscan_domain;
+            }
+            var timestamp_javascript = timestamp * 1000;
+            var date_obj = new Date(timestamp_javascript);
+            var minutes;
+            var hours;
+
+            if (new Date(timestamp_javascript).getMinutes() < 10) {
+                minutes = '0' + new Date(timestamp_javascript).getMinutes();
+            } else {
+                minutes = new Date(timestamp_javascript).getMinutes();
+            }
+
+            if (new Date(timestamp_javascript).getHours() < 10) {
+                hours = '0' + new Date(timestamp_javascript).getHours();
+            } else {
+                hours = new Date(timestamp_javascript).getHours();
+            }
+
+            if (basic.isMobile() || is_hybrid) {
+                if ($(window).width() < 500) {
+                    other_address = projectData.utils.substr_replace(other_address, '...', -30);
+                } else {
+                    other_address = projectData.utils.substr_replace(other_address, '...', -20);
+                }
+            }
+
+            var transaction_id_label = 'Transaction ID';
+            if (pending != undefined) {
+                transaction_id_label += '<span class="pending-transaction">( Pending )</span>';
+            }
+
+            var pricesList = '';
+            if (dentacoin_data != 0) {
+                var usd_amount = (parseInt(value) * dentacoin_data).toFixed(2);
+                pricesList = '<ul><li class="lato-bold dcn-amount">' + dcn_amount + '</li><li>' + usd_amount + ' USD</li></ul>';
+            } else {
+                pricesList = '<ul><li class="lato-bold dcn-amount">' + dcn_amount + '</li></ul>';
+            }
+
+            return '<tr class="' + class_name + ' single-transaction" onclick="window.open(\''+etherscan_domain+'/tx/' + transactionHash + '\');"><td class="icon"></td><td><ul><li>' + (date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() + '</li><li>' + hours + ':' + minutes + '</li></ul></td><td><ul><li><span><strong>' + label + ': </strong>' + other_address + '</span></li><li><a href="'+etherscan_domain+'/tx/' + transactionHash + '" target="_blank" class="lato-bold color-white data-external-link">' + transaction_id_label + '</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5">' + pricesList + '</td></tr>';
+        },
+        buildEthereumHistoryTransaction: function(ethereum_data, value, to, from, timestamp, hash, pending, layer) {
+            //template to append ethereum transactions while build the transactions history
+            var eth_amount_symbol;
+            var other_address = '';
+            var class_name = '';
+            var label = '';
+            if (projectData.utils.checksumAddress(to) == projectData.utils.checksumAddress(global_state.account) && !tx_history.includes(hash)) {
+                //IF THE CURRENT ACCOUNT IS RECEIVER
+                other_address = from;
+                label = $('.translates-holder').attr('received-from');
+                class_name = 'received_from';
+                eth_amount_symbol = '+';
+            } else if (projectData.utils.checksumAddress(from) == projectData.utils.checksumAddress(global_state.account)) {
+                //IF THE CURRENT ACCOUNT IS SENDER
+                other_address = to;
+                label = $('.translates-holder').attr('sent-to');
+                class_name = 'sent_to';
+                eth_amount_symbol = '-';
+            }
+
+            tx_history.push(hash);
+
+            var usd_amount = (ethereum_data.market_data.current_price.usd * parseFloat(value)).toFixed(2);
+            var timestamp_javascript = timestamp * 1000;
+            var date_obj = new Date(timestamp_javascript);
+            var minutes;
+            var hours;
+
+            if (new Date(timestamp_javascript).getMinutes() < 10) {
+                minutes = '0' + new Date(timestamp_javascript).getMinutes();
+            } else {
+                minutes = new Date(timestamp_javascript).getMinutes();
+            }
+
+            if (new Date(timestamp_javascript).getHours() < 10) {
+                hours = '0' + new Date(timestamp_javascript).getHours();
+            } else {
+                hours = new Date(timestamp_javascript).getHours();
+            }
+
+            if (basic.isMobile() || is_hybrid) {
+                if ($(window).width() < 500) {
+                    other_address = projectData.utils.substr_replace(other_address, '...', -27);
+                } else {
+                    other_address = projectData.utils.substr_replace(other_address, '...', -20);
+                }
+            }
+
+            var transaction_id_label = 'Transaction ID';
+            if (pending != undefined) {
+                transaction_id_label += '<span class="pending-transaction">( Pending )</span>';
+            }
+
+            var etherscan_domain = config_variable.etherscan_domain;
+            var currency_label = 'ETH';
+            if (layer == 'L2') {
+                currency_label+='2.0';
+                etherscan_domain = config_variable.optimism_etherscan_domain;
+            }
+
+            return '<tr class="' + class_name + ' single-transaction" onclick="window.open(\''+etherscan_domain+'/tx/' + hash + '\');"><td class="icon"></td><td><ul><li>' + (date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() + '</li><li>' + hours + ':' + minutes + '</li></ul></td><td><ul><li><span><strong>' + label + ': </strong>' + other_address + '</span></li><li><a href='+etherscan_domain+'"/tx/' + hash + '" target="_blank" class="lato-bold color-white data-external-link">' + transaction_id_label + '</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">' + eth_amount_symbol + parseFloat(value).toFixed(6) + ' '+currency_label+'</li><li>' + usd_amount + ' USD</li></ul></td></tr>';
+        },
+        savePublicKey: function(address, key) {
+            if (address.length == 40) {
+                address = '0x' + address;
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: 'https://assurance.dentacoin.com/save-public-key',
+                data: {
+                    address: projectData.utils.checksumAddress(address),
+                    public_key: key
+                },
+                dataType: 'json',
+                success: function (response) {
+                    //console.log(address, key);
+                }
+            });
+        },
+        addMobileDeviceId: function (callback, id) {
+            $.ajax({
+                type: 'POST',
+                url: 'https://assurance.dentacoin.com/save-mobile-id',
+                dataType: 'json',
+                data: {
+                    address: projectData.utils.checksumAddress(window.localStorage.getItem('current_account')),
+                    mobile_device_id: id
+                },
+                success: function(response) {
+                    callback(response);
+                }
+            });
+        },
+        hideMobileAppBannerForDesktopBrowsers: function() {
+            $('footer .mobile-app-banner').remove();
+        },
+        showMobileAppBannerForDesktopBrowsers: function() {
+            if (!is_hybrid && !basic.isMobile()) {
+                projectData.general_logic.hideMobileAppBannerForDesktopBrowsers();
+                setTimeout(function() {
+                    if ($('.mobile-app-banner').length) {
+                        $('.mobile-app-banner').remove();
+                    }
+                    $('footer').prepend('<div class="mobile-app-banner margin-bottom-25">' + mobileAppBannerForDesktopBrowsersHtml + '</div>');
+                    $('.mobile-app-banner-title').html($('.translates-holder').attr('also-available'));
+                }, 1000);
+            }
+        },
+        downloadFile: function(filename, text) {
+            var element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+            element.setAttribute('download', filename);
+            element.setAttribute('target', '_blank');
+
+            element.style.display = 'none';
+            document.body.appendChild(element);
+
+            element.click();
+
+            document.body.removeChild(element);
+        },
+        buildKeystoreFileName: function(address) {
+            if (address.length == 40) {
+                address = '0x' + address;
+            }
+            return 'Dentacoin secret key - ' + projectData.utils.checksumAddress(address);
+        },
+        hideLoader: function() {
+            //hiding front end loader
+            $('.camping-loader').html('');
+        },
+        showLoader: function(message) {
+            //showing front end loader
+            if (message === undefined) {
+                message = '<div class="calibri-bold fs-24">Loading ...</div>';
+            }
+            $('.camping-loader').html('<div class="response-layer"><div class="wrapper"><figure itemscope="" itemtype="http://schema.org/ImageObject" class="circle-image"><img src="assets/images/circle-for-wallet-logo.png" class="width-100" alt="Loader"><div class="absolute-content text-center"><img src="assets/images/wallet-loading.png" class="width-100 max-width-150 max-width-xs-70" alt="Logo"/><div class="message fs-18">' + message + '</div></div></figure></div></div>');
+            $('.response-layer').show();
+        },
+        firePushNotification: function(title, text) {
+            if (is_hybrid) {
+                cordova.plugins.notification.local.schedule({
+                    title: title,
+                    text: text,
+                    foreground: true
+                });
+            }
         }
     },
     requests: {
         getGasPrice: async function () {
             return await $.getJSON('https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=' + config_variable.etherscan_api_key);
         },
-        getDentacoinDataByCoingeckoProvider: async function (callback) {
+        getDentacoinDataByCoingeckoProvider: async function (callback, fullResponse) {
             $.ajax({
                 type: 'GET',
                 url: 'https://api.coingecko.com/api/v3/coins/dentacoin',
                 dataType: 'json',
                 success: function (response) {
-                    callback(response.market_data.current_price.usd);
+                    if (fullResponse) {
+                        callback(response);
+                    } else {
+                        callback(response.market_data.current_price.usd);
+                    }
                 },
                 error: function() {
-                    hideLoader();
+                    projectData.general_logic.hideLoader();
                     alert($('.translates-holder').attr('smth-went-wrong') + ' (Code error 10.0).');
                 }
             });
@@ -2072,62 +3158,6 @@ var projectData = {
                 dataType: 'json'
             });
         },
-        /*getDentacoinDataByExternalProvider: async function (callback) {
-            /!*$.ajax({
-                type: 'GET',
-                url: 'https://api.coingecko.com/api/v3/coins/dentacoin',
-                dataType: 'json',
-                success: function(response) {
-                    callback(response);
-                }
-            });*!/
-
-            if (callback != undefined) {
-                $.ajax({
-                    type: 'GET',
-                    url: 'https://indacoin.com/api/GetCoinConvertAmount/USD/DCN/100/dentacoin',
-                    dataType: 'json',
-                    success: function (response) {
-                        if (response > 0) {
-                            callback(projectData.utils.prepareDcnPrice(response));
-                        } else {
-                            // callback to coingecko price reader if indacoin fails
-                            $.ajax({
-                                type: 'GET',
-                                url: 'https://api.coingecko.com/api/v3/coins/dentacoin',
-                                dataType: 'json',
-                                success: function (response) {
-                                    callback(response.market_data.current_price.usd);
-                                },
-                                error: function() {
-                                    hideLoader();
-                                    alert($('.translates-holder').attr('smth-went-wrong') + ' (Code error 10.0).');
-                                }
-                            });
-                        }
-                    }
-                });
-            } else {
-                var ajaxResponse = await $.ajax({
-                    type: 'GET',
-                    url: 'https://indacoin.com/api/GetCoinConvertAmount/USD/DCN/100/dentacoin',
-                    dataType: 'json'
-                });
-
-                if (ajaxResponse > 0) {
-                    return projectData.utils.prepareDcnPrice(ajaxResponse);
-                } else {
-                    // callback to coingecko price reader if indacoin fails
-                    var coingeckoAjaxResponse = await $.ajax({
-                        type: 'GET',
-                        url: 'https://api.coingecko.com/api/v3/coins/dentacoin',
-                        dataType: 'json'
-                    });
-
-                    return coingeckoAjaxResponse.market_data.current_price.usd;
-                }
-            }
-        },*/
         getEthereumDataByCoingecko: function(callback) {
             $.ajax({
                 type: 'GET',
@@ -2137,7 +3167,7 @@ var projectData = {
                     callback(response);
                 },
                 error: function() {
-                    hideLoader();
+                    projectData.general_logic.hideLoader();
                     alert($('.translates-holder').attr('smth-went-wrong') + ' (Code error 10.1).');
                 }
             });
@@ -2162,7 +3192,7 @@ var projectData = {
                     callback(indacoin_data);
                 },
                 error: function() {
-                    hideLoader();
+                    projectData.general_logic.hideLoader();
                     alert($('.translates-holder').attr('smth-went-wrong') + ' (Code error 10.2).');
                 }
             });
@@ -2176,7 +3206,7 @@ var projectData = {
                     callback(response);
                 },
                 error: function() {
-                    hideLoader();
+                    projectData.general_logic.hideLoader();
                     alert($('.translates-holder').attr('smth-went-wrong') + ' (Code error 10.3).');
                 }
             });
@@ -2210,26 +3240,26 @@ var projectData = {
     },
     utils: {
         innerAddressCheck: function (address) {
-            return dApp.web3_1_0.utils.isAddress(address);
+            return dApp.web3_l1.utils.isAddress(address);
         },
         fromWei: function (wei_amount, type) {
             if (type != undefined) {
-                return dApp.web3_1_0.utils.fromWei(wei_amount, type);
+                return dApp.web3_l1.utils.fromWei(wei_amount, type);
             } else {
-                return dApp.web3_1_0.utils.fromWei(wei_amount);
+                return dApp.web3_l1.utils.fromWei(wei_amount);
             }
         },
         toWei: function (eth_amount, unit) {
             if (unit == undefined) {
                 unit = 'ether';
             }
-            return dApp.web3_1_0.utils.toWei(eth_amount, unit);
+            return dApp.web3_l1.utils.toWei(eth_amount, unit);
         },
         checksumAddress: function (address) {
             if (address.length == 40) {
                 address = '0x' + address;
             }
-            return dApp.web3_1_0.utils.toChecksumAddress(address);
+            return dApp.web3_l1.utils.toChecksumAddress(address);
         },
         sortByKey: function (array, key) {
             return array.sort(function (a, b) {
@@ -2287,7 +3317,7 @@ function styleKeystoreUploadBtnForTx(callback) {
             $('.custom-upload-keystore-file-label').click(function () {
                 if (basic.getMobileOperatingSystem() == 'Android') {
                     fileChooser.open(function (file_uri) {
-                        androidFileUpload(file_uri, function (file) {
+                        projectData.general_logic.androidFileUpload(file_uri, function (file) {
                             var reader = new FileReader();
 
                             reader.onloadend = function () {
@@ -2302,7 +3332,7 @@ function styleKeystoreUploadBtnForTx(callback) {
                         alert($('.translates-holder').attr('upload-failed'));
                     });
                 } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
-                    iOSFileUpload(function (keystore_string) {
+                    projectData.general_logic.iOSFileUpload(function (keystore_string) {
                         proceedWithTransactionFiringAfterHavingTheKeystoreFile(keystore_string);
                     });
                 }
@@ -2320,7 +3350,7 @@ function styleKeystoreUploadBtnForTx(callback) {
                         if ($('.proof-of-address #your-secret-key-password').val().trim() == '') {
                             basic.showAlert($('.translates-holder').attr('valid-password'), '', true);
                         } else {
-                            showLoader($('.translates-holder').attr('hold-on'));
+                            projectData.general_logic.showLoader($('.translates-holder').attr('hold-on'));
 
                             setTimeout(function () {
                                 decryptKeystore(keystore_string, $('.proof-of-address #your-secret-key-password').val().trim(), function (success, to_string, error, error_message) {
@@ -2332,7 +3362,7 @@ function styleKeystoreUploadBtnForTx(callback) {
                                         callback(success);
                                     } else if (error) {
                                         basic.showAlert(error_message, '', true);
-                                        hideLoader();
+                                        projectData.general_logic.hideLoader();
                                     }
                                 });
                             }, 2000);
@@ -2371,7 +3401,7 @@ function styleKeystoreUploadBtnForTx(callback) {
                                 if ($('.proof-of-address #your-secret-key-password').val().trim() == '') {
                                     basic.showAlert($('.translates-holder').attr('valid-password'), '', true);
                                 } else {
-                                    showLoader($('.translates-holder').attr('hold-on'));
+                                    projectData.general_logic.showLoader($('.translates-holder').attr('hold-on'));
 
                                     setTimeout(function () {
                                         decryptKeystore(keystore_string, $('.proof-of-address #your-secret-key-password').val().trim(), function (success, to_string, error, error_message) {
@@ -2383,7 +3413,7 @@ function styleKeystoreUploadBtnForTx(callback) {
                                                 callback(success);
                                             } else if (error) {
                                                 basic.showAlert(error_message, '', true);
-                                                hideLoader();
+                                                projectData.general_logic.hideLoader();
                                             }
                                         });
                                     }, 2000);
@@ -2409,90 +3439,113 @@ function styleKeystoreUploadBtnForTx(callback) {
 }
 
 //method to sign and submit transaction to blockchain
-function submitTransactionToBlockchain(function_abi, symbol, token_val, receiver, key) {
+function submitTransactionToBlockchain(web3_provider, transactionType, function_abi, symbol, token_val, to, key) {
+    console.log($('.tx-data-holder').attr('data-gasLimit'), '$(\'.tx-data-holder\').attr(\'data-gasLimit\')');
+    console.log($('.tx-data-holder').attr('data-on_popup_load_gas_price'), '$(\'.tx-data-holder\').attr(\'data-on_popup_load_gas_price\')');
     const EthereumTx = require('ethereumjs-tx');
     var transaction_obj = {
-        gasLimit: dApp.web3_1_0.utils.toHex($('.tx-data-holder').attr('data-gasLimit')),
-        gasPrice: dApp.web3_1_0.utils.toHex($('.tx-data-holder').attr('data-on_popup_load_gas_price')),
+        gasLimit: web3_provider.utils.toHex($('.tx-data-holder').attr('data-gasLimit')),
+        gasPrice: web3_provider.utils.toHex($('.tx-data-holder').attr('data-on_popup_load_gas_price')),
         from: global_state.account,
-        nonce: dApp.web3_1_0.utils.toHex($('.tx-data-holder').attr('data-nonce')),
-        chainId: 1
+        nonce: web3_provider.utils.toHex($('.tx-data-holder').attr('data-nonce')),
     };
 
     //function_abi is when we want to add logic into our transaction (mostly when iteracting with contracts)
-    if (function_abi != 'undefined') {
+    if (function_abi != null) {
         transaction_obj.data = function_abi;
     }
 
     var token_label;
+    var layer;
+    var etherscanDomain;
     if (symbol == 'DCN') {
-        transaction_obj.to = dApp.contract_address;
+        transaction_obj.to = config_variable.l1.dcn_contract_address;
+        transaction_obj.chainId = config_variable.l1.chain_id;
+        layer = 'L1';
         token_label = 'Dentacoin tokens';
+        etherscanDomain = config_variable.etherscan_domain;
+    } else if (symbol == 'DCN2.0') {
+        transaction_obj.to = config_variable.l2.dcn_contract_address;
+        transaction_obj.chainId = config_variable.l2.chain_id;
+        layer = 'L2';
+        token_label = 'Dentacoin 2.0 tokens';
+        etherscanDomain = config_variable.optimism_etherscan_domain;
     } else if (symbol == 'ETH') {
-        transaction_obj.to = receiver;
-        transaction_obj.value = dApp.web3_1_0.utils.toHex(projectData.utils.toWei(token_val.toString()));
+        transaction_obj.to = to;
+        transaction_obj.chainId = config_variable.l1.chain_id;
+        transaction_obj.value = web3_provider.utils.toHex(projectData.utils.toWei(token_val.toString()));
+        layer = 'L1';
         token_label = 'Ethers';
+        etherscanDomain = config_variable.etherscan_domain;
+    } else if (symbol == 'ETH2.0') {
+        transaction_obj.to = to;
+        transaction_obj.chainId = config_variable.l2.chain_id;
+        transaction_obj.value = web3_provider.utils.toHex(projectData.utils.toWei(token_val.toString()));
+        layer = 'L2';
+        token_label = 'Ethers 2.0';
+        etherscanDomain = config_variable.optimism_etherscan_domain;
     }
 
     const tx = new EthereumTx(transaction_obj);
     //signing the transaction
     tx.sign(key);
     //submit the transaction
-    dApp.web3_1_0.eth.sendSignedTransaction('0x' + tx.serialize().toString('hex'), function (err, transactionHash) {
-        hideLoader();
+    web3_provider.eth.sendSignedTransaction('0x' + tx.serialize().toString('hex'), function (err, transactionHash) {
+        projectData.general_logic.hideLoader();
         basic.closeDialog();
 
         var pending_history_transaction;
-        if (symbol == 'DCN') {
+        if (symbol == 'DCN' || symbol == 'DCN2.0') {
             projectData.requests.getDentacoinDataByCoingeckoProvider(function (request_response) {
-                pending_history_transaction += buildDentacoinHistoryTransaction(request_response, token_val, receiver, global_state.account, Math.round((new Date()).getTime() / 1000), transactionHash, true);
+                pending_history_transaction += projectData.general_logic.buildDentacoinHistoryTransaction(request_response, token_val, to, global_state.account, Math.round((new Date()).getTime() / 1000), transactionHash, true, layer);
 
-                fireGoogleAnalyticsEvent('Pay', 'Next', 'DCN', token_val);
-                displayMessageOnTransactionSend(token_label, transactionHash);
+                projectData.general_logic.fireGoogleAnalyticsEvent('Pay', 'Next', token_label, token_val);
+
+                if (transactionType == 'swap') {
+                    if (symbol == 'DCN2.0' || symbol == 'ETH2.0') {
+                        projectData.general_logic.displayMessageOnTransactionSend('<div class="padding-top-15 padding-bottom-10 fs-16">While communication from Layer 1 to Layer 2 only takes a few minutes, communication from Layer 2 to Layer 1 on the Optimistic Ethereum mainnet takes about a week. This means that you must wait one week before you can claim a withdrawal on the Optimistic Ethereum mainnet. You can check if you\'re ready to claim your asset at <a href="' + etherscanDomain + '/messagerelayer?search=' + transactionHash + '" target="_blank" class="lato-bold color-light-blue data-external-link">Etherscan</a>. One you see your transaction with status <b>Ready for relay</b> then you are all set to proceed with the claiming transaction.</div>');
+                    } else if (symbol == 'DCN' || symbol == 'ETH') {
+                        projectData.general_logic.displayMessageOnTransactionSend('<div class="padding-top-15 padding-bottom-10 fs-16">' + $('.translates-holder').attr('your') + ' L2 tokens are on their way to your wallet. Check transaction status at <a href="' + etherscanDomain + '/tx/' + transactionHash + '" target="_blank" class="lato-bold color-light-blue data-external-link">Etherscan</a>.</div>');
+                    }
+                } else if (transactionType == 'transfer') {
+                    projectData.general_logic.displayMessageOnTransactionSend('<div class="padding-top-15 padding-bottom-10 fs-16">' + $('.translates-holder').attr('your') + token_label + $('.translates-holder').attr('the-way') + ' <a href="' + etherscanDomain + '/tx/' + transactionHash + '" target="_blank" class="lato-bold color-light-blue data-external-link">Etherscan</a>.</div>');
+                }
 
                 $('.transaction-history tbody').prepend(pending_history_transaction);
-
                 $('.search-field #search').val('');
                 $('.section-amount-to').hide();
                 $('.section-send').fadeIn(500);
                 $('#search').val('');
 
-                firePushNotification('Dentacoin transaction', token_val + ' DCN sent successfully.');
+                projectData.general_logic.firePushNotification('Dentacoin transaction', token_val + ' ' + token_label + ' sent successfully.');
             });
-        } else if (symbol == 'ETH') {
+        } else if (symbol == 'ETH' || symbol == 'ETH2.0') {
             projectData.requests.getEthereumDataByCoingecko(function (request_response) {
-                pending_history_transaction += buildEthereumHistoryTransaction(request_response, token_val, receiver, global_state.account, Math.round((new Date()).getTime() / 1000), transactionHash, true);
+                pending_history_transaction += projectData.general_logic.buildEthereumHistoryTransaction(request_response, token_val, to, global_state.account, Math.round((new Date()).getTime() / 1000), transactionHash, true, layer);
 
-                fireGoogleAnalyticsEvent('Pay', 'Next', 'ETH in USD', Math.floor(parseFloat(token_val) * request_response.market_data.current_price.usd));
-                displayMessageOnTransactionSend(token_label, transactionHash);
+                projectData.general_logic.fireGoogleAnalyticsEvent('Pay', 'Next', token_label + 'in USD', Math.floor(parseFloat(token_val) * request_response.market_data.current_price.usd));
+                if (transactionType == 'swap') {
+                    projectData.general_logic.displayMessageOnTransactionSend('<div class="padding-top-15 padding-bottom-10 fs-16">While communication from Layer 1 to Layer 2 only takes a few minutes, communication from Layer 2 to Layer 1 on the Optimistic Ethereum mainnet takes about a week. This means that you must wait one week before you can claim a withdrawal on the Optimistic Ethereum mainnet. You can check if you\'re ready to claim your asset at <a href="' + etherscanDomain + '/messagerelayer?search=' + transactionHash + '" target="_blank" class="lato-bold color-light-blue data-external-link">Etherscan</a>. One you see your transaction with status <b>Ready for relay</b> then you are all set to proceed with the claiming transaction.</div>');
+                } else if (transactionType == 'transfer') {
+                    projectData.general_logic.displayMessageOnTransactionSend('<div class="padding-top-15 padding-bottom-10 fs-16">' + $('.translates-holder').attr('your') + token_label + $('.translates-holder').attr('the-way') + ' <a href="' + etherscanDomain + '/tx/' + transactionHash + '" target="_blank" class="lato-bold color-light-blue data-external-link">Etherscan</a>.</div>');
+                }
 
                 $('.transaction-history tbody').prepend(pending_history_transaction);
-
                 $('.search-field #search').val('');
                 $('.section-amount-to').hide();
                 $('.section-send').fadeIn(500);
 
-                firePushNotification('Ethereum transaction', token_val + ' ETH sent successfully.');
+                projectData.general_logic.firePushNotification('Ethereum transaction', token_val + ' ' + token_label + ' sent successfully.');
             });
         }
     });
-}
-
-function displayMessageOnTransactionSend(token_label, tx_hash) {
-    window.scrollTo(0, 0);
-    $('.section-amount-to #crypto-amount').val('').trigger('change');
-    $('.section-amount-to #usd-val').val('').trigger('change');
-    $('.section-amount-to #verified-receiver-address').prop('checked', false);
-
-    basic.showAlert('<div class="padding-top-15 padding-bottom-10 fs-16">' + $('.translates-holder').attr('your') + token_label + $('.translates-holder').attr('the-way') + ' <a href="https://etherscan.io/tx/' + tx_hash + '" target="_blank" class="lato-bold color-light-blue data-external-link">Etherscan</a>.</div>', '', true);
-    updateExternalURLsForiOSDevice();
 }
 
 //method for 'refreshing' the mobile app
 window.refreshApp = function () {
     $('.account-checker-container').addClass('hide').removeClass('visible');
     basic.closeDialog();
-    hideLoader();
+    projectData.general_logic.hideLoader();
 
     $('.custom-auth-popup .on-page-load').removeClass('hide');
     $('.custom-auth-popup .on-option-selected').addClass('custom-hide');
@@ -2516,8 +3569,13 @@ window.refreshApp = function () {
     core_db_clinics = undefined;
     core_db_clinics_time_to_request = undefined;
     load_qr_code_lib = true;
-    DCNContract = undefined;
-    getInstance = undefined;
+    L1DCNContract = undefined;
+    getL1Instance = undefined;
+    L2DCNContract = undefined;
+    L2OptimismGatewayProxyContract = undefined;
+    L2OptimismL2StandardBridgeContract = undefined;
+    getL2Instance = undefined;
+    tx_history = [];
 
     executeGlobalLogic();
     initAccountChecker();
@@ -2559,7 +3617,7 @@ window.getHomepageData = function () {
 
 window.getBuyPageData = function () {
     executeGlobalLogic();
-    removeAccountChecker();
+    projectData.general_logic.removeAccountChecker();
 
     if (!dApp.loaded) {
         dApp.init();
@@ -2601,9 +3659,34 @@ window.getSendPageData = function () {
     }
 };
 
+window.getSwapPageData = function () {
+    executeGlobalLogic();
+    initAccountChecker();
+
+    if (!dApp.loaded) {
+        dApp.init(function () {
+            loadSwapPageData();
+        });
+    } else {
+        loadSwapPageData();
+    }
+
+    function loadSwapPageData() {
+        if ($.isReady) {
+            //called on route change
+            projectData.pages.swap_page();
+        } else {
+            //called on page init
+            $(document).ready(function () {
+                projectData.pages.swap_page();
+            });
+        }
+    }
+};
+
 window.getSpendPageDentalServices = function () {
     executeGlobalLogic();
-    removeAccountChecker();
+    projectData.general_logic.removeAccountChecker();
 
     if (!dApp.loaded) {
         dApp.init();
@@ -2620,28 +3703,9 @@ window.getSpendPageDentalServices = function () {
     }
 };
 
-/*window.getSpendPageGiftCards = function () {
-    executeGlobalLogic();
-    removeAccountChecker();
-
-    if (!dApp.loaded) {
-        dApp.init();
-    }
-
-    if ($.isReady) {
-        //called on route change
-        projectData.pages.spend_page_gift_cards();
-    } else {
-        //called on page init
-        $(document).ready(function () {
-            projectData.pages.spend_page_gift_cards();
-        });
-    }
-};*/
-
 window.getSpendPageExchanges = function () {
     executeGlobalLogic();
-    removeAccountChecker();
+    projectData.general_logic.removeAccountChecker();
 
     if (!dApp.loaded) {
         dApp.init();
@@ -2660,7 +3724,7 @@ window.getSpendPageExchanges = function () {
 
 window.getSpendPageAssuranceFees = function () {
     executeGlobalLogic();
-    removeAccountChecker();
+    projectData.general_logic.removeAccountChecker();
 
     if (!dApp.loaded) {
         dApp.init();
@@ -2719,7 +3783,6 @@ function bindGoogleAlikeButtonsEvents() {
         }
     });
 }
-
 bindGoogleAlikeButtonsEvents();
 
 var mobileAppBannerForDesktopBrowsersHtml = '<div class="container-fluid"><div class="row"><figure itemscope="" itemtype="http://schema.org/ImageObject" class="col-xs-3 inline-block-bottom"><img src="assets/images/left-hand-with-phone.png" alt="Left hand holding phone"/></figure><div class="col-xs-6 inline-block-bottom text-center padding-bottom-20"><h3 class="fs-30 fs-md-24 padding-bottom-10 color-white mobile-app-banner-title renew-on-lang-switch" data-slug="also-available"></h3><div><figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block padding-right-10"><a href="https://play.google.com/store/apps/details?id=wallet.dentacoin.com" target="_blank"><img src="assets/images/google-play-badge.svg" class="width-100 max-width-150" itemprop="logo" alt="Google play icon"/></a></figure><figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block padding-left-10"><a href="https://apps.apple.com/us/app/dentacoin-wallet/id1478732657" target="_blank"><img src="assets/images/app-store.svg" class="width-100 max-width-150" itemprop="logo" alt="App store icon"/></a></figure></div></div><figure itemscope="" itemtype="http://schema.org/ImageObject" class="col-xs-3 inline-block-bottom text-right"><img src="assets/images/right-hand-with-phone.png" alt="Right hand holding phone"/></figure></div></div>';
@@ -2745,12 +3808,12 @@ function executeGlobalLogic() {
             $('#main-container').addClass('full-visual-height');
 
             $('.ios-camper .ios-camper-download-keystore-action').click(function () {
-                showLoader($('.translates-holder').attr('hold-on-decrypt'));
+                projectData.general_logic.showLoader($('.translates-holder').attr('hold-on-decrypt'));
 
                 setTimeout(function () {
                     importKeystoreFile(window.localStorage.getItem('keystore_file'), $('.ios-camper #ios-camper-download-keystore-password').val().trim(), function (success, public_key, address, error, error_message) {
                         if (success) {
-                            hideLoader();
+                            projectData.general_logic.hideLoader();
                             window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
                             $('#ios-camper-download-keystore-password').val('');
 
@@ -2763,7 +3826,7 @@ function executeGlobalLogic() {
                                 }
                             });
                         } else if (error) {
-                            hideLoader();
+                            projectData.general_logic.hideLoader();
                             basic.showAlert(error_message, '', true);
                         }
                     });
@@ -2780,7 +3843,7 @@ function initAccountChecker() {
             return;
         }
 
-        hideMobileAppBannerForDesktopBrowsers();
+        projectData.general_logic.hideMobileAppBannerForDesktopBrowsers();
 
         if (is_hybrid) {
             // opening the external links in app browser
@@ -2796,9 +3859,9 @@ function initAccountChecker() {
             if (!is_hybrid) {
                 if (!basic.isMobile()) {
                     $('.account-checker-wrapper').append('<div class="mobile-app-banner padding-top-50">' + mobileAppBannerForDesktopBrowsersHtml + '</div>');
+                    $('.mobile-app-banner-title').html($('.translates-holder').attr('also-available'));
                 }
             }
-            updateExternalURLsForiOSDevice();
 
             $(window).on('load', function () {
                 if ($('.custom-auth-popup .modal-content').height() > $('.custom-auth-popup .modal-dialog').height()) {
@@ -2853,7 +3916,7 @@ function initAccountChecker() {
                 $('#import-private-key').focus();
                 $('label[for="import-private-key"]').addClass('active-label');
 
-                initScan($('.scan-qr-code-importing-priv-key'), $('#import-private-key'), function () {
+                projectData.general_logic.initScan($('.scan-qr-code-importing-priv-key'), $('#import-private-key'), function () {
                     $('#import-private-key').focus();
                     $('label[for="import-private-key"]').addClass('active-label');
                 });
@@ -2861,17 +3924,17 @@ function initAccountChecker() {
                 $('.continue-btn-priv-key > a').unbind().click(function () {
                     $('.import-private-key-row .error-handle').remove();
 
-                    showLoader();
+                    projectData.general_logic.showLoader();
                     setTimeout(function () {
                         var validate_private_key = validatePrivateKey($('#import-private-key').val().trim());
                         if (validate_private_key.success) {
                             var internet = navigator.onLine;
                             if (internet) {
-                                savePublicKeyToAssurance(validate_private_key.success.address, validate_private_key.success.public_key);
+                                projectData.general_logic.savePublicKey(validate_private_key.success.address, validate_private_key.success.public_key);
                             }
                             setTimeout(function () {
                                 window.localStorage.setItem('current_account', validate_private_key.success.address);
-                                fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
+                                projectData.general_logic.fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
 
                                 if (is_hybrid) {
                                     if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
@@ -2888,9 +3951,9 @@ function initAccountChecker() {
                                 }
                             }, 500);
                         } else if (validate_private_key.error) {
-                            hideLoader();
+                            projectData.general_logic.hideLoader();
 
-                            customErrorHandle($('#import-private-key').closest('.field-parent'), validate_private_key.message);
+                            projectData.general_logic.customErrorHandle($('#import-private-key').closest('.field-parent'), validate_private_key.message);
                         }
                     }, 500);
                 });
@@ -2902,20 +3965,6 @@ function initAccountChecker() {
             // ================================= /IMPORTING ==========================================
 
             // ================================= CREATING ==========================================
-
-            /*var passwordWarningShow = true;
-            $('.popup-left .required-field').on('change keyup focusout paste', function() {
-                if (passwordWarningShow) {
-                    passwordWarningShow = false;
-
-                    if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
-                        $('.custom-auth-popup .popup-left .wallet-creation-warning').addClass('max-width-300 margin-left-right-auto').html('<div class="color-warning-red fs-14 lato-bold">Keep your password and backup file safe!<br>NOBODY CAN RESET THEM IF LOST.</div><div class="padding-bottom-15 fs-14">To access your wallet, you need both the password and the backup file which you must export on the next step or from the Settings.</div>');
-                    } else {
-                        $('.custom-auth-popup .popup-left .wallet-creation-warning').addClass('max-width-300 margin-left-right-auto').html('<div class="color-warning-red fs-14 lato-bold">Keep your password and backup file safe!<br>NOBODY CAN RESET THEM IF LOST.</div><div class="padding-bottom-15 fs-14">To access your wallet, you need both the password and the backup file which will be automatically downloaded on your device.</div>');
-                    }
-                }
-            });*/
-
             var tempPrivKey;
             var tempAddress;
             $('.custom-auth-popup .popup-left .download-login-file').unbind().click(function () {
@@ -2925,16 +3974,16 @@ function initAccountChecker() {
 
                 for (var i = 0, len = login_fields.length; i < len; i += 1) {
                     if (login_fields.eq(i).val().trim() == '') {
-                        customErrorHandle(login_fields.eq(i).closest('.field-parent'), $('.translates-holder').attr('enter-pass'));
+                        projectData.general_logic.customErrorHandle(login_fields.eq(i).closest('.field-parent'), $('.translates-holder').attr('enter-pass'));
                         login_errors = true;
                     } else if (login_fields.eq(i).val().trim().length < 8 || login_fields.eq(i).val().trim().length > 30) {
-                        customErrorHandle(login_fields.eq(i).closest('.field-parent'), $('.translates-holder').attr('min-pass-error'));
+                        projectData.general_logic.customErrorHandle(login_fields.eq(i).closest('.field-parent'), $('.translates-holder').attr('min-pass-error'));
                         login_errors = true;
                     }
                 }
 
                 if ($('.custom-auth-popup .keystore-file-pass').val().trim() != $('.custom-auth-popup .second-pass').val().trim()) {
-                    customErrorHandle($('.custom-auth-popup .second-pass').closest('.field-parent'), $('.translates-holder').attr('def-pass-error'));
+                    projectData.general_logic.customErrorHandle($('.custom-auth-popup .second-pass').closest('.field-parent'), $('.translates-holder').attr('def-pass-error'));
                     login_errors = true;
                 }
 
@@ -2942,56 +3991,47 @@ function initAccountChecker() {
                     if (is_hybrid) {
                         //MOBILE APP
                         if (basic.getMobileOperatingSystem() == 'Android') {
-                            showLoader($('.translates-holder').attr('few-mins'));
+                            projectData.general_logic.showLoader($('.translates-holder').attr('few-mins'));
                         }/* else if (basic.getMobileOperatingSystem() == 'iOS') {
-                        showLoader($('.translates-holder').attr('few-mins-two'));
+                        projectData.general_logic.showLoader($('.translates-holder').attr('few-mins-two'));
                     }*/
                     } else {
-                        showLoader($('.translates-holder').attr('few-mins'));
+                        projectData.general_logic.showLoader($('.translates-holder').attr('few-mins'));
                     }
 
                     setTimeout(function () {
                         generateKeystoreFile($('.custom-auth-popup .keystore-file-pass').val().trim(), function (public_key, keystore, private_key) {
-                            var keystore_file_name = buildKeystoreFileName(keystore.address);
+                            var keystore_file_name = projectData.general_logic.buildKeystoreFileName(keystore.address);
                             tempPrivKey = private_key;
                             tempAddress = '0x' + keystore.address;
 
                             // if internet connection save the public key to assurance
                             var internet = navigator.onLine;
                             if (internet) {
-                                savePublicKeyToAssurance(keystore.address, public_key);
+                                projectData.general_logic.savePublicKey(keystore.address, public_key);
                             }
 
                             if (is_hybrid) {
                                 //MOBILE APP
                                 if (basic.getMobileOperatingSystem() == 'Android') {
                                     //saving keystore file to Downloads folder
-                                    hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
+                                    projectData.general_logic.hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
                                         //saving keystore file to App folder
-                                        hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
-                                            fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
+                                        projectData.general_logic.hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
+                                            projectData.general_logic.fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
                                             loginIntoWallet();
 
                                             basic.showAlert($('.translates-holder').attr('file') + keystore_file_name + $('.translates-holder').attr('has-been-stored'), 'overlap-loading-popup', true);
                                             setTimeout(function () {
-                                                fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
+                                                projectData.general_logic.fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
                                                 basic.closeDialog();
-                                                hideLoader();
+                                                projectData.general_logic.hideLoader();
                                                 clearCreation();
                                             }, 6000);
 
                                         }, cordova.file.externalDataDirectory, false);
                                     }, cordova.file.externalRootDirectory, true);
                                 } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
-                                    //saving keystore file to App folder
-                                    /*hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
-                                        loginIntoWallet();
-                                        hideLoader();
-                                    }, cordova.file.dataDirectory, false);*/
-
-                                    //
-                                    //hideLoader();
-
                                     window.plugins.socialsharing.share(JSON.stringify(keystore));
 
                                     $('.custom-auth-popup .popup-element.first .btn-container .download-login-file').addClass('hide');
@@ -3010,26 +4050,26 @@ function initAccountChecker() {
                                     basic.showAlert($('.translates-holder').attr('opened-new-tab'), 'mobile-safari-keystore-creation overlap-loading-popup', true);
 
                                     //mobile safari
-                                    downloadFile(keystore_file_name, JSON.stringify(keystore));
+                                    projectData.general_logic.downloadFile(keystore_file_name, JSON.stringify(keystore));
 
                                     $('.mobile-safari-keystore-creation .modal-footer .btn.btn-primary, .mobile-safari-keystore-creation .bootbox-close-button.close').click(function () {
-                                        fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
+                                        projectData.general_logic.fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
                                         basic.closeDialog();
                                         loginIntoWallet();
-                                        hideLoader();
+                                        projectData.general_logic.hideLoader();
                                         clearCreation();
                                     });
                                 } else {
                                     //BROWSER
-                                    downloadFile(keystore_file_name, JSON.stringify(keystore));
-                                    fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
+                                    projectData.general_logic.downloadFile(keystore_file_name, JSON.stringify(keystore));
+                                    projectData.general_logic.fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
                                     loginIntoWallet();
 
                                     basic.showAlert($('.translates-holder').attr('file') +keystore_file_name + $('.translates-holder').attr('has-been-stored'), 'overlap-loading-popup', true);
                                     setTimeout(function () {
-                                        fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
+                                        projectData.general_logic.fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
                                         basic.closeDialog();
-                                        hideLoader();
+                                        projectData.general_logic.hideLoader();
                                         clearCreation();
                                     }, 6000);
                                 }
@@ -3096,20 +4136,6 @@ function initAccountChecker() {
     }, 1000);
 }
 
-function removeAccountChecker() {
-    $('.account-checker-container').addClass('hide').removeClass('visible');
-}
-
-//method that appends front end errors
-function customErrorHandle(el, string) {
-    el.append('<div class="error-handle">' + string + '</div>');
-}
-
-//method that appends front end warnings
-function customWarningHandle(el, string) {
-    el.append('<div class="warning-handle">' + string + '</div>');
-}
-
 //styling input type file for importing keystore file
 function styleKeystoreUploadBtn() {
     function proceedWithImportingAfterKeystoreUploading(keystore_string) {
@@ -3118,7 +4144,7 @@ function styleKeystoreUploadBtn() {
             $('.import-private-key-row').hide();
 
             //show continue button next step button
-            $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('<div class="enter-pass-label"><label class="renew-on-lang-switch" data-slug="enter-pass-secret">'+$('.translates-holder').attr('enter-pass-secret')+'</label></div><div class="field-parent margin-bottom-15 max-width-300 margin-left-right-auto"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="import-keystore-password" class="renew-on-lang-switch" data-slug="enter-pass-label">'+$('.translates-holder').attr('enter-pass-label')+'</label><input type="password" id="import-keystore-password" class="full-rounded import-keystore-password"/></div></div><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-import" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-import"><span class="padding-left-5 padding-right-5 inline-block renew-on-lang-switch" data-slug="remember-file">'+$('.translates-holder').attr('remember-file')+'</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block import-more-info-keystore-remember fs-0" data-content="'+$('.translates-holder').attr('remembering-file')+'"><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="continue-btn padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border renew-on-lang-switch" data-slug="CONTINUE-btn">'+$('.translates-holder').attr('CONTINUE-btn')+'</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block renew-on-lang-switch" data-slug="go-back">'+$('.translates-holder').attr('go-back')+'</span></a></div>');
+            $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('<div class="enter-pass-label"><label class="renew-on-lang-switch" data-slug="enter-pass-secret">'+$('.translates-holder').attr('enter-pass-secret')+'</label></div><div class="field-parent margin-bottom-15 max-width-300 margin-left-right-auto"><div class="custom-google-label-style module text-left" data-input-light-blue-border="true"><label for="import-keystore-password" class="renew-on-lang-switch" data-slug="enter-pass-label">'+$('.translates-holder').attr('enter-pass-label')+'</label><input type="password" id="import-keystore-password" class="full-rounded import-keystore-password"/></div></div><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-import" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-import"><span class="padding-left-5 padding-right-5 inline-block renew-on-lang-switch" data-slug="remember-file">'+$('.translates-holder').attr('remember-file')+'</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block import-more-info-keystore-remember fs-0" data-content="'+$('.translates-holder').attr('remembering-file')+'"><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="continue-btn padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border renew-on-lang-switch" data-slug="CONTINUE-btn">'+$('.translates-holder').attr('CONTINUE-btn')+'</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block renew-on-lang-switch" data-slug="go-back">'+$('.translates-holder').attr('go-back')+'</span></a></div>');
 
             $('.import-more-info-keystore-remember').popover({
                 trigger: 'click'
@@ -3131,19 +4157,19 @@ function styleKeystoreUploadBtn() {
                 $('.custom-auth-popup .popup-right .error-handle').remove();
                 var keystore_password = $('.custom-auth-popup .popup-right .popup-body .import-keystore-password').val().trim();
                 if (keystore_password == '') {
-                    customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), $('.translates-holder').attr('enter-pass-secret'));
+                    projectData.general_logic.customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), $('.translates-holder').attr('enter-pass-secret'));
                 } else {
-                    showLoader($('.translates-holder').attr('hold-decrypt'));
+                    projectData.general_logic.showLoader($('.translates-holder').attr('hold-decrypt'));
 
                     setTimeout(function () {
                         importKeystoreFile(keystore_string, keystore_password, function (success, public_key, address, error, error_message) {
                             if (success) {
                                 var internet = navigator.onLine;
                                 if (internet) {
-                                    savePublicKeyToAssurance(address, public_key);
+                                    projectData.general_logic.savePublicKey(address, public_key);
                                 }
 
-                                var keystore_file_name = buildKeystoreFileName(address);
+                                var keystore_file_name = projectData.general_logic.buildKeystoreFileName(address);
                                 setTimeout(function () {
                                     //saving keystore file to App folder
                                     window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function (dirEntry) {
@@ -3153,7 +4179,7 @@ function styleKeystoreUploadBtn() {
                                         }, function (fileEntry) {
                                             fileEntry.createWriter(function (fileWriter) {
                                                 fileWriter.onwriteend = function (e) {
-                                                    fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
+                                                    projectData.general_logic.fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
 
                                                     if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                                                         window.localStorage.setItem('keystore_file_ios_saved', true);
@@ -3181,7 +4207,7 @@ function styleKeystoreUploadBtn() {
 
                                                 fileWriter.onerror = function (e) {
                                                     console.log(e, 'error');
-                                                    hideLoader();
+                                                    projectData.general_logic.hideLoader();
                                                     alert('Something went wrong with caching your file (Core error 2). Please contact admin@dentacoin.com.');
                                                 };
 
@@ -3190,19 +4216,19 @@ function styleKeystoreUploadBtn() {
                                                 fileWriter.write(blob);
                                             }, function (err) {
                                                 console.log(err, 'err');
-                                                hideLoader();
+                                                projectData.general_logic.hideLoader();
                                                 alert('Something went wrong with downloading your file (Core error 3). Please contact admin@dentacoin.com.');
                                             });
                                         }, function (err) {
                                             console.log(err, 'err');
-                                            hideLoader();
+                                            projectData.general_logic.hideLoader();
                                             alert('Something went wrong with downloading your file (Core error 4). Please contact admin@dentacoin.com.');
                                         });
                                     });
                                 }, 500);
                             } else if (error) {
-                                hideLoader();
-                                customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), error_message);
+                                projectData.general_logic.hideLoader();
+                                projectData.general_logic.customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), error_message);
                             }
                         });
                     }, 2000);
@@ -3222,11 +4248,13 @@ function styleKeystoreUploadBtn() {
             $('.custom-upload-button').click(function () {
                 var this_btn = $(this);
                 fileChooser.open(function (file_uri) {
-                    androidFileUpload(file_uri, function (file) {
+                    console.log(file_uri, 'file_uri');
+                    projectData.general_logic.androidFileUpload(file_uri, function (file) {
+                        console.log(file, 'file');
                         var reader = new FileReader();
 
                         if (this_btn != undefined) {
-                            initCustomInputFileAnimation(this_btn);
+                            projectData.general_logic.initCustomInputFileAnimation(this_btn);
                         }
 
                         reader.onloadend = function () {
@@ -3246,7 +4274,7 @@ function styleKeystoreUploadBtn() {
         } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
             //iOS
             $('.custom-upload-button').click(function () {
-                iOSFileUpload(function (keystore_string) {
+                projectData.general_logic.iOSFileUpload(function (keystore_string) {
                     setTimeout(function () {
                         proceedWithImportingAfterKeystoreUploading(keystore_string);
                     }, 500);
@@ -3266,14 +4294,14 @@ function styleKeystoreUploadBtn() {
                         var keystore_string = e.target.result;
                         var address = JSON.parse(keystore_string).address;
                         //init upload button animation
-                        initCustomInputFileAnimation(label);
+                        projectData.general_logic.initCustomInputFileAnimation(label, myFile.name);
 
                         $('.or-label').hide();
                         $('.import-private-key-row').hide();
 
                         setTimeout(function () {
                             //show continue button next step button
-                            $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('<div class="enter-pass-label"><label class="renew-on-lang-switch" data-slug="enter-pass-secret">'+$('.translates-holder').attr('enter-pass-secret')+'</label></div><div class="field-parent margin-bottom-15 max-width-300 margin-left-right-auto"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="import-keystore-password" class="renew-on-lang-switch" data-slug="enter-pass-label">'+$('.translates-holder').attr('enter-pass-label')+'</label><input type="password" id="import-keystore-password" class="full-rounded import-keystore-password"/></div></div><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-import" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-import"><span class="padding-left-5 padding-right-5 inline-block renew-on-lang-switch" data-slug="remember-file">'+$('.translates-holder').attr('remember-file')+'</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block import-more-info-keystore-remember fs-0" data-content="'+$('.translates-holder').attr('remembering-file')+'"><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="continue-btn padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border renew-on-lang-switch" data-slug="CONTINUE-btn">'+$('.translates-holder').attr('CONTINUE-btn')+'</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block renew-on-lang-switch" data-slug="go-back">'+$('.translates-holder').attr('go-back')+'</span></a></div>');
+                            $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('<div class="enter-pass-label"><label class="renew-on-lang-switch" data-slug="enter-pass-secret">'+$('.translates-holder').attr('enter-pass-secret')+'</label></div><div class="field-parent margin-bottom-15 max-width-300 margin-left-right-auto"><div class="custom-google-label-style module text-left" data-input-light-blue-border="true"><label for="import-keystore-password" class="renew-on-lang-switch" data-slug="enter-pass-label">'+$('.translates-holder').attr('enter-pass-label')+'</label><input type="password" id="import-keystore-password" class="full-rounded import-keystore-password"/></div></div><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-import" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-import"><span class="padding-left-5 padding-right-5 inline-block renew-on-lang-switch" data-slug="remember-file">'+$('.translates-holder').attr('remember-file')+'</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block import-more-info-keystore-remember fs-0" data-content="'+$('.translates-holder').attr('remembering-file')+'"><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="continue-btn padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border renew-on-lang-switch" data-slug="CONTINUE-btn">'+$('.translates-holder').attr('CONTINUE-btn')+'</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block renew-on-lang-switch" data-slug="go-back">'+$('.translates-holder').attr('go-back')+'</span></a></div>');
 
                             $('.import-more-info-keystore-remember').popover({
                                 trigger: 'click'
@@ -3287,20 +4315,20 @@ function styleKeystoreUploadBtn() {
                                 $('.custom-auth-popup .popup-right .error-handle').remove();
                                 var keystore_password = $('.custom-auth-popup .popup-right .popup-body .import-keystore-password').val().trim();
                                 if (keystore_password == '') {
-                                    customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), $('.translates-holder').attr('enter-pass-secret'));
+                                    projectData.general_logic.customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), $('.translates-holder').attr('enter-pass-secret'));
                                 } else {
-                                    showLoader($('.translates-holder').attr('hold-decrypt'));
+                                    projectData.general_logic.showLoader($('.translates-holder').attr('hold-decrypt'));
 
                                     setTimeout(function () {
                                         importKeystoreFile(keystore_string, keystore_password, function (success, public_key, address, error, error_message) {
                                             if (success) {
                                                 var internet = navigator.onLine;
                                                 if (internet) {
-                                                    savePublicKeyToAssurance(address, public_key);
+                                                    projectData.general_logic.savePublicKey(address, public_key);
                                                 }
 
                                                 setTimeout(function () {
-                                                    fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
+                                                    projectData.general_logic.fireGoogleAnalyticsEvent('Login', 'Upload', 'SK');
 
                                                     var localStorageAddress = address;
                                                     if (localStorageAddress.length == 40) {
@@ -3317,8 +4345,8 @@ function styleKeystoreUploadBtn() {
                                                     }
                                                 }, 500);
                                             } else if (error) {
-                                                hideLoader();
-                                                customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), error_message);
+                                                projectData.general_logic.hideLoader();
+                                                projectData.general_logic.customErrorHandle($('.custom-auth-popup .popup-right .popup-body .import-keystore-password').closest('.field-parent'), error_message);
                                             }
                                         });
                                     }, 2000);
@@ -3338,93 +4366,35 @@ function styleKeystoreUploadBtn() {
     }
 }
 
-//animation of the button which uploads keystore file
-function initCustomInputFileAnimation(this_btn) {
-    var btn = $(this_btn);
-    var loadSVG = btn.children("a").children(".load");
-    var loadBar = btn.children("div").children("span");
-    var checkSVG = btn.children("a").children(".check");
+//opening WALLET menu
+$(document).on('click', 'header .open-wallet-menu', function () {
+    $('nav.sidenav').addClass('active');
+});
 
-    var btn_width = 320;
-    $('body').addClass('overflow-hidden');
-    var window_width = $(window).width();
-    $('body').removeClass('overflow-hidden');
-    if (window_width < 768) {
-        btn_width = 260;
-    }
+//logging out of the application
+$(document).on('click', 'nav.sidenav .log-out', function () {
+    var log_out_reminder_warning = {};
+    log_out_reminder_warning.callback = function (result) {
+        if (result) {
+            if (is_hybrid) {
+                window.localStorage.clear();
+                refreshApp();
+            } else {
+                window.localStorage.clear();
+                window.location.reload();
+            }
+        }
+    };
+    basic.showConfirm($('.translates-holder').attr('are-you-downloaded'), '', log_out_reminder_warning, true);
+});
 
-    btn.children("a").children("span").fadeOut(200, function () {
-        btn.children("a").animate({
-            width: 56
-        }, 100, function () {
-            loadSVG.fadeIn(300);
-            btn.animate({
-                width: btn_width
-            }, 200, function () {
-                btn.children("div").fadeIn(200, function () {
-                    loadBar.animate({
-                        width: "100%"
-                    }, 500, function () {
-                        loadSVG.fadeOut(200, function () {
-                            checkSVG.fadeIn(200, function () {
-                                setTimeout(function () {
-                                    btn.children("div").fadeOut(200, function () {
-                                        loadBar.width(0);
-                                        checkSVG.fadeOut(200, function () {
-                                            btn.children("a").animate({
-                                                width: btn_width
-                                            });
-                                            btn.animate({
-                                                width: btn_width
-                                            }, 300, function () {
-                                                btn.children("a").children("span").fadeIn(200);
-                                            });
-                                        });
-                                    });
-                                }, 500);
-                            });
-                        });
-                    });
-                });
-            });
-        });
-    });
-}
+$(document).on('click', 'nav.sidenav .close-btn, nav.sidenav ul li a', function () {
+    $('nav.sidenav').removeClass('active');
+});
 
-//showing front end loader
-function showLoader(message) {
-    if (message === undefined) {
-        message = 'Loading ...';
-    }
-    $('.camping-loader').html('<div class="response-layer"><div class="wrapper"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/wallet-loading.png" class="max-width-160 width-100" alt="Loader"></figure><div class="message lato-bold fs-24">' + message + '</div></div></div>');
-    $('.response-layer').show();
-}
-
-//hiding front end loader
-function hideLoader() {
-    $('.camping-loader').html('');
-}
-
-function buildKeystoreFileName(address) {
-    if (address.length == 40) {
-        address = '0x' + address;
-    }
-    return 'Dentacoin secret key - ' + projectData.utils.checksumAddress(address);
-}
-
-function downloadFile(filename, text) {
-    var element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-    element.setAttribute('download', filename);
-    element.setAttribute('target', '_blank');
-
-    element.style.display = 'none';
-    document.body.appendChild(element);
-
-    element.click();
-
-    document.body.removeChild(element);
-}
+$(document).on('click', 'nav.sidenav ul li a', function () {
+    window.scrollTo(0, 0);
+});
 
 //opening WALLET SETTINGS
 var forgetWalletLogicInitiated = false;
@@ -3444,13 +4414,6 @@ $(document).on('click', '.open-settings', function () {
         var download_btn_label = $('.translates-holder').attr('download');
         var slug_attr = 'download';
         var warning_html = '';
-        /*if (is_hybrid && basic.getMobileOperatingSystem() == 'iOS') {
-            download_btn_label = $('.translates-holder').attr('export-btn');
-            slug_attr = 'export-btn';*/
-            /*if (window.localStorage.getItem('keystore_file_ios_saved') == null) {
-                warning_html = '<div class="error-handle keystore-file-ios-saved">You have not saved your Backup file yet.</div>';
-            }*/
-        /*}*/
 
         //if cached keystore file show the option for downloading it
         settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important download-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path class="st0" d="M14.4,10.4v3.2c0,0.1,0,0.2-0.1,0.3c0,0.1-0.1,0.2-0.2,0.3c-0.1,0.1-0.2,0.1-0.3,0.2c-0.1,0-0.2,0.1-0.3,0.1 H2.4c-0.1,0-0.2,0-0.3-0.1c-0.1,0-0.2-0.1-0.3-0.2S1.7,14,1.7,13.9c0-0.1-0.1-0.2-0.1-0.3v-3.2c0-0.4-0.4-0.8-0.8-0.8S0,10,0,10.4 v3.2c0,0.3,0.1,0.6,0.2,0.9c0.1,0.3,0.3,0.6,0.5,0.8c0.2,0.2,0.5,0.4,0.8,0.5C1.8,15.9,2.1,16,2.4,16h11.2c0.3,0,0.6-0.1,0.9-0.2 c0.3-0.1,0.6-0.3,0.8-0.5c0.2-0.2,0.4-0.5,0.5-0.8c0.1-0.3,0.2-0.6,0.2-0.9v-3.2c0-0.4-0.4-0.8-0.8-0.8S14.4,10,14.4,10.4z M8.8,8.5 V0.8C8.8,0.4,8.4,0,8,0C7.6,0,7.2,0.4,7.2,0.8v7.7L4.6,5.8c-0.3-0.3-0.8-0.3-1.1,0C3.1,6.1,3.1,6.7,3.4,7l4,4c0,0,0,0,0,0 c0.1,0.1,0.2,0.1,0.3,0.2c0.1,0,0.2,0.1,0.3,0.1c0,0,0,0,0,0c0.1,0,0.2,0,0.3-0.1c0.1,0,0.2-0.1,0.3-0.2l4-4c0.3-0.3,0.3-0.8,0-1.1 s-0.8-0.3-1.1,0L8.8,8.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="'+slug_attr+'">' + download_btn_label + ' <span class="renew-on-lang-switch" data-slug="backupfile">'+$('.translates-holder').attr('backupfile')+'</span></span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="very-important">'+$('.translates-holder').attr('very-important')+'</div><div class="camping-for-action"></div>' + warning_html + '</div>';
@@ -3482,9 +4445,9 @@ $(document).on('click', '.open-settings', function () {
 
                         var this_btn = $(this);
                         fileChooser.open(function (file_uri) {
-                            androidFileUpload(file_uri, function (file) {
+                            projectData.general_logic.androidFileUpload(file_uri, function (file) {
                                 var reader = new FileReader();
-                                initCustomInputFileAnimation(this_btn);
+                                projectData.general_logic.initCustomInputFileAnimation(this_btn);
 
                                 reader.onloadend = function () {
                                     var keystore_string = this.result;
@@ -3509,8 +4472,8 @@ $(document).on('click', '.open-settings', function () {
                         this_row.find('.error-handle').remove();
 
                         var this_btn = $(this);
-                        iOSFileUpload(function (keystore_string) {
-                            initCustomInputFileAnimation(this_btn);
+                        projectData.general_logic.iOSFileUpload(function (keystore_string) {
+                            projectData.general_logic.initCustomInputFileAnimation(this_btn);
 
                             if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && projectData.utils.checksumAddress(JSON.parse(keystore_string).address) == projectData.utils.checksumAddress(global_state.account)) {
                                 validateKeystoreFileAndPasswordForCachingKeystoreFile(this_camping_row, keystore_string, this_row);
@@ -3533,7 +4496,7 @@ $(document).on('click', '.open-settings', function () {
                             if (basic.isJsonString(e.target.result) && basic.property_exists(JSON.parse(e.target.result), 'address') && projectData.utils.checksumAddress(JSON.parse(e.target.result).address) == projectData.utils.checksumAddress(global_state.account)) {
                                 var keystore_string = e.target.result;
                                 //init upload button animation
-                                initCustomInputFileAnimation(label);
+                                projectData.general_logic.initCustomInputFileAnimation(label);
 
                                 validateKeystoreFileAndPasswordForCachingKeystoreFile(this_camping_row, keystore_string, this_row);
                             } else {
@@ -3559,7 +4522,7 @@ $(document).on('click', '.open-settings', function () {
                 if ($('.settings-popup #cache-keystore-password').val().trim() == '') {
                     $('<div class="error-handle renew-on-lang-switch" data-slug="enter-backup-pass">'+$('.translates-holder').attr('enter-backup-pass')+'</div>').insertAfter(this_camping_row);
                 } else {
-                    showLoader($('.translates-holder').attr('hold-on-caching'));
+                    projectData.general_logic.showLoader($('.translates-holder').attr('hold-on-caching'));
                     setTimeout(function () {
                         importKeystoreFile(keystore_string, $('.settings-popup #cache-keystore-password').val().trim(), function (success, public_key, address, error, error_message) {
                             if (success) {
@@ -3574,7 +4537,7 @@ $(document).on('click', '.open-settings', function () {
                                 $('<div class="error-handle">' + error_message + '</div>').insertAfter(this_camping_row);
                             }
                         });
-                        hideLoader();
+                        projectData.general_logic.hideLoader();
                     }, 2000);
                 }
             });
@@ -3615,17 +4578,12 @@ $(document).on('click', '.open-settings', function () {
         }
     }
 
-    var settings_bottom_html = '<div class="padding-top-10 padding-left-15 padding-right-15 fs-14 renew-on-lang-switch" data-slug="dont-forget">'+$('.translates-holder').attr('dont-forget')+'</div>';
-
     //shop Help center menu element (FAQ) only on mobile
     if (basic.isMobile()) {
         settings_html += '<div class="option-row"><a href="https://dentacoin.com/how-to-create-wallet" target="_blank" class="display-block-important data-external-link"><svg class="margin-right-5 inline-block max-width-30" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 73.9 73.9" style="enable-background:new 0 0 73.9 73.9;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="74" width="74" x="0" y="-0.1"></sliceSourceBounds></sfw></metadata><circle style="fill:none;stroke:#00B7E2;stroke-width:3;stroke-miterlimit:10;" cx="37" cy="37" r="35.5"/><path d="M46,38.6"/><path style="fill:#00B7E2;" d="M36.8,17.1c-5.8,0-11.4,3.8-11.4,11c0,1.9,1.6,3.4,3.4,3.4c1.9,0,3.4-1.6,3.4-3.4c0-3.8,4.1-3.9,4.5-3.9s4.5,0.2,4.5,3.9v0.8c0,1.6-0.8,2.8-2.2,3.6l-3,1.7c-1.7,0.9-2.7,2.7-2.7,4.5v2.8c0,1.9,1.6,3.4,3.4,3.4s3.4-1.6,3.4-3.4v-1.7l2.2-1.1c3.6-1.9,5.8-5.6,5.8-9.7v-0.9C48.2,20.9,42.4,17.1,36.8,17.1z"/><path style="fill:#00B7E2;" d="M36.8,48.9c-5.6,0-5.6,8.8,0,8.8S42.4,48.9,36.8,48.9z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="help-center">'+$('.translates-holder').attr('help-center')+'</span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="having-diff">'+$('.translates-holder').attr('having-diff')+' <a href="mailto:admin@dentacoin.com" class="color-light-blue">admin@dentacoin.com</a>.</div></div>';
-
-        settings_bottom_html = '<div class="padding-top-10 padding-left-15 padding-right-15 fs-14 renew-on-lang-switch" data-slug="dont-forget">'+$('.translates-holder').attr('dont-forget')+'</div><div class="text-center padding-top-20 fs-14"><a class="color-light-blue data-external-link" href="https://dentacoin.com/assets/uploads/dentacoin-foundation.pdf" target="_blank"><span class="current-year"></span> Dentacoin Foundation.</a> <span class="renew-on-lang-switch" data-slug="all-rights">'+$('.translates-holder').attr('all-rights')+'</span></div><div class="text-center fs-14"><a class="color-light-blue data-external-link renew-on-lang-switch" data-slug="menu-privacy-policy" href="https://dentacoin.com/privacy-policy" target="_blank">'+$('.translates-holder').attr('menu-privacy-policy')+'</a></div>';
     }
 
     $('.settings-popup .popup-body').html(settings_html);
-    $('.settings-popup .popup-footer').html('<div><a href="javascript:void(0)" class="log-out light-blue-white-btn min-width-220"><svg xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 18.4" style="enable-background:new 0 0 16 18.4;" xml:space="preserve" class="margin-right-5 inline-block max-width-20"><style type="text/css">.st0{fill:#00B5E2;}</style><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="18.4" width="16" x="1" y="8.4"/></sfw></metadata><g><path class="st0" d="M2.5,0h10.6c1.4,0,2.5,1.1,2.5,2.5v3.2h-1.5V2.5c0-0.5-0.4-1-1-1H2.5c-0.5,0-1,0.4-1,1v13.4c0,0.5,0.4,1,1,1 h10.6c0.5,0,1-0.4,1-1v-3.2h1.5v3.2c0,1.4-1.1,2.5-2.5,2.5H2.5c-1.4,0-2.5-1.1-2.5-2.5V2.5C0,1.1,1.1,0,2.5,0z M11,7.5H6.2v3.4H11 v1.9l5-3.5l-5-3.5V7.5L11,7.5z"/></g></svg><span class="inline-block renew-on-lang-switch renew-on-lang-switch" data-slug="log-out" data-slug="log-out">'+$('.translates-holder').attr('log-out')+'</span></a></div>' + settings_bottom_html);
     $('body').addClass('overflow-hidden');
     $('.settings-popup').removeClass('hide');
 
@@ -3657,7 +4615,7 @@ $(document).on('click', '.open-settings', function () {
             $('label[for="download-keystore-password"]').addClass('active-label');
 
             $('.download-keystore-action').click(function () {
-                showLoader($('.translates-holder').attr('hold-on-decrypt'));
+                projectData.general_logic.showLoader($('.translates-holder').attr('hold-on-decrypt'));
                 this_row.find('.error-handle').remove();
 
                 setTimeout(function () {
@@ -3667,12 +4625,12 @@ $(document).on('click', '.open-settings', function () {
                                 //MOBILE APP
                                 if (basic.getMobileOperatingSystem() == 'Android') {
                                     //getting the file content by it path saved in localstorage
-                                    showLoader($('.translates-holder').attr('downloading'));
+                                    projectData.general_logic.showLoader($('.translates-holder').attr('downloading'));
 
                                     setTimeout(function () {
-                                        var keystore_file_name = buildKeystoreFileName(global_state.account);
+                                        var keystore_file_name = projectData.general_logic.buildKeystoreFileName(global_state.account);
                                         //downloading the file in mobile device file system
-                                        hybridAppFileDownload(keystore_file_name, window.localStorage.getItem('keystore_file'), function () {
+                                        projectData.general_logic.hybridAppFileDownload(keystore_file_name, window.localStorage.getItem('keystore_file'), function () {
                                             basic.closeDialog();
                                             basic.showAlert($('.translates-holder').attr('file') +keystore_file_name + $('.translates-holder').attr('has-been-downloaded'), '', true);
 
@@ -3680,16 +4638,16 @@ $(document).on('click', '.open-settings', function () {
                                             $('.settings-popup').addClass('hide');
 
                                             $('#download-keystore-password').val('');
-                                            hideLoader();
+                                            projectData.general_logic.hideLoader();
                                         }, cordova.file.externalRootDirectory, true);
                                     }, 500);
                                 } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
-                                    hideLoader();
+                                    projectData.general_logic.hideLoader();
                                     window.plugins.socialsharing.share(window.localStorage.getItem('keystore_file'));
                                     $('#download-keystore-password').val('');
                                 }
                             } else {
-                                hideLoader();
+                                projectData.general_logic.hideLoader();
                                 basic.closeDialog();
 
                                 $('body').removeClass('overflow-hidden');
@@ -3700,15 +4658,13 @@ $(document).on('click', '.open-settings', function () {
                                     basic.showAlert($('.translates-holder').attr('opened-new-tab'), '', true);
                                 } else {
                                     // BROWSER
-                                    basic.showAlert($('.translates-holder').attr('file') +buildKeystoreFileName(global_state.account) + $('.translates-holder').attr('has-been-downloaded'), '', true);
-
-
+                                    basic.showAlert($('.translates-holder').attr('file') +projectData.general_logic.buildKeystoreFileName(global_state.account) + $('.translates-holder').attr('has-been-downloaded'), '', true);
                                 }
-                                downloadFile(buildKeystoreFileName(global_state.account), window.localStorage.getItem('keystore_file'));
+                                projectData.general_logic.downloadFile(projectData.general_logic.buildKeystoreFileName(global_state.account), window.localStorage.getItem('keystore_file'));
                                 $('#download-keystore-password').val('');
                             }
                         } else if (error) {
-                            hideLoader();
+                            projectData.general_logic.hideLoader();
                             $('<div class="error-handle">' + error_message + '</div>').insertAfter(this_camping_row);
                         }
                     });
@@ -3717,28 +4673,9 @@ $(document).on('click', '.open-settings', function () {
         });
     }
 
-    updateExternalURLsForiOSDevice();
-
     $('.settings-popup .custom-close-settings-popup').click(function () {
         $('body').removeClass('overflow-hidden');
         $('.settings-popup').addClass('hide');
-    });
-
-    //logging out of the application
-    $('.settings-popup .log-out').click(function () {
-        var log_out_reminder_warning = {};
-        log_out_reminder_warning.callback = function (result) {
-            if (result) {
-                if (is_hybrid) {
-                    window.localStorage.clear();
-                    refreshApp();
-                } else {
-                    window.localStorage.clear();
-                    window.location.reload();
-                }
-            }
-        };
-        basic.showConfirm($('.translates-holder').attr('are-you-downloaded'), '', log_out_reminder_warning, true);
     });
 
     //showing private key
@@ -3762,7 +4699,7 @@ $(document).on('click', '.open-settings', function () {
                 if ($('#show-private-key-password').val().trim() == '') {
                     $('<div class="error-handle renew-on-lang-switch" data-slug="enter-backup-pass">'+$('.translates-holder').attr('enter-backup-pass')+'</div>').insertAfter(this_camping_row);
                 } else {
-                    showLoader($('.translates-holder').attr('hold-decrypt'));
+                    projectData.general_logic.showLoader($('.translates-holder').attr('hold-decrypt'));
 
                     setTimeout(function () {
                         decryptKeystore(window.localStorage.getItem('keystore_file'), $('#show-private-key-password').val().trim(), function (success, to_string, error, error_message) {
@@ -3786,7 +4723,7 @@ $(document).on('click', '.open-settings', function () {
                                 $('#show-private-key-password').val('');
                             }
 
-                            hideLoader();
+                            projectData.general_logic.hideLoader();
                         });
                     }, 2000);
                 }
@@ -3810,7 +4747,7 @@ $(document).on('click', '.open-settings', function () {
                     if ($('.settings-popup #show-private-key-password').val().trim() == '') {
                         $('<div class="error-handle renew-on-lang-switch" data-slug="enter-backup-pass">'+$('.translates-holder').attr('enter-backup-pass')+'</div>').insertAfter(this_camping_row);
                     } else {
-                        showLoader($('.translates-holder').attr('hold-decrypt'));
+                        projectData.general_logic.showLoader($('.translates-holder').attr('hold-decrypt'));
                         setTimeout(function () {
                             decryptKeystore(keystore_string, $('.settings-popup #show-private-key-password').val().trim(), function (success, to_string, error, error_message) {
                                 if (success) {
@@ -3833,7 +4770,7 @@ $(document).on('click', '.open-settings', function () {
                                     $('.settings-popup #show-private-key-password').val('');
                                 }
 
-                                hideLoader();
+                                projectData.general_logic.hideLoader();
                             });
                         }, 2000);
                     }
@@ -3852,10 +4789,10 @@ $(document).on('click', '.open-settings', function () {
                         this_row.find('.error-handle').remove();
                         var this_btn = $(this);
                         fileChooser.open(function (file_uri) {
-                            androidFileUpload(file_uri, function (file) {
+                            projectData.general_logic.androidFileUpload(file_uri, function (file) {
                                 var reader = new FileReader();
 
-                                initCustomInputFileAnimation(this_btn);
+                                projectData.general_logic.initCustomInputFileAnimation(this_btn);
 
                                 reader.onloadend = function () {
                                     var keystore_string = this.result;
@@ -3879,8 +4816,8 @@ $(document).on('click', '.open-settings', function () {
                     $('.show-private-key-keystore-upload').click(function () {
                         this_row.find('.error-handle').remove();
                         var this_btn = $(this);
-                        iOSFileUpload(function (keystore_string) {
-                            initCustomInputFileAnimation(this_btn);
+                        projectData.general_logic.iOSFileUpload(function (keystore_string) {
+                            projectData.general_logic.initCustomInputFileAnimation(this_btn);
 
                             if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && projectData.utils.checksumAddress(JSON.parse(keystore_string).address) == projectData.utils.checksumAddress(global_state.account)) {
                                 decryptKeystoreFileAndShowPrivateKey(this_camping_row, keystore_string, this_row);
@@ -3903,7 +4840,7 @@ $(document).on('click', '.open-settings', function () {
                             if (basic.isJsonString(e.target.result) && basic.property_exists(JSON.parse(e.target.result), 'address') && projectData.utils.checksumAddress(JSON.parse(e.target.result).address) == projectData.utils.checksumAddress(global_state.account)) {
                                 var keystore_string = e.target.result;
                                 //init upload button animation
-                                initCustomInputFileAnimation(label);
+                                projectData.general_logic.initCustomInputFileAnimation(label);
 
                                 decryptKeystoreFileAndShowPrivateKey(this_camping_row, keystore_string, this_row);
                             } else {
@@ -3952,42 +4889,42 @@ $(document).on('click', '.open-settings', function () {
             }
 
             if (!generate_error) {
-                showLoader('Hold on...<br>Your Backup File is being generated.');
+                projectData.general_logic.showLoader('Hold on...<br>Your Backup File is being generated.');
 
                 setTimeout(function () {
                     generateKeystoreFromPrivateKey($('#generate-keystore-private-key').val().trim(), $('#generate-keystore-password').val().trim(), function (generating_response, address, keystore_file) {
                         if (generating_response) {
-                            var keystore_file_name = buildKeystoreFileName(address);
+                            var keystore_file_name = projectData.general_logic.buildKeystoreFileName(address);
                             if (is_hybrid) {
                                 //MOBILE APP
                                 if (basic.getMobileOperatingSystem() == 'Android') {
                                     //downloading the file in mobile device file system
-                                    hybridAppFileDownload(keystore_file_name, keystore_file, function () {
+                                    projectData.general_logic.hybridAppFileDownload(keystore_file_name, keystore_file, function () {
                                         basic.closeDialog();
 
                                         $('body').removeClass('overflow-hidden');
                                         $('.settings-popup').addClass('hide');
                                         basic.showAlert($('.translates-holder').attr('file') +keystore_file_name + $('.translates-holder').attr('has-been-downloaded'), '', true);
-                                        hideLoader();
+                                        projectData.general_logic.hideLoader();
                                     }, cordova.file.externalRootDirectory, true);
                                 } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
-                                    hideLoader();
+                                    projectData.general_logic.hideLoader();
                                     //using export plugin, because in iOS there is no such thing as direct file download
                                     window.plugins.socialsharing.share(keystore_file);
                                 }
                             } else {
                                 //BROWSER
-                                hideLoader();
+                                projectData.general_logic.hideLoader();
 
-                                downloadFile(buildKeystoreFileName(address), keystore_file);
+                                projectData.general_logic.downloadFile(projectData.general_logic.buildKeystoreFileName(address), keystore_file);
                                 basic.closeDialog();
 
                                 $('body').removeClass('overflow-hidden');
                                 $('.settings-popup').addClass('hide');
-                                basic.showAlert($('.translates-holder').attr('file') +buildKeystoreFileName(address) + $('.translates-holder').attr('has-been-downloaded'), '', true);
+                                basic.showAlert($('.translates-holder').attr('file') +projectData.general_logic.buildKeystoreFileName(address) + $('.translates-holder').attr('has-been-downloaded'), '', true);
                             }
                         } else if (!generating_response) {
-                            hideLoader();
+                            projectData.general_logic.hideLoader();
                             $('<div class="error-handle renew-on-lang-switch" data-slug="wrong-key-length">'+$('.translates-holder').attr('wrong-key-length')+'</div>').insertAfter(this_camping_row);
                         }
                     });
@@ -3996,99 +4933,6 @@ $(document).on('click', '.open-settings', function () {
         });
     });
 });
-
-//method to download files in Download folder in Android device
-function hybridAppFileDownload(file_name, file_content, callback, location, download_folder) {
-    window.resolveLocalFileSystemURL(location, function (fileSystem) {
-        if (download_folder) {
-            fileSystem.getDirectory('Download', {create: true, exclusive: false}, function (dirEntry) {
-                proceedWithDownload(dirEntry, file_name);
-            }, function (err) {
-                console.log(err, 'err');
-                hideLoader();
-                alert('Something went wrong with downloading your file (Core error 5). Please contact admin@dentacoin.com.');
-            });
-        } else {
-            proceedWithDownload(fileSystem, file_name);
-        }
-
-        function proceedWithDownload(dirEntry, file_name) {
-            dirEntry.getFile(file_name, {create: true, exclusive: true}, function (fileEntry) {
-                fileEntry.createWriter(function (fileWriter) {
-                    fileWriter.onwriteend = function (e) {
-                        console.log('file saved');
-
-                        callback();
-                    };
-
-                    fileWriter.onerror = function (e) {
-                        console.log(e, 'error');
-                        hideLoader();
-                        alert('Something went wrong with caching your file (Core error 3). Please contact admin@dentacoin.com.');
-                    };
-
-                    // Create a new Blob and write they keystore content inside of it
-                    var blob = new Blob([file_content], {type: 'text/plain'});
-                    fileWriter.write(blob);
-                }, function (err) {
-                    console.log(err, 'err');
-                    hideLoader();
-                    alert('Something went wrong with downloading your file (Core error 4). Please contact admin@dentacoin.com.');
-                });
-            }, function (err) {
-                // if download fails, try to download again, but with new unique name
-                console.log(err, 'err');
-                proceedWithDownload(dirEntry, file_name + ' (' + Math.floor(Date.now() / 1000) + ')');
-            });
-        }
-    });
-}
-
-//opening filepicker for Android
-function androidFileUpload(file_uri, callback) {
-    window.FilePath.resolveNativePath(file_uri, successNative, function(e) {
-        console.log(e);
-        alert('Something went wrong with uploading your Backup file. Please contact admin@dentacoin.com.');
-    });
-
-    function successNative(finalPath) {
-        console.log(finalPath, 'finalPath successNative');
-        window.resolveLocalFileSystemURL(finalPath, function (entry) {
-            entry.file(function (file) {
-                callback(file);
-            }, function (err) {
-                alert('Something went wrong with uploading your Backup file. Please contact admin@dentacoin.com.');
-            });
-        });
-    }
-}
-
-//opening filepicker for iOS
-function iOSFileUpload(callback) {
-    FilePicker.pickFile(function (path) {
-        var fileDir = cordova.file.tempDirectory.replace('file://', '');
-        var fileName = path.replace(fileDir, '');
-
-        window.resolveLocalFileSystemURL(cordova.file.tempDirectory, function (rootEntry) {
-            rootEntry.getFile(fileName, {create: false}, function (fileEntry) {
-                fileEntry.file(function (file) {
-                    var reader = new FileReader();
-
-                    reader.onloadend = function () {
-                        var keystore_string = this.result;
-                        callback(keystore_string);
-                    };
-
-                    reader.readAsText(file);
-                });
-            }, function (err) {
-                alert('Something went wrong with reading your cached file (Core error 2). Please contact admin@dentacoin.com.');
-            });
-        });
-    }, function (err) {
-        alert('File importing failed. Please update to one of the latest iOS versions in order to have file importing working.');
-    });
-}
 
 //promote mobile app when user load wallet.dentacoin.com via mobile browser
 function checkIfLoadingFromMobileBrowser() {
@@ -4099,31 +4943,6 @@ function checkIfLoadingFromMobileBrowser() {
         } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
             basic.showDialog('<div><h2 class="fs-24 lato-bold text-center padding-top-15 padding-bottom-25">'+$('.translates-holder').attr('wallet-app-here')+'<br>'+$('.translates-holder').attr('free-download')+'</h2><figure itemscope="" itemtype="http://schema.org/Organization" class="text-center phone-container"><img src="assets/images/download-ios-app.png" class="max-width-300 width-100" itemprop="logo" alt="Phone"/><a class="inline-block max-width-150 absolute-content" href="https://apps.apple.com/us/app/dentacoin-wallet/id1478732657" target="_blank" itemprop="url"><img src="assets/images/app-store.svg" class="width-100" itemprop="logo" alt="App store icon"/></a></figure></div>', 'download-mobile-app', null, null);
         }
-    }
-}
-
-//method to fire google analytics event
-function fireGoogleAnalyticsEvent(category, action, label, value) {
-    //'Register', 'Create', 'Wallet'
-    if (is_hybrid) {
-        var hybridEventName = 'app_' + label.replace(/\s+/g, '_').toLowerCase();
-        if (value != undefined) {
-            cordova.plugins.firebase.analytics.logEvent(hybridEventName, {category: category, action: action, label: label, value: value});
-        } else {
-            cordova.plugins.firebase.analytics.logEvent(hybridEventName, {category: category, action: action, label: label});
-        }
-    } else {
-        var event_obj = {
-            'event_action': action,
-            'event_category': category,
-            'event_label': label
-        };
-
-        if (value != undefined) {
-            event_obj.value = value;
-        }
-
-        gtag('event', label, event_obj);
     }
 }
 
@@ -4146,15 +4965,17 @@ function router() {
         getSendPageData();
         $('.nav-row .nav-link.send').addClass('active');
         $('.camp-for-fixed-mobile-nav a.send').addClass('active');
+    } else if ($('.main-holder app-swap-page').length) {
+        current_route = 'swap';
+        getSwapPageData();
+        $('.nav-row .nav-link.swap').addClass('active');
+        $('.camp-for-fixed-mobile-nav a.swap').addClass('active');
     } else if ($('.main-holder app-spend-page-pay-for-dental-services').length) {
         current_route = 'pay-for-dental-services';
         getSpendPageDentalServices();
         $('.nav-row .nav-link.spend').addClass('active');
         $('.camp-for-fixed-mobile-nav a.spend').addClass('active');
-    }/* else if ($('.main-holder app-spend-page-gift-cards').length) {
-        current_route = 'gift-cards';
-        getSpendPageGiftCards();
-    }*/ else if ($('.main-holder app-spend-page-exchanges').length) {
+    } else if ($('.main-holder app-spend-page-exchanges').length) {
         current_route = 'page-exchanges';
         getSpendPageExchanges();
         $('.nav-row .nav-link.spend').addClass('active');
@@ -4167,11 +4988,11 @@ function router() {
         initdApp();
     }
 
-    $('body').on('DOMSubtreeModified', '.main-holder', function () {
+    $('body').on('DOMSubtreeModified', '.main-holder', async function () {
         if (closeOnLoadLoader) {
             closeOnLoadLoader = false;
             setTimeout(function() {
-                hideLoader();
+                projectData.general_logic.hideLoader();
             }, 1000)
         }
 
@@ -4190,15 +5011,17 @@ function router() {
             getSendPageData();
             $('.nav-row .nav-link.send').addClass('active');
             $('.camp-for-fixed-mobile-nav a.send').addClass('active');
+        } else if ($('.main-holder app-swap-page').length && current_route != 'swap') {
+            current_route = 'swap';
+            getSwapPageData();
+            $('.nav-row .nav-link.swap').addClass('active');
+            $('.camp-for-fixed-mobile-nav a.swap').addClass('active');
         } else if ($('.main-holder app-spend-page-pay-for-dental-services').length && current_route != 'pay-for-dental-services') {
             current_route = 'pay-for-dental-services';
             getSpendPageDentalServices();
             $('.nav-row .nav-link.spend').addClass('active');
             $('.camp-for-fixed-mobile-nav a.spend').addClass('active');
-        }/* else if ($('.main-holder app-spend-page-gift-cards').length && current_route != 'gift-cards') {
-            current_route = 'gift-cards';
-            getSpendPageGiftCards();
-        }*/ else if ($('.main-holder app-spend-page-exchanges').length && current_route != 'page-exchanges') {
+        } else if ($('.main-holder app-spend-page-exchanges').length && current_route != 'page-exchanges') {
             current_route = 'page-exchanges';
             getSpendPageExchanges();
             $('.nav-row .nav-link.spend').addClass('active');
@@ -4215,7 +5038,29 @@ function router() {
             clearInterval(custom_popover_interval);
         }
 
-        updateExternalURLsForiOSDevice();
+        // saving mobile_device_id to send push notifications
+        if (window.localStorage.getItem('current_account') != null && window.localStorage.getItem('saved_mobile_id') == null && is_hybrid) {
+            if (basic.getMobileOperatingSystem() == 'Android') {
+                window.FirebasePlugin.hasPermission(function(hasPermission) {
+                    console.log(hasPermission, 'hasPermission');
+                    if (basic.property_exists(hasPermission, 'isEnabled') && hasPermission.isEnabled) {
+                        // if permission is given save the firebase mobile device id
+                        projectData.requests.addMobileDeviceId(function() {
+                            window.localStorage.setItem('saved_mobile_id', true);
+                            console.log('Mobile device id saved.');
+                        }, window.localStorage.getItem('mobile_device_id'))
+                    }
+                });
+            } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
+                console.log(await FCM.hasPermission(), 'await FCM.hasPermission()');
+                if (await FCM.hasPermission()) {
+                    projectData.requests.addMobileDeviceId(function() {
+                        window.localStorage.setItem('saved_mobile_id', true);
+                        console.log('Mobile device id saved.');
+                    }, window.localStorage.getItem('mobile_device_id'))
+                }
+            }
+        }
     });
 
     // on angular language change update the HTML inside the custom JS files
@@ -4235,288 +5080,20 @@ function router() {
         }
     });
 }
-
 router();
-
-//Method that check if the device is mobile app and if the project is hybrid and then overwrite all _blank targets to _system. _blank is not working in iOS in WebView
-function updateExternalURLsForiOSDevice() {
-    /*if ($('.data-external-link').length && is_hybrid) {
-        for(var i = 0, len = $('.data-external-link').length; i < len; i+=1) {
-            if (!$('.data-external-link').eq(i).hasClass('passed')) {
-                $('.data-external-link').eq(i).addClass('passed');
-                $('.data-external-link').eq(i).attr('data-href', $('.data-external-link').eq(i).attr('href'));
-
-                $('.data-external-link').eq(i).click(function() {
-                    window.open($(this).attr('data-href'), '_system');
-                    return false;
-                });
-                $('.data-external-link').eq(i).removeAttr('target');
-                $('.data-external-link').eq(i).attr('href', '#');
-            }
-        }
-    }*/
-}
-
-//fetching all get parameters from the URL into object
-function getGETParameters() {
-    var prmstr = window.location.search.substr(1);
-    return prmstr != null && prmstr != "" ? transformToAssocArray(prmstr) : {};
-}
-
-function transformToAssocArray(prmstr) {
-    var params = {};
-    var prmarr = prmstr.split("&");
-    for (var i = 0; i < prmarr.length; i += 1) {
-        var tmparr = prmarr[i].split("=");
-        params[tmparr[0]] = tmparr[1];
-    }
-    return params;
-}
-
-function savePublicKeyToAssurance(address, key) {
-    if (address.length == 40) {
-        address = '0x' + address;
-    }
-
-    $.ajax({
-        type: 'POST',
-        url: 'https://assurance.dentacoin.com/save-public-key',
-        data: {
-            address: projectData.utils.checksumAddress(address),
-            public_key: key
-        },
-        dataType: 'json',
-        success: function (response) {
-            //console.log(address, key);
-        }
-    });
-}
-
-//template to append ethereum transactions while build the transactions history
-function buildEthereumHistoryTransaction(ethereum_data, value, to, from, timestamp, hash, pending) {
-    var eth_amount_symbol;
-    var other_address = '';
-    var class_name = '';
-    var label = '';
-    if (projectData.utils.checksumAddress(to) == projectData.utils.checksumAddress(global_state.account)) {
-        //IF THE CURRENT ACCOUNT IS RECEIVER
-        other_address = from;
-        label = $('.translates-holder').attr('received-from');
-        class_name = 'received_from';
-        eth_amount_symbol = '+';
-    } else if (projectData.utils.checksumAddress(from) == projectData.utils.checksumAddress(global_state.account)) {
-        //IF THE CURRENT ACCOUNT IS SENDER
-        other_address = to;
-        label = $('.translates-holder').attr('sent-to');
-        class_name = 'sent_to';
-        eth_amount_symbol = '-';
-    }
-
-    var usd_amount = (ethereum_data.market_data.current_price.usd * parseFloat(value)).toFixed(2);
-    var timestamp_javascript = timestamp * 1000;
-    var date_obj = new Date(timestamp_javascript);
-    var minutes;
-    var hours;
-
-    if (new Date(timestamp_javascript).getMinutes() < 10) {
-        minutes = '0' + new Date(timestamp_javascript).getMinutes();
-    } else {
-        minutes = new Date(timestamp_javascript).getMinutes();
-    }
-
-    if (new Date(timestamp_javascript).getHours() < 10) {
-        hours = '0' + new Date(timestamp_javascript).getHours();
-    } else {
-        hours = new Date(timestamp_javascript).getHours();
-    }
-
-    if (basic.isMobile() || is_hybrid) {
-        if ($(window).width() < 500) {
-            other_address = projectData.utils.substr_replace(other_address, '...', -27);
-        } else {
-            other_address = projectData.utils.substr_replace(other_address, '...', -20);
-        }
-    }
-
-    var transaction_id_label = 'Transaction ID';
-    if (pending != undefined) {
-        transaction_id_label += '<span class="pending-transaction">( Pending )</span>';
-    }
-
-    return '<tr class="' + class_name + ' single-transaction" onclick="window.open(\'https://etherscan.io/tx/' + hash + '\');"><td class="icon"></td><td><ul><li>' + (date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() + '</li><li>' + hours + ':' + minutes + '</li></ul></td><td><ul><li><span><strong>' + label + ': </strong>' + other_address + '</span></li><li><a href="https://etherscan.io/tx/' + hash + '" target="_blank" class="lato-bold color-white data-external-link">' + transaction_id_label + '</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5"><ul><li class="lato-bold dcn-amount">' + eth_amount_symbol + parseFloat(value).toFixed(6) + ' ETH</li><li>' + usd_amount + ' USD</li></ul></td></tr>';
-}
-
-//template to append dentacoin transactions while build the transactions history
-function buildDentacoinHistoryTransaction(dentacoin_data, value, to, from, timestamp, transactionHash, pending) {
-    var dcn_amount_symbol;
-    var other_address = '';
-    var class_name = '';
-    var label = '';
-    if (projectData.utils.checksumAddress(to) == projectData.utils.checksumAddress(global_state.account)) {
-        //IF THE CURRENT ACCOUNT IS RECEIVER
-        other_address = from;
-        label = $('.translates-holder').attr('received-from');
-        class_name = 'received_from';
-        dcn_amount_symbol = '+';
-    } else if (projectData.utils.checksumAddress(from) == projectData.utils.checksumAddress(global_state.account)) {
-        //IF THE CURRENT ACCOUNT IS SENDER
-        other_address = to;
-        label = $('.translates-holder').attr('sent-to');
-        class_name = 'sent_to';
-        dcn_amount_symbol = '-';
-    }
-
-    var dcn_amount = dcn_amount_symbol + value + ' DCN';
-    var timestamp_javascript = timestamp * 1000;
-    var date_obj = new Date(timestamp_javascript);
-    var minutes;
-    var hours;
-
-    if (new Date(timestamp_javascript).getMinutes() < 10) {
-        minutes = '0' + new Date(timestamp_javascript).getMinutes();
-    } else {
-        minutes = new Date(timestamp_javascript).getMinutes();
-    }
-
-    if (new Date(timestamp_javascript).getHours() < 10) {
-        hours = '0' + new Date(timestamp_javascript).getHours();
-    } else {
-        hours = new Date(timestamp_javascript).getHours();
-    }
-
-    if (basic.isMobile() || is_hybrid) {
-        if ($(window).width() < 500) {
-            other_address = projectData.utils.substr_replace(other_address, '...', -30);
-        } else {
-            other_address = projectData.utils.substr_replace(other_address, '...', -20);
-        }
-    }
-
-    var transaction_id_label = 'Transaction ID';
-    if (pending != undefined) {
-        transaction_id_label += '<span class="pending-transaction">( Pending )</span>';
-    }
-
-    var pricesList = '';
-    if (dentacoin_data != 0) {
-        var usd_amount = (parseInt(value) * dentacoin_data).toFixed(2);
-        pricesList = '<ul><li class="lato-bold dcn-amount">' + dcn_amount + '</li><li>' + usd_amount + ' USD</li></ul>';
-    } else {
-        pricesList = '<ul><li class="lato-bold dcn-amount">' + dcn_amount + '</li></ul>';
-    }
-
-    return '<tr class="' + class_name + ' single-transaction" onclick="window.open(\'https://etherscan.io/tx/' + transactionHash + '\');"><td class="icon"></td><td><ul><li>' + (date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() + '</li><li>' + hours + ':' + minutes + '</li></ul></td><td><ul><li><span><strong>' + label + ': </strong>' + other_address + '</span></li><li><a href="https://etherscan.io/tx/' + transactionHash + '" target="_blank" class="lato-bold color-white data-external-link">' + transaction_id_label + '</a></li></ul></td><td class="text-right padding-right-15 padding-right-xs-5">' + pricesList + '</td></tr>';
-}
-
-function initScan(clicker, valueHolder, callback, warning, warningText) {
-    if (clicker === undefined) {
-        clicker = null;
-    }
-    if (valueHolder === undefined) {
-        valueHolder = null;
-    }
-    if (callback === undefined) {
-        callback = null;
-    }
-    if (warning === undefined) {
-        warning = null;
-    }
-    if (warningText === undefined) {
-        warningText = null;
-    }
-
-    clicker.click(function () {
-        if (warning != null) {
-            var initScanWarning = {};
-            initScanWarning.callback = function (warningResult) {
-                if (warningResult) {
-                    proceedWithScanning();
-                }
-            };
-            basic.showConfirm(warningText, '', initScanWarning, true);
-        } else {
-            proceedWithScanning();
-        }
-
-        function proceedWithScanning() {
-            if (is_hybrid) {
-                cordova.plugins.barcodeScanner.scan(
-                    function (result) {
-                        if (valueHolder != null) {
-                            valueHolder.val(result.text).trigger('change');
-                        }
-                        if (callback != null) {
-                            callback(result.text);
-                        }
-                    },
-                    function (error) {
-                        alert($('.translates-holder').attr('scanning-failed'));
-                    }
-                );
-            } else {
-                //BROWSER SCAN
-                if (load_qr_code_lib) {
-                    showLoader();
-                    $.getScript('https://rawgit.com/schmich/instascan-builds/master/instascan.min.js', function () {
-                        load_qr_code_lib = false;
-                        hideLoader();
-
-                        initQRCodePopupForSendingTransaction();
-                    });
-                } else {
-                    initQRCodePopupForSendingTransaction();
-                }
-
-                function initQRCodePopupForSendingTransaction() {
-                    basic.showDialog('<div class="video-container"><video id="qr-preview"></video></div>', 'popup-scan-qr-code', null, true);
-
-                    var cameras_global;
-                    var scanner = new Instascan.Scanner({video: document.getElementById('qr-preview')});
-                    scanner.addListener('scan', function (content) {
-                        if (valueHolder != null) {
-                            valueHolder.val(content).trigger('change');
-                        }
-                        if (callback != null) {
-                            callback(content);
-                        }
-                        $('.popup-scan-qr-code').modal('hide');
-                        scanner.stop(cameras_global[0]);
-                    });
-
-                    Instascan.Camera.getCameras().then(function (cameras) {
-                        if (cameras.length > 0) {
-                            cameras_global = cameras;
-                            scanner.start(cameras[0]);
-                        } else {
-                            alert('No cameras found.');
-                        }
-                    }).catch(function (e) {
-                        console.error(e);
-                    });
-
-                    $('.popup-scan-qr-code .bootbox-close-button').click(function () {
-                        if (cameras_global.length > 0) {
-                            scanner.stop(cameras_global[0]);
-                        }
-                    });
-                }
-            }
-        }
-    });
-}
 
 var assuranceTransactions = {
     approval: async function (gasPrice, key, callback) {
-        var dentacoin_token_instance = await new dApp.web3_1_0_assurance.eth.Contract(assurance_config.dentacoin_token_abi, assurance_config.dentacoin_token_address);
+        var dentacoin_token_instance = await new dApp.web3_l1_assurance.eth.Contract(assurance_config.dentacoin_token_abi, assurance_config.dentacoin_token_address);
         var approval_function_abi = await dentacoin_token_instance.methods.approve(assurance_config.assurance_state_address, assurance_config.dentacoins_to_approve).encodeABI();
         var gas_cost_for_approval = await dentacoin_token_instance.methods.approve(assurance_config.assurance_state_address, assurance_config.dentacoins_to_approve).estimateGas({gas: 500000});
 
-        dApp.web3_1_0_assurance.eth.getTransactionCount(global_state.account, 'pending', function (err, nonce) {
+        dApp.web3_l1_assurance.eth.getTransactionCount(global_state.account, 'pending', function (err, nonce) {
             var approval_transaction_obj = {
-                gasLimit: dApp.web3_1_0_assurance.utils.toHex(Math.round(gas_cost_for_approval + (gas_cost_for_approval * 10 / 100))),
+                gasLimit: dApp.web3_l1_assurance.utils.toHex(Math.round(gas_cost_for_approval + (gas_cost_for_approval * 10 / 100))),
                 gasPrice: gasPrice,
                 from: global_state.account,
-                nonce: dApp.web3_1_0_assurance.utils.toHex(nonce),
+                nonce: dApp.web3_l1_assurance.utils.toHex(nonce),
                 chainId: assurance_config.chain_id,
                 data: approval_function_abi,
                 to: assurance_config.dentacoin_token_address
@@ -4527,17 +5104,7 @@ var assuranceTransactions = {
             //signing the transaction
             approval_transaction.sign(key);
 
-
             callback('0x' + approval_transaction.serialize().toString('hex'));
-
-            //sending the transaction
-            /*dApp.web3_1_0_assurance.eth.sendSignedTransaction('0x' + approval_transaction.serialize().toString('hex'), function (err, transactionHash) {
-                if (!err) {
-                    callback();
-                } else {
-                    basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
-                }
-            });*/
         });
     },
     creation: async function (dentist, usd, dcn, next_transfer, ipfs_hash, gasPrice, key, callback, increaseNonce) {
@@ -4545,8 +5112,8 @@ var assuranceTransactions = {
             increaseNonce = null;
         }
 
-        var assurance_proxy_instance = await new dApp.web3_1_0_assurance.eth.Contract(assurance_config.assurance_proxy_abi, assurance_config.assurance_proxy_address);
-        var assurance_state_instance = await new dApp.web3_1_0_assurance.eth.Contract(assurance_config.assurance_state_abi, assurance_config.assurance_state_address);
+        var assurance_proxy_instance = await new dApp.web3_l1_assurance.eth.Contract(assurance_config.assurance_proxy_abi, assurance_config.assurance_proxy_address);
+        var assurance_state_instance = await new dApp.web3_l1_assurance.eth.Contract(assurance_config.assurance_state_abi, assurance_config.assurance_state_address);
 
         var period_to_withdraw = parseInt(await assurance_state_instance.methods.getPeriodToWithdraw().call());
         var contract_creation_function_abi = await assurance_proxy_instance.methods.registerContract(projectData.utils.checksumAddress(global_state.account), projectData.utils.checksumAddress(dentist), Math.floor(usd), dcn, parseInt(next_transfer) + period_to_withdraw, ipfs_hash).encodeABI();
@@ -4555,17 +5122,17 @@ var assuranceTransactions = {
             gas: 1000000
         });
 
-        dApp.web3_1_0_assurance.eth.getTransactionCount(global_state.account, 'pending', function (err, nonce) {
+        dApp.web3_l1_assurance.eth.getTransactionCount(global_state.account, 'pending', function (err, nonce) {
             // increase nonce + 1, because approval transaction is not sent yet.
             if (increaseNonce != null) {
                 nonce += 1;
             }
 
             var contract_creation_transaction_obj = {
-                gasLimit: dApp.web3_1_0_assurance.utils.toHex(Math.round(gas_cost_for_contract_creation + (gas_cost_for_contract_creation * 10 / 100))),
+                gasLimit: dApp.web3_l1_assurance.utils.toHex(Math.round(gas_cost_for_contract_creation + (gas_cost_for_contract_creation * 10 / 100))),
                 gasPrice: gasPrice,
                 from: global_state.account,
-                nonce: dApp.web3_1_0_assurance.utils.toHex(nonce),
+                nonce: dApp.web3_l1_assurance.utils.toHex(nonce),
                 chainId: assurance_config.chain_id,
                 data: contract_creation_function_abi,
                 to: assurance_config.assurance_proxy_address
@@ -4581,7 +5148,7 @@ var assuranceTransactions = {
         });
     },
     dentist_approval: async function (patient, gasPrice, key, callback) {
-        var assurance_proxy_instance = await new dApp.web3_1_0_assurance.eth.Contract(assurance_config.assurance_proxy_abi, assurance_config.assurance_proxy_address);
+        var assurance_proxy_instance = await new dApp.web3_l1_assurance.eth.Contract(assurance_config.assurance_proxy_abi, assurance_config.assurance_proxy_address);
 
         var gas_cost_for_contract_approval = await assurance_proxy_instance.methods.dentistApproveContract(patient).estimateGas({
             from: global_state.account,
@@ -4591,13 +5158,13 @@ var assuranceTransactions = {
         var contract_approval_function_abi = await assurance_proxy_instance.methods.dentistApproveContract(patient).encodeABI();
 
         const EthereumTx = require('ethereumjs-tx');
-        var nonce = await dApp.web3_1_0_assurance.eth.getTransactionCount(global_state.account, 'pending');
+        var nonce = await dApp.web3_l1_assurance.eth.getTransactionCount(global_state.account, 'pending');
 
         var contract_approval_transaction_obj = {
-            gasLimit: dApp.web3_1_0_assurance.utils.toHex(Math.round(gas_cost_for_contract_approval + (gas_cost_for_contract_approval * 10 / 100))),
+            gasLimit: dApp.web3_l1_assurance.utils.toHex(Math.round(gas_cost_for_contract_approval + (gas_cost_for_contract_approval * 10 / 100))),
             gasPrice: gasPrice,
             from: global_state.account,
-            nonce: dApp.web3_1_0_assurance.utils.toHex(nonce),
+            nonce: dApp.web3_l1_assurance.utils.toHex(nonce),
             chainId: assurance_config.chain_id,
             data: contract_approval_function_abi,
             to: assurance_config.assurance_proxy_address
@@ -4608,18 +5175,9 @@ var assuranceTransactions = {
         contract_approval_transaction.sign(key);
 
         callback('0x' + contract_approval_transaction.serialize().toString('hex'));
-
-        //sending the transaction
-        /*dApp.web3_1_0_assurance.eth.sendSignedTransaction('0x' + contract_approval_transaction.serialize().toString('hex'), function (err, transactionHash) {
-            if (!err) {
-                callback(transactionHash);
-            } else {
-                basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
-            }
-        });*/
     },
     withdraw: async function (patient, gasPrice, key, callback) {
-        var assurance_proxy_instance = await new dApp.web3_1_0_assurance.eth.Contract(assurance_config.assurance_proxy_abi, assurance_config.assurance_proxy_address);
+        var assurance_proxy_instance = await new dApp.web3_l1_assurance.eth.Contract(assurance_config.assurance_proxy_abi, assurance_config.assurance_proxy_address);
         var gas_cost_for_withdraw = await assurance_proxy_instance.methods.singleWithdraw(patient).estimateGas({
             from: global_state.account,
             gas: 500000
@@ -4628,13 +5186,13 @@ var assuranceTransactions = {
         var withdraw_function_abi = await assurance_proxy_instance.methods.singleWithdraw(patient).encodeABI();
 
         const EthereumTx = require('ethereumjs-tx');
-        var nonce = await dApp.web3_1_0_assurance.eth.getTransactionCount(global_state.account, 'pending');
+        var nonce = await dApp.web3_l1_assurance.eth.getTransactionCount(global_state.account, 'pending');
 
         var withdraw_transaction_obj = {
-            gasLimit: dApp.web3_1_0_assurance.utils.toHex(Math.round(gas_cost_for_withdraw + (gas_cost_for_withdraw * 5 / 100))),
+            gasLimit: dApp.web3_l1_assurance.utils.toHex(Math.round(gas_cost_for_withdraw + (gas_cost_for_withdraw * 5 / 100))),
             gasPrice: gasPrice,
             from: global_state.account,
-            nonce: dApp.web3_1_0_assurance.utils.toHex(nonce),
+            nonce: dApp.web3_l1_assurance.utils.toHex(nonce),
             chainId: assurance_config.chain_id,
             data: withdraw_function_abi,
             to: assurance_config.assurance_proxy_address
@@ -4645,18 +5203,9 @@ var assuranceTransactions = {
         withdraw_transaction.sign(key);
 
         callback('0x' + withdraw_transaction.serialize().toString('hex'));
-
-        //sending the transaction
-        /*dApp.web3_1_0_assurance.eth.sendSignedTransaction('0x' + withdraw_transaction.serialize().toString('hex'), function (err, transactionHash) {
-            if (!err) {
-                callback(transactionHash);
-            } else {
-                basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
-            }
-        });*/
     },
     cancel: async function (patient, dentist, gasPrice, key, callback) {
-        var assurance_proxy_instance = await new dApp.web3_1_0_assurance.eth.Contract(assurance_config.assurance_proxy_abi, assurance_config.assurance_proxy_address);
+        var assurance_proxy_instance = await new dApp.web3_l1_assurance.eth.Contract(assurance_config.assurance_proxy_abi, assurance_config.assurance_proxy_address);
 
         var gas_cost_for_contract_cancellation = await assurance_proxy_instance.methods.breakContract(patient, dentist).estimateGas({
             from: global_state.account,
@@ -4666,13 +5215,13 @@ var assuranceTransactions = {
         var contract_cancellation_function_abi = await assurance_proxy_instance.methods.breakContract(patient, dentist).encodeABI();
 
         const EthereumTx = require('ethereumjs-tx');
-        var nonce = await dApp.web3_1_0_assurance.eth.getTransactionCount(global_state.account, 'pending');
+        var nonce = await dApp.web3_l1_assurance.eth.getTransactionCount(global_state.account, 'pending');
 
         var contract_cancellation_transaction_obj = {
-            gasLimit: dApp.web3_1_0_assurance.utils.toHex(Math.round(gas_cost_for_contract_cancellation + (gas_cost_for_contract_cancellation * 10 / 100))),
+            gasLimit: dApp.web3_l1_assurance.utils.toHex(Math.round(gas_cost_for_contract_cancellation + (gas_cost_for_contract_cancellation * 10 / 100))),
             gasPrice: gasPrice,
             from: global_state.account,
-            nonce: dApp.web3_1_0_assurance.utils.toHex(nonce),
+            nonce: dApp.web3_l1_assurance.utils.toHex(nonce),
             chainId: assurance_config.chain_id,
             data: contract_cancellation_function_abi,
             to: assurance_config.assurance_proxy_address
@@ -4683,41 +5232,5 @@ var assuranceTransactions = {
         contract_cancellation_transaction.sign(key);
 
         callback('0x' + contract_cancellation_transaction.serialize().toString('hex'));
-
-        //sending the transaction
-        /*dApp.web3_1_0_assurance.eth.sendSignedTransaction('0x' + contract_cancellation_transaction.serialize().toString('hex'), function (err, transactionHash) {
-            if (!err) {
-                callback(transactionHash);
-            } else {
-                basic.showAlert($('.translates-holder').attr('smth-went-wrong'), '', true);
-            }
-        });*/
     }
 };
-
-function firePushNotification(title, text) {
-    if (is_hybrid) {
-        cordova.plugins.notification.local.schedule({
-            title: title,
-            text: text,
-            foreground: true
-        });
-    }
-}
-
-function showMobileAppBannerForDesktopBrowsers() {
-    if (!is_hybrid && !basic.isMobile()) {
-        hideMobileAppBannerForDesktopBrowsers();
-        setTimeout(function() {
-            if ($('.mobile-app-banner').length) {
-                $('.mobile-app-banner').remove();
-            }
-            $('footer').prepend('<div class="mobile-app-banner margin-bottom-25">' + mobileAppBannerForDesktopBrowsersHtml + '</div>');
-            $('.mobile-app-banner-title').html($('.translates-holder').attr('also-available'));
-        }, 1000);
-    }
-}
-
-function hideMobileAppBannerForDesktopBrowsers() {
-    $('footer .mobile-app-banner').remove();
-}

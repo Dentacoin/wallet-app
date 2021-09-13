@@ -43,51 +43,69 @@
             <a href="javascript:void(0)" class="white-light-blue-btn disabled light-blue-border next-send">{{'next' | translate}}</a>
         </div>
     </section>
-    <section class="padding-top-100 padding-bottom-100 padding-top-xs-0 padding-bottom-xs-50 section-amount-to">
+    <section class="padding-top-85 padding-bottom-100 padding-top-xs-0 padding-bottom-xs-50 section-amount-to">
+        <div class="send-to text-center padding-top-15 padding-bottom-15">
+            <div class="wrapper padding-left-15 padding-right-15 fs-0">
+                <div class="inline-block text-part">
+                    <span class="inline-block fs-16 lato-black send-to-label">{{'send-to' | translate}}</span>
+                    <span class="inline-block fs-16 fs-xs-12 address-cell padding-right-10 padding-left-10 padding-left-xs-0 padding-right-xs-0"></span>
+                </div>
+                <a href="javascript:void(0)" class="inline-block edit-address">
+                    <figure itemscope="" itemtype="http://schema.org/ImageObject">
+                        <img src="assets/images/edit-icon.png" class="width-100 max-width-40" alt="Edit icon" itemprop="contentUrl"/>
+                    </figure>
+                </a>
+            </div>
+        </div>
         <div class="container-fluid no-gutter-xs">
-            <div class="row">
-                <div class="col-xs-12 col-sm-8 col-sm-offset-2 fs-0 mobile-background padding-left-xs-10 padding-right-xs-10">
-                    <a href="javascript:void(0)" class="inline-block edit-address show-on-xs max-width-50 padding-right-10 padding-right-xs-5">
-                        <figure itemscope="" itemtype="http://schema.org/ImageObject">
-                            <img src="assets/images/edit-icon.png" class="width-100 " alt="Edit icon" itemprop="contentUrl"/>
-                        </figure>
-                    </a>
-                    <div class="send-to text-center padding-top-10 padding-bottom-10">
-                        <span class="fs-16 lato-bold inline-block send-to-label">{{'send-to' | translate}}</span>
-                        <span class="inline-block fs-16 fs-xs-11 address-cell padding-right-10 padding-left-10 padding-left-xs-0 padding-right-xs-0"></span>
-                        <a href="javascript:void(0)" class="inline-block edit-address hide-xs">
-                            <figure itemscope="" itemtype="http://schema.org/ImageObject">
-                                <img src="assets/images/edit-icon.png" class="width-100 max-width-30" alt="Edit icon" itemprop="contentUrl"/>
-                            </figure>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <div class="container-fluid no-gutter-xs">
-                <div class="row">
-                    <div class="col-xs-12 col-sm-8 col-sm-offset-2">
-                        <div class="spendable-amount fs-0"></div>
-                    </div>
-                </div>
-            </div>
             <div class="row fs-0 padding-top-50 padding-top-xs-20">
-                <div class="col-xs-12 col-sm-5 inline-block-top">
+                <div class="col-xs-12 col-md-5 inline-block padding-bottom-sm-20 padding-bottom-xs-20 balance-line">
+                    <div class="from-box module padding-top-10 padding-bottom-10">
+                        <div class="padding-bottom-10 fs-20 color-light-blue">{{'send-amount' | translate}}</div>
+                        <div class="balance-line">
+                            <a href="javascript:void(0);" class="inline-block line-height-26 white-light-blue-btn padding-top-0 padding-left-5 padding-bottom-0 padding-right-5 fs-14 light-blue-border max-btn">MAX</a>
+                            <div class="inline-block balance-value fs-20">Balance: <span class="color-light-blue"><span class="amount"></span> DCN</span></div>
+                        </div>
+                        <div class="padding-top-20 inputable-line">
+                            <input type="number" class="inputable-amount inline-block" id="crypto-amount" placeholder="0.0"/>
+                            <select class="inline-block fs-24 fs-xs-22 padding-left-10 crypto-label input-label" id="active-crypto">
+                                <option value="dcn-l1">DCN</option>
+                                <option value="dcn-l2">DCN2.0</option>
+                                <option value="eth-l1">ETH</option>
+                                <option value="eth-l2">ETH2.0</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="fs-14 padding-left-30 padding-left-xs-0 calibri-light">{{'enter-amount' | translate}}</div>
+                </div>
+                <!--<div class="col-xs-12 col-sm-5 inline-block-top">
                     <div class="custom-google-label-style module fs-0 flex">
                         <div class="inline-block left-side">
                             <label for="crypto-amount">{{'send-amount' | translate}}</label>
                             <input type="number" id="crypto-amount"/>
                         </div>
                         <select class="inline-block crypto-label input-label" id="active-crypto">
-                            <option value="dcn">DCN</option>
-                            <option value="eth">ETH</option>
+                            <option value="dcn-l1">DCN</option>
+                            <option value="dcn-l2">DCN2.0</option>
+                            <option value="eth-l1">ETH</option>
+                            <option value="eth-l2">ETH2.0</option>
                         </select>
                     </div>
-                    <div class="fs-14 padding-left-15 padding-left-xs-0 calibri-light">{{'enter-amount' | translate}}</div>
-                </div>
-                <figure itemscope="" itemtype="http://schema.org/ImageObject" class="col-xs-12 col-sm-2 inline-block-top padding-top-20 text-center hide-xs">
+                </div>-->
+                <figure itemscope="" itemtype="http://schema.org/ImageObject" class="col-xs-12 col-md-2 inline-block text-center hide-xs hide-this-sm">
                     <img src="assets/images/equal-icon.svg" class="width-100 max-width-30" alt="Edit icon" itemprop="contentUrl"/>
                 </figure>
-                <div class="col-xs-12 col-sm-5 inline-block-top padding-top-xs-20">
+                <div class="col-xs-12 col-md-5 inline-block">
+                    <div class="to-box module padding-top-25 padding-bottom-25">
+                        <div class="padding-bottom-5 fs-20 color-light-blue">{{'equal-to' | translate}}</div>
+                        <div class="padding-top-20 inputable-line">
+                            <input type="number" class="inline-block" id="usd-val" placeholder="0.0"/>
+                            <div class="inline-block token-label fs-24 fs-xs-22">$ USD</div>
+                        </div>
+                    </div>
+                    <div class="fs-14 padding-left-30 padding-left-xs-0 calibri-light">{{'the-exchange' | translate}}</div>
+                </div>
+                <!--<div class="col-xs-12 col-sm-5 inline-block-top padding-top-xs-20">
                     <div class="custom-google-label-style module fs-0 flex">
                         <div class="inline-block left-side">
                             <label for="usd-val">{{'equal-to' | translate}}</label>
@@ -95,13 +113,12 @@
                         </div>
                         <span class="inline-block input-label padding-top-10 padding-top-xs-15">USD</span>
                     </div>
-                    <div class="fs-14 padding-left-15 padding-left-xs-0 calibri-light">{{'the-exchange' | translate}}</div>
-                </div>
+                </div>-->
             </div>
             <div class="row padding-top-60 padding-top-xs-20 text-center checkbox-row">
                 <div class="col-xs-12 fs-0">
                     <input type="checkbox" id="verified-receiver-address" class="zoom-checkbox inline-block"/>
-                    <label class="fs-16 calibri-light padding-left-5 cursor-pointer inline-block" for="verified-receiver-address">{{'i-verified' | translate}}</label>
+                    <label class="fs-16 calibri-bold padding-left-5 inline-block" for="verified-receiver-address">{{'i-verified' | translate}}</label>
                 </div>
             </div>
         </div>

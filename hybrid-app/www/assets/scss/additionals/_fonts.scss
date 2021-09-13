@@ -65,6 +65,17 @@
 }
 
 @font-face {
+    font-family: "Lato-Black";
+    src: url("../fonts/Lato-Black.eot");
+    src: url("../fonts/Lato-Black.eot?#iefix") format("embedded-opentype"),
+    url("../fonts/Lato-Black.woff2") format("woff2"),
+    url("../fonts/Lato-Black.woff") format("woff"),
+    url("../fonts/Lato-Black.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
     font-family: "Calibri Light";
     src: url("../fonts/calibril.eot");
     src: url("../fonts/calibril.eot?#iefix") format("embedded-opentype"),
@@ -78,6 +89,10 @@
 
 .lato-bold {
     font-family: "Lato-Bold";
+}
+
+.lato-black {
+    font-family: "Lato-Black";
 }
 
 .calibri-light {

@@ -1,10 +1,21 @@
 app-buy-page {
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        /* display: none; <- Crashes Chrome on hover */
+        -webkit-appearance: none;
+        margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+    }
+
+    input[type=number] {
+        -moz-appearance:textfield; /* Firefox */
+    }
     #privacy-policy-agree, .privacy-policy-agree-label {
         vertical-align: middle;
     }
-    @include breakpoint($xs) {
-        .main-wrapper {
-            @include rounded(0);
+    .checkbox-row {
+        color: #888888;
+        label {
+            cursor: pointer;
         }
     }
 }

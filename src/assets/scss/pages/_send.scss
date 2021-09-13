@@ -1,9 +1,4 @@
 app-send-page {
-    @include breakpoint($xs) {
-        .main-wrapper {
-            @include rounded(0);
-        }
-    }
     .section-send {
         .search-field {
             width: calc(100% - 80px);
@@ -184,15 +179,43 @@ app-send-page {
     }
     .section-amount-to {
         display: none;
+        position: relative;
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            /* display: none; <- Crashes Chrome on hover */
+            -webkit-appearance: none;
+            margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+        }
         .send-to {
+            margin: 0 -65px;
+            background-color: white;
+            @include rounded(15px);
+            @include box-shadow(0 3px 14px 1px rgba(0, 0, 0, 0.3));
             @include breakpoint($xs) {
-                width: calc(100% - 50px);
+                width: calc(100% + 60px);
                 border: 0;
                 display: inline-block;
                 vertical-align: middle;
-                .send-to-label, .address-cell {
-                    display: block;
-                    text-align: left;
+                position: absolute;
+                bottom: calc(100% - 10px);
+                margin: 0 -30px;
+                @include rounded(20px);
+                @include box-shadow(0 2px 12px 1px rgba(0, 0, 0, 0.2));
+                .wrapper {
+                    display: flex;
+                    .text-part {
+                        text-align: left;
+                        width: calc(100% - 50px);
+                        padding-left: 5px;
+                        order: 1;
+                        .send-to-label, .address-cell {
+                            display: block;
+                        }
+                    }
+                    .edit-address {
+                        width: 50px;
+                        order: 0;
+                    }
                 }
             }
         }
@@ -201,17 +224,10 @@ app-send-page {
             max-width: 450px;
             width: 100%;
             margin: 0 auto;
-            border: 2px solid #dddddd;
+            text-align: center;
             @include rounded(4px);
             .spendable-dcn-amount {
-                width: calc(100% - 80px);
-            }
-            .max-btn {
-                width: 80px;
-                text-align: right;
-                .white-light-blue-btn {
-                    padding: 5px 10px;
-                }
+                width: 100%;
             }
             @include breakpoint($sm-down) {
                 border: 0;
@@ -225,7 +241,15 @@ app-send-page {
                 }
             }
         }
+
+        .checkbox-row {
+            color: #888888;
+            label {
+                cursor: pointer;
+            }
+        }
         @include breakpoint($xs) {
+            margin-top: 55px;
             .mobile-background {
                 background: rgb(255,255,255);
                 background: linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(215,215,215,1) 100%);

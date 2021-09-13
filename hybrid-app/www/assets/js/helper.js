@@ -13,8 +13,8 @@ const getWeb3 = (provider) => {
 };
 
 // assumes passed-in web3 is v1.0 and creates a function to receive contract name
-const getContractInstance = (web3) => (contractName, address) => {
-    const instance = new web3.eth.Contract(contractName.abi, address);
+const getContractInstance = (web3) => (ABI, address) => {
+    const instance = new web3.eth.Contract(ABI, address);
     return instance;
 };
 

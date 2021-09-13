@@ -14,6 +14,7 @@
 /hybrid-app/google-services.json
 /hybrid-app/GoogleService-Info.plist
 
+# following files are added to gitignore, because these plugins should be installed only on android or ios ( not both platforms )
 /hybrid-app/plugins/ios.json
 /hybrid-app/plugins/android.json
 /hybrid-app/plugins/fetch.json
@@ -26,7 +27,6 @@
 /hybrid-app/plugins/cordova-plugin-androidx-adapter
 /hybrid-app/plugins/cordova-support-android-plugin
 /hybrid-app/plugins/cordova-plugin-printer
-/hybrid-app/plugins/wifiwizard2
 
 # profiling files
 chrome-profiler-events.json

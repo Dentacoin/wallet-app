@@ -23,18 +23,18 @@
                     <a class="nav-link nav-button send" [routerLink]="translate.currentLang + '/send'" itemprop="url"><span itemprop="name">{{'menu-send' | translate}}</span></a>
                 </li>
                 <li class="col-xs-3 inline-block">
-                    <a class="nav-link nav-button spend" [routerLink]="translate.currentLang + '/spend-pay-for-dental-services'" itemprop="url"><span
-                        itemprop="name">{{'menu-spend' | translate}}</span></a>
+                    <a class="nav-link nav-button swap" [routerLink]="translate.currentLang + '/swap'" itemprop="url"><span itemprop="name">{{'menu-swap' | translate}}</span></a>
                 </li>
             </ul>
         </nav>
     </div>
     <div class="camping-currently-offline"></div>
+    <div class="camping-buy-page-notice"></div>
 </header>
-<main id="main-container" class="padding-bottom-xs-130" [attr.data-lang]="translate.currentLang" [attr.network]="network == 'mainnet' ? 'mainnet' : 'rinkeby'" [attr.title]="this.translate.instant('determined')">
+<main id="main-container" class="padding-bottom-xs-130" [attr.data-lang]="translate.currentLang" [attr.network]="network == 'mainnet' ? 'mainnet' : 'rinkeby'">
     <div class="container padding-top-100 padding-top-xs-10 padding-bottom-70">
         <div class="row">
-            <div class="col-xs-12 no-gutter main-holder">
+            <div class="col-xs-12 main-holder">
                 <router-outlet></router-outlet>
             </div>
         </div>
@@ -108,7 +108,8 @@
             <li class="inline-block-bottom">
                 <a [routerLink]="translate.currentLang" class="home" itemprop="url">
                     <figure itemscope="" itemtype="http://schema.org/ImageObject">
-                        <img alt="Wallet icon" itemprop="contentUrl" src="assets/images/wallet-icon.svg"/>
+                        <img alt="Wallet icon" class="on-not-active" itemprop="contentUrl" src="assets/images/wallet-icon.svg"/>
+                        <img alt="Wallet icon" class="on-active" itemprop="contentUrl" src="assets/images/wallet-blue-icon.svg"/>
                     </figure>
                     <span itemprop="name">{{'menu-wallet' | translate}}</span>
                 </a>
@@ -116,7 +117,8 @@
             <li class="inline-block-bottom">
                 <a [routerLink]="translate.currentLang + '/buy'" class="buy" itemprop="url">
                     <figure itemscope="" itemtype="http://schema.org/ImageObject">
-                        <img alt="Buy icon" itemprop="contentUrl" src="assets/images/buy-icon.svg"/>
+                        <img alt="Buy icon" class="on-not-active" itemprop="contentUrl" src="assets/images/buy-icon.svg"/>
+                        <img alt="Buy icon" class="on-active" itemprop="contentUrl" src="assets/images/buy-blue-icon.svg"/>
                     </figure>
                     <span itemprop="name">{{'menu-buy' | translate}}</span>
                 </a>
@@ -124,17 +126,19 @@
             <li class="inline-block-bottom">
                 <a [routerLink]="translate.currentLang + '/send'" class="send" itemprop="url">
                     <figure itemscope="" itemtype="http://schema.org/ImageObject">
-                        <img alt="Send icon" itemprop="contentUrl" src="assets/images/send-icon.svg"/>
+                        <img alt="Send icon" class="on-not-active" itemprop="contentUrl" src="assets/images/send-icon.svg"/>
+                        <img alt="Send icon" class="on-active" itemprop="contentUrl" src="assets/images/send-blue-icon.svg"/>
                     </figure>
                     <span itemprop="name">{{'menu-send' | translate}}</span>
                 </a>
             </li>
             <li class="inline-block-bottom">
-                <a [routerLink]="translate.currentLang + '/spend-pay-for-dental-services'" class="spend" itemprop="url">
+                <a [routerLink]="translate.currentLang + '/swap'" class="swap" itemprop="url">
                     <figure itemscope="" itemtype="http://schema.org/ImageObject">
-                        <img alt="Spend icon" itemprop="contentUrl" src="assets/images/spend-icon.svg"/>
+                        <img alt="Swap icon" class="on-not-active" itemprop="contentUrl" src="assets/images/swap-icon.svg"/>
+                        <img alt="Swap icon" class="on-active" itemprop="contentUrl" src="assets/images/swap-blue-icon.svg"/>
                     </figure>
-                    <span itemprop="name">{{'menu-spend' | translate}}</span>
+                    <span itemprop="name">{{'menu-swap' | translate}}</span>
                 </a>
             </li>
         </ul>
@@ -173,7 +177,7 @@
                     </figure>
                     <div class="text-center color-black padding-top-15 padding-bottom-10">
                         <div class="calibri-bold color-black fs-30 line-height-34 padding-bottom-10" [innerHTML]="'welcome-to-wallet' | translate"></div>
-                        <div class="lato-bold fs-18 fs-xs-16">{{'the-easy-way' | translate}}</div>
+                        <div class="lato-bold fs-18 fs-xs-16 padding-bottom-15">{{'the-easy-way' | translate}}</div>
                     </div>
                     <div class="navigation-link fs-0 padding-bottom-50 padding-top-xs-15">
                         <div class="inline-block-top padding-right-10 padding-right-xs-0 text-right text-center-xs nav-btn-container padding-bottom-xs-15">
@@ -260,17 +264,20 @@
                     </div>
                     <div class="popup-right inline-block-top">
                         <div class="popup-body second hide">
-                            <div class="padding-top-20 padding-bottom-30 fs-0 row-with-image-and-text max-width-400">
-                                <img src="assets/images/key-holder.png" alt="Key holder" class="max-width-80 width-100 inline-block"/>
+                            <div class="padding-top-20 padding-bottom-30 fs-0 row-with-image-and-text text-center max-width-xs-400">
+                                <img src="assets/images/key-holder.png" alt="Key holder" class="max-width-80 margin-0-auto width-100 display-block inline-block-xs"/>
                                 <div class="inline-block padding-left-10 fs-16 fs-xs-14 text">
-                                    <div class="lato-bold fs-18">{{'welcome-back' | translate}}</div>
+                                    <div class="lato-black padding-top-10 fs-20 fs-xs-18">{{'welcome-back' | translate}}</div>
                                     {{'to-import' | translate}}
                                 </div>
                             </div>
                             <div class="text-center import-keystore-file-row">
                                 <label class="button custom-upload-button" *ngIf="(hybrid == true)">
                                     <a>
-                                        <span>{{'upload-backup-file' | translate}}</span>
+                                        <span class="custom-button fs-0">
+                                            <img src="assets/images/import-backup-file-icon.svg" alt="Upload file icon"/>
+                                            <span class="inline-block text-left padding-left-10 btn-text fs-16" [innerHTML]="'upload-backup-file-splitted' | translate"></span>
+                                        </span>
                                         <img src="assets/images/loader-circle.png" alt="Loader" class="load width-100 max-width-30"/>
                                         <img src="assets/images/check.png" alt="Check" class="check width-100 max-width-30"/>
                                     </a>
@@ -279,7 +286,10 @@
                                 <input type="file" id="upload-keystore" class="hide-input upload-keystore" *ngIf="(hybrid == false)"/>
                                 <label for="upload-keystore" class="button custom-upload-button" *ngIf="(hybrid == false)">
                                     <a>
-                                        <span>{{'upload-backup-file' | translate}}</span>
+                                        <span class="custom-button fs-0">
+                                            <img src="assets/images/import-backup-file-icon.svg" alt="Upload file icon"/>
+                                            <span class="inline-block text-left padding-left-10 btn-text fs-16" [innerHTML]="'upload-backup-file-splitted' | translate"></span>
+                                        </span>
                                         <img src="assets/images/loader-circle.png" alt="Loader" class="load width-100 max-width-30"/>
                                         <img src="assets/images/check.png" alt="Check" class="check width-100 max-width-30"/>
                                     </a>
@@ -294,13 +304,53 @@
                         </div>
                     </div>
                 </div>
-                <div class="auth-popup-faq-link padding-top-20 text-center"><a
-                    href="https://dentacoin.com/how-to-create-wallet" target="_blank" class="data-external-link">?</a>
+                <div class="auth-popup-faq-link padding-top-20 text-center"><a href="https://dentacoin.com/how-to-create-wallet" target="_blank" class="data-external-link">?</a>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<nav class="sidenav">
+    <div class="wrapper">
+        <a href="javascript:void(0)" class="close-btn">×</a>
+        <ul itemscope="" itemtype="http://schema.org/SiteNavigationElement" class="padding-top-50">
+            <li>
+                <a class="open-settings" href="javascript:void(0);" itemprop="url"><img src="assets/images/settings-icon.svg" alt="Settings icon" class="width-100 inline-block" itemprop="contentUrl"/><span itemprop="name">Settings</span></a>
+            </li>
+            <li>
+                <a [routerLink]="translate.currentLang + '/spend-pay-for-dental-services'" itemprop="url"><img src="assets/images/pay-icon.svg" alt="Pay icon" class="width-100 inline-block" itemprop="contentUrl"/><span itemprop="name">Where to pay with DCN</span></a>
+            </li>
+            <li>
+                <a [routerLink]="translate.currentLang + '/spend-exchanges'" itemprop="url"><img src="assets/images/trade-icon.svg" alt="Trade icon" class="width-100 inline-block" itemprop="contentUrl"/><span itemprop="name">Where to trade DCN</span></a>
+            </li>
+            <li>
+                <a [routerLink]="translate.currentLang + '/spend-pay-assurance-fees'" itemprop="url"><img src="assets/images/assurance-icon.svg" alt="Assurance icon" class="width-100 inline-block" itemprop="contentUrl"/><span itemprop="name">Dentacoin Assurance</span></a>
+            </li>
+        </ul>
+        <ul itemscope="" itemtype="http://schema.org/SiteNavigationElement">
+            <li>
+                <a href="mailto:admin@dentacoin.com" itemprop="url"><span itemprop="name">Contact us</span></a>
+            </li>
+            <li>
+                <a href="https://dentacoin.com/how-to-create-wallet" class="data-external-link" target="_blank" itemprop="url"><span itemprop="name"><span itemprop="name">{{'menu-faq' | translate}}</span></span></a>
+            </li>
+            <li>
+                <a href="https://dentacoin.com/privacy-policy" class="data-external-link" target="_blank" itemprop="url"><span itemprop="name"><span itemprop="name">{{'menu-privacy-policy' | translate}}</span></span></a>
+            </li>
+        </ul>
+        <div class="padding-top-150 padding-bottom-15 fs-0 border-bottom">
+            <div class="inline-block width-50">
+                <a href="javascript:void(0)" class="log-out fs-22 color-white">
+                    <img src="assets/images/power.svg" alt="Power button icon" class="width-100 max-width-20 margin-right-10"/><span class="inline-block">{{'log-out' | translate}}</span></a>
+            </div>
+            <figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block width-50 text-right">
+                <img src="assets/images/one-line-logo-white.svg" alt="Dentacoin one line logo" class="width-100 max-width-110" itemprop="contentUrl"/>
+            </figure>
+        </div>
+        <div class="fs-14 padding-top-10 padding-bottom-20">{{'dont-forget' | translate}}</div>
+    </div>
+</nav>
 
 <div class="settings-popup hide">
     <div class="settings-popup-wrapper">
@@ -320,7 +370,6 @@
                 </div>
             </div>
             <div class="popup-body"></div>
-            <div class="popup-footer text-center"></div>
         </div>
     </div>
 </div>

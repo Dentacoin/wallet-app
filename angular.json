@@ -24,7 +24,6 @@
             ],
             "styles": [
               "./src/assets/libs/bootstrap/css/bootstrap.min.css",
-              "./src/assets/libs/combobox/combobox.css",
               "./src/assets/libs/font-awesome/css/font-awesome.min.css",
               "./src/assets/css/style.css"
             ],
@@ -32,7 +31,6 @@
               "./node_modules/jquery/dist/jquery.min.js",
               "./src/assets/libs/bootstrap/js/bootstrap.min.js",
               "./node_modules/bootbox.js/bootbox.min.js",
-              "./src/assets/libs/combobox/combobox.js",
               "./node_modules/clipboard/dist/clipboard.min.js",
               "./node_modules/bignumber.js/bignumber.min.js",
               "./node_modules/decimal.js/decimal.min.js",
