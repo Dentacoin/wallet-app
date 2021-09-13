@@ -350,7 +350,7 @@ var projectData = {
                         updateUserAccountData();
                     }
                 }
-                refreshAccountDataButtonLogic();
+                refreshAccountDataButtonLogic(true);
 
                 async function updateUserAccountData(hide_loader) {
                     //show user ethereum address
@@ -1447,6 +1447,12 @@ var projectData = {
                 $('.swapping-section .from-box .inputable-line input[type="number"]').val($('.swapping-section .from-box .balance-line .amount').html().replaceAll(',', '')).focus();
                 $('.swapping-section .to-box .inputable-line .transfer-to-amount').html($('.swapping-section .from-box .balance-line .amount').html().replaceAll(',', ''));
             });
+
+            if ($('.learn-more-btn').length) {
+                $('.learn-more-btn').click(function() {
+                    projectData.general_logic.openL2InformationPopups('what-is-dcn2');
+                });
+            }
 
             $('.inputable-amount').on('input paste change', function() {
                 var thisValue = $(this).val().trim();
