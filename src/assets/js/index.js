@@ -5050,19 +5050,28 @@ function router() {
                 window.FirebasePlugin.hasPermission(function(hasPermission) {
                     console.log(hasPermission, 'hasPermission');
                     if (basic.property_exists(hasPermission, 'isEnabled') && hasPermission.isEnabled) {
+                        window.localStorage.setItem('saved_mobile_id', true);
                         // if permission is given save the firebase mobile device id
-                        projectData.general_logic.addMobileDeviceId(function() {
-                            window.localStorage.setItem('saved_mobile_id', true);
-                            console.log('Mobile device id saved.');
+                        projectData.general_logic.addMobileDeviceId(function(response) {
+                            if (response.success) {
+                                console.log('Mobile device id saved.');
+                            } else {
+                                window.localStorage.removeItem('saved_mobile_id');
+                            }
                         }, window.localStorage.getItem('mobile_device_id'))
                     }
                 });
             } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                 console.log(await FCM.hasPermission(), 'await FCM.hasPermission()');
                 if (await FCM.hasPermission()) {
-                    projectData.general_logic.addMobileDeviceId(function() {
-                        window.localStorage.setItem('saved_mobile_id', true);
-                        console.log('Mobile device id saved.');
+                    window.localStorage.setItem('saved_mobile_id', true);
+                    // if permission is given save the firebase mobile device id
+                    projectData.general_logic.addMobileDeviceId(function(response) {
+                        if (response.success) {
+                            console.log('Mobile device id saved.');
+                        } else {
+                            window.localStorage.removeItem('saved_mobile_id');
+                        }
                     }, window.localStorage.getItem('mobile_device_id'))
                 }
             }
