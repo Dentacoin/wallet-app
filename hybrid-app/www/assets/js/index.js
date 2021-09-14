@@ -110,12 +110,12 @@ document.addEventListener('deviceready', async function () {
         });
 
         console.log(wasPermissionGiven, 'wasPermissionGiven');
-        console.log(FCMPlugin, 'FCMPlugin');
+        console.log(FCM, 'FCM');
         var FCMToken = await FCM.getToken();
         localStorage.setItem('mobile_device_id', FCMToken);
 
         // camp for push notifications when app is running in foreground
-        FCMPlugin.onNotification(function(data){
+        FCM.onNotification(function(data){
             console.log(data, 'FCMPlugin data');
         });
     }
