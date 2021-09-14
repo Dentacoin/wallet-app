@@ -481,8 +481,6 @@ var projectData = {
                         }
                     });
                 }
-            } else {
-                projectData.general_logic.hideLoader();
             }
 
             $('.fade-in-element').fadeIn(500);
@@ -5031,7 +5029,7 @@ function router() {
     }
 
     $('body').on('DOMSubtreeModified', '.main-holder', async function () {
-        if (closeOnLoadLoader && current_route != 'home' && current_route != 'swap') {
+        if ((closeOnLoadLoader && current_route != 'home' && current_route != 'swap') || window.localStorage.getItem('current_account') == null) {
             closeOnLoadLoader = false;
             setTimeout(function() {
                 projectData.general_logic.hideLoader();
