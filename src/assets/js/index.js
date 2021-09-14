@@ -2747,7 +2747,6 @@ var projectData = {
                                             btn.children("div").fadeOut(200, function () {
                                                 loadBar.width(0);
                                                 checkSVG.fadeOut(200, function () {
-                                                    console.log(file_name, 'file_name');
                                                     btn.children("a").animate({
                                                         width: btn_width
                                                     });
@@ -2776,10 +2775,8 @@ var projectData = {
 
             function successNative(finalPath) {
                 window.resolveLocalFileSystemURL(finalPath, function (entry) {
-                    console.log(entry, 'entry');
                     entry.file(function (file) {
-                        console.log(file, 'file');
-                        callback(file);
+                        callback(file, file.name);
                     }, function (err) {
                         alert('Something went wrong with uploading your Backup file. Please contact admin@dentacoin.com.');
                     });
@@ -4173,18 +4170,13 @@ function initAccountChecker() {
 
 //styling input type file for importing keystore file
 function styleKeystoreUploadBtn() {
-    function proceedWithImportingAfterKeystoreUploading(keystore_string, fileName) {
+    function proceedWithImportingAfterKeystoreUploading(keystore_string) {
         if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address')) {
-            var fileNameHtml = '';
-            if (fileName != undefined) {
-                fileNameHtml = '<div class="fs-14 light-gray-color text-center padding-bottom-10 padding-top-15 file-name">' + fileName + '</div>';
-            }
-
             $('.or-label').hide();
             $('.import-private-key-row').hide();
 
             //show continue button next step button
-            $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html(fileNameHtml + '<div class="enter-pass-label"><label class="renew-on-lang-switch" data-slug="enter-pass-secret">'+$('.translates-holder').attr('enter-pass-secret')+'</label></div><div class="field-parent margin-bottom-15 max-width-300 margin-left-right-auto"><div class="custom-google-label-style module text-left" data-input-light-blue-border="true"><label for="import-keystore-password" class="renew-on-lang-switch" data-slug="enter-pass-label">'+$('.translates-holder').attr('enter-pass-label')+'</label><input type="password" id="import-keystore-password" class="full-rounded import-keystore-password"/></div></div><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-import" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-import"><span class="padding-left-5 padding-right-5 inline-block renew-on-lang-switch" data-slug="remember-file">'+$('.translates-holder').attr('remember-file')+'</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block import-more-info-keystore-remember fs-0" data-content="'+$('.translates-holder').attr('remembering-file')+'"><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="continue-btn padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border renew-on-lang-switch" data-slug="CONTINUE-btn">'+$('.translates-holder').attr('CONTINUE-btn')+'</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block renew-on-lang-switch" data-slug="go-back">'+$('.translates-holder').attr('go-back')+'</span></a></div>');
+            $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('<div class="enter-pass-label"><label class="renew-on-lang-switch" data-slug="enter-pass-secret">'+$('.translates-holder').attr('enter-pass-secret')+'</label></div><div class="field-parent margin-bottom-15 max-width-300 margin-left-right-auto"><div class="custom-google-label-style module text-left" data-input-light-blue-border="true"><label for="import-keystore-password" class="renew-on-lang-switch" data-slug="enter-pass-label">'+$('.translates-holder').attr('enter-pass-label')+'</label><input type="password" id="import-keystore-password" class="full-rounded import-keystore-password"/></div></div><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-import" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-import"><span class="padding-left-5 padding-right-5 inline-block renew-on-lang-switch" data-slug="remember-file">'+$('.translates-holder').attr('remember-file')+'</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block import-more-info-keystore-remember fs-0" data-content="'+$('.translates-holder').attr('remembering-file')+'"><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><style type="text/css">.st0{fill:#939DA8 !important;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path class="st0" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="continue-btn padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border renew-on-lang-switch" data-slug="CONTINUE-btn">'+$('.translates-holder').attr('CONTINUE-btn')+'</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block renew-on-lang-switch" data-slug="go-back">'+$('.translates-holder').attr('go-back')+'</span></a></div>');
 
             $('.import-more-info-keystore-remember').popover({
                 trigger: 'click'
@@ -4288,11 +4280,11 @@ function styleKeystoreUploadBtn() {
             $('.custom-upload-button').click(function () {
                 var this_btn = $(this);
                 fileChooser.open(function (file_uri) {
-                    projectData.general_logic.androidFileUpload(file_uri, function (file) {
+                    projectData.general_logic.androidFileUpload(file_uri, function (file, fileName) {
                         var reader = new FileReader();
 
                         if (this_btn != undefined) {
-                            projectData.general_logic.initCustomInputFileAnimation(this_btn);
+                            projectData.general_logic.initCustomInputFileAnimation(this_btn, fileName);
                         }
 
                         reader.onloadend = function () {
@@ -4312,9 +4304,14 @@ function styleKeystoreUploadBtn() {
         } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
             //iOS
             $('.custom-upload-button').click(function () {
+                var this_btn = $(this);
                 projectData.general_logic.iOSFileUpload(function (keystore_string, fileName) {
+                    if (this_btn != undefined) {
+                        projectData.general_logic.initCustomInputFileAnimation(this_btn, fileName);
+                    }
+
                     setTimeout(function () {
-                        proceedWithImportingAfterKeystoreUploading(keystore_string, fileName);
+                        proceedWithImportingAfterKeystoreUploading(keystore_string);
                     }, 500);
                 });
             });
@@ -4950,10 +4947,8 @@ $(document).on('click', '.open-settings', function () {
                                     window.plugins.socialsharing.share(keystore_file);
 
                                     basic.closeDialog();
-
                                     $('body').removeClass('overflow-hidden');
                                     $('.settings-popup').addClass('hide');
-                                    basic.showAlert($('.translates-holder').attr('file') +keystore_file_name + $('.translates-holder').attr('has-been-downloaded'), '', true);
                                     projectData.general_logic.hideLoader();
                                 }
                             } else {
@@ -5032,7 +5027,7 @@ function router() {
     }
 
     $('body').on('DOMSubtreeModified', '.main-holder', async function () {
-        if (closeOnLoadLoader) {
+        if (closeOnLoadLoader && current_route != 'home' && current_route != 'swap') {
             closeOnLoadLoader = false;
             setTimeout(function() {
                 projectData.general_logic.hideLoader();
@@ -5107,7 +5102,6 @@ function router() {
 
         // saving mobile_device_id to send push notifications
         if (window.localStorage.getItem('current_account') != null && window.localStorage.getItem('saved_mobile_id') == null && is_hybrid) {
-            console.log(1111111111);
             if (basic.getMobileOperatingSystem() == 'Android') {
                 window.localStorage.setItem('saved_mobile_id', true);
                 window.FirebasePlugin.hasPermission(function(hasPermission) {
@@ -5127,10 +5121,8 @@ function router() {
             } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                 window.localStorage.setItem('saved_mobile_id', true);
                 if (await FCM.hasPermission()) {
-                    console.log(2222222222);
                     // if permission is given save the firebase mobile device id
                     projectData.general_logic.addMobileDeviceId(function(response) {
-                        console.log(333333333, response);
                         if (response.success) {
                             console.log('Mobile device id saved.');
                         } else {
