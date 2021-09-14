@@ -117,7 +117,7 @@ __webpack_require__.r(__webpack_exports__);
 
 // Express server
 var app = express__WEBPACK_IMPORTED_MODULE_1__();
-var PORT = process.env.PORT || 4000;
+var PORT = process.env.PORT || 4010;
 var DIST_FOLDER = Object(path__WEBPACK_IMPORTED_MODULE_2__["join"])(process.cwd(), 'dist/browser');
 // * NOTE :: leave this as require() since this file is built Dynamically from webpack
 var _a = __webpack_require__(129), AppServerModuleNgFactory = _a.AppServerModuleNgFactory, LAZY_MODULE_MAP = _a.LAZY_MODULE_MAP, ngExpressEngine = _a.ngExpressEngine, provideModuleMap = _a.provideModuleMap;
