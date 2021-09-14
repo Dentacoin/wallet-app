@@ -116,7 +116,7 @@ document.addEventListener('deviceready', async function () {
         // camp for push notifications when app is running in foreground
         FCM.onNotification(function(notification){
             console.log(notification, 'notification');
-            if (basic.property_exists(notification, 'title') && basic.property_exists(notification, 'body')) {
+            if (basic.property_exists(notification, 'google.c.sender.id') && basic.property_exists(notification, 'title') && basic.property_exists(notification, 'body')) {
                 projectData.general_logic.firePushNotification(notification.title, notification.body);
             }
         });
