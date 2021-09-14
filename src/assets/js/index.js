@@ -110,13 +110,15 @@ document.addEventListener('deviceready', async function () {
         });
 
         console.log(wasPermissionGiven, 'wasPermissionGiven');
-        console.log(FCM, 'FCM');
         var FCMToken = await FCM.getToken();
         localStorage.setItem('mobile_device_id', FCMToken);
 
         // camp for push notifications when app is running in foreground
-        FCM.onNotification(function(data){
-            console.log(data, 'FCMPlugin data');
+        FCM.onNotification(function(notification){
+            console.log(notification, 'notification');
+            if (basic.property_exists(notification, 'title') && basic.property_exists(notification, 'body')) {
+                projectData.general_logic.firePushNotification(notification.title, notification.body);
+            }
         });
     }
 }, false);
