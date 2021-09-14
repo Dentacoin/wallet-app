@@ -352,83 +352,73 @@ var projectData = {
             projectData.utils.saveHybridAppCurrentScreen();
 
             if (typeof(global_state.account) != 'undefined') {
+                projectData.general_logic.showLoader();
                 projectData.general_logic.showMobileAppBannerForDesktopBrowsers();
 
-                function refreshAccountDataButtonLogic(init_loader) {
-                    if (init_loader != undefined) {
-                        projectData.general_logic.showLoader();
+                function refreshAccountDataButtonLogic() {
+                    clearInterval(request_interval_for_rest_of_transaction_history);
+                    projectData.general_logic.buildTransactionHistory();
 
-                        clearInterval(request_interval_for_rest_of_transaction_history);
-                        projectData.general_logic.buildTransactionHistory();
-                        
-                        setTimeout(function () {
-                            updateUserAccountData(true);
-                        }, 1000);
-                    } else {
-                        updateUserAccountData();
-                    }
-                }
-                refreshAccountDataButtonLogic(true);
+                    setTimeout(async function () {
+                        //show user ethereum address
+                        $('.eth-address-container .address-value').val(projectData.utils.checksumAddress(global_state.account));
 
-                async function updateUserAccountData(hide_loader) {
-                    //show user ethereum address
-                    $('.eth-address-container .address-value').val(projectData.utils.checksumAddress(global_state.account));
+                        var l1_dcn_balance = parseInt(await L1DCNContract.methods.balanceOf(global_state.account).call());
+                        var l2_dcn_balance = parseInt(await L2DCNContract.methods.balanceOf(global_state.account).call());
+                        var l1_eth_balance = await dApp.web3_l1.eth.getBalance(global_state.account);
+                        var l2_eth_balance = await dApp.web3_l2.eth.getBalance(global_state.account);
+                        $('.main-wrapper .dcn-amount').html((l1_dcn_balance + l2_dcn_balance).toLocaleString());
 
-                    var l1_dcn_balance = parseInt(await L1DCNContract.methods.balanceOf(global_state.account).call());
-                    var l2_dcn_balance = parseInt(await L2DCNContract.methods.balanceOf(global_state.account).call());
-                    var l1_eth_balance = await dApp.web3_l1.eth.getBalance(global_state.account);
-                    var l2_eth_balance = await dApp.web3_l2.eth.getBalance(global_state.account);
-                    $('.main-wrapper .dcn-amount').html((l1_dcn_balance + l2_dcn_balance).toLocaleString());
+                        projectData.requests.getDentacoinDataByCoingeckoProvider(function (dentacoin_data) {
+                            if (l1_dcn_balance > 0) {
+                                $('.single-currency.l1-dcn-currency .l1-dcn-balance').html(l1_dcn_balance.toLocaleString());
+                                $('.single-currency.l1-dcn-currency .l1-dcn-balance-in-usd').html(parseFloat((l1_dcn_balance * dentacoin_data).toFixed(2)).toLocaleString());
+                                $('.single-currency.l1-dcn-currency').removeClass('hide');
+                            }
 
-                    projectData.requests.getDentacoinDataByCoingeckoProvider(function (dentacoin_data) {
-                        if (l1_dcn_balance > 0) {
-                            $('.single-currency.l1-dcn-currency .l1-dcn-balance').html(l1_dcn_balance.toLocaleString());
-                            $('.single-currency.l1-dcn-currency .l1-dcn-balance-in-usd').html(parseFloat((l1_dcn_balance * dentacoin_data).toFixed(2)).toLocaleString());
-                            $('.single-currency.l1-dcn-currency').removeClass('hide');
-                        }
+                            if (l2_dcn_balance > 0) {
+                                $('.single-currency.l2-dcn-currency .l2-dcn-balance').html(l2_dcn_balance.toLocaleString());
+                                $('.single-currency.l2-dcn-currency .l2-dcn-balance-in-usd').html(parseFloat((l2_dcn_balance * dentacoin_data).toFixed(2)).toLocaleString());
+                            }
 
-                        if (l2_dcn_balance > 0) {
-                            $('.single-currency.l2-dcn-currency .l2-dcn-balance').html(l2_dcn_balance.toLocaleString());
-                            $('.single-currency.l2-dcn-currency .l2-dcn-balance-in-usd').html(parseFloat((l2_dcn_balance * dentacoin_data).toFixed(2)).toLocaleString());
-                        }
+                            if (l1_eth_balance > 0) {
+                                $('.single-currency.l1-eth-currency .l1-eth-balance').html(parseFloat(projectData.utils.fromWei(l1_eth_balance)).toFixedNoRounding(8));
+                                $('.single-currency.l1-eth-currency').removeClass('hide');
+                            }
 
-                        if (l1_eth_balance > 0) {
-                            $('.single-currency.l1-eth-currency .l1-eth-balance').html(parseFloat(projectData.utils.fromWei(l1_eth_balance)).toFixedNoRounding(8));
-                            $('.single-currency.l1-eth-currency').removeClass('hide');
-                        }
+                            if (l2_eth_balance > 0) {
+                                $('.single-currency.l2-eth-currency .l2-eth-balance').html(parseFloat(projectData.utils.fromWei(l2_eth_balance)).toFixedNoRounding(8));
+                            }
 
-                        if (l2_eth_balance > 0) {
-                            $('.single-currency.l2-eth-currency .l2-eth-balance').html(parseFloat(projectData.utils.fromWei(l2_eth_balance)).toFixedNoRounding(8));
-                        }
+                            if ($('.bottom-side').hasClass('hide')) {
+                                $('.bottom-side').removeClass('hide');
+                            }
 
-                        if ($('.bottom-side').hasClass('hide')) {
-                            $('.bottom-side').removeClass('hide');
-                        }
+                            $('.refresh-account-data').unbind().click(function () {
+                                projectData.general_logic.showLoader();
+                                refreshAccountDataButtonLogic();
+                            });
 
-                        if (hide_loader != undefined) {
                             projectData.general_logic.hideLoader();
-                        }
-                    });
-
-                    $('.more-info').popover({
-                        trigger: 'click'
-                    });
-
-
-                    $('.join-the-future .close-btn').click(function() {
-                        $('.join-the-future').remove();
-                    });
-
-                    if ($('.join-the-future .open-popup').length) {
-                        $('.join-the-future .open-popup').click(function() {
-                            projectData.general_logic.openL2InformationPopups('what-is-dcn2');
                         });
-                    }
-                }
 
-                $(document).on('click', '.refresh-account-data', function () {
-                    refreshAccountDataButtonLogic(true);
-                });
+                        $('.more-info').popover({
+                            trigger: 'click'
+                        });
+
+
+                        $('.join-the-future .close-btn').click(function() {
+                            $('.join-the-future').remove();
+                        });
+
+                        if ($('.join-the-future .open-popup').length) {
+                            $('.join-the-future .open-popup').click(function() {
+                                projectData.general_logic.openL2InformationPopups('what-is-dcn2');
+                            });
+                        }
+                    }, 1000);
+                }
+                refreshAccountDataButtonLogic();
 
                 $('body').addClass('overflow-hidden');
                 var window_width = $(window).width();
@@ -1446,175 +1436,180 @@ var projectData = {
             }
         },
         swap_page: async function () {
+            projectData.general_logic.showLoader();
             $(document).on('click', '.latest-dcn-popup .close-btn', function() {
                 $('.latest-dcn-popup').remove();
                 $('app-swap-page h1').addClass('padding-top-30').removeClass('padding-top-10');
             });
 
-            var l1_dcn_balance = parseInt(await L1DCNContract.methods.balanceOf(global_state.account).call());
-            var l2_dcn_balance = parseInt(await L2DCNContract.methods.balanceOf(global_state.account).call());
-            var l1_eth_balance = await dApp.web3_l1.eth.getBalance(global_state.account);
-            var l2_eth_balance = await dApp.web3_l2.eth.getBalance(global_state.account);
+            setTimeout(async function() {
+                var l1_dcn_balance = parseInt(await L1DCNContract.methods.balanceOf(global_state.account).call());
+                var l2_dcn_balance = parseInt(await L2DCNContract.methods.balanceOf(global_state.account).call());
+                var l1_eth_balance = await dApp.web3_l1.eth.getBalance(global_state.account);
+                var l2_eth_balance = await dApp.web3_l2.eth.getBalance(global_state.account);
 
-            $('.swapping-section .from-box .balance-line .amount').html(l1_dcn_balance.toLocaleString());
-            $('.swapping-section .to-box .balance-line .amount').html(l2_dcn_balance.toLocaleString());
+                $('.swapping-section .from-box .balance-line .amount').html(l1_dcn_balance.toLocaleString());
+                $('.swapping-section .to-box .balance-line .amount').html(l2_dcn_balance.toLocaleString());
 
-            $('.swapping-section .from-box .max-btn').click(function() {
-                $('.swapping-section .from-box .inputable-line input[type="number"]').val($('.swapping-section .from-box .balance-line .amount').html().replaceAll(',', '')).focus();
-                $('.swapping-section .to-box .inputable-line .transfer-to-amount').html($('.swapping-section .from-box .balance-line .amount').html().replaceAll(',', ''));
-            });
-
-            if ($('.learn-more-btn').length) {
-                $('.learn-more-btn').click(function() {
-                    projectData.general_logic.openL2InformationPopups('what-is-dcn2');
+                $('.swapping-section .from-box .max-btn').click(function() {
+                    $('.swapping-section .from-box .inputable-line input[type="number"]').val($('.swapping-section .from-box .balance-line .amount').html().replaceAll(',', '')).focus();
+                    $('.swapping-section .to-box .inputable-line .transfer-to-amount').html($('.swapping-section .from-box .balance-line .amount').html().replaceAll(',', ''));
                 });
-            }
 
-            $('.inputable-amount').on('input paste change', function() {
-                var thisValue = $(this).val().trim();
-                if (thisValue < 0) {
-                    $(this).val(0);
+                if ($('.learn-more-btn').length) {
+                    $('.learn-more-btn').click(function() {
+                        projectData.general_logic.openL2InformationPopups('what-is-dcn2');
+                    });
                 }
 
-                if (thisValue > 0) {
-                    if ($('select.current-from').val() == 'eth-l1' && $('select.current-to').val() == 'dcn-l2') {
+                $('.inputable-amount').on('input paste change', function() {
+                    var thisValue = $(this).val().trim();
+                    if (thisValue < 0) {
+                        $(this).val(0);
+                    }
+
+                    if (thisValue > 0) {
+                        if ($('select.current-from').val() == 'eth-l1' && $('select.current-to').val() == 'dcn-l2') {
+                            projectData.requests.getDentacoinDataByCoingeckoProvider(function(dentacoin_data) {
+                                $('.swapping-section .to-box .inputable-line .transfer-to-amount').html(parseInt(thisValue / dentacoin_data.market_data.current_price.eth));
+                            }, true);
+                        } else {
+                            $('.swapping-section .to-box .inputable-line .transfer-to-amount').html(thisValue);
+                        }
+                    }
+                });
+
+                $(document).on('change', 'select.current-to', function() {
+                    if ($('select.current-from').val() == 'eth-l1' && $(this).val() == 'dcn-l2') {
                         projectData.requests.getDentacoinDataByCoingeckoProvider(function(dentacoin_data) {
-                            $('.swapping-section .to-box .inputable-line .transfer-to-amount').html(parseInt(thisValue / dentacoin_data.market_data.current_price.eth));
+                            $('.swapping-section .to-box .inputable-line .transfer-to-amount').html(parseInt($('.inputable-amount').val().trim() / dentacoin_data.market_data.current_price.eth));
                         }, true);
                     } else {
-                        $('.swapping-section .to-box .inputable-line .transfer-to-amount').html(thisValue);
+                        $('.swapping-section .to-box .inputable-line .transfer-to-amount').html($('.inputable-amount').val().trim());
                     }
-                }
-            });
+                });
 
-            $(document).on('change', 'select.current-to', function() {
-                if ($('select.current-from').val() == 'eth-l1' && $(this).val() == 'dcn-l2') {
-                    projectData.requests.getDentacoinDataByCoingeckoProvider(function(dentacoin_data) {
-                        $('.swapping-section .to-box .inputable-line .transfer-to-amount').html(parseInt($('.inputable-amount').val().trim() / dentacoin_data.market_data.current_price.eth));
-                    }, true);
-                } else {
-                    $('.swapping-section .to-box .inputable-line .transfer-to-amount').html($('.inputable-amount').val().trim());
-                }
-            });
-
-            $(document).on('change', 'select.current-from', function() {
-                $('.inputable-amount').val('').trigger('change');
-                switch($(this).val()) {
-                    case 'dcn-l1':
-                        $('.swapping-section .from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+l1_dcn_balance.toLocaleString()+'</span> DCN</span>');
-                        $('.swapping-section .to-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+l2_dcn_balance.toLocaleString()+'</span> DCN2.0</span>');
-                        $('.swapping-section .to-box .inputable-line').html('<div class="transfer-to-amount inline-block">0.0</div><select class="inline-block fs-24 padding-left-10 current-to"><option selected value="dcn-l2">DCN2.0</option></select>');
-                        break;
-                    case 'eth-l1':
-                        $('.swapping-section .from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+projectData.utils.fromWei(l1_eth_balance, 'ether')+'</span> ETH</span>');
-                        $('.swapping-section .to-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+projectData.utils.fromWei(l2_eth_balance, 'ether')+'</span> ETH2.0</span>');
-                        $('.swapping-section .to-box .inputable-line').html('<div class="transfer-to-amount inline-block">0.0</div><select class="inline-block fs-24 padding-left-10 current-to"><option selected value="eth-l2">ETH2.0</option><option value="dcn-l2">DCN2.0</option></select>');
-                        break;
-                    case 'dcn-l2':
-                        $('.swapping-section .from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+l2_dcn_balance.toLocaleString()+'</span> DCN2.0</span>');
-                        $('.swapping-section .to-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+l1_dcn_balance.toLocaleString()+'</span> DCN</span>');
-                        $('.swapping-section .to-box .inputable-line').html('<div class="transfer-to-amount inline-block">0.0</div><select class="inline-block fs-24 padding-left-10 current-to"><option selected value="dcn-l1">DCN</option></select>');
-                        break;
-                    case 'eth-l2':
-                        $('.swapping-section .from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+projectData.utils.fromWei(l2_eth_balance, 'ether')+'</span> ETH2.0</span>');
-                        $('.swapping-section .to-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+projectData.utils.fromWei(l1_eth_balance, 'ether')+'</span> ETH</span>');
-                        $('.swapping-section .to-box .inputable-line').html('<div class="transfer-to-amount inline-block">0.0</div><select class="inline-block fs-24 padding-left-10 current-to"><option selected value="eth-l1">ETH</option></select>');
-                        break;
-                }
-            });
-
-            $('.switch-layers-btn a').click(function() {
-                if ($('select.current-from').attr('data-current-layer') == 'l1') {
-                    $('select.current-from').attr('data-current-layer', 'l2');
-                    if ($('select.current-from').val() == 'eth-l1') {
-                        $('select.current-from').html('<option value="dcn-l2">DCN2.0</option><option value="eth-l2" selected>ETH2.0</option>');
-                    } else {
-                        $('select.current-from').html('<option value="dcn-l2">DCN2.0</option><option value="eth-l2">ETH2.0</option>');
+                $(document).on('change', 'select.current-from', function() {
+                    $('.inputable-amount').val('').trigger('change');
+                    switch($(this).val()) {
+                        case 'dcn-l1':
+                            $('.swapping-section .from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+l1_dcn_balance.toLocaleString()+'</span> DCN</span>');
+                            $('.swapping-section .to-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+l2_dcn_balance.toLocaleString()+'</span> DCN2.0</span>');
+                            $('.swapping-section .to-box .inputable-line').html('<div class="transfer-to-amount inline-block">0.0</div><select class="inline-block fs-24 padding-left-10 current-to"><option selected value="dcn-l2">DCN2.0</option></select>');
+                            break;
+                        case 'eth-l1':
+                            $('.swapping-section .from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+projectData.utils.fromWei(l1_eth_balance, 'ether')+'</span> ETH</span>');
+                            $('.swapping-section .to-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+projectData.utils.fromWei(l2_eth_balance, 'ether')+'</span> ETH2.0</span>');
+                            $('.swapping-section .to-box .inputable-line').html('<div class="transfer-to-amount inline-block">0.0</div><select class="inline-block fs-24 padding-left-10 current-to"><option selected value="eth-l2">ETH2.0</option><option value="dcn-l2">DCN2.0</option></select>');
+                            break;
+                        case 'dcn-l2':
+                            $('.swapping-section .from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+l2_dcn_balance.toLocaleString()+'</span> DCN2.0</span>');
+                            $('.swapping-section .to-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+l1_dcn_balance.toLocaleString()+'</span> DCN</span>');
+                            $('.swapping-section .to-box .inputable-line').html('<div class="transfer-to-amount inline-block">0.0</div><select class="inline-block fs-24 padding-left-10 current-to"><option selected value="dcn-l1">DCN</option></select>');
+                            break;
+                        case 'eth-l2':
+                            $('.swapping-section .from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+projectData.utils.fromWei(l2_eth_balance, 'ether')+'</span> ETH2.0</span>');
+                            $('.swapping-section .to-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+projectData.utils.fromWei(l1_eth_balance, 'ether')+'</span> ETH</span>');
+                            $('.swapping-section .to-box .inputable-line').html('<div class="transfer-to-amount inline-block">0.0</div><select class="inline-block fs-24 padding-left-10 current-to"><option selected value="eth-l1">ETH</option></select>');
+                            break;
                     }
-                } else if ($('select.current-from').attr('data-current-layer') == 'l2') {
-                    $('select.current-from').attr('data-current-layer', 'l1');
-                    if ($('select.current-from').val() == 'eth-l2') {
-                        $('select.current-from').html('<option value="dcn-l1">DCN</option><option value="eth-l1" selected>ETH</option>');
-                    } else {
-                        $('select.current-from').html('<option value="dcn-l1">DCN</option><option value="eth-l1">ETH</option>');
-                    }
-                }
-                $('select.current-from').trigger('change');
-            });
+                });
 
-            $('.swap-btn').click(function() {
-                var amount = parseFloat($('.inputable-amount').val().trim());
-                if (!$('#checkbox-understand').is(':checked')) {
-                    basic.showAlert('Please check the checkbox.', '', true);
-                } else if (amount <= 0 || Number.isNaN(amount)) {
-                    basic.showAlert('Please enter correct swapping value.', '', true);
-                } else {
-                    projectData.general_logic.showLoader();
-                    setTimeout(async function() {
-                        if ($('select.current-from').val() == 'dcn-l1' && $('select.current-to').val() == 'dcn-l2') {
-                            if (l1_dcn_balance < amount) {
-                                projectData.general_logic.hideLoader();
-                                basic.showAlert('You don\'t have enough DCN balance to complete the swap.', '', true);
-                            } else {
-                                var to = projectData.utils.checksumAddress('0xa4D508dC72f5ce2B688d05ACFfe8E1AeF326831C');
-                                var gasLimit = await L1DCNContract.methods.transfer(to, amount).estimateGas({
-                                    from: global_state.account
-                                });
-
-                                // adding 25 percent to the gas limit just in case
-                                gasLimit = Math.round(gasLimit + (gasLimit * 0.25));
-                                projectData.general_logic.openTxConfirmationPopup('Swap confirmation', to, amount, 'DCN', gasLimit, L1DCNContract.methods.transfer(to, amount).encodeABI(), 'l1', 'swap', 'dcn-l1-to-dcn-l2');
-                            }
-                        } else if ($('select.current-from').val() == 'eth-l1' && $('select.current-to').val() == 'eth-l2') {
-                            if (l1_eth_balance < parseInt(projectData.utils.toWei(amount.toString()))) {
-                                projectData.general_logic.hideLoader();
-                                basic.showAlert('You don\'t have enough ETH balance to complete the swap.', '', true);
-                            } else {
-                                var to = projectData.utils.checksumAddress('0x7cFF2b3b3702ED7deCc57fAa32940DCf855D2d29');
-                                var gasLimit = await dApp.web3_l1.eth.estimateGas({
-                                    to: to
-                                });
-                                projectData.general_logic.openTxConfirmationPopup('Swap confirmation', to, amount, 'ETH', gasLimit, null, 'l1', 'swap', 'eth-l1-to-eth-l2');
-                            }
-                        } else if ($('select.current-from').val() == 'eth-l1' && $('select.current-to').val() == 'dcn-l2') {
-                            if (l1_eth_balance < parseInt(projectData.utils.toWei(amount.toString()))) {
-                                projectData.general_logic.hideLoader();
-                                basic.showAlert('You don\'t have enough ETH balance to complete the swap.', '', true);
-                            } else {
-                                var to = projectData.utils.checksumAddress('0x1D611d469704b95525C96B5c4921a5b78807ae4e');
-                                var gasLimit = await dApp.web3_l1.eth.estimateGas({
-                                    to: to
-                                });
-                                projectData.general_logic.openTxConfirmationPopup('Swap confirmation', to, amount, 'ETH', gasLimit, null, 'l1', 'swap', 'eth-l1-to-dcn-l2', $('.swapping-section .to-box .inputable-line .transfer-to-amount').html());
-                            }
-                        } else if ($('select.current-from').val() == 'dcn-l2' && $('select.current-to').val() == 'dcn-l1') {
-                            if (l2_dcn_balance < amount) {
-                                basic.showAlert('You don\'t have enough DCN2.0 balance to complete the swap.', '', true);
-                                projectData.general_logic.hideLoader();
-                            } else {
-                                var gasLimit = await L2DCNContract.methods.withdraw(amount).estimateGas({
-                                    from: global_state.account
-                                });
-
-                                projectData.general_logic.openTxConfirmationPopup('Swap confirmation', config_variable.l2.dcn_contract_address, amount, 'DCN2.0', gasLimit, L2DCNContract.methods.withdraw(amount).encodeABI(), 'l2', 'swap', 'dcn-l2-to-dcn-l1', $('.swapping-section .to-box .inputable-line .transfer-to-amount').html());
-                            }
-                        } else if ($('select.current-from').val() == 'eth-l2' && $('select.current-to').val() == 'eth-l1') {
-                            if (l2_eth_balance < parseInt(projectData.utils.toWei(amount.toString()))) {
-                                basic.showAlert('You don\'t have enough ETH2.0 balance to complete the swap.', '', true);
-                                projectData.general_logic.hideLoader();
-                            } else {
-                                console.log(L2OptimismL2StandardBridgeContract.methods, 'L2OptimismL2StandardBridgeContract.methods');
-                                var gasLimit = await L2OptimismL2StandardBridgeContract.methods.withdraw(/*'0x4200000000000000000000000000000000000006', */projectData.utils.toWei(amount.toString())/*, '0x', '0x'*/).estimateGas({
-                                    from: global_state.account
-                                });
-                                console.log(gasLimit, 'gasLimit');
-
-                                projectData.general_logic.openTxConfirmationPopup('Swap confirmation', '0x4200000000000000000000000000000000000010', amount, 'ETH2.0', gasLimit, L2OptimismL2StandardBridgeContract.methods.withdraw(/*'0x4200000000000000000000000000000000000006', */projectData.utils.toWei(amount.toString())/*, '0x', '0x'*/).encodeABI(), 'l2', 'swap', 'eth-l2-to-eth-l1', $('.swapping-section .to-box .inputable-line .transfer-to-amount').html());
-                            }
+                $('.switch-layers-btn a').click(function() {
+                    if ($('select.current-from').attr('data-current-layer') == 'l1') {
+                        $('select.current-from').attr('data-current-layer', 'l2');
+                        if ($('select.current-from').val() == 'eth-l1') {
+                            $('select.current-from').html('<option value="dcn-l2">DCN2.0</option><option value="eth-l2" selected>ETH2.0</option>');
+                        } else {
+                            $('select.current-from').html('<option value="dcn-l2">DCN2.0</option><option value="eth-l2">ETH2.0</option>');
                         }
-                    }, 500);
-                }
-            });
+                    } else if ($('select.current-from').attr('data-current-layer') == 'l2') {
+                        $('select.current-from').attr('data-current-layer', 'l1');
+                        if ($('select.current-from').val() == 'eth-l2') {
+                            $('select.current-from').html('<option value="dcn-l1">DCN</option><option value="eth-l1" selected>ETH</option>');
+                        } else {
+                            $('select.current-from').html('<option value="dcn-l1">DCN</option><option value="eth-l1">ETH</option>');
+                        }
+                    }
+                    $('select.current-from').trigger('change');
+                });
+
+                $('.swap-btn').click(function() {
+                    var amount = parseFloat($('.inputable-amount').val().trim());
+                    if (!$('#checkbox-understand').is(':checked')) {
+                        basic.showAlert('Please check the checkbox.', '', true);
+                    } else if (amount <= 0 || Number.isNaN(amount)) {
+                        basic.showAlert('Please enter correct swapping value.', '', true);
+                    } else {
+                        projectData.general_logic.showLoader();
+                        setTimeout(async function() {
+                            if ($('select.current-from').val() == 'dcn-l1' && $('select.current-to').val() == 'dcn-l2') {
+                                if (l1_dcn_balance < amount) {
+                                    projectData.general_logic.hideLoader();
+                                    basic.showAlert('You don\'t have enough DCN balance to complete the swap.', '', true);
+                                } else {
+                                    var to = projectData.utils.checksumAddress('0xa4D508dC72f5ce2B688d05ACFfe8E1AeF326831C');
+                                    var gasLimit = await L1DCNContract.methods.transfer(to, amount).estimateGas({
+                                        from: global_state.account
+                                    });
+
+                                    // adding 25 percent to the gas limit just in case
+                                    gasLimit = Math.round(gasLimit + (gasLimit * 0.25));
+                                    projectData.general_logic.openTxConfirmationPopup('Swap confirmation', to, amount, 'DCN', gasLimit, L1DCNContract.methods.transfer(to, amount).encodeABI(), 'l1', 'swap', 'dcn-l1-to-dcn-l2');
+                                }
+                            } else if ($('select.current-from').val() == 'eth-l1' && $('select.current-to').val() == 'eth-l2') {
+                                if (l1_eth_balance < parseInt(projectData.utils.toWei(amount.toString()))) {
+                                    projectData.general_logic.hideLoader();
+                                    basic.showAlert('You don\'t have enough ETH balance to complete the swap.', '', true);
+                                } else {
+                                    var to = projectData.utils.checksumAddress('0x7cFF2b3b3702ED7deCc57fAa32940DCf855D2d29');
+                                    var gasLimit = await dApp.web3_l1.eth.estimateGas({
+                                        to: to
+                                    });
+                                    projectData.general_logic.openTxConfirmationPopup('Swap confirmation', to, amount, 'ETH', gasLimit, null, 'l1', 'swap', 'eth-l1-to-eth-l2');
+                                }
+                            } else if ($('select.current-from').val() == 'eth-l1' && $('select.current-to').val() == 'dcn-l2') {
+                                if (l1_eth_balance < parseInt(projectData.utils.toWei(amount.toString()))) {
+                                    projectData.general_logic.hideLoader();
+                                    basic.showAlert('You don\'t have enough ETH balance to complete the swap.', '', true);
+                                } else {
+                                    var to = projectData.utils.checksumAddress('0x1D611d469704b95525C96B5c4921a5b78807ae4e');
+                                    var gasLimit = await dApp.web3_l1.eth.estimateGas({
+                                        to: to
+                                    });
+                                    projectData.general_logic.openTxConfirmationPopup('Swap confirmation', to, amount, 'ETH', gasLimit, null, 'l1', 'swap', 'eth-l1-to-dcn-l2', $('.swapping-section .to-box .inputable-line .transfer-to-amount').html());
+                                }
+                            } else if ($('select.current-from').val() == 'dcn-l2' && $('select.current-to').val() == 'dcn-l1') {
+                                if (l2_dcn_balance < amount) {
+                                    basic.showAlert('You don\'t have enough DCN2.0 balance to complete the swap.', '', true);
+                                    projectData.general_logic.hideLoader();
+                                } else {
+                                    var gasLimit = await L2DCNContract.methods.withdraw(amount).estimateGas({
+                                        from: global_state.account
+                                    });
+
+                                    projectData.general_logic.openTxConfirmationPopup('Swap confirmation', config_variable.l2.dcn_contract_address, amount, 'DCN2.0', gasLimit, L2DCNContract.methods.withdraw(amount).encodeABI(), 'l2', 'swap', 'dcn-l2-to-dcn-l1', $('.swapping-section .to-box .inputable-line .transfer-to-amount').html());
+                                }
+                            } else if ($('select.current-from').val() == 'eth-l2' && $('select.current-to').val() == 'eth-l1') {
+                                if (l2_eth_balance < parseInt(projectData.utils.toWei(amount.toString()))) {
+                                    basic.showAlert('You don\'t have enough ETH2.0 balance to complete the swap.', '', true);
+                                    projectData.general_logic.hideLoader();
+                                } else {
+                                    console.log(L2OptimismL2StandardBridgeContract.methods, 'L2OptimismL2StandardBridgeContract.methods');
+                                    var gasLimit = await L2OptimismL2StandardBridgeContract.methods.withdraw(/*'0x4200000000000000000000000000000000000006', */projectData.utils.toWei(amount.toString())/*, '0x', '0x'*/).estimateGas({
+                                        from: global_state.account
+                                    });
+                                    console.log(gasLimit, 'gasLimit');
+
+                                    projectData.general_logic.openTxConfirmationPopup('Swap confirmation', '0x4200000000000000000000000000000000000010', amount, 'ETH2.0', gasLimit, L2OptimismL2StandardBridgeContract.methods.withdraw(/*'0x4200000000000000000000000000000000000006', */projectData.utils.toWei(amount.toString())/*, '0x', '0x'*/).encodeABI(), 'l2', 'swap', 'eth-l2-to-eth-l1', $('.swapping-section .to-box .inputable-line .transfer-to-amount').html());
+                                }
+                            }
+                        }, 500);
+                    }
+                });
+
+                projectData.general_logic.hideLoader();
+            }, 500);
         },
         spend_page_dental_services: function () {
             projectData.utils.saveHybridAppCurrentScreen();
@@ -3467,8 +3462,6 @@ function styleKeystoreUploadBtnForTx(callback) {
 
 //method to sign and submit transaction to blockchain
 function submitTransactionToBlockchain(web3_provider, transactionType, function_abi, symbol, token_val, to, key) {
-    console.log($('.tx-data-holder').attr('data-gasLimit'), '$(\'.tx-data-holder\').attr(\'data-gasLimit\')');
-    console.log($('.tx-data-holder').attr('data-on_popup_load_gas_price'), '$(\'.tx-data-holder\').attr(\'data-on_popup_load_gas_price\')');
     const EthereumTx = require('ethereumjs-tx');
     var transaction_obj = {
         gasLimit: web3_provider.utils.toHex($('.tx-data-holder').attr('data-gasLimit')),
@@ -3539,10 +3532,16 @@ function submitTransactionToBlockchain(web3_provider, transactionType, function_
                 }
 
                 $('.transaction-history tbody').prepend(pending_history_transaction);
-                $('.search-field #search').val('');
-                $('.section-amount-to').hide();
-                $('.section-send').fadeIn(500);
-                $('#search').val('');
+                if (current_route == 'send') {
+                    $('.search-field #search').val('');
+                    $('.section-amount-to').hide();
+                    $('.section-send').fadeIn(500);
+                    $('#search').val('');
+                } else if (current_route == 'swap') {
+                    $('.swapping-section .inputable-amount').val('');
+                    $('.swapping-section .to-box .inputable-line .transfer-to-amount').html('');
+                    $('#checkbox-understand').prop('checked', false);
+                }
 
                 var formattedTo = to.substr(0, 5) + '...' + to.substr(to.length -5, 5);
                 projectData.general_logic.firePushNotification('Sent: ' + token_val + ' ' + symbol, 'To: ' + formattedTo);
@@ -3559,9 +3558,16 @@ function submitTransactionToBlockchain(web3_provider, transactionType, function_
                 }
 
                 $('.transaction-history tbody').prepend(pending_history_transaction);
-                $('.search-field #search').val('');
-                $('.section-amount-to').hide();
-                $('.section-send').fadeIn(500);
+                if (current_route == 'send') {
+                    $('.search-field #search').val('');
+                    $('.section-amount-to').hide();
+                    $('.section-send').fadeIn(500);
+                    $('#search').val('');
+                } else if (current_route == 'swap') {
+                    $('.swapping-section .inputable-amount').val('');
+                    $('.swapping-section .to-box .inputable-line .transfer-to-amount').html('');
+                    $('#checkbox-understand').prop('checked', false);
+                }
 
                 var formattedTo = to.substr(0, 5) + '...' + to.substr(to.length -5, 5);
                 projectData.general_logic.firePushNotification('Sent: ' + token_val + ' ' + symbol, 'To: ' + formattedTo);
@@ -4940,9 +4946,15 @@ $(document).on('click', '.open-settings', function () {
                                         projectData.general_logic.hideLoader();
                                     }, cordova.file.externalRootDirectory, true);
                                 } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
-                                    projectData.general_logic.hideLoader();
                                     //using export plugin, because in iOS there is no such thing as direct file download
                                     window.plugins.socialsharing.share(keystore_file);
+
+                                    basic.closeDialog();
+
+                                    $('body').removeClass('overflow-hidden');
+                                    $('.settings-popup').addClass('hide');
+                                    basic.showAlert($('.translates-holder').attr('file') +keystore_file_name + $('.translates-holder').attr('has-been-downloaded'), '', true);
+                                    projectData.general_logic.hideLoader();
                                 }
                             } else {
                                 //BROWSER
@@ -4979,9 +4991,8 @@ function checkIfLoadingFromMobileBrowser() {
 }
 
 //custom router camping for html changes, because old Android versions do not recognize Angular router
+var current_route;
 function router() {
-    var current_route;
-
     if ($('.main-holder app-homepage').length) {
         current_route = 'home';
         getHomepageData();

@@ -5063,6 +5063,9 @@ img {
           font-size: 28px;
           line-height: 28px;
           font-family: "Calibri-Bold"; }
+          @media screen and (max-width: 767px) {
+            .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .pictogram-and-dcn-usd-price .dcn-amount {
+              font-size: 22px; } }
         .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .pictogram-and-dcn-usd-price .usd-amount {
           color: #888888;
           font-size: 18px;

@@ -1140,6 +1140,9 @@ img {
                         font-size: 28px;
                         line-height: 28px;
                         font-family: "Calibri-Bold";
+                        @include breakpoint($xs) {
+                            font-size: 22px;
+                        }
                     }
                     .usd-amount {
                         color: $solid_gray;
