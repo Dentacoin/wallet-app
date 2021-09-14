@@ -508,13 +508,11 @@ var projectData = {
         },
         buy_page: function () {
             if (window.localStorage.getItem('hide_buy_page_notice') == null && !$('header .camping-buy-page-notice').hasClass('shown')) {
-                setTimeout(function() {
-                    $('header .camping-buy-page-notice').addClass('shown').html('<div class="wrapper fs-0"><figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block icon"><img src="assets/images/attention-icon-white.svg" alt="Attention icon" itemprop="contentUrl"/></figure><div class="inline-block fs-20 fs-xs-16 description">For the moment, you can only buy DCN on the main Ethereum network (used for trading). If you want to stake it or use it for Assurance fees, use the SWAP to DCN2 function after purchase.</div><div class="inline-block close-btn"><a href="javascript:void(0);" class="close-notice fs-30 color-white">×</a></div></div>').fadeIn(500);
-                    $('header .camping-buy-page-notice .close-notice').click(function() {
-                        window.localStorage.setItem('hide_buy_page_notice', 'true');
-                        $('header .camping-buy-page-notice').html('').fadeOut(500);
-                    });
-                }, 3000);
+                $('header .camping-buy-page-notice').addClass('shown').html('<div class="wrapper fs-0"><figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block icon"><img src="assets/images/attention-icon-white.svg" alt="Attention icon" itemprop="contentUrl"/></figure><div class="inline-block fs-20 fs-xs-16 description">For the moment, you can only buy DCN on the main Ethereum network (used for trading). If you want to stake it or use it for Assurance fees, use the SWAP to DCN2 function after purchase.</div><div class="inline-block close-btn"><a href="javascript:void(0);" class="close-notice fs-30 color-white">×</a></div></div>').fadeIn(500);
+                $('header .camping-buy-page-notice .close-notice').click(function() {
+                    window.localStorage.setItem('hide_buy_page_notice', 'true');
+                    $('header .camping-buy-page-notice').html('').fadeOut(500);
+                });
             }
 
             projectData.utils.saveHybridAppCurrentScreen();
@@ -1483,7 +1481,11 @@ var projectData = {
                     if ($('select.current-from').val() == 'eth-l1' && $(this).val() == 'dcn-l2') {
                         projectData.requests.getDentacoinDataByCoingeckoProvider(function(dentacoin_data) {
                             $('.swapping-section .to-box .inputable-line .transfer-to-amount').html(parseInt($('.inputable-amount').val().trim() / dentacoin_data.market_data.current_price.eth));
+                            $('.swapping-section .to-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+l2_dcn_balance.toLocaleString()+'</span> DCN2.0</span>');
                         }, true);
+                    } else if ($('select.current-from').val() == 'eth-l1' && $(this).val() == 'eth-l2') {
+                        $('.swapping-section .to-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+projectData.utils.fromWei(l2_eth_balance, 'ether')+'</span> ETH2.0</span>');
+                        $('.swapping-section .to-box .inputable-line .transfer-to-amount').html($('.inputable-amount').val().trim());
                     } else {
                         $('.swapping-section .to-box .inputable-line .transfer-to-amount').html($('.inputable-amount').val().trim());
                     }
@@ -3513,7 +3515,7 @@ function submitTransactionToBlockchain(web3_provider, transactionType, function_
 
         var pending_history_transaction;
         if (symbol == 'DCN' || symbol == 'DCN2.0') {
-            projectData.requests.getDentacoinDataByCoingeckoProvider(function (request_response) {
+            projectData.requests.getDentacoinDataByCoingeckoProvider(async function (request_response) {
                 pending_history_transaction += projectData.general_logic.buildDentacoinHistoryTransaction(request_response, token_val, to, global_state.account, Math.round((new Date()).getTime() / 1000), transactionHash, true, layer);
 
                 projectData.general_logic.fireGoogleAnalyticsEvent('Pay', 'Next', token_label, token_val);
@@ -3544,7 +3546,7 @@ function submitTransactionToBlockchain(web3_provider, transactionType, function_
                 projectData.general_logic.firePushNotification('Sent: ' + token_val + ' ' + symbol, 'To: ' + formattedTo);
             });
         } else if (symbol == 'ETH' || symbol == 'ETH2.0') {
-            projectData.requests.getEthereumDataByCoingecko(function (request_response) {
+            projectData.requests.getEthereumDataByCoingecko(async function (request_response) {
                 pending_history_transaction += projectData.general_logic.buildEthereumHistoryTransaction(request_response, token_val, to, global_state.account, Math.round((new Date()).getTime() / 1000), transactionHash, true, layer);
 
                 projectData.general_logic.fireGoogleAnalyticsEvent('Pay', 'Next', token_label + 'in USD', Math.floor(parseFloat(token_val) * request_response.market_data.current_price.usd));
