@@ -481,6 +481,8 @@ var projectData = {
                         }
                     });
                 }
+            } else {
+                projectData.general_logic.hideLoader();
             }
 
             $('.fade-in-element').fadeIn(500);
