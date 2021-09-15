@@ -273,6 +273,10 @@ var dApp = {
         }
 
         function continueWithContractInstanceInit() {
+            console.log(typeof(global_state.account) == 'undefined', 'typeof(global_state.account) == undefined');
+            console.log(!projectData.utils.innerAddressCheck(global_state.account), '!projectData.utils.innerAddressCheck(global_state.account)');
+            console.log(typeof(web3) !== 'undefined', 'typeof(web3) !== \'undefined');
+            console.log(window.localStorage.getItem('custom_wallet_over_external_web3_provider') == null, 'window.localStorage.getItem(\'custom_wallet_over_external_web3_provider\') == null');
             if ((typeof(global_state.account) == 'undefined' || !projectData.utils.innerAddressCheck(global_state.account)) && typeof(web3) !== 'undefined' && window.localStorage.getItem('custom_wallet_over_external_web3_provider') == null) {
                 $('.logo-and-settings-row .open-settings-col').remove();
             }
