@@ -285,7 +285,14 @@ var dApp = {
 
             //init contract
             if (typeof(global_state.account) != 'undefined' && projectData.utils.innerAddressCheck(global_state.account)) {
+
+                console.log(typeof(web3) === 'undefined', 'typeof(web3) === \'undefined\'');
+                console.log(window.localStorage.getItem('custom_wallet_over_external_web3_provider') == 'true', 'window.localStorage.getItem(custom_wallet_over_external_web3_provider) == true');
+                console.log($('.logo-and-settings-row .open-settings-col').length == 0, '$(\'.logo-and-settings-row .open-settings-col\').length == 0)');
+                console.log($('.logo-and-settings-row').length > 0, '$(\'.logo-and-settings-row\').length > 0');
+                console.log((typeof(web3) === 'undefined' || window.localStorage.getItem('custom_wallet_over_external_web3_provider') == 'true') && $('.logo-and-settings-row .open-settings-col').length == 0 && $('.logo-and-settings-row').length > 0);
                 if ((typeof(web3) === 'undefined' || window.localStorage.getItem('custom_wallet_over_external_web3_provider') == 'true') && $('.logo-and-settings-row .open-settings-col').length == 0 && $('.logo-and-settings-row').length > 0) {
+                    console.log('show');
                     $('.logo-and-settings-row').append('<div class="col-xs-6 inline-block open-settings-col"><figure itemscope="" itemtype="http://schema.org/Organization" class="text-right"><a href="javascript:void(0)" itemprop="url" class="open-wallet-menu"><ul><li></li><li></li><li></li></ul></a></figure></div>');
                 }
 
