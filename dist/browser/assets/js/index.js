@@ -278,15 +278,14 @@ var dApp = {
             console.log(typeof(web3) !== 'undefined', 'typeof(web3) !== \'undefined');
             console.log(window.localStorage.getItem('custom_wallet_over_external_web3_provider') == null, 'window.localStorage.getItem(\'custom_wallet_over_external_web3_provider\') == null');
             console.log((typeof(global_state.account) == 'undefined' || !projectData.utils.innerAddressCheck(global_state.account)) && typeof(web3) !== 'undefined' && window.localStorage.getItem('custom_wallet_over_external_web3_provider') == null, 'whole conidition');
-            if ((typeof(global_state.account) == 'undefined' || !projectData.utils.innerAddressCheck(global_state.account)) && typeof(web3) !== 'undefined' && window.localStorage.getItem('custom_wallet_over_external_web3_provider') == null) {
-                console.log('but how');
+            if ((typeof(global_state.account) == 'undefined' || !projectData.utils.innerAddressCheck(global_state.account)) || (typeof(web3) !== 'undefined' && window.localStorage.getItem('custom_wallet_over_external_web3_provider') == null)) {
+                console.log('hide menu');
                 $('.logo-and-settings-row .open-settings-col').remove();
             }
 
             //init contract
             if (typeof(global_state.account) != 'undefined' && projectData.utils.innerAddressCheck(global_state.account)) {
-
-                console.log(typeof(web3) === 'undefined', 'typeof(web3) === \'undefined\'');
+                /*console.log(typeof(web3) === 'undefined', 'typeof(web3) === \'undefined\'');
                 console.log(window.localStorage.getItem('custom_wallet_over_external_web3_provider') == 'true', 'window.localStorage.getItem(custom_wallet_over_external_web3_provider) == true');
                 console.log($('.logo-and-settings-row .open-settings-col').length == 0, '$(\'.logo-and-settings-row .open-settings-col\').length == 0)');
                 console.log($('.logo-and-settings-row').length > 0, '$(\'.logo-and-settings-row\').length > 0');
@@ -294,7 +293,7 @@ var dApp = {
                 if ((typeof(web3) === 'undefined' || window.localStorage.getItem('custom_wallet_over_external_web3_provider') == 'true') && $('.logo-and-settings-row .open-settings-col').length == 0 && $('.logo-and-settings-row').length > 0) {
                     console.log('show');
                     $('.logo-and-settings-row').append('<div class="col-xs-6 inline-block open-settings-col"><figure itemscope="" itemtype="http://schema.org/Organization" class="text-right"><a href="javascript:void(0)" itemprop="url" class="open-wallet-menu"><ul><li></li><li></li><li></li></ul></a></figure></div>');
-                }
+                }*/
 
                 // get the contract artifact file and use it to instantiate a truffle contract abstraction
                 getL1Instance = getContractInstance(dApp.web3_l1);
@@ -2321,7 +2320,7 @@ var projectData = {
                         }
                     }
 
-                    function proceedWithOnlyL1TransactionHistoryBuilding() {
+                    /*function proceedWithOnlyL1TransactionHistoryBuilding() {
                         if (merged_events_arr.length || window.localStorage.getItem('tx_history') != null) {
                             //sorting the mixed array by blockNumber
                             projectData.utils.sortByKey(merged_events_arr, 'blockNumber');
@@ -2480,7 +2479,7 @@ var projectData = {
                         } else {
                             $('.camping-transaction-history').html('<h2 class="lato-bold fs-16 text-center color-white"><span class="renew-on-lang-switch" data-slug="no-tx">'+$('.translates-holder').attr('no-tx')+'</span></h2>');
                         }
-                    }
+                    }*/
                 });
             });
         },
