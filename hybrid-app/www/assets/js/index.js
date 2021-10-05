@@ -4449,7 +4449,7 @@ $(document).on('click', 'nav.sidenav .log-out', function () {
             } else {
                 window.localStorage.clear();
             }
-            
+
             refreshApp();
             const event = new CustomEvent('redirectToHomepage');
             document.dispatchEvent(event);
@@ -5140,56 +5140,60 @@ function router() {
         if (window.localStorage.getItem('current_account') != null && is_hybrid && enableSavingMobileId && window.localStorage.getItem('saved_mobile_id') == null) {
             enableSavingMobileId = false;
 
-            if  (window.localStorage.getItem('mobile_device_id') == null) {
-                if (basic.getMobileOperatingSystem() == 'Android') {
-                    window.FirebasePlugin.hasPermission(function(hasPermission) {
-                        if (basic.property_exists(hasPermission, 'isEnabled') && !hasPermission.isEnabled) {
-                            // ask for push notifications permission
-                            window.FirebasePlugin.grantPermission();
-                        } else{
-                            console.log('Permission already granted');
-                        }
-                    });
+            setTimeout(async function() {
+                if  (window.localStorage.getItem('mobile_device_id') == null) {
+                    console.log(111111111);
+                    if (basic.getMobileOperatingSystem() == 'Android') {
+                        window.FirebasePlugin.hasPermission(function(hasPermission) {
+                            if (basic.property_exists(hasPermission, 'isEnabled') && !hasPermission.isEnabled) {
+                                // ask for push notifications permission
+                                window.FirebasePlugin.grantPermission();
+                            } else{
+                                console.log('Permission already granted');
+                            }
+                        });
 
-                    window.FirebasePlugin.getToken(function(token) {
-                        // save this server-side and use it to push notifications to this device
-                        window.localStorage.setItem('mobile_device_id', token);
-                        proceedWithTokenSaving();
-                    }, function(error) {
-                        enableSavingMobileId = true;
-                        console.error(error, 'window.FirebasePlugin.getToken');
-                    });
-                } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
-                    const wasPermissionGiven = await FCM.requestPushPermission({
-                        ios9Support: {
-                            timeout: 10,  // How long it will wait for a decision from the user before returning `false`
-                            interval: 0.3 // How long between each permission verification
-                        }
-                    });
+                        window.FirebasePlugin.getToken(function(token) {
+                            // save this server-side and use it to push notifications to this device
+                            window.localStorage.setItem('mobile_device_id', token);
+                            proceedWithTokenSaving();
+                        }, function(error) {
+                            enableSavingMobileId = true;
+                            console.error(error, 'window.FirebasePlugin.getToken');
+                        });
+                    } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
+                        const wasPermissionGiven = await FCM.requestPushPermission({
+                            ios9Support: {
+                                timeout: 10,  // How long it will wait for a decision from the user before returning `false`
+                                interval: 0.3 // How long between each permission verification
+                            }
+                        });
 
-                    console.log(wasPermissionGiven, 'wasPermissionGiven');
-                    if (wasPermissionGiven) {
-                        var FCMToken = await FCM.getToken();
-                        window.localStorage.setItem('mobile_device_id', FCMToken);
-                        proceedWithTokenSaving();
-                    } else {
-                        enableSavingMobileId = true;
+                        console.log(wasPermissionGiven, 'wasPermissionGiven');
+                        if (wasPermissionGiven) {
+                            var FCMToken = await FCM.getToken();
+                            window.localStorage.setItem('mobile_device_id', FCMToken);
+                            proceedWithTokenSaving();
+                        } else {
+                            enableSavingMobileId = true;
+                        }
                     }
+                } else if (window.localStorage.getItem('mobile_device_id') != null) {
+                    console.log(2222222222);
+                    proceedWithTokenSaving();
                 }
-            } else if (window.localStorage.getItem('mobile_device_id') != null) {
-                proceedWithTokenSaving();
-            }
 
-            function proceedWithTokenSaving() {
-                projectData.general_logic.addMobileDeviceId(function(response) {
-                    if (response.success) {
-                        console.log('Mobile device id saved.');
-                        window.localStorage.setItem('saved_mobile_id', true);
-                    } else {
-                        enableSavingMobileId = true;
-                    }
-                });
-            }
+                function proceedWithTokenSaving() {
+                    projectData.general_logic.addMobileDeviceId(function(response) {
+                        if (response.success) {
+                            console.log('Mobile device id saved.');
+                            window.localStorage.setItem('saved_mobile_id', true);
+                        } else {
+                            enableSavingMobileId = true;
+                        }
+                    });
+                }
+            }, 3000);
         }
     });
 
