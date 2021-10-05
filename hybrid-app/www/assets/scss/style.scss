@@ -1,0 +1,17 @@
+// Globals
+@import "additionals/fonts";
+@import "additionals/mixins";
+@import "additionals/animations";
+@import "additionals/responsive";
+@import "additionals/variables";
+@import "additionals/modules";
+
+@import "global/global";
+@import "layout/header";
+@import "layout/footer";
+
+@import "pages/homepage";
+@import "pages/buy";
+@import "pages/send";
+@import "pages/spend";
+@import "pages/swap";

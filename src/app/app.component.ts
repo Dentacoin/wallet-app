@@ -14,5 +14,9 @@ export class AppComponent {
     hybrid = environment.hybrid;
     network = environment.network;
 
-    constructor(public languageService: LanguageService, public translate: TranslateService, public redirectsService: RedirectsService) {}
+    constructor(public languageService: LanguageService, public translate: TranslateService, public redirectsService: RedirectsService) {
+        document.addEventListener('redirectToHomepage', (e: any) => {
+            redirectsService.toHomepage();
+        });
+    }
 }

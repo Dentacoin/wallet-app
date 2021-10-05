@@ -1,0 +1,170 @@
+app-homepage {
+    .main-wrapper {
+        width: calc(100% - 20px);
+        margin: 0 auto;
+        padding-left: 0;
+        padding-right: 0;
+        .top-side {
+            background-color: #00afe1;
+            color: white;
+            @include rounded(20px 20px 0 0);
+            #qrcode {
+                width: 180px;
+                background-image: url(../images/qr-border.png);
+                background-repeat: no-repeat;
+                background-size: cover;
+                padding: 10px;
+            }
+            .refresh-account-data {
+                font-size: 0;
+                width: 45px;
+                height: 45px;
+                display: inline-block;
+                padding: 10px;
+                background: #00c5e7;
+                @include rounded(50%);
+                @include box-shadow(0 6px 10px 0px rgba(0, 0, 0, 0.3));
+            }
+            @include breakpoint($xs) {
+                @include rounded(15px 15px 0 0);
+            }
+        }
+        .custom-background {
+            position: relative;
+            .blue-side {
+                width: 100%;
+                height: 50%;
+                position: absolute;
+                top: 0;
+                left: 0;
+                z-index: 45;
+                background-color: #00afe1;
+            }
+            .white-side {
+                width: 100%;
+                height: 50%;
+                position: absolute;
+                top: 50%;
+                left: 0;
+                z-index: 45;
+                background-color: white;
+            }
+            .eth-address-container {
+                padding-top: 5px;
+                padding-bottom: 5px;
+                margin: 0 -15px;
+                width: calc(100% + 30px);
+                z-index: 50;
+                position: relative;
+                background: -moz-linear-gradient(top, #00c5e7 0%, #00a8df 100%);
+                background: -webkit-linear-gradient(top, #00c5e7 0%,#00a8df 100%);
+                background: linear-gradient(to bottom, #00c5e7 0%,#00a8df 100%);
+                filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00c5e7', endColorstr='#00a8df',GradientType=0 );
+                display: block;
+                @include rounded(30px);
+                @include box-shadow(0 6px 10px 0px rgba(0, 0, 0, 0.3));
+                .address-value {
+                    border: 0;
+                    background: transparent;
+                    color: white;
+                    width: 400px;
+                    font-weight: 500;
+                    @include breakpoint($xs) {
+                        width: 260px;
+                        font-size: 12px;
+                    }
+                }
+                .qr-code-icon {
+                    display: none;
+                    @include breakpoint($xs) {
+                        display: inline-block;
+                    }
+                }
+                @include breakpoint($xs) {
+                    .fix-vertical-alignment-on-mobile {
+                        margin-top: -10px;
+                        .inline-block {
+                            vertical-align: bottom;
+                        }
+                    }
+                }
+                @include breakpoint($xxs) {
+                    .address-value {
+                        font-size: 10px !important;
+                        width: 230px;
+                        text-align: center;
+                    }
+                    .copy-icon, .qr-code-icon {
+                        img {
+                            max-width: 20px !important;
+                        }
+                    }
+                }
+            }
+        }
+        .bottom-side {
+            background-color: white;
+            @include rounded(0 0 20px 20px);
+            .single-currency {
+                border-bottom: 2px solid #f2f2f2;
+                .eth-logo {
+                    max-width: 25px;
+                }
+                .currency-info, .currency-values {
+                    width: 50%;
+                }
+                &:last-child {
+                    border: 0;
+                }
+            }
+            .join-the-future {
+                margin: 10px -65px 0;
+                position: relative;
+                z-index: 5;
+                @include rounded(15px);
+                @include box-shadow(0 5px 15px 1px rgba(0, 0, 0, 0.3));
+                .close-btn {
+                    position: absolute;
+                    top: 10px;
+                    right: 15px;
+                    z-index: 100;
+                }
+                .center-content {
+                    width: calc(100% - 280px);
+                    padding: 0 20px;
+                }
+                .learn-more-btn {
+                    width: 140px;
+                    text-align: right;
+                }
+                @include breakpoint($xs) {
+                    margin: 0 -15px;
+                    border-radius: 0;
+                    .center-content {
+                        width: calc(100% - 100px);
+                    }
+                    .learn-more-btn {
+                        display: block;
+                        margin: 0 auto;
+                    }
+                }
+            }
+        }
+        @include breakpoint($xs) {
+            margin-bottom: 20px;
+            width: 100%;
+            .custom-background {
+                .eth-address-container {
+                    margin: 0 -10px;
+                    width: calc(100% + 20px);
+                }
+            }
+            .bottom-side {
+                @include rounded(0 0 15px 15px);
+            }
+        }
+    }
+    .fade-in-element {
+        display: none;
+    }
+}
