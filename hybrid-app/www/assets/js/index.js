@@ -5160,10 +5160,14 @@ function router() {
                         }
                     });
 
-                    var FCMToken = await FCM.getToken();
-                    console.log(FCMToken, 'FCMToken');
-                    window.localStorage.setItem('mobile_device_id', FCMToken);
-                    proceedWithTokenSaving();
+                    console.log(wasPermissionGiven, 'wasPermissionGiven');
+                    if (wasPermissionGiven) {
+                        var FCMToken = await FCM.getToken();
+                        window.localStorage.setItem('mobile_device_id', FCMToken);
+                        proceedWithTokenSaving();
+                    } else {
+                        enableSavingMobileId = true;
+                    }
                 }
             } else if (window.localStorage.getItem('mobile_device_id') != null) {
                 proceedWithTokenSaving();
