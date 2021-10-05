@@ -253,9 +253,12 @@ var dApp = {
             console.log(typeof(web3) !== 'undefined', 'typeof(web3) !== \'undefined');
             console.log(window.localStorage.getItem('custom_wallet_over_external_web3_provider') == null, 'window.localStorage.getItem(\'custom_wallet_over_external_web3_provider\') == null');
             console.log((typeof(global_state.account) == 'undefined' || !projectData.utils.innerAddressCheck(global_state.account)) && typeof(web3) !== 'undefined' && window.localStorage.getItem('custom_wallet_over_external_web3_provider') == null, 'whole conidition');
+
             if ((typeof(global_state.account) == 'undefined' || !projectData.utils.innerAddressCheck(global_state.account)) || (typeof(web3) !== 'undefined' && window.localStorage.getItem('custom_wallet_over_external_web3_provider') == null)) {
                 console.log('hide menu');
-                $('.logo-and-settings-row .open-settings-col').remove();
+                $('.logo-and-settings-row .open-settings-col').addClass('hide');
+            } else {
+                $('.logo-and-settings-row .open-settings-col').removeClass('hide');
             }
 
             //init contract
@@ -3095,14 +3098,14 @@ var projectData = {
                 }
             });
         },
-        addMobileDeviceId: function (mobile_device_id, callback) {
+        addMobileDeviceId: function (callback) {
             $.ajax({
                 type: 'POST',
                 url: 'https://assurance.dentacoin.com/save-mobile-id',
                 dataType: 'json',
                 data: {
                     address: projectData.utils.checksumAddress(window.localStorage.getItem('current_account')),
-                    mobile_device_id: mobile_device_id
+                    mobile_device_id: window.localStorage.getItem('mobile_device_id')
                 },
                 success: function(response) {
                     callback(response);
@@ -5012,6 +5015,7 @@ function checkIfLoadingFromMobileBrowser() {
 
 //custom router camping for html changes, because old Android versions do not recognize Angular router
 var current_route;
+var enableSavingMobileId = true;
 function router() {
     if ($('.main-holder app-homepage').length) {
         current_route = 'home';
@@ -5126,50 +5130,54 @@ function router() {
         }
 
         // saving mobile_device_id to send push notifications
-        if (window.localStorage.getItem('current_account') != null && window.localStorage.getItem('saved_mobile_id') == null && is_hybrid) {
-            window.localStorage.setItem('saved_mobile_id', true);
+        if (window.localStorage.getItem('current_account') != null && is_hybrid && enableSavingMobileId && window.localStorage.getItem('saved_mobile_id') == null) {
+            enableSavingMobileId = false;
 
-            if (basic.getMobileOperatingSystem() == 'Android') {
-                window.FirebasePlugin.hasPermission(function(hasPermission) {
-                    if (basic.property_exists(hasPermission, 'isEnabled') && !hasPermission.isEnabled) {
-                        // ask for push notifications permission
-                        window.FirebasePlugin.grantPermission();
-                    } else{
-                        console.log('Permission already granted');
-                    }
-                });
-
-                window.FirebasePlugin.getToken(function(token) {
-                    // save this server-side and use it to push notifications to this device
-                    proceedWithTokenSaving(token);
-                }, function(error) {
-                    window.localStorage.removeItem('saved_mobile_id');
-                    console.error(error, 'window.FirebasePlugin.getToken');
-                });
-            } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
-                const wasPermissionGiven = await FCM.requestPushPermission({
-                    ios9Support: {
-                        timeout: 10,  // How long it will wait for a decision from the user before returning `false`
-                        interval: 0.3 // How long between each permission verification
-                    }
-                });
-
-                var FCMToken = await FCM.getToken();
-                proceedWithTokenSaving(FCMToken);
-            }
-
-            function proceedWithTokenSaving(token) {
-                if (token != null && token != undefined && token != '') {
-                    projectData.general_logic.addMobileDeviceId(token, function(response) {
-                        if (response.success) {
-                            console.log('Mobile device id saved.');
-                        } else {
-                            window.localStorage.removeItem('saved_mobile_id');
+            if  (window.localStorage.getItem('mobile_device_id') == null) {
+                if (basic.getMobileOperatingSystem() == 'Android') {
+                    window.FirebasePlugin.hasPermission(function(hasPermission) {
+                        if (basic.property_exists(hasPermission, 'isEnabled') && !hasPermission.isEnabled) {
+                            // ask for push notifications permission
+                            window.FirebasePlugin.grantPermission();
+                        } else{
+                            console.log('Permission already granted');
                         }
                     });
-                } else {
-                    window.localStorage.removeItem('saved_mobile_id');
+
+                    window.FirebasePlugin.getToken(function(token) {
+                        // save this server-side and use it to push notifications to this device
+                        window.localStorage.setItem('mobile_device_id', token);
+                        proceedWithTokenSaving();
+                    }, function(error) {
+                        enableSavingMobileId = true;
+                        console.error(error, 'window.FirebasePlugin.getToken');
+                    });
+                } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
+                    const wasPermissionGiven = await FCM.requestPushPermission({
+                        ios9Support: {
+                            timeout: 10,  // How long it will wait for a decision from the user before returning `false`
+                            interval: 0.3 // How long between each permission verification
+                        }
+                    });
+
+                    var FCMToken = await FCM.getToken();
+                    console.log(FCMToken, 'FCMToken');
+                    window.localStorage.setItem('mobile_device_id', FCMToken);
+                    proceedWithTokenSaving();
                 }
+            } else if (window.localStorage.getItem('mobile_device_id') != null) {
+                proceedWithTokenSaving();
+            }
+
+            function proceedWithTokenSaving() {
+                projectData.general_logic.addMobileDeviceId(function(response) {
+                    if (response.success) {
+                        console.log('Mobile device id saved.');
+                        window.localStorage.setItem('saved_mobile_id', true);
+                    } else {
+                        enableSavingMobileId = true;
+                    }
+                });
             }
         }
     });
