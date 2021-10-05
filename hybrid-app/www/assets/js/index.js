@@ -73,55 +73,28 @@ document.addEventListener('deviceready', async function () {
     }, false);
     //=================================== /internet connection check ONLY for MOBILE DEVICES ===================================
 
-    // save firebase mobile ID
-    if (basic.getMobileOperatingSystem() == 'Android') {
-        window.FirebasePlugin.hasPermission(function(hasPermission) {
-            console.log(hasPermission, 'hasPermission');
-            if (basic.property_exists(hasPermission, 'isEnabled') && !hasPermission.isEnabled) {
-                // ask for push notifications permission
-                window.FirebasePlugin.grantPermission();
-            } else{
-                console.log('Permission already granted');
-            }
-        });
-
-        window.FirebasePlugin.getToken(function(token) {
-            console.error(token, 'window.FirebasePlugin.getToken');
-            // save this server-side and use it to push notifications to this device
-            localStorage.setItem('mobile_device_id', token);
-        }, function(error) {
-            console.error(error, 'window.FirebasePlugin.getToken');
-        });
-
-        // camp for push notifications when app is running in foreground
-        window.FirebasePlugin.onNotificationOpen(function(notification) {
-            console.log(notification, 'notification');
-            if (basic.property_exists(notification, 'title') && basic.property_exists(notification, 'body')) {
-                projectData.general_logic.firePushNotification(notification.title, notification.body);
-            }
-        }, function(error) {
-            console.error(error, 'error');
-        });
-    } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
-        const wasPermissionGiven = await FCM.requestPushPermission({
-            ios9Support: {
-                timeout: 10,  // How long it will wait for a decision from the user before returning `false`
-                interval: 0.3 // How long between each permission verification
-            }
-        });
-
-        console.log(wasPermissionGiven, 'wasPermissionGiven');
-        var FCMToken = await FCM.getToken();
-        console.log(FCMToken, 'FCMToken');
-        localStorage.setItem('mobile_device_id', FCMToken);
-
-        // camp for push notifications when app is running in foreground
-        FCM.onNotification(function(notification){
-            console.log(notification, 'notification');
-            if (basic.property_exists(notification, 'google.c.sender.id') && basic.property_exists(notification, 'title') && basic.property_exists(notification, 'body')) {
-                projectData.general_logic.firePushNotification(notification.title, notification.body);
-            }
-        });
+    // saving mobile_device_id to send push notifications
+    if (window.localStorage.getItem('current_account') != null && is_hybrid) {
+        // save firebase mobile ID
+        if (basic.getMobileOperatingSystem() == 'Android') {
+            // camp for push notifications when app is running in foreground
+            window.FirebasePlugin.onNotificationOpen(function (notification) {
+                console.log(notification, 'notification');
+                if (basic.property_exists(notification, 'title') && basic.property_exists(notification, 'body')) {
+                    projectData.general_logic.firePushNotification(notification.title, notification.body);
+                }
+            }, function (error) {
+                console.error(error, 'error');
+            });
+        } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
+            // camp for push notifications when app is running in foreground
+            FCM.onNotification(function (notification) {
+                console.log(notification, 'notification');
+                if (basic.property_exists(notification, 'google.c.sender.id') && basic.property_exists(notification, 'title') && basic.property_exists(notification, 'body')) {
+                    projectData.general_logic.firePushNotification(notification.title, notification.body);
+                }
+            });
+        }
     }
 }, false);
 
@@ -299,7 +272,7 @@ var dApp = {
 
                 // get the contract artifact file and use it to instantiate a truffle contract abstraction
                 getL1Instance = getContractInstance(dApp.web3_l1);
-                L1DCNContract = getL1Instance(config_variable.l1.dcn_contract_abi, config_variable.l1.dcn_contract_address);
+                L1DCNContract = getL1Instance(config_variable.l1.abi_definitions.dcn_contract_abi, config_variable.l1.addresses.dcn_contract_address);
                 getL2Instance = getContractInstance(dApp.web3_l2);
                 L2DCNContract = getL2Instance(config_variable.l2.abi_definitions.dcn_contract_abi, config_variable.l2.addresses.dcn_contract_address);
                 OVM_L1CrossDomainMessengerContract = getL2Instance(config_variable.l2.abi_definitions.OVM_L1CrossDomainMessenger_abi, config_variable.l2.addresses.OVM_L1CrossDomainMessenger_address);
@@ -1160,7 +1133,7 @@ var projectData = {
                                                             // adding 25 percent to the gas limit just in case
                                                             gasLimit = Math.round(gasLimit + (gasLimit * 0.25));
 
-                                                            projectData.general_logic.openTxConfirmationPopup('Send confirmation', config_variable.l1.dcn_contract_address, amount, 'DCN', gasLimit, L1DCNContract.methods.transfer(sending_to_address, amount).encodeABI(), 'l1', 'transfer', null, null, sending_to_address);
+                                                            projectData.general_logic.openTxConfirmationPopup('Send confirmation', config_variable.l1.addresses.dcn_contract_address, amount, 'DCN', gasLimit, L1DCNContract.methods.transfer(sending_to_address, amount).encodeABI(), 'l1', 'transfer', null, null, sending_to_address);
                                                         }
                                                     }, 500);
                                                 } else if ($('select#active-crypto').val() == 'eth-l1') {
@@ -1586,7 +1559,7 @@ var projectData = {
                                     projectData.general_logic.hideLoader();
                                     basic.showAlert('You don\'t have enough DCN balance to complete the swap.', '', true);
                                 } else {
-                                    var to = projectData.utils.checksumAddress('0xa4D508dC72f5ce2B688d05ACFfe8E1AeF326831C');
+                                    var to = projectData.utils.checksumAddress(config.l1.addresses.dcn_to_l2_dcn_deposit_address);
                                     var gasLimit = await L1DCNContract.methods.transfer(to, amount).estimateGas({
                                         from: global_state.account
                                     });
@@ -1600,7 +1573,7 @@ var projectData = {
                                     projectData.general_logic.hideLoader();
                                     basic.showAlert('You don\'t have enough ETH balance to complete the swap.', '', true);
                                 } else {
-                                    var to = projectData.utils.checksumAddress('0x7cFF2b3b3702ED7deCc57fAa32940DCf855D2d29');
+                                    var to = projectData.utils.checksumAddress(config.l1.addresses.eth_to_l2_eth_deposit_address);
                                     var gasLimit = await dApp.web3_l1.eth.estimateGas({
                                         to: to
                                     });
@@ -2589,7 +2562,7 @@ var projectData = {
                         params: {
                             type: 'ERC20', // Initially only supports ERC20, but eventually more!
                             options: {
-                                address: '0x08d32b0da63e2C3bcF8019c9c5d849d7a9d791e6', // The address that the token is at.
+                                address: config_variable.l1.addresses.dcn_contract_address, // The address that the token is at.
                                 symbol: 'DCN', // A ticker symbol or shorthand, up to 5 chars.
                                 decimals: 0, // The number of decimals in the token
                                 image: 'https://dentacoin.com/assets/images/logo.svg', // A string url of the token logo
@@ -3525,7 +3498,7 @@ function submitTransactionToBlockchain(web3_provider, transactionType, function_
     var layer;
     var etherscanDomain;
     if (symbol == 'DCN') {
-        transaction_obj.to = config_variable.l1.dcn_contract_address;
+        transaction_obj.to = config_variable.l1.addresses.dcn_contract_address;
         transaction_obj.chainId = config_variable.l1.chain_id;
         layer = 'L1';
         token_label = 'Dentacoin tokens';
@@ -5154,43 +5127,42 @@ function router() {
 
         // saving mobile_device_id to send push notifications
         if (window.localStorage.getItem('current_account') != null && window.localStorage.getItem('saved_mobile_id') == null && is_hybrid) {
+            // save firebase mobile ID
             if (basic.getMobileOperatingSystem() == 'Android') {
-                window.localStorage.setItem('saved_mobile_id', true);
                 window.FirebasePlugin.hasPermission(function(hasPermission) {
-                    if (basic.property_exists(hasPermission, 'isEnabled') && hasPermission.isEnabled) {
-                        window.FirebasePlugin.getToken(function(token) {
-                            console.error(token, 'window.FirebasePlugin.getToken');
-
-                            // if permission is given save the firebase mobile device id
-                            projectData.general_logic.addMobileDeviceId(token, function(response) {
-                                if (response.success) {
-                                    console.log('Mobile device id saved.');
-                                } else {
-                                    window.localStorage.removeItem('saved_mobile_id');
-                                }
-                            });
-                        }, function(error) {
-                            console.error(error, 'window.FirebasePlugin.getToken');
-                        });
-                    } else {
-                        window.localStorage.removeItem('saved_mobile_id');
+                    if (basic.property_exists(hasPermission, 'isEnabled') && !hasPermission.isEnabled) {
+                        // ask for push notifications permission
+                        window.FirebasePlugin.grantPermission();
+                    } else{
+                        console.log('Permission already granted');
                     }
                 });
+
+                window.FirebasePlugin.getToken(function(token) {
+                    // save this server-side and use it to push notifications to this device
+                    proceedWithTokenSaving(token);
+                }, function(error) {
+                    console.error(error, 'window.FirebasePlugin.getToken');
+                });
             } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
-                window.localStorage.setItem('saved_mobile_id', true);
-                if (await FCM.hasPermission()) {
-                    var FCMToken = await FCM.getToken();
-                    // if permission is given save the firebase mobile device id
-                    projectData.general_logic.addMobileDeviceId(FCMToken, function(response) {
-                        if (response.success) {
-                            console.log('Mobile device id saved.');
-                        } else {
-                            window.localStorage.removeItem('saved_mobile_id');
-                        }
-                    })
-                } else {
-                    window.localStorage.removeItem('saved_mobile_id');
-                }
+                const wasPermissionGiven = await FCM.requestPushPermission({
+                    ios9Support: {
+                        timeout: 10,  // How long it will wait for a decision from the user before returning `false`
+                        interval: 0.3 // How long between each permission verification
+                    }
+                });
+
+                var FCMToken = await FCM.getToken();
+                proceedWithTokenSaving(FCMToken);
+            }
+
+            function proceedWithTokenSaving(token) {
+                projectData.general_logic.addMobileDeviceId(token, function(response) {
+                    if (response.success) {
+                        window.localStorage.setItem('saved_mobile_id', true);
+                        console.log('Mobile device id saved.');
+                    }
+                });
             }
         }
     });
