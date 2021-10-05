@@ -1559,7 +1559,7 @@ var projectData = {
                                     projectData.general_logic.hideLoader();
                                     basic.showAlert('You don\'t have enough DCN balance to complete the swap.', '', true);
                                 } else {
-                                    var to = projectData.utils.checksumAddress(config.l1.addresses.dcn_to_l2_dcn_deposit_address);
+                                    var to = projectData.utils.checksumAddress(config_variable.l1.addresses.dcn_to_l2_dcn_deposit_address);
                                     var gasLimit = await L1DCNContract.methods.transfer(to, amount).estimateGas({
                                         from: global_state.account
                                     });
@@ -1573,7 +1573,7 @@ var projectData = {
                                     projectData.general_logic.hideLoader();
                                     basic.showAlert('You don\'t have enough ETH balance to complete the swap.', '', true);
                                 } else {
-                                    var to = projectData.utils.checksumAddress(config.l1.addresses.eth_to_l2_eth_deposit_address);
+                                    var to = projectData.utils.checksumAddress(config_variable.l1.addresses.eth_to_l2_eth_deposit_address);
                                     var gasLimit = await dApp.web3_l1.eth.estimateGas({
                                         to: to
                                     });
@@ -5127,7 +5127,8 @@ function router() {
 
         // saving mobile_device_id to send push notifications
         if (window.localStorage.getItem('current_account') != null && window.localStorage.getItem('saved_mobile_id') == null && is_hybrid) {
-            // save firebase mobile ID
+            window.localStorage.setItem('saved_mobile_id', true);
+
             if (basic.getMobileOperatingSystem() == 'Android') {
                 window.FirebasePlugin.hasPermission(function(hasPermission) {
                     if (basic.property_exists(hasPermission, 'isEnabled') && !hasPermission.isEnabled) {
@@ -5142,6 +5143,7 @@ function router() {
                     // save this server-side and use it to push notifications to this device
                     proceedWithTokenSaving(token);
                 }, function(error) {
+                    window.localStorage.removeItem('saved_mobile_id');
                     console.error(error, 'window.FirebasePlugin.getToken');
                 });
             } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
@@ -5157,12 +5159,17 @@ function router() {
             }
 
             function proceedWithTokenSaving(token) {
-                projectData.general_logic.addMobileDeviceId(token, function(response) {
-                    if (response.success) {
-                        window.localStorage.setItem('saved_mobile_id', true);
-                        console.log('Mobile device id saved.');
-                    }
-                });
+                if (token != null && token != undefined && token != '') {
+                    projectData.general_logic.addMobileDeviceId(token, function(response) {
+                        if (response.success) {
+                            console.log('Mobile device id saved.');
+                        } else {
+                            window.localStorage.removeItem('saved_mobile_id');
+                        }
+                    });
+                } else {
+                    window.localStorage.removeItem('saved_mobile_id');
+                }
             }
         }
     });
