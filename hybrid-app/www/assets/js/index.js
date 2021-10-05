@@ -12,10 +12,6 @@ if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel
     inAppBrowserSettings = 'location=no,hardwareback=no,zoom=no,toolbarposition=top,closebuttoncaption=Back,presentationstyle=fullscreen,fullscreen=yes';
 }
 
-document.addEventListener('touchmove', function() {
-    console.log($(window).scrollTop());
-});
-
 console.log("( ͡° ͜ʖ ͡°) I see you.");
 
 $(document).ready(function () {
@@ -400,6 +396,9 @@ var projectData = {
                                 refreshAccountDataButtonLogic();
                             });
 
+                            document.removeEventListener('touchmove', refreshAccountDataOnTopTouchmove);
+                            document.addEventListener('touchmove', refreshAccountDataOnTopTouchmove);
+
                             projectData.general_logic.hideLoader();
                         });
 
@@ -420,6 +419,31 @@ var projectData = {
                     }, 1000);
                 }
                 refreshAccountDataButtonLogic();
+
+                var scrollsArr = [];
+                function refreshAccountDataOnTopTouchmove() {
+                    console.log($(window).scrollTop());
+                    scrollsArr.push($(window).scrollTop());
+                    if (basic.getMobileOperatingSystem() == 'Android') {
+                        if (scrollsArr.length > 5) {
+                            if (scrollsArr[scrollsArr.length - 1] == 0 && scrollsArr[scrollsArr.length - 2] == 0 && scrollsArr[scrollsArr.length - 3] == 0 && scrollsArr[scrollsArr.length - 4] == 0 && scrollsArr[scrollsArr.length - 5] == 0) {
+                                document.removeEventListener('touchmove', refreshAccountDataOnTopTouchmove);
+                                projectData.general_logic.showLoader();
+                                refreshAccountDataButtonLogic();
+                            }
+                        }
+
+                    } else if (basic.getMobileOperatingSystem() == 'iOS') {
+                        // only iphones without ipads
+                        if (scrollsArr.length > 5) {
+                            if (scrollsArr[scrollsArr.length - 1] < 0 && scrollsArr[scrollsArr.length - 2] < 0 && scrollsArr[scrollsArr.length - 3] < 0 && scrollsArr[scrollsArr.length - 4] < 0 && scrollsArr[scrollsArr.length - 5] < 0) {
+                                document.removeEventListener('touchmove', refreshAccountDataOnTopTouchmove);
+                                projectData.general_logic.showLoader();
+                                refreshAccountDataButtonLogic();
+                            }
+                        }
+                    }
+                }
 
                 $('body').addClass('overflow-hidden');
                 var window_width = $(window).width();
@@ -3098,14 +3122,14 @@ var projectData = {
                 }
             });
         },
-        addMobileDeviceId: function (callback) {
+        addMobileDeviceId: function (mobile_device_id, callback) {
             $.ajax({
                 type: 'POST',
                 url: 'https://assurance.dentacoin.com/save-mobile-id',
                 dataType: 'json',
                 data: {
                     address: projectData.utils.checksumAddress(window.localStorage.getItem('current_account')),
-                    mobile_device_id: window.localStorage.getItem('mobile_device_id')
+                    mobile_device_id: mobile_device_id
                 },
                 success: function(response) {
                     callback(response);
@@ -5134,14 +5158,20 @@ function router() {
                 window.localStorage.setItem('saved_mobile_id', true);
                 window.FirebasePlugin.hasPermission(function(hasPermission) {
                     if (basic.property_exists(hasPermission, 'isEnabled') && hasPermission.isEnabled) {
-                        // if permission is given save the firebase mobile device id
-                        projectData.general_logic.addMobileDeviceId(function(response) {
-                            if (response.success) {
-                                console.log('Mobile device id saved.');
-                            } else {
-                                window.localStorage.removeItem('saved_mobile_id');
-                            }
-                        })
+                        window.FirebasePlugin.getToken(function(token) {
+                            console.error(token, 'window.FirebasePlugin.getToken');
+
+                            // if permission is given save the firebase mobile device id
+                            projectData.general_logic.addMobileDeviceId(token, function(response) {
+                                if (response.success) {
+                                    console.log('Mobile device id saved.');
+                                } else {
+                                    window.localStorage.removeItem('saved_mobile_id');
+                                }
+                            });
+                        }, function(error) {
+                            console.error(error, 'window.FirebasePlugin.getToken');
+                        });
                     } else {
                         window.localStorage.removeItem('saved_mobile_id');
                     }
@@ -5149,8 +5179,9 @@ function router() {
             } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                 window.localStorage.setItem('saved_mobile_id', true);
                 if (await FCM.hasPermission()) {
+                    var FCMToken = await FCM.getToken();
                     // if permission is given save the firebase mobile device id
-                    projectData.general_logic.addMobileDeviceId(function(response) {
+                    projectData.general_logic.addMobileDeviceId(FCMToken, function(response) {
                         if (response.success) {
                             console.log('Mobile device id saved.');
                         } else {
