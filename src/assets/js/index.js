@@ -4442,7 +4442,14 @@ $(document).on('click', 'nav.sidenav .log-out', function () {
     var log_out_reminder_warning = {};
     log_out_reminder_warning.callback = function (result) {
         if (result) {
-            window.localStorage.clear();
+            if (window.localStorage.getItem('mobile_device_id') != null) {
+                var currentMobileId = window.localStorage.getItem('mobile_device_id');
+                window.localStorage.clear();
+                window.localStorage.setItem('mobile_device_id', currentMobileId);
+            } else {
+                window.localStorage.clear();
+            }
+            
             refreshApp();
             const event = new CustomEvent('redirectToHomepage');
             document.dispatchEvent(event);
