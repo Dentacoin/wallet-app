@@ -224,7 +224,7 @@
   "smth-went-wrong" : "Please try again later or write a message to admin@dentacoin.com with a short description of the problem.",
   "data-assurance-success" : "You have successfully signed your contract! Once your transaction is confirmed, your Assurance contract page will be updated.",
   "data-valid-keytore" : "<div class=\"error-handle\">Please upload a valid backup file which is related to your Wallet Address.</div>",
-  "data-wrong-chain" : "Please switch to THE correct network.",
+  "data-wrong-chain" : "Please switch to ETH correct network.",
   "no-balance" : "Dentacoin is an Ethereum-based token. As ALL such tokens, it requires a small fee in the main network currency - ETH - for every transaction. It seems you are out of ETH in this wallet, so please refill it. If you don't like to use exchange platforms, one easy way to do so is to buy it directly with your bank card <a href='https://wallet.dentacoin.com/buy' target='_blank' class='lato-bold text-decoration-underline color-light-blue'>here</a>.",
   "confidential" : "Confidential",
   "unlock-funds" : "PRIVATE KEY FOR UNLOCKING YOUR FUNDS",
@@ -243,6 +243,12 @@
   "swap-tokens-title" : "SWAP TOKENS",
   "swap-btn" : "SWAP",
   "you-get-swap" : "You get:",
-  "swapping-to-dcn2" : "Swapping to DCN2 enables cheaper and faster transactions for you.",
-  "swap-understand" : "I understand that DCN2 cannot be traded on exchanges."
+  "swapping-dcn" : "Swapping to DCN2 enables cheaper and faster transactions for you.",
+  "swapping-dcn2" : "Using DCN 2.0. enables faster and cheaper transactions.",
+  "swapping-eth" : "You can use ETH2.0. for transaction fees when sending DCN 2.0.",
+  "swapping-eth2" : "You cannot use ETH to cover transaction fees for DCN 2.0. transactions.",
+  "dcn-swap-understand" : "I understand that DCN2 cannot be traded on exchanges.",
+  "dcn2-swap-understand" : "I understand that swapping DCN 2.0. to DCN will take min. 1 week.",
+  "eth-swap-understand" : "I understand that ETH 2.0. can only be used for DCN 2.0. transactions. Swapping back to ETH takes 1 week and requires transaction fees.",
+  "eth2-swap-understand" : "I understand that swapping ETH 2.0. to ETH will take min. 1 week."
 }

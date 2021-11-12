@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import {LanguageService} from '../_services/language.service';
+import {TranslateService} from '@ngx-translate/core';
 
 @Component({
   selector: 'app-swap-page',
@@ -6,7 +8,7 @@ import { Component, OnInit } from '@angular/core';
 })
 export class SwapPageComponent implements OnInit {
 
-  constructor() { }
+  constructor(public translate: TranslateService) { }
 
   ngOnInit() {
   }

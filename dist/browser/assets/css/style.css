@@ -4531,6 +4531,143 @@ img {
       -ms-transform: translateY(-50%);
       transform: translateY(-50%); }
 
+.transaction-and-withdraw-history-btns {
+  position: relative;
+  padding: 0 15px;
+  text-align: center; }
+  .transaction-and-withdraw-history-btns:before {
+    content: '';
+    width: 100%;
+    height: 2px;
+    left: 0;
+    background-color: white;
+    z-index: -1;
+    position: absolute;
+    top: 50%;
+    -webkit-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%); }
+  .transaction-and-withdraw-history-btns a {
+    color: white;
+    background-color: #0081ab;
+    border: 1px solid #00b7e2;
+    padding: 5px 35px;
+    display: inline-block;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    -ms-border-radius: 6px;
+    border-radius: 6px; }
+    .transaction-and-withdraw-history-btns a.active {
+      background-color: #00b7e2; }
+    .transaction-and-withdraw-history-btns a.has-btn-at-right-side {
+      -webkit-border-radius: 6px 0 0 6px;
+      -moz-border-radius: 6px 0 0 6px;
+      -ms-border-radius: 6px 0 0 6px;
+      border-radius: 6px 0 0 6px; }
+    .transaction-and-withdraw-history-btns a.has-btn-at-left-side {
+      -webkit-border-radius: 0 6px 6px 0;
+      -moz-border-radius: 0 6px 6px 0;
+      -ms-border-radius: 0 6px 6px 0;
+      border-radius: 0 6px 6px 0; }
+  @media screen and (max-width: 767px) {
+    .transaction-and-withdraw-history-btns {
+      padding: 0; }
+      .transaction-and-withdraw-history-btns:before {
+        display: none; }
+      .transaction-and-withdraw-history-btns a {
+        padding: 10px 0;
+        width: 50%;
+        display: inline-block;
+        font-size: 15px !important;
+        -webkit-border-radius: 0;
+        -moz-border-radius: 0;
+        -ms-border-radius: 0;
+        border-radius: 0; } }
+
+.camping-withdraw-history ::-webkit-scrollbar {
+  -webkit-appearance: none; }
+.camping-withdraw-history ::-webkit-scrollbar:vertical {
+  width: 12px; }
+.camping-withdraw-history ::-webkit-scrollbar:horizontal {
+  height: 12px; }
+.camping-withdraw-history ::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  border: 2px solid white; }
+.camping-withdraw-history ::-webkit-scrollbar-track {
+  background-color: white;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -ms-border-radius: 10px;
+  border-radius: 10px; }
+@media screen and (min-width: 1200px) {
+  .camping-withdraw-history .withdraw-history-scroll-parent {
+    max-height: 525px;
+    overflow-y: auto; } }
+.camping-withdraw-history table {
+  width: 100%; }
+  .camping-withdraw-history table tbody tr:nth-child(-n+5) {
+    display: table-row; }
+  .camping-withdraw-history table tbody tr .icon {
+    background-repeat: no-repeat;
+    background-size: calc(100% - 20px);
+    background-position: left 15px center;
+    width: 65px;
+    padding-left: 0;
+    padding-right: 10px;
+    background-image: url(../images/pending-icon.svg); }
+    .camping-withdraw-history table tbody tr .icon a {
+      width: 40px;
+      display: block; }
+    @media screen and (max-width: 767px) {
+      .camping-withdraw-history table tbody tr .icon {
+        width: 50px;
+        background-size: calc(100% - 10px);
+        background-position: left 5px center; } }
+  .camping-withdraw-history table tbody tr td {
+    font-size: 18px;
+    padding: 10px 5px;
+    -webkit-transition: 0.3s;
+    -moz-transition: 0.3s;
+    -o-transition: 0.3s;
+    -ms-transition: 0.3s;
+    transition: 0.3s; }
+    .camping-withdraw-history table tbody tr td:first-child {
+      border-top-left-radius: 12px;
+      border-bottom-left-radius: 12px; }
+      @media screen and (max-width: 767px) {
+        .camping-withdraw-history table tbody tr td:first-child {
+          display: none; } }
+    .camping-withdraw-history table tbody tr td:last-child {
+      border-top-right-radius: 12px;
+      border-bottom-right-radius: 12px;
+      min-width: 100px; }
+    @media screen and (max-width: 767px) {
+      .camping-withdraw-history table tbody tr td {
+        font-size: 13px; } }
+  .camping-withdraw-history table tbody tr .crypto-amount, .camping-withdraw-history table tbody tr .yellow-text {
+    color: #f9db7a; }
+  .camping-withdraw-history table tbody tr .btn-td .pending-btn {
+    color: white;
+    background-color: #cccccc;
+    padding: 5px 20px;
+    cursor: auto;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    -ms-border-radius: 4px;
+    border-radius: 4px; }
+  .camping-withdraw-history table tbody tr .btn-td .withdraw-btn {
+    color: white;
+    background-color: #f9db7a;
+    padding: 5px 20px;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    -ms-border-radius: 4px;
+    border-radius: 4px; }
+  @media screen and (max-width: 767px) {
+    .camping-withdraw-history table tbody tr .btn-td .pending-btn, .camping-withdraw-history table tbody tr .btn-td .withdraw-btn {
+      padding: 5px; } }
+
 .camping-transaction-history ::-webkit-scrollbar {
   -webkit-appearance: none; }
 .camping-transaction-history ::-webkit-scrollbar:vertical {
@@ -4924,6 +5061,8 @@ img {
     @media screen and (max-width: 767px) {
       .bootbox .bootbox-close-button {
         top: 10px; } }
+  .bootbox.tx-response-popup .modal-dialog {
+    text-align: center; }
   .bootbox.l2-information-popup .modal-dialog {
     width: 95%;
     max-width: 500px; }
@@ -4934,7 +5073,7 @@ img {
       .bootbox.l2-information-popup .modal-dialog .bottom-menu a {
         display: block;
         color: #00b7e2; }
-        .bootbox.l2-information-popup .modal-dialog .bottom-menu a i {
+        .bootbox.l2-information-popup .modal-dialog .bottom-menu a img {
           float: right; }
     .bootbox.l2-information-popup .modal-dialog .popup-bullets ul {
       font-size: 0; }
@@ -6243,10 +6382,10 @@ app-homepage .main-wrapper {
         right: 15px;
         z-index: 100; }
       app-homepage .main-wrapper .bottom-side .join-the-future .center-content {
-        width: calc(100% - 280px);
+        width: calc(100% - 290px);
         padding: 0 20px; }
       app-homepage .main-wrapper .bottom-side .join-the-future .learn-more-btn {
-        width: 140px;
+        width: 150px;
         text-align: right; }
       @media screen and (max-width: 767px) {
         app-homepage .main-wrapper .bottom-side .join-the-future {
@@ -6362,7 +6501,7 @@ app-send-page .section-send {
       display: none; }
     @media screen and (max-width: 767px) {
       app-send-page .section-send .search-field #search-label {
-        font-size: 14px !important; } }
+        font-size: 12px !important; } }
     app-send-page .section-send .search-field #search {
       border-right: 0;
       -webkit-border-radius: 4px 0 0 4px;

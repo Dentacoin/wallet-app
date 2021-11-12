@@ -44,8 +44,8 @@
             </div>
         </div>
         <div class="padding-top-25 padding-bottom-40 calibri-bold text-center">
-            <div class="fs-18 padding-bottom-5">{{'swapping-to-dcn2' | translate}}</div>
-            <div class="fs-16 checkbox-row"><input type="checkbox" class="zoom-checkbox" id="checkbox-understand"/> <label class="padding-left-10" for="checkbox-understand">{{'swap-understand' | translate}}</label></div>
+            <div class="fs-18 padding-bottom-5 current-currency-explanation" [attr.swap-dcn]="this.translate.instant('swapping-dcn')" [attr.swap-dcn2]="this.translate.instant('swapping-dcn2')" [attr.swap-eth]="this.translate.instant('swapping-eth')" [attr.swap-eth2]="this.translate.instant('swapping-eth2')">{{'swapping-dcn' | translate}}</div>
+            <div class="fs-16 checkbox-row"><input type="checkbox" class="zoom-checkbox" id="checkbox-understand"/> <label class="padding-left-10" for="checkbox-understand" [attr.swap-dcn]="this.translate.instant('dcn-swap-understand')" [attr.swap-dcn2]="this.translate.instant('dcn2-swap-understand')" [attr.swap-eth]="this.translate.instant('eth-swap-understand')" [attr.swap-eth2]="this.translate.instant('eth-swap-understand')">{{'dcn-swap-understand' | translate}}</label></div>
         </div>
         <div class="bottom-absolute-btn text-center">
             <a class="white-light-blue-btn light-blue-border swap-btn" href="javascript:void(0)">{{'swap-btn' | translate}}</a>
