@@ -116,11 +116,11 @@ __webpack_require__.r(__webpack_exports__);
 
 
 // Express server
-const app = express__WEBPACK_IMPORTED_MODULE_1__();
-const PORT = process.env.PORT || 4010;
-const DIST_FOLDER = Object(path__WEBPACK_IMPORTED_MODULE_2__["join"])(process.cwd(), 'dist/browser');
+var app = express__WEBPACK_IMPORTED_MODULE_1__();
+var PORT = process.env.PORT || 4010;
+var DIST_FOLDER = Object(path__WEBPACK_IMPORTED_MODULE_2__["join"])(process.cwd(), 'dist/browser');
 // * NOTE :: leave this as require() since this file is built Dynamically from webpack
-const { AppServerModuleNgFactory, LAZY_MODULE_MAP, ngExpressEngine, provideModuleMap } = __webpack_require__(129);
+var _a = __webpack_require__(129), AppServerModuleNgFactory = _a.AppServerModuleNgFactory, LAZY_MODULE_MAP = _a.LAZY_MODULE_MAP, ngExpressEngine = _a.ngExpressEngine, provideModuleMap = _a.provideModuleMap;
 // Our Universal express-engine (found @ https://github.com/angular/universal/tree/master/modules/express-engine)
 app.engine('html', ngExpressEngine({
     bootstrap: AppServerModuleNgFactory,
@@ -137,12 +137,12 @@ app.get('*.*', express__WEBPACK_IMPORTED_MODULE_1__["static"](DIST_FOLDER, {
     maxAge: '1y'
 }));
 // All regular routes use the Universal engine
-app.get('*', (req, res) => {
-    res.render('index', { req });
+app.get('*', function (req, res) {
+    res.render('index', { req: req });
 });
 // Start up the Node server
-app.listen(PORT, () => {
-    console.log(`Node Express server listening on http://localhost:${PORT}`);
+app.listen(PORT, function () {
+    console.log("Node Express server listening on http://localhost:" + PORT);
 });
 
 
