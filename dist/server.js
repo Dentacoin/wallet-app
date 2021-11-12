@@ -86,16 +86,10 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var zone_js_dist_zone_node__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1);
-/* harmony import */ var zone_js_dist_zone_node__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(zone_js_dist_zone_node__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var express__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6);
-/* harmony import */ var express__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(express__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(13);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_2__);
+
 /**
  * *** NOTE ON IMPORTING FROM ANGULAR AND NGUNIVERSAL IN THIS FILE ***
  *
@@ -112,13 +106,14 @@ __webpack_require__.r(__webpack_exports__);
  * from your application's main.server.ts file, as seen below with the
  * import for `ngExpressEngine`.
  */
-
-
-
+Object.defineProperty(exports, "__esModule", { value: true });
+__webpack_require__(1);
+var express = __webpack_require__(6);
+var path_1 = __webpack_require__(13);
 // Express server
-var app = express__WEBPACK_IMPORTED_MODULE_1__();
+var app = express();
 var PORT = process.env.PORT || 4010;
-var DIST_FOLDER = Object(path__WEBPACK_IMPORTED_MODULE_2__["join"])(process.cwd(), 'dist/browser');
+var DIST_FOLDER = path_1.join(process.cwd(), 'dist/browser');
 // * NOTE :: leave this as require() since this file is built Dynamically from webpack
 var _a = __webpack_require__(129), AppServerModuleNgFactory = _a.AppServerModuleNgFactory, LAZY_MODULE_MAP = _a.LAZY_MODULE_MAP, ngExpressEngine = _a.ngExpressEngine, provideModuleMap = _a.provideModuleMap;
 // Our Universal express-engine (found @ https://github.com/angular/universal/tree/master/modules/express-engine)
@@ -133,7 +128,7 @@ app.set('views', DIST_FOLDER);
 // Example Express Rest API endpoints
 // app.get('/api/**', (req, res) => { });
 // Serve static files from /browser
-app.get('*.*', express__WEBPACK_IMPORTED_MODULE_1__["static"](DIST_FOLDER, {
+app.get('*.*', express.static(DIST_FOLDER, {
     maxAge: '1y'
 }));
 // All regular routes use the Universal engine

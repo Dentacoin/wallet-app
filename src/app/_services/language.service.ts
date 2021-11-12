@@ -6,7 +6,6 @@ import {ActivatedRoute, Router} from '@angular/router';
     providedIn: 'root'
 })
 export class LanguageService {
-
     constructor(private translate: TranslateService, private activatedRoute: ActivatedRoute, private router: Router) {
     }
 
