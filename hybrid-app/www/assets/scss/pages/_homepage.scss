@@ -130,11 +130,11 @@ app-homepage {
                     z-index: 100;
                 }
                 .center-content {
-                    width: calc(100% - 280px);
+                    width: calc(100% - 290px);
                     padding: 0 20px;
                 }
                 .learn-more-btn {
-                    width: 140px;
+                    width: 150px;
                     text-align: right;
                 }
                 @include breakpoint($xs) {

@@ -507,6 +507,153 @@ img {
     }
 }
 
+.transaction-and-withdraw-history-btns {
+    position: relative;
+    padding: 0 15px;
+    text-align: center;
+    &:before {
+        content: '';
+        width: 100%;
+        height: 2px;
+        left: 0;
+        background-color: white;
+        z-index: -1;
+        @include vertical-align(absolute);
+    }
+    a {
+        color: white;
+        background-color: #0081ab;
+        border: 1px solid $light_blue;
+        padding: 5px 35px;
+        display: inline-block;
+        @include rounded(6px);
+        &.active {
+            background-color: $light_blue;
+        }
+        &.has-btn-at-right-side {
+            @include rounded(6px 0 0 6px);
+        }
+        &.has-btn-at-left-side {
+            @include rounded(0 6px 6px 0);
+        }
+    }
+    @include breakpoint($xs) {
+        padding: 0;
+        &:before {
+            display: none;
+        }
+        a {
+            padding: 10px 0;
+            width: 50%;
+            display: inline-block;
+            font-size: 15px !important;
+            @include rounded(0);
+        }
+    }
+}
+
+.camping-withdraw-history {
+    ::-webkit-scrollbar {
+        -webkit-appearance: none;
+    }
+
+    ::-webkit-scrollbar:vertical {
+        width: 12px;
+    }
+
+    ::-webkit-scrollbar:horizontal {
+        height: 12px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, .5);
+        border-radius: 10px;
+        border: 2px solid white;
+    }
+
+    ::-webkit-scrollbar-track {
+        background-color: white;
+        @include rounded(10px);
+    }
+    @include breakpoint($lg) {
+        .withdraw-history-scroll-parent {
+            max-height: 525px;
+            overflow-y: auto;
+        }
+    }
+    table {
+        width: 100%;
+        tbody {
+            tr {
+                &:nth-child(-n+5) {
+                    display: table-row;
+                }
+                .icon {
+                    background-repeat: no-repeat;
+                    background-size: calc(100% - 20px);
+                    background-position: left 15px center;
+                    width: 65px;
+                    padding-left: 0;
+                    padding-right: 10px;
+                    background-image: url(../images/pending-icon.svg);
+                    a {
+                        width: 40px;
+                        display: block;
+                    }
+                    @include breakpoint($xs) {
+                        width: 50px;
+                        background-size: calc(100% - 10px);
+                        background-position: left 5px center;
+                    }
+                }
+                td {
+                    font-size: 18px;
+                    padding: 10px 5px;
+                    @include simple_transition(.3s);
+                    &:first-child {
+                        border-top-left-radius: 12px;
+                        border-bottom-left-radius: 12px;
+                        @include breakpoint($xs) {
+                            display: none;
+                        }
+                    }
+                    &:last-child {
+                        border-top-right-radius: 12px;
+                        border-bottom-right-radius: 12px;
+                        min-width: 100px;
+                    }
+                    @include breakpoint($xs) {
+                        font-size: 13px;
+                    }
+                }
+                .crypto-amount, .yellow-text {
+                    color: #f9db7a;
+                }
+                .btn-td {
+                    .pending-btn {
+                        color: white;
+                        background-color: #cccccc;
+                        padding: 5px 20px;
+                        cursor: auto;
+                        @include rounded(4px);
+                    }
+                    .withdraw-btn {
+                        color: white;
+                        background-color: #f9db7a;
+                        padding: 5px 20px;
+                        @include rounded(4px);
+                    }
+                    @include breakpoint($xs) {
+                        .pending-btn, .withdraw-btn {
+                            padding: 5px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 .camping-transaction-history {
     ::-webkit-scrollbar {
         -webkit-appearance: none;
@@ -711,6 +858,11 @@ img {
         top: 5px;
         @include breakpoint($xs) {
             top: 10px;
+        }
+    }
+    &.tx-response-popup {
+        .modal-dialog {
+            text-align: center;
         }
     }
     &.l2-information-popup {
