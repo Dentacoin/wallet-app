@@ -17,7 +17,7 @@ export class AppComponent {
     network = environment.network;
 
     constructor(public languageService: LanguageService, public translate: TranslateService, public redirectsService: RedirectsService, private router: Router) {
-        document.addEventListener('redirectToHomepage', (e: any) => {
+        window.document.addEventListener('redirectToHomepage', (e: any) => {
             redirectsService.toHomepage();
         });
 

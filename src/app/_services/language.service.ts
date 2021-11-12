@@ -20,6 +20,6 @@ export class LanguageService {
                 time: new Date()
             }
         });
-        document.dispatchEvent(event);
+        window.document.dispatchEvent(event);
     }
 }
