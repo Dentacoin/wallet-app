@@ -911,8 +911,9 @@ img {
                 a {
                     display: block;
                     color: $light_blue;
-                    img {
-                        float: right;
+                    font-size: 0;
+                    span {
+                        width: calc(100% - 20px);
                     }
                 }
             }

@@ -507,7 +507,7 @@
       border-radius: 4px; }
   @media screen and (max-width: 767px) {
     .module.from-box, .module.to-box {
-      padding: 20px 20px; }
+      padding: 10px; }
       .module.from-box .inputable-line input[type="number"], .module.from-box .inputable-line .transfer-to-amount, .module.to-box .inputable-line input[type="number"], .module.to-box .inputable-line .transfer-to-amount {
         width: calc(100% - 110px); }
       .module.from-box .inputable-line select, .module.from-box .inputable-line .token-label, .module.to-box .inputable-line select, .module.to-box .inputable-line .token-label {
@@ -5104,9 +5104,10 @@ img {
       border-top: 1.5px solid #00b7e2; }
       .bootbox.l2-information-popup .modal-dialog .bottom-menu a {
         display: block;
-        color: #00b7e2; }
-        .bootbox.l2-information-popup .modal-dialog .bottom-menu a img {
-          float: right; }
+        color: #00b7e2;
+        font-size: 0; }
+        .bootbox.l2-information-popup .modal-dialog .bottom-menu a span {
+          width: calc(100% - 20px); }
   .bootbox.overlap-loading-popup {
     z-index: 10050; }
   .bootbox.download-mobile-app .phone-container {
