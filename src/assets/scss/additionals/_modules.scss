@@ -205,18 +205,20 @@
         .balance-line {
             .max-btn {
                 width: 50px;
-                margin-right: 20px;
                 text-align: center;
-            }
-            .balance-value {
-                color: #888888;
-                width: calc(100% - 70px);
-                padding-left: 10px;
-                text-align: right;
             }
             .you-get-label {
                 width: 70px;
                 color: #888888;
+            }
+            .balance-value {
+                color: #888888;
+                width: calc(100% - 50px);
+                padding-left: 10px;
+                text-align: right;
+                &.you-get-balance {
+                    width: calc(100% - 70px);
+                }
             }
         }
         .inputable-line {

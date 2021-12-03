@@ -1,7 +1,8 @@
 var closeOnLoadLoader = true;
 //importing methods for keystore import, export, decrypt
 var {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey} = require('./helper');
-const { getMessagesAndProofsForL2Transaction } = require('../../../node_modules/@eth-optimism/message-relayer');
+//const { getMessagesAndProofsForL2Transaction } = require('../../../node_modules/@eth-optimism/message-relayer');
+var getMessagesAndProofsForL2Transaction;
 
 var {config_variable} = require('./config');
 var assurance_config;
@@ -42,6 +43,7 @@ window.addEventListener('load', function () {
 // event called only on hybrid app
 document.addEventListener('deviceready', async function () {
     console.log('================= deviceready ===================');
+    console.log(cordova.file, 'cordova.file');
     isDeviceReady = true;
 
     // overwrite window.open to work with inappbrowser
@@ -326,93 +328,99 @@ var projectData = {
                         projectData.general_logic.buildTransactionHistory();
                     }
 
-                    setTimeout(async function () {
-                        //show user ethereum address
-                        $('.eth-address-container .address-value').val(projectData.utils.checksumAddress(global_state.account));
+                    if ($('.main-holder app-homepage').length) {
+                        console.log('update homepage history');
+                        setTimeout(async function () {
+                            //show user ethereum address
+                            $('.eth-address-container .address-value').val(projectData.utils.checksumAddress(global_state.account));
 
-                        var l1_dcn_balance = parseInt(await L1DCNContract.methods.balanceOf(global_state.account).call());
-                        var l2_dcn_balance = parseInt(await L2DCNContract.methods.balanceOf(global_state.account).call());
-                        var l1_eth_balance = await dApp.web3_l1.eth.getBalance(global_state.account);
-                        var l2_eth_balance = await dApp.web3_l2.eth.getBalance(global_state.account);
-                        $('.main-wrapper .dcn-amount').html((l1_dcn_balance + l2_dcn_balance).toLocaleString());
+                            var l1_dcn_balance = parseInt(await L1DCNContract.methods.balanceOf(global_state.account).call());
+                            var l2_dcn_balance = parseInt(await L2DCNContract.methods.balanceOf(global_state.account).call());
+                            var l1_eth_balance = await dApp.web3_l1.eth.getBalance(global_state.account);
+                            var l2_eth_balance = await dApp.web3_l2.eth.getBalance(global_state.account);
+                            $('.main-wrapper .dcn-amount').html((l1_dcn_balance + l2_dcn_balance).toLocaleString());
 
-                        projectData.requests.getDentacoinDataByCoingecko(function (dentacoin_data) {
-                            if (l1_dcn_balance > 0) {
-                                $('.single-currency.l1-dcn-currency .l1-dcn-balance').html(l1_dcn_balance.toLocaleString());
-                                $('.single-currency.l1-dcn-currency .l1-dcn-balance-in-usd').html(parseFloat((l1_dcn_balance * dentacoin_data).toFixed(2)).toLocaleString());
-                                $('.single-currency.l1-dcn-currency').removeClass('hide');
-                            }
+                            projectData.requests.getDentacoinDataByCoingecko(function (dentacoin_data) {
+                                if (l1_dcn_balance > 0) {
+                                    $('.single-currency.l1-dcn-currency .l1-dcn-balance').html(l1_dcn_balance.toLocaleString());
+                                    $('.single-currency.l1-dcn-currency .l1-dcn-balance-in-usd').html(parseFloat((l1_dcn_balance * dentacoin_data).toFixed(2)).toLocaleString());
+                                    $('.single-currency.l1-dcn-currency').removeClass('hide');
+                                } else {
+                                    $('.single-currency.l1-dcn-currency .l1-dcn-balance').html(0);
+                                    $('.single-currency.l1-dcn-currency .l1-dcn-balance-in-usd').html(0);
+                                }
 
-                            if (l2_dcn_balance > 0) {
-                                $('.single-currency.l2-dcn-currency .l2-dcn-balance').html(l2_dcn_balance.toLocaleString());
-                                $('.single-currency.l2-dcn-currency .l2-dcn-balance-in-usd').html(parseFloat((l2_dcn_balance * dentacoin_data).toFixed(2)).toLocaleString());
-                            }
+                                if (l2_dcn_balance > 0) {
+                                    $('.single-currency.l2-dcn-currency .l2-dcn-balance').html(l2_dcn_balance.toLocaleString());
+                                    $('.single-currency.l2-dcn-currency .l2-dcn-balance-in-usd').html(parseFloat((l2_dcn_balance * dentacoin_data).toFixed(2)).toLocaleString());
+                                } else {
+                                    $('.single-currency.l2-dcn-currency .l2-dcn-balance').html(0);
+                                    $('.single-currency.l2-dcn-currency .l2-dcn-balance-in-usd').html(0);
+                                    if ($('.join-the-future').length) {
+                                        $('.join-the-future').removeClass('hide');
 
-                            if (l1_eth_balance > 0) {
-                                $('.single-currency.l1-eth-currency .l1-eth-balance').html(parseFloat(projectData.utils.fromWei(l1_eth_balance)).toFixedNoRounding(8));
-                                $('.single-currency.l1-eth-currency').removeClass('hide');
-                            }
+                                        if ($('.join-the-future .close-btn').length) {
+                                            $('.join-the-future .close-btn').unbind();
+                                            $('.join-the-future .close-btn').click(function() {
+                                                $('.join-the-future').remove();
+                                            });
+                                        }
 
-                            if (l2_eth_balance > 0) {
-                                $('.single-currency.l2-eth-currency .l2-eth-balance').html(parseFloat(projectData.utils.fromWei(l2_eth_balance)).toFixedNoRounding(8));
-                            }
+                                        if ($('.join-the-future .open-popup').length) {
+                                            $('.join-the-future .open-popup').unbind();
+                                            $('.join-the-future .open-popup').click(function() {
+                                                projectData.general_logic.openL2InformationPopups('what-is-dcn2');
+                                            });
+                                        }
+                                    }
+                                }
 
-                            if ($('.bottom-side').hasClass('hide')) {
-                                $('.bottom-side').removeClass('hide');
-                            }
+                                if (l1_eth_balance > 0) {
+                                    $('.single-currency.l1-eth-currency .l1-eth-balance').html(parseFloat(projectData.utils.fromWei(l1_eth_balance)).toFixedNoRounding(8));
+                                    $('.single-currency.l1-eth-currency').removeClass('hide');
+                                } else {
+                                    $('.single-currency.l1-eth-currency .l1-eth-balance').html(0);
+                                }
 
-                            $('.refresh-account-data').unbind().click(function () {
-                                projectData.general_logic.showLoader();
-                                refreshAccountDataButtonLogic(true);
+                                if (l2_eth_balance > 0) {
+                                    $('.single-currency.l2-eth-currency .l2-eth-balance').html(parseFloat(projectData.utils.fromWei(l2_eth_balance)).toFixedNoRounding(8));
+                                } else {
+                                    $('.single-currency.l2-eth-currency .l2-eth-balance').html(0);
+                                }
+
+                                if ($('.bottom-side').hasClass('hide')) {
+                                    $('.bottom-side').removeClass('hide');
+                                }
+
+                                $('.refresh-account-data').unbind().click(function () {
+                                    projectData.general_logic.showLoader();
+                                    refreshAccountDataButtonLogic(true);
+                                });
+
+                                projectData.general_logic.hideLoader();
                             });
 
-                            document.removeEventListener('touchmove', refreshAccountDataOnTopTouchmove);
-                            document.addEventListener('touchmove', refreshAccountDataOnTopTouchmove);
-
-                            projectData.general_logic.hideLoader();
-                        });
-
-                        $('.more-info').popover({
-                            trigger: 'click'
-                        });
-
-
-                        $('.join-the-future .close-btn').click(function() {
-                            $('.join-the-future').remove();
-                        });
-
-                        if ($('.join-the-future .open-popup').length) {
-                            $('.join-the-future .open-popup').click(function() {
-                                projectData.general_logic.openL2InformationPopups('what-is-dcn2');
+                            $('.more-info').popover({
+                                trigger: 'click'
                             });
-                        }
-                    }, 1000);
+                        }, 1000);
+                    } else {
+                        projectData.general_logic.hideLoader();
+                    }
                 }
                 refreshAccountDataButtonLogic();
 
-                var scrollsArr = [];
-                function refreshAccountDataOnTopTouchmove() {
-                    console.log($(window).scrollTop());
-                    scrollsArr.push($(window).scrollTop());
-                    if (basic.getMobileOperatingSystem() == 'Android') {
-                        if (scrollsArr.length > 5) {
-                            if (scrollsArr[scrollsArr.length - 1] == 0 && scrollsArr[scrollsArr.length - 2] == 0 && scrollsArr[scrollsArr.length - 3] == 0 && scrollsArr[scrollsArr.length - 4] == 0 && scrollsArr[scrollsArr.length - 5] == 0) {
-                                document.removeEventListener('touchmove', refreshAccountDataOnTopTouchmove);
-                                projectData.general_logic.showLoader();
-                                refreshAccountDataButtonLogic(true);
-                            }
+                if (basic.getMobileOperatingSystem() == 'Android' || (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel')) {
+                    console.log('init PullToRefresh');
+                    PullToRefresh.init({
+                        mainElement: 'body',
+                        refreshTimeout: 1000,
+                        onRefresh() {
+                            console.log('============ REFRESH =================');
+                            projectData.general_logic.showLoader();
+                            refreshAccountDataButtonLogic(true);
                         }
-
-                    } else if (basic.getMobileOperatingSystem() == 'iOS') {
-                        // only iphones without ipads
-                        if (scrollsArr.length > 5) {
-                            if (scrollsArr[scrollsArr.length - 1] < 0 && scrollsArr[scrollsArr.length - 2] < 0 && scrollsArr[scrollsArr.length - 3] < 0 && scrollsArr[scrollsArr.length - 4] < 0 && scrollsArr[scrollsArr.length - 5] < 0) {
-                                document.removeEventListener('touchmove', refreshAccountDataOnTopTouchmove);
-                                projectData.general_logic.showLoader();
-                                refreshAccountDataButtonLogic(true);
-                            }
-                        }
-                    }
+                    });
                 }
 
                 $('body').addClass('overflow-hidden');
@@ -503,7 +511,7 @@ var projectData = {
         },
         buy_page: function () {
             if (window.localStorage.getItem('hide_buy_page_notice') == null && !$('header .camping-buy-page-notice').hasClass('shown')) {
-                $('header .camping-buy-page-notice').addClass('shown').html('<div class="wrapper fs-0"><figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block icon"><img src="assets/images/attention-icon-white.svg" alt="Attention icon" itemprop="contentUrl"/></figure><div class="inline-block fs-20 fs-xs-16 description">For the moment, you can only buy DCN on the main Ethereum network (used for trading). If you want to stake it or use it for Assurance fees, use the SWAP to DCN2 function after purchase.</div><div class="inline-block close-btn"><a href="javascript:void(0);" class="close-notice fs-30 color-white">×</a></div></div>').fadeIn(500);
+                $('header .camping-buy-page-notice').addClass('shown').html('<div class="wrapper fs-0"><figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block icon"><img src="assets/images/attention-icon-white.svg" alt="Attention icon" itemprop="contentUrl"/></figure><div class="inline-block fs-20 fs-xs-16 description">For the moment, you can only buy DCN on the main Ethereum network (used for trading). If you want to stake it or use it for Assurance fees, use the SWAP to DCN2.0 function after purchase.</div><div class="inline-block close-btn"><a href="javascript:void(0);" class="close-notice fs-30 color-white">×</a></div></div>').fadeIn(500);
                 $('header .camping-buy-page-notice .close-notice').click(function() {
                     window.localStorage.setItem('hide_buy_page_notice', 'true');
                     $('header .camping-buy-page-notice').html('').fadeOut(500);
@@ -950,12 +958,12 @@ var projectData = {
 
                                         /*$('.spendable-amount').addClass('active').html('<div class="spendable-dcn-amount fs-18 fs-xs-16 lato-bold" data-value="' + l1_dcn_balance + '"><label class="color-light-blue renew-on-lang-switch" data-slug="spendable-amount">'+$('.translates-holder').attr('spendable-amount')+' </label><span></span></div>');
                                         $('.spendable-amount .spendable-dcn-amount span').html(l1_dcn_balance.toLocaleString() + ' DCN');*/
-                                        $('.from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+l1_dcn_balance.toLocaleString()+'</span> DCN</span>');
+                                        $('.balance-line .balance-value .max-amount').html('<span class="amount">'+l1_dcn_balance.toLocaleString()+'</span> DCN');
                                         $('.section-amount-to #active-crypto').val('dcn-l1');
 
                                         $('.max-btn').click(function () {
                                             //$('.section-amount-to input#crypto-amount').val($('.spendable-dcn-amount').attr('data-value'));
-                                            $('.section-amount-to input#crypto-amount').val($('.from-box .balance-line .balance-value .amount').html().replaceAll(',', ''));
+                                            $('.section-amount-to input#crypto-amount').val($('.balance-line .balance-value .amount').html().replaceAll(',', ''));
 
                                             var to_fixed_num = 2;
                                             if ($('.section-amount-to #active-crypto').val() == 'dcn-l1' || $('.section-amount-to #active-crypto').val() == 'dcn-l2') {
@@ -1006,13 +1014,13 @@ var projectData = {
                                                 if ($(this).val() == 'dcn-l1') {
                                                     // LAYER1 BALANCE
                                                     var dcn_balance = parseInt(await L1DCNContract.methods.balanceOf(global_state.account).call());
-                                                    $('.from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+dcn_balance.toLocaleString()+'</span> DCN</span>');
+                                                    $('.balance-line .balance-value .max-amount').html('<span class="amount">'+dcn_balance.toLocaleString()+'</span> DCN');
                                                     /*$('.spendable-dcn-amount').attr('data-value', dcn_balance);
                                                     $('.spendable-amount .spendable-dcn-amount span').html(dcn_balance.toLocaleString() + ' DCN');*/
                                                 } else if($(this).val() == 'dcn-l2') {
                                                     // LAYER2 BALANCE
                                                     var dcn_balance = parseInt(await L2DCNContract.methods.balanceOf(global_state.account).call());
-                                                    $('.from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+dcn_balance.toLocaleString()+'</span> DCN2.0</span>');
+                                                    $('.balance-line .balance-value .max-amount').html('<span class="amount">'+dcn_balance.toLocaleString()+'</span> DCN2.0');
                                                     /*$('.spendable-dcn-amount').attr('data-value', dcn_balance);
                                                     $('.spendable-amount .spendable-dcn-amount span').html(dcn_balance.toLocaleString() + ' DCN2.0');*/
                                                 }
@@ -1059,11 +1067,11 @@ var projectData = {
                                                 }
 
                                                 if (parseInt(eth_balance) > parseInt(ethSendGasEstimation)) {
-                                                    $('.from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+correctSendAmount+'</span> '+tokenLabel+'</span>');
+                                                    $('.balance-line .balance-value .max-amount').html('<span class="amount">'+correctSendAmount+'</span> ' + tokenLabel);
                                                     /*$('.spendable-dcn-amount').attr('data-value', correctSendAmount);
                                                     $('.spendable-amount .spendable-dcn-amount span').html(correctSendAmount + ' ' + tokenLabel);*/
                                                 } else {
-                                                    $('.from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">0</span> '+tokenLabel+'</span>');
+                                                    $('.balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">0</span> '+tokenLabel+'</span>');
                                                     /*$('.spendable-dcn-amount').attr('data-value', 0);
                                                     $('.spendable-amount .spendable-dcn-amount span').html('0 ' + tokenLabel);*/
                                                 }
@@ -1440,6 +1448,7 @@ var projectData = {
         },
         swap_page: async function () {
             projectData.general_logic.showLoader();
+            $(document).off('click', '.latest-dcn-popup .close-btn');
             $(document).on('click', '.latest-dcn-popup .close-btn', function() {
                 $('.latest-dcn-popup').remove();
                 $('app-swap-page h1').addClass('padding-top-30').removeClass('padding-top-10');
@@ -1483,13 +1492,18 @@ var projectData = {
                 });
 
                 $(document).on('change', 'select.current-to', function() {
+                    var L2EthBalance = projectData.utils.fromWei(l2_eth_balance, 'ether');
+                    if (parseFloat(L2EthBalance).countDecimals() > 10) {
+                        L2EthBalance = parseFloat(L2EthBalance).toFixedNoRounding(10).toString();
+                    }
+
                     if ($('select.current-from').val() == 'eth-l1' && $(this).val() == 'dcn-l2') {
                         projectData.requests.getDentacoinDataByCoingecko(function(dentacoin_data) {
                             $('.swapping-section .to-box .inputable-line .transfer-to-amount').html(parseInt($('.inputable-amount').val().trim() / dentacoin_data.market_data.current_price.eth));
                             $('.swapping-section .to-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+l2_dcn_balance.toLocaleString()+'</span> DCN2.0</span>');
                         }, true);
                     } else if ($('select.current-from').val() == 'eth-l1' && $(this).val() == 'eth-l2') {
-                        $('.swapping-section .to-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+projectData.utils.fromWei(l2_eth_balance, 'ether')+'</span> ETH2.0</span>');
+                        $('.swapping-section .to-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+L2EthBalance+'</span> ETH2.0</span>');
                         $('.swapping-section .to-box .inputable-line .transfer-to-amount').html($('.inputable-amount').val().trim());
                     } else {
                         $('.swapping-section .to-box .inputable-line .transfer-to-amount').html($('.inputable-amount').val().trim());
@@ -1506,15 +1520,27 @@ var projectData = {
 
                             $('.current-currency-explanation').html($('.current-currency-explanation').attr('swap-dcn'));
                             $('.checkbox-row label').html($('.checkbox-row label').attr('swap-dcn'));
+                            $('select.current-from').attr('data-current-layer', 'l1');
                             break;
                         case 'eth-l1':
-                            $('.swapping-section .from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+projectData.utils.fromWei(l1_eth_balance, 'ether')+'</span> ETH</span>');
-                            $('.swapping-section .to-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+projectData.utils.fromWei(l2_eth_balance, 'ether')+'</span> ETH2.0</span>');
+                            var L1EthBalance = projectData.utils.fromWei(l1_eth_balance, 'ether');
+                            if (parseFloat(L1EthBalance).countDecimals() > 10) {
+                                L1EthBalance = parseFloat(L1EthBalance).toFixedNoRounding(10).toString();
+                            }
+
+                            var L2EthBalance = projectData.utils.fromWei(l2_eth_balance, 'ether');
+                            if (parseFloat(L2EthBalance).countDecimals() > 10) {
+                                L2EthBalance = parseFloat(L2EthBalance).toFixedNoRounding(10).toString();
+                            }
+
+                            $('.swapping-section .from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+L1EthBalance+'</span> ETH</span>');
+                            $('.swapping-section .to-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+L2EthBalance+'</span> ETH2.0</span>');
                             $('.swapping-section .to-box .inputable-line').html('<div class="transfer-to-amount inline-block">0.0</div><select class="inline-block fs-24 padding-left-10 current-to"><option selected value="eth-l2">ETH2.0</option></select>');
                             //$('.swapping-section .to-box .inputable-line').html('<div class="transfer-to-amount inline-block">0.0</div><select class="inline-block fs-24 padding-left-10 current-to"><option selected value="eth-l2">ETH2.0</option><option value="dcn-l2">DCN2.0</option></select>');
 
                             $('.current-currency-explanation').html($('.current-currency-explanation').attr('swap-eth'));
                             $('.checkbox-row label').html($('.checkbox-row label').attr('swap-eth'));
+                            $('select.current-from').attr('data-current-layer', 'l1');
                             break;
                         case 'dcn-l2':
                             $('.swapping-section .from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+l2_dcn_balance.toLocaleString()+'</span> DCN2.0</span>');
@@ -1523,14 +1549,26 @@ var projectData = {
 
                             $('.current-currency-explanation').html($('.current-currency-explanation').attr('swap-dcn2'));
                             $('.checkbox-row label').html($('.checkbox-row label').attr('swap-dcn2'));
+                            $('select.current-from').attr('data-current-layer', 'l2');
                             break;
                         case 'eth-l2':
-                            $('.swapping-section .from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+projectData.utils.fromWei(l2_eth_balance, 'ether')+'</span> ETH2.0</span>');
-                            $('.swapping-section .to-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+projectData.utils.fromWei(l1_eth_balance, 'ether')+'</span> ETH</span>');
+                            var L1EthBalance = projectData.utils.fromWei(l1_eth_balance, 'ether');
+                            if (parseFloat(L1EthBalance).countDecimals() > 10) {
+                                L1EthBalance = parseFloat(L1EthBalance).toFixedNoRounding(10).toString();
+                            }
+
+                            var L2EthBalance = projectData.utils.fromWei(l2_eth_balance, 'ether');
+                            if (parseFloat(L2EthBalance).countDecimals() > 10) {
+                                L2EthBalance = parseFloat(L2EthBalance).toFixedNoRounding(10).toString();
+                            }
+
+                            $('.swapping-section .from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+L2EthBalance+'</span> ETH2.0</span>');
+                            $('.swapping-section .to-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount">'+L1EthBalance+'</span> ETH</span>');
                             $('.swapping-section .to-box .inputable-line').html('<div class="transfer-to-amount inline-block">0.0</div><select class="inline-block fs-24 padding-left-10 current-to"><option selected value="eth-l1">ETH</option></select>');
 
                             $('.current-currency-explanation').html($('.current-currency-explanation').attr('swap-eth2'));
                             $('.checkbox-row label').html($('.checkbox-row label').attr('swap-eth2'));
+                            $('select.current-from').attr('data-current-layer', 'l2');
                             break;
                     }
                 });
@@ -1538,19 +1576,20 @@ var projectData = {
                 $('.switch-layers-btn a').click(function() {
                     if ($('select.current-from').attr('data-current-layer') == 'l1') {
                         $('select.current-from').attr('data-current-layer', 'l2');
-                        if ($('select.current-from').val() == 'eth-l1') {
-                            $('select.current-from').html('<option value="dcn-l2">DCN2.0</option><option value="eth-l2" selected>ETH2.0</option>');
-                        } else {
-                            $('select.current-from').html('<option value="dcn-l2">DCN2.0</option><option value="eth-l2">ETH2.0</option>');
-                        }
                     } else if ($('select.current-from').attr('data-current-layer') == 'l2') {
                         $('select.current-from').attr('data-current-layer', 'l1');
-                        if ($('select.current-from').val() == 'eth-l2') {
-                            $('select.current-from').html('<option value="dcn-l1">DCN</option><option value="eth-l1" selected>ETH</option>');
-                        } else {
-                            $('select.current-from').html('<option value="dcn-l1">DCN</option><option value="eth-l1">ETH</option>');
-                        }
                     }
+
+                    if ($('select.current-from').val() == 'eth-l1') {
+                        $('select.current-from').html('<option value="dcn-l1">DCN</option><option value="eth-l1">ETH</option><option value="dcn-l2">DCN2.0</option><option value="eth-l2" selected>ETH2.0</option>');
+                    } else if ($('select.current-from').val() == 'eth-l2') {
+                        $('select.current-from').html('<option value="dcn-l1">DCN</option><option value="eth-l1" selected>ETH</option><option value="dcn-l2">DCN2.0</option><option value="eth-l2">ETH2.0</option>');
+                    } else if ($('select.current-from').val() == 'dcn-l1') {
+                        $('select.current-from').html('<option value="dcn-l1">DCN</option><option value="eth-l1">ETH</option><option value="dcn-l2" selected>DCN2.0</option><option value="eth-l2">ETH2.0</option>');
+                    } else if ($('select.current-from').val() == 'dcn-l2') {
+                        $('select.current-from').html('<option value="dcn-l1" selected>DCN</option><option value="eth-l1">ETH</option><option value="dcn-l2">DCN2.0</option><option value="eth-l2">ETH2.0</option>');
+                    }
+
                     $('select.current-from').trigger('change');
                 });
 
@@ -1610,7 +1649,7 @@ var projectData = {
                                     var gasLimit = await L2StandardBridge.methods.withdraw(config_variable.l2.addresses.dcn_contract_address, amount, 2000000, '0x').estimateGas({
                                         from: global_state.account
                                     });
-                                    console.log(gasLimit, 'gasLimit);');
+                                    console.log(gasLimit, 'gasLimit');
 
                                     projectData.general_logic.openTxConfirmationPopup('Swap confirmation', config_variable.l2.addresses.OVM_L2StandardBridge_address, amount, 'DCN2.0', gasLimit, L2StandardBridge.methods.withdraw(config_variable.l2.addresses.dcn_contract_address, amount, 2000000, '0x').encodeABI(), 'l2', 'swap', 'dcn-l2-to-dcn-l1', $('.swapping-section .to-box .inputable-line .transfer-to-amount').html());
                                 }
@@ -1979,7 +2018,6 @@ var projectData = {
                 ethFeeLabel = 'ETH2.0';
                 web3_provider = dApp.web3_l2;
                 currentGasPriceInGwei = parseInt(await dApp.web3_l2.eth.getGasPrice());
-                console.log(currentGasPriceInGwei, 'currentGasPriceInGwei');
                 on_popup_load_gas_price = currentGasPriceInGwei;
                 visibleGasPriceNumber = on_popup_load_gas_price / 1000000000;
             }
@@ -2043,16 +2081,14 @@ var projectData = {
                     visibleToAddress = projectData.utils.checksumAddress(visible_to);
                 }
                 var eth_fee = projectData.utils.fromWei((on_popup_load_gas_price * gasLimit).toString(), 'ether');
-                console.log(on_popup_load_gas_price, 'on_popup_load_gas_price');
-                console.log(gasLimit, 'gasLimit');
-                console.log(eth_fee, 'eth_fee');
-                var transaction_popup_html = '<div class="tx-data-holder" data-visibleGasPriceNumber="'+visibleGasPriceNumber+'" data-initial-visibleGasPriceNumber="'+visibleGasPriceNumber+'" data-gasLimit="'+gasLimit+'" data-nonce="'+pendingNonce+'" data-initial-nonce="'+pendingNonce+'" data-on_popup_load_gas_price="'+on_popup_load_gas_price+'"></div><div class="title">'+popupTitle+'</div><div class="pictogram-and-dcn-usd-price">' + txIcon + belowTxIconHtml + usdHtml + '</div><div class="confirm-row to"> <div class="label inline-block">'+$('.translates-holder').attr('to-label')+'</div><div class="value inline-block">' + visibleToAddress + '</div></div><div class="confirm-row from"> <div class="label inline-block">'+$('.translates-holder').attr('from-label')+'</div><div class="value inline-block">' + global_state.account + '</div></div><div class="confirm-row nonce"> <div class="label inline-block">'+$('.translates-holder').attr('nonce')+'</div><div class="value inline-block">' + pendingNonce + '</div></div><div class="confirm-row fee"> <div class="label inline-block">'+ethFeeLabel+$('.translates-holder').attr('eth-fee')+'</div><div class="value inline-block"><div class="inline-block eth-value">' + parseFloat(eth_fee).toFixed(8) + '</div><div class="inline-block tx-settings-icon"><a href="javascript:void(0);"><svg id="e68760ed-3659-43b9-ad7b-73b5b189fe7a" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 56.81 61"><defs><clipPath id="f9d5df6d-58de-4fe9-baeb-2948a9aeab40"><rect class="bb542d8f-936a-4524-831e-8152ec1848dd" x="-3.59" y="-1.5" width="64" height="64"/></clipPath></defs><g class="e20091d8-5cd8-4fc6-97bc-34f6a53a9fd6"><path style="fill:#888;" d="M28.29,61a25,25,0,0,1-4.05-.3,2.46,2.46,0,0,1-1.83-1.63L20.8,53.51a2.8,2.8,0,0,0-1.06-1.36l-5.86-3.38a2.67,2.67,0,0,0-1.69-.22L6.67,50a2.48,2.48,0,0,1-2.33-.73A28,28,0,0,1,.16,42.1a2.47,2.47,0,0,1,.5-2.39l4.15-4.33a2.76,2.76,0,0,0,.64-1.6V27a2.6,2.6,0,0,0-.65-1.57L.66,21.31a2.43,2.43,0,0,1-.52-2.38A31.86,31.86,0,0,1,2,15.27a30.47,30.47,0,0,1,2.33-3.49A2.48,2.48,0,0,1,6.61,11l5.9,1.45a2.69,2.69,0,0,0,1.7-.24l5.86-3.38a2.67,2.67,0,0,0,1-1.35L22.6,1.93A2.4,2.4,0,0,1,24.4.29a27.62,27.62,0,0,1,8.22,0A2.42,2.42,0,0,1,34.41,2L35.89,7.5a2.67,2.67,0,0,0,1,1.35l5.86,3.38a2.63,2.63,0,0,0,1.68.22L50,11a2.44,2.44,0,0,1,2.33.73,27.84,27.84,0,0,1,4.3,7.48,2.46,2.46,0,0,1-.54,2.39L52.2,25.45A2.66,2.66,0,0,0,51.55,27v6.76a2.72,2.72,0,0,0,.65,1.58l3.94,3.94a2.46,2.46,0,0,1,.54,2.38,29.28,29.28,0,0,1-2,4,29,29,0,0,1-2.32,3.5,2.44,2.44,0,0,1-2.33.73l-5.24-1.4a2.67,2.67,0,0,0-1.69.22l-5.86,3.38a2.71,2.71,0,0,0-1,1.35l-1.46,5.44A2.48,2.48,0,0,1,33,60.61h0A25.92,25.92,0,0,1,28.29,61ZM12.68,47.49a3.62,3.62,0,0,1,1.7.41l5.86,3.39a3.67,3.67,0,0,1,1.52,1.94l1.61,5.56a1.48,1.48,0,0,0,1,.92,27.08,27.08,0,0,0,8.38-.08h0a1.49,1.49,0,0,0,1-.94l1.46-5.45a3.65,3.65,0,0,1,1.5-2l5.86-3.39a3.64,3.64,0,0,1,2.45-.32L50.31,49a1.42,1.42,0,0,0,1.3-.41,29.64,29.64,0,0,0,2.23-3.36,30,30,0,0,0,1.9-3.87,1.5,1.5,0,0,0-.3-1.35l-3.95-3.94a3.6,3.6,0,0,1-.94-2.28V27a3.64,3.64,0,0,1,.94-2.28l3.89-3.88a1.48,1.48,0,0,0,.3-1.34,26.75,26.75,0,0,0-4.12-7.17,1.45,1.45,0,0,0-1.31-.41l-5.52,1.48a3.57,3.57,0,0,1-2.44-.33L36.43,9.71a3.59,3.59,0,0,1-1.5-2L33.45,2.24a1.43,1.43,0,0,0-1-.93,26.61,26.61,0,0,0-7.87,0,1.4,1.4,0,0,0-1,.92l-1.5,5.56a3.54,3.54,0,0,1-1.5,2l-5.86,3.38a3.68,3.68,0,0,1-2.44.35L6.37,12a1.5,1.5,0,0,0-1.32.43,31.07,31.07,0,0,0-2.22,3.35,29.61,29.61,0,0,0-1.75,3.51,1.41,1.41,0,0,0,.29,1.32l4.14,4.14A3.64,3.64,0,0,1,6.45,27v6.76a3.73,3.73,0,0,1-.92,2.29L1.38,40.4a1.47,1.47,0,0,0-.28,1.35,26.44,26.44,0,0,0,4,6.9,1.41,1.41,0,0,0,1.3.41l5.52-1.48A3,3,0,0,1,12.68,47.49Zm15.72-3a14,14,0,1,1,14-14A14,14,0,0,1,28.4,44.53Zm0-27.06a13,13,0,1,0,13,13A13,13,0,0,0,28.4,17.47Z"/><path style="fill:#888;" d="M28.29,60.87a25.85,25.85,0,0,1-4.11-.31,4.3,4.3,0,0,1-3.29-3l-1.51-5.17s-.07-.07-.12-.11l-5.37-3.1s0,0-.09,0L8.74,50.61A4.27,4.27,0,0,1,4.5,49.27,27.7,27.7,0,0,1,.26,42a4.32,4.32,0,0,1,.9-4.33l3.86-4s0-.1,0-.16V27.27s0,0-.06-.08L1.2,23.4a4.23,4.23,0,0,1-1-4.35,29.26,29.26,0,0,1,1.84-3.71A31.23,31.23,0,0,1,4.44,11.8a4.32,4.32,0,0,1,4.21-1.37l5.48,1.35s.1,0,.15,0l5.3-3.07a.41.41,0,0,0,.1-.13l1.37-5.1a4.24,4.24,0,0,1,3.3-3,27.69,27.69,0,0,1,8.33,0,4.26,4.26,0,0,1,3.27,3l1.36,5a.6.6,0,0,0,.09.13l5.32,3.07.16,0,5-1.36a4.28,4.28,0,0,1,4.24,1.33,28.05,28.05,0,0,1,4.36,7.58,4.31,4.31,0,0,1-1,4.34L52,27.19a.67.67,0,0,0-.07.18v6.18s0,0,.06.07l3.61,3.61a4.29,4.29,0,0,1,1,4.33,30.43,30.43,0,0,1-2,4.1,31.86,31.86,0,0,1-2.36,3.53A4.28,4.28,0,0,1,48,50.54l-4.8-1.29-.18,0-5.3,3.06-.1.15-1.33,5a4.31,4.31,0,0,1-3.23,3h0A26.57,26.57,0,0,1,28.29,60.87Zm-2.88-4a25.3,25.3,0,0,0,6.33-.07L33,52.05a5.63,5.63,0,0,1,2.46-3.2l5.69-3.28a5.59,5.59,0,0,1,4-.53l4.51,1.21c.39-.54,1-1.48,1.61-2.51a29.91,29.91,0,0,0,1.48-2.91l-3.42-3.42a5.61,5.61,0,0,1-1.54-3.72V27.12a5.61,5.61,0,0,1,1.54-3.72L52.7,20a25.27,25.27,0,0,0-3.08-5.36L44.82,16a5.6,5.6,0,0,1-4-.53l-5.69-3.29A5.61,5.61,0,0,1,32.68,9L31.4,4.15a24.46,24.46,0,0,0-5.8,0L24.31,9a5.64,5.64,0,0,1-2.45,3.2l-5.69,3.28a5.71,5.71,0,0,1-4,.56L7,14.72A28.64,28.64,0,0,0,5.4,17.26c-.57,1-1.05,2-1.33,2.55L7.66,23.4A5.59,5.59,0,0,1,9.2,27.12v6.57a5.77,5.77,0,0,1-1.48,3.7l-3.65,3.8a24.17,24.17,0,0,0,3,5.14L11.85,45a5.65,5.65,0,0,1,4,.53l5.69,3.28A5.7,5.7,0,0,1,24,52ZM25,55.63h0Zm12.64-3.26h0ZM7.45,15.28h0ZM8.27,15ZM19.65,8.62h0Zm0,0h0Zm17.66,0h0ZM28.4,44.85A14.35,14.35,0,1,1,42.75,30.5,14.37,14.37,0,0,1,28.4,44.85Zm0-24.42A10.07,10.07,0,1,0,38.47,30.5,10.08,10.08,0,0,0,28.4,20.43Z"/></g></svg></a></div></div></div>';
+                var transaction_popup_html = '<div class="tx-data-holder" data-visibleGasPriceNumber="'+visibleGasPriceNumber+'" data-initial-visibleGasPriceNumber="'+visibleGasPriceNumber+'" data-gasLimit="'+gasLimit+'" data-nonce="'+pendingNonce+'" data-initial-nonce="'+pendingNonce+'" data-on_popup_load_gas_price="'+on_popup_load_gas_price+'"></div><div class="title">'+popupTitle+'</div><div class="pictogram-and-dcn-usd-price">' + txIcon + belowTxIconHtml + usdHtml + '</div><div class="confirm-row to"> <div class="label inline-block">'+$('.translates-holder').attr('to-label')+'</div><div class="value inline-block">' + visibleToAddress + '</div></div><div class="confirm-row from"> <div class="label inline-block">'+$('.translates-holder').attr('from-label')+'</div><div class="value inline-block">' + global_state.account + '</div></div><div class="confirm-row nonce"> <div class="label inline-block">'+$('.translates-holder').attr('nonce')+'</div><div class="value inline-block"><div class="inline-block nonce-value">' + pendingNonce + '</div><div class="inline-block tx-settings-icon"><a href="javascript:void(0);"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="pencil-alt" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="width-100"><path fill="#888888" d="M497.9 142.1l-46.1 46.1c-4.7 4.7-12.3 4.7-17 0l-111-111c-4.7-4.7-4.7-12.3 0-17l46.1-46.1c18.7-18.7 49.1-18.7 67.9 0l60.1 60.1c18.8 18.7 18.8 49.1 0 67.9zM284.2 99.8L21.6 362.4.4 483.9c-2.9 16.4 11.4 30.6 27.8 27.8l121.5-21.3 262.6-262.6c4.7-4.7 4.7-12.3 0-17l-111-111c-4.8-4.7-12.4-4.7-17.1 0zM124.1 339.9c-5.5-5.5-5.5-14.3 0-19.8l154-154c5.5-5.5 14.3-5.5 19.8 0s5.5 14.3 0 19.8l-154 154c-5.5 5.5-14.3 5.5-19.8 0zM88 424h48v36.3l-64.5 11.3-31.1-31.1L51.7 376H88v48z"></path></svg></a></div></div></div><div class="confirm-row fee"> <div class="label inline-block">'+ethFeeLabel+$('.translates-holder').attr('eth-fee')+'</div><div class="value inline-block"><div class="inline-block eth-value">' + parseFloat(eth_fee).toFixed(8) + '</div><div class="inline-block tx-settings-icon"><a href="javascript:void(0);"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="pencil-alt" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="width-100"><path fill="#888888" d="M497.9 142.1l-46.1 46.1c-4.7 4.7-12.3 4.7-17 0l-111-111c-4.7-4.7-4.7-12.3 0-17l46.1-46.1c18.7-18.7 49.1-18.7 67.9 0l60.1 60.1c18.8 18.7 18.8 49.1 0 67.9zM284.2 99.8L21.6 362.4.4 483.9c-2.9 16.4 11.4 30.6 27.8 27.8l121.5-21.3 262.6-262.6c4.7-4.7 4.7-12.3 0-17l-111-111c-4.8-4.7-12.4-4.7-17.1 0zM124.1 339.9c-5.5-5.5-5.5-14.3 0-19.8l154-154c5.5-5.5 14.3-5.5 19.8 0s5.5 14.3 0 19.8l-154 154c-5.5 5.5-14.3 5.5-19.8 0zM88 424h48v36.3l-64.5 11.3-31.1-31.1L51.7 376H88v48z"></path></svg></a></div></div></div>';
 
                 web3_provider.eth.getBalance(global_state.account, function (error, eth_balance) {
                     console.log(eth_balance, 'eth_balance');
                     if (error) {
                         console.log(error);
                     } else {
+                        var raw_eth_balance = eth_balance;
                         eth_balance = new Decimal(projectData.utils.fromWei(eth_balance));
 
                         if (window.localStorage.getItem('keystore_file') != null) {
@@ -2073,8 +2109,11 @@ var projectData = {
                                     }
                                 }
 
-                                if (eth_balance.lessThan(eth_fee_check)) {
+                                if (parseInt(raw_eth_balance) == 0) {
                                     basic.showAlert($('.translates-holder').attr('no-balance'), '', true);
+                                    $('.transaction-confirmation-popup .on-change-result').html('');
+                                } else if (eth_balance.lessThan(eth_fee_check)) {
+                                    basic.showAlert($('.translates-holder').attr('not-enough-balance'), '', true);
                                     $('.transaction-confirmation-popup .on-change-result').html('');
                                 } else {
                                     if ($('.cached-keystore-file #your-secret-key-password').val().trim() == '') {
@@ -2106,6 +2145,7 @@ var projectData = {
                             projectData.general_logic.bindTxSettings(visibleGasPriceNumber, nonce);
 
                             //init private key btn logic
+                            $(document).off('click', '.enter-private-key');
                             $(document).on('click', '.enter-private-key', function () {
                                 var eth_fee_check;
                                 var current_eth_fee = projectData.utils.fromWei((($('.tx-data-holder').attr('data-visibleGasPriceNumber') * 1000000000) * gasLimit).toString(), 'ether');
@@ -2118,8 +2158,11 @@ var projectData = {
                                     }
                                 }
 
-                                if (eth_balance.lessThan(eth_fee_check)) {
+                                if (parseInt(raw_eth_balance) == 0) {
                                     basic.showAlert($('.translates-holder').attr('no-balance'), '', true);
+                                    $('.transaction-confirmation-popup .on-change-result').html('');
+                                } else if (eth_balance.lessThan(eth_fee_check)) {
+                                    basic.showAlert($('.translates-holder').attr('not-enough-balance'), '', true);
                                     $('.transaction-confirmation-popup .on-change-result').html('');
                                 } else {
                                     $('.proof-of-address #upload-keystore-file').val('');
@@ -2170,8 +2213,11 @@ var projectData = {
                                     }
                                 }
 
-                                if (eth_balance.lessThan(eth_fee_check)) {
+                                if (parseInt(raw_eth_balance) == 0) {
                                     basic.showAlert($('.translates-holder').attr('no-balance'), '', true);
+                                    $('.transaction-confirmation-popup .on-change-result').html('');
+                                } else if (eth_balance.lessThan(eth_fee_check)) {
+                                    basic.showAlert($('.translates-holder').attr('not-enough-balance'), '', true);
                                     $('.transaction-confirmation-popup .on-change-result').html('');
                                     projectData.general_logic.hideLoader();
                                 } else {
@@ -2189,39 +2235,50 @@ var projectData = {
             }
         },
         openL2InformationPopups: function(type) {
-            var popupHtml;
+            basic.showDialog('<div class="popup-slider"><div class="single-slide"><div class="text-center"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img id="what-is-dcn" alt="What is DCN2.0"></figure><h2 class="fs-26 fs-xs-24 padding-top-15">What is DCN2.0?</h2><div class="fs-20 padding-bottom-50">DCN2.0 is the b(igg)est upgrade of Dentacoin so far! It allows you to send and receive DCN2.0 tokens faster and with much lower transaction costs. It also protects the value of DCN from high fluctuations.</div></div><div class="bottom-menu padding-top-10 padding-bottom-30 fs-20 fs-xs-16 calibri-bold"><a href="javascript:void(0);" class="how-to-get-and-use-dcn2">• How to get and use DCN2.0?<img src="assets/images/right-arrow.svg" class="width-100 max-width-20" alt="Arrow icon"/></a><a href="javascript:void(0);" class="whats-with-dcn">• What’s with the original version of DCN?<img src="assets/images/right-arrow.svg" class="width-100 max-width-20" alt="Arrow icon"/></a></div></div><div class="single-slide"><div class="text-center"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/pop-up-img2.png" alt="What is DCN2.0"></figure><h2 class="fs-26 fs-xs-24 padding-top-15">How to get and use DCN2.0?</h2><div class="fs-20 padding-bottom-50">DCN2.0 tokens are received as rewards from Dentacoin tools (eg. for writing a review on Dentacoin Trusted Reviews or taking DentaVox surveys). You can use them for staking to increase your savings, for payments at partner dentists, or for covering your Dentacoin Assurance fees. You can also easily swap DCN to DCN2.0 right here in your wallet.</div></div><div class="bottom-menu padding-top-10 padding-bottom-30 fs-20 fs-xs-16 calibri-bold"><a href="javascript:void(0);" class="whats-with-dcn">• What’s with the original version of DCN?<img src="assets/images/right-arrow.svg" class="width-100 max-width-20" alt="Arrow icon"/></a><a href="javascript:void(0);" class="what-is-dcn2">• What is DCN2.0?<img src="assets/images/right-arrow.svg" class="width-100 max-width-20" alt="Arrow icon"/></a></div></div><div class="single-slide"><div class="text-center"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/pop-up-img3.png" alt="What is DCN2.0"></figure><h2 class="fs-26 fs-xs-24 padding-top-15">What’s with the original version of DCN?</h2><div class="fs-20 padding-bottom-50">It is alive and flourishing :) But its main use case would be for trading on exchange platforms.</div></div><div class="bottom-menu padding-top-10 padding-bottom-30 fs-20 fs-xs-16 calibri-bold"><a href="javascript:void(0);" class="what-is-dcn2">• What is DCN2.0?<img src="assets/images/right-arrow.svg" class="width-100 max-width-20" alt="Arrow icon"/></a><a href="javascript:void(0);" class="how-to-get-and-use-dcn2">• How to get and use DCN2.0?<img src="assets/images/right-arrow.svg" class="width-100 max-width-20" alt="Arrow icon"/></a></div></div></div>', 'l2-information-popup', true);
+
+            var photo = document.getElementById('what-is-dcn');
+            var img = new Image();
+            img.src = 'assets/images/pop-up-img1.png';
+            photo.src = img.src;
+
+            img.addEventListener('load', function() {
+                $('.popup-slider').slick({
+                    slidesToShow: 1,
+                    infinite: false,
+                    arrows: false,
+                    dots: true,
+                    adaptiveHeight: true
+                });
+            }, false);
+
             switch(type) {
                 case 'what-is-dcn2':
-                    popupHtml = '<div class="text-center"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/pop-up-img1.png" alt="What is DCN2.0"></figure><h2 class="fs-26 fs-xs-24 padding-top-15">What is DCN2?</h2><div class="fs-20 padding-bottom-50">DCN2 is the b(igg)est upgrade of Dentacoin so far! It allows you to send and receive DCN2 tokens faster and with much lower transaction costs. It also protects the value of DCN from high fluctuations.</div></div><div class="bottom-menu padding-top-10 padding-bottom-30 fs-20 calibri-bold"><a href="javascript:void(0);" class="how-to-get-and-use-dcn2">• How to get and use DCN2?<img src="assets/images/right-arrow.svg" class="width-100 max-width-20" alt="Arrow icon"/></a><a href="javascript:void(0);" class="whats-with-dcn">• What’s with the original version of DCN?<img src="assets/images/right-arrow.svg" class="width-100 max-width-20" alt="Arrow icon"/></a></div><div class="popup-bullets text-center"><ul><li class="active"></li><li></li><li></li></ul></div>';
+
                     break;
                 case 'how-to-get-and-use-dcn2':
-                    popupHtml = '<div class="text-center"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/pop-up-img2.png" alt="What is DCN2.0"></figure><h2 class="fs-26 fs-xs-24 padding-top-15">How to get and use DCN2?</h2><div class="fs-20 padding-bottom-50">DCN2 tokens are received as rewards from Dentacoin tools (eg. for writing a review on Dentacoin Trusted Reviews or taking DentaVox surveys). You can use them for staking to increase your savings, for payments at partner dentists, or for covering your Dentacoin Assurance fees. You can also easily swap DCN to DCN2 right here in your wallet.</div></div><div class="bottom-menu padding-top-10 padding-bottom-30 fs-20 calibri-bold"><a href="javascript:void(0);" class="whats-with-dcn">• What’s with the original version of DCN?<img src="assets/images/right-arrow.svg" class="width-100 max-width-20" alt="Arrow icon"/></a><a href="javascript:void(0);" class="what-is-dcn2">• What is DCN2?<img src="assets/images/right-arrow.svg" class="width-100 max-width-20" alt="Arrow icon"/></a></div><div class="popup-bullets text-center"><ul><li></li><li class="active"></li><li></li></ul></div>';
+                    $('.popup-slider').slick('slickGoTo', 1);
                     break;
                 case 'whats-with-dcn':
-                    popupHtml = '<div class="text-center"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/pop-up-img3.png" alt="What is DCN2.0"></figure><h2 class="fs-26 fs-xs-24 padding-top-15">What’s with the original version of DCN?</h2><div class="fs-20 padding-bottom-50">It is alive and flourishing :) But its main use case would be for trading on exchange platforms.</div></div><div class="bottom-menu padding-top-10 padding-bottom-30 fs-20 calibri-bold"><a href="javascript:void(0);" class="what-is-dcn2">• What is DCN2?<img src="assets/images/right-arrow.svg" class="width-100 max-width-20" alt="Arrow icon"/></a><a href="javascript:void(0);" class="how-to-get-and-use-dcn2">• How to get and use DCN2?<img src="assets/images/right-arrow.svg" class="width-100 max-width-20" alt="Arrow icon"/></a></div><div class="popup-bullets text-center"><ul><li></li><li></li><li class="active"></li></ul></div>';
+                    $('.popup-slider').slick('slickGoTo', 2);
                     break;
             }
 
-            basic.showDialog(popupHtml, 'l2-information-popup', true);
-
             if ($('.l2-information-popup .how-to-get-and-use-dcn2').length) {
                 $('.l2-information-popup .how-to-get-and-use-dcn2').click(function() {
-                    basic.closeDialog();
-                    projectData.general_logic.openL2InformationPopups('how-to-get-and-use-dcn2');
+                    $('.popup-slider').slick('slickGoTo', 1);
                 });
             }
 
             if ($('.l2-information-popup .whats-with-dcn').length) {
                 $('.l2-information-popup .whats-with-dcn').click(function() {
-                    basic.closeDialog();
-                    projectData.general_logic.openL2InformationPopups('whats-with-dcn');
+                    $('.popup-slider').slick('slickGoTo', 2);
                 });
             }
 
             if ($('.l2-information-popup .what-is-dcn2').length) {
                 $('.l2-information-popup .what-is-dcn2').click(function() {
-                    basic.closeDialog();
-                    projectData.general_logic.openL2InformationPopups('what-is-dcn2');
+                    $('.popup-slider').slick('slickGoTo', 0);
                 });
             }
         },
@@ -2372,6 +2429,7 @@ var projectData = {
 
                                                         $('.camping-withdraw-history').html('<div class="container"><div class="row"><div class="col-xs-12 no-gutter-xs col-md-10 col-md-offset-1 padding-top-20 withdraw-history-scroll-parent"><table class="color-white"><tbody>'+withdrawHistoryHtml+'</tbody></table></div></div><div class="row camping-show-more"></div></div>');
 
+                                                        $(document).off('click', '.withdraw-btn');
                                                         $(document).on('click', '.withdraw-btn', async function() {
                                                             projectData.general_logic.showLoader();
                                                             var txHash = $(this).closest('tr').attr('data-hash');
@@ -2392,14 +2450,16 @@ var projectData = {
                                                                     config_variable.l2.addresses.OVM_L2CrossDomainMessenger,
                                                                     txHash
                                                                 );
+                                                                console.log(messagePairs, 'messagePairs');
 
                                                                 if (messagePairs.length) {
                                                                     var to = projectData.utils.checksumAddress(config_variable.l1.addresses.ResolvedDelegateProxy);
                                                                     var L1CrossDomainMessengerContract = getL1Instance(config_variable.l1.abi_definitions.L1CrossDomainMessenger_abi, config_variable.l1.addresses.L1CrossDomainMessenger);
 
-                                                                    var gasLimit = await L1CrossDomainMessengerContract.methods.relayMessage(messagePairs[0].message.target, messagePairs[0].message.sender, messagePairs[0].message.message, messagePairs[0].message.messageNonce, messagePairs[0].proof).estimateGas({
+                                                                    /*var gasLimit = await L1CrossDomainMessengerContract.methods.relayMessage(messagePairs[0].message.target, messagePairs[0].message.sender, messagePairs[0].message.message, messagePairs[0].message.messageNonce, messagePairs[0].proof).estimateGas({
                                                                         from: global_state.account
-                                                                    });
+                                                                    });*/
+                                                                    var gasLimit = 1000000;
                                                                     console.log(gasLimit, 'gasLimit');
 
                                                                     projectData.general_logic.hideLoader();
@@ -2550,6 +2610,8 @@ var projectData = {
                                 }
                             }
                             iterateEvents(counter);
+                        } else {
+                            $('.camping-transaction-history').html('<h2 class="lato-bold fs-16 text-center color-white padding-top-20"><span class="renew-on-lang-switch" data-slug="no-tx">'+$('.translates-holder').attr('no-tx')+'</span></h2>');
                         }
                     }
 
@@ -2760,7 +2822,8 @@ var projectData = {
                         $('.transaction-confirmation-popup .on-change-result').html('');
 
                         $('.tx-data-holder').attr('data-nonce', parseInt($('.tx-settings-popup #edit-nonce').val().trim()));
-                        $('.transaction-confirmation-popup .confirm-row.nonce .value').html(parseInt($('.tx-settings-popup #edit-nonce').val().trim()));
+                        $('.transaction-confirmation-popup .confirm-row.nonce .nonce-value').html(parseInt($('.tx-settings-popup #edit-nonce').val().trim()));
+                        $('.transaction-confirmation-popup .confirm-row.nonce').addClass('changed-settings');
 
                         $('.tx-data-holder').attr('data-visibleGasPriceNumber', $('.tx-settings-popup #edit-gas-price').val().trim());
                         $('.tx-data-holder').attr('data-on_popup_load_gas_price', parseInt($('.tx-settings-popup #edit-gas-price').val().trim()) * 1000000000);
@@ -3738,58 +3801,87 @@ function styleKeystoreUploadBtnForTx(callback) {
 
 //method to sign and submit transaction to blockchain
 function submitTransactionToBlockchain(web3_provider, transactionType, function_abi, symbol, token_val, to, key, data) {
+    console.log(web3_provider, transactionType, function_abi, symbol, token_val, to, key, data);
     var decryptedAccount = web3_provider.eth.accounts.privateKeyToAccount(key.toString('hex'));
 
-    var serializedTx;
-    if (transactionType == 'transfer' || transactionType == 'swap') {
+    var layer;
+    var token_label;
+    var etherscanDomain;
+    if (symbol == 'DCN' || symbol == 'ETH') {
+        layer = 'L1';
+    } else if (symbol == 'DCN2.0' || symbol == 'ETH2.0') {
+        layer = 'L2';
+    }
+    console.log(layer, 'layer');
+
+    if (layer == 'L1') {
         var transaction_obj = {
-            gasLimit: web3_provider.utils.toHex($('.tx-data-holder').attr('data-gasLimit')),
-            gasPrice: web3_provider.utils.toHex($('.tx-data-holder').attr('data-on_popup_load_gas_price')),
-            from: global_state.account,
+            chainId: config_variable.l1.chain_id,
             nonce: web3_provider.utils.toHex($('.tx-data-holder').attr('data-nonce')),
+            maxFeePerGas: web3_provider.utils.toHex($('.tx-data-holder').attr('data-on_popup_load_gas_price'))
+            /*gas: web3_provider.utils.toHex($('.tx-data-holder').attr('data-gasLimit')),*/
+            /*maxPriorityFeePerGas: web3_provider.utils.toHex($('.tx-data-holder').attr('data-on_popup_load_gas_price'))*/
         };
 
-        //function_abi is when we want to add logic into our transaction (mostly when iteracting with contracts)
         if (function_abi != null) {
             transaction_obj.data = function_abi;
         }
 
-        var token_label;
-        var layer;
-        var etherscanDomain;
-        if (symbol == 'DCN') {
-            transaction_obj.to = config_variable.l1.addresses.dcn_contract_address;
-            transaction_obj.chainId = config_variable.l1.chain_id;
-            layer = 'L1';
-            token_label = 'Dentacoin tokens';
-            etherscanDomain = config_variable.etherscan_domain;
-        } else if (symbol == 'DCN2.0') {
+        if (transactionType == 'transfer' || transactionType == 'swap') {
+            transaction_obj.gas = web3_provider.utils.toHex($('.tx-data-holder').attr('data-gasLimit'));
+            if (symbol == 'DCN') {
+                transaction_obj.to = config_variable.l1.addresses.dcn_contract_address;
+                token_label = 'Dentacoin tokens';
+                etherscanDomain = config_variable.etherscan_domain;
+            } else if (symbol == 'ETH') {
+                transaction_obj.to = to;
+                if (token_val > 0) {
+                    transaction_obj.value = web3_provider.utils.toHex(projectData.utils.toWei(token_val.toString()));
+                }
+                token_label = 'Ethers';
+                etherscanDomain = config_variable.etherscan_domain;
+            }
+        } else if (transactionType == 'l2-withdraw') {
+            transaction_obj.gas = web3_provider.utils.toHex(1000000);
+            transaction_obj.to = config_variable.l1.addresses.ResolvedDelegateProxy;
+        }
+        console.log(transaction_obj, 'transaction_obj');
+
+        decryptedAccount.signTransaction(transaction_obj, function(error, signedTx) {
+            if (!error) {
+                proceedWithTxSending(signedTx.rawTransaction);
+            } else {
+                console.log(error);
+                alert('Something went wrong with signing this transaction. Code error - 1. Please contact admin@dentacoin.com.');
+            }
+        });
+    } else if (layer == 'L2') {
+        var transaction_obj = {
+            /*gasLimit: web3_provider.utils.toHex($('.tx-data-holder').attr('data-gasLimit')),*/
+            gas: web3_provider.utils.toHex($('.tx-data-holder').attr('data-gasLimit')),
+            gasPrice: web3_provider.utils.toHex($('.tx-data-holder').attr('data-on_popup_load_gas_price')),
+            nonce: web3_provider.utils.toHex($('.tx-data-holder').attr('data-nonce')),
+            chainId: config_variable.l2.chain_id
+        };
+
+        if (function_abi != null) {
+            transaction_obj.data = function_abi;
+        }
+
+        if (symbol == 'DCN2.0') {
             if (transactionType == 'transfer') {
                 transaction_obj.to = config_variable.l2.addresses.dcn_contract_address;
             } else {
                 transaction_obj.to = to;
             }
-            transaction_obj.chainId = config_variable.l2.chain_id;
-            layer = 'L2';
             token_label = 'Dentacoin 2.0 tokens';
             etherscanDomain = config_variable.optimism_etherscan_domain;
-        } else if (symbol == 'ETH') {
-            transaction_obj.to = to;
-            transaction_obj.chainId = config_variable.l1.chain_id;
-            if (token_val > 0) {
-                transaction_obj.value = web3_provider.utils.toHex(projectData.utils.toWei(token_val.toString()));
-            }
-            layer = 'L1';
-            token_label = 'Ethers';
-            etherscanDomain = config_variable.etherscan_domain;
         } else if (symbol == 'ETH2.0') {
             transaction_obj.to = to;
-            transaction_obj.chainId = config_variable.l2.chain_id;
             // passing value only when transfering, not when swapping
             if (transactionType == 'transfer' && token_val > 0) {
                 transaction_obj.value = web3_provider.utils.toHex(projectData.utils.toWei(token_val.toString()));
             }
-            layer = 'L2';
             token_label = 'Ethers 2.0';
             etherscanDomain = config_variable.optimism_etherscan_domain;
         }
@@ -3802,30 +3894,11 @@ function submitTransactionToBlockchain(web3_provider, transactionType, function_
                 alert('Something went wrong with signing this transaction. Code error - 2. Please contact admin@dentacoin.com.');
             }
         });
-    } else if (transactionType == 'l2-withdraw') {
-        var transaction_obj = {
-            data: function_abi,
-            to: config_variable.l1.addresses.ResolvedDelegateProxy,
-            /*gas: web3_provider.utils.toHex($('.tx-data-holder').attr('data-gasLimit')),*/
-            gas: web3_provider.utils.toHex(1000000),
-            nonce: web3_provider.utils.toHex($('.tx-data-holder').attr('data-nonce')),
-            maxFeePerGas: web3_provider.utils.toHex($('.tx-data-holder').attr('data-on_popup_load_gas_price')),
-            maxPriorityFeePerGas: web3_provider.utils.toHex($('.tx-data-holder').attr('data-on_popup_load_gas_price'))
-        };
-
-        decryptedAccount.signTransaction(transaction_obj, function(error, signedTx) {
-            if (!error) {
-                proceedWithTxSending(signedTx.rawTransaction);
-            } else {
-                console.log(error);
-                alert('Something went wrong with signing this transaction. Code error - 1. Please contact admin@dentacoin.com.');
-            }
-        });
     }
 
     function proceedWithTxSending(rawSignedTx) {
         web3_provider.eth.sendSignedTransaction(rawSignedTx, function (err, transactionHash) {
-            console.log(err, transactionHash);
+            console.log(err, transactionHash, 'sendSignedTransaction - err, transactionHash');
             projectData.general_logic.hideLoader();
             basic.closeDialog();
 
@@ -4458,22 +4531,27 @@ function initAccountChecker() {
                                 //MOBILE APP
                                 if (basic.getMobileOperatingSystem() == 'Android') {
                                     //saving keystore file to Downloads folder
-                                    projectData.general_logic.hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
-                                        //saving keystore file to App folder
-                                        projectData.general_logic.hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function () {
-                                            projectData.general_logic.fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
-                                            loginIntoWallet();
+                                    projectData.general_logic.hybridAppFileDownload(keystore_file_name + '-1', JSON.stringify(keystore), function () {
+                                        console.log('Saved to: ' + cordova.file.applicationStorageDirectory);
+                                        projectData.general_logic.hybridAppFileDownload(keystore_file_name + '-2', JSON.stringify(keystore), function () {
+                                            //saving keystore file to App folder
+                                            console.log('Saved to: ' + cordova.file.externalDataDirectory);
+                                            projectData.general_logic.hybridAppFileDownload(keystore_file_name + '-3', JSON.stringify(keystore), function () {
+                                                console.log('Saved to: ' + cordova.file.externalApplicationStorageDirectory);
+                                                projectData.general_logic.fireGoogleAnalyticsEvent('Register', 'Download', 'Download Keystore');
+                                                loginIntoWallet();
 
-                                            basic.showAlert($('.translates-holder').attr('file') + keystore_file_name + $('.translates-holder').attr('has-been-stored'), 'overlap-loading-popup', true);
-                                            setTimeout(function () {
-                                                projectData.general_logic.fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
-                                                basic.closeDialog();
-                                                projectData.general_logic.hideLoader();
-                                                clearCreation();
-                                            }, 6000);
+                                                basic.showAlert($('.translates-holder').attr('file') + keystore_file_name + $('.translates-holder').attr('has-been-stored'), 'overlap-loading-popup', true);
+                                                setTimeout(function () {
+                                                    projectData.general_logic.fireGoogleAnalyticsEvent('Register', 'Create', 'Wallet');
+                                                    basic.closeDialog();
+                                                    projectData.general_logic.hideLoader();
+                                                    clearCreation();
+                                                }, 6000);
 
+                                            }, cordova.file.externalApplicationStorageDirectory, false);
                                         }, cordova.file.externalDataDirectory, false);
-                                    }, cordova.file.externalRootDirectory, true);
+                                    }, cordova.file.applicationStorageDirectory, true);
                                 } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                                     window.plugins.socialsharing.share(JSON.stringify(keystore));
 
@@ -4871,6 +4949,7 @@ $(document).on('click', '.open-settings', function () {
         //if not cached keystore file show the option for caching it
         settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important remember-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path fill="#00B5E2" d="M14,0H2C0.9,0,0,0.9,0,2v12c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V2C16,0.9,15.1,0,14,0z M15,14c0,0.6-0.4,1-1,1 H2c-0.6,0-1-0.4-1-1v-3h14V14z M15,10H1V6h14V10z M1,5V2c0-0.6,0.4-1,1-1h12c0.6,0,1,0.4,1,1v3H1z M14,3.5C14,3.8,13.8,4,13.5,4h-1 C12.2,4,12,3.8,12,3.5v-1C12,2.2,12.2,2,12.5,2h1C13.8,2,14,2.2,14,2.5V3.5z M14,8.5C14,8.8,13.8,9,13.5,9h-1C12.2,9,12,8.8,12,8.5 v-1C12,7.2,12.2,7,12.5,7h1C13.8,7,14,7.2,14,7.5V8.5z M14,13.5c0,0.3-0.2,0.5-0.5,0.5h-1c-0.3,0-0.5-0.2-0.5-0.5v-1 c0-0.3,0.2-0.5,0.5-0.5h1c0.3,0,0.5,0.2,0.5,0.5V13.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="remember-file">'+$('.translates-holder').attr('remember-file')+'</span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="by-doing-so">'+$('.translates-holder').attr('by-doing-so')+'</div><div class="camping-for-action"></div></div>';
 
+        $(document).off('click', '.settings-popup .remember-keystore');
         $(document).on('click', '.settings-popup .remember-keystore', function () {
             $('.settings-popup .camping-for-action').html('');
             $('.settings-popup .error-handle').remove();
@@ -5008,6 +5087,7 @@ $(document).on('click', '.open-settings', function () {
         if (!forgetWalletLogicInitiated) {
             forgetWalletLogicInitiated = true;
 
+            $(document).off('click', '.settings-popup .forget-keystore');
             $(document).on('click', '.settings-popup .forget-keystore', function () {
                 var forget_keystore_reminder_warning = {};
                 forget_keystore_reminder_warning.callback = function (result) {

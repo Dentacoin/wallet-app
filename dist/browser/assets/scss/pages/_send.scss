@@ -186,6 +186,15 @@ app-send-page {
             -webkit-appearance: none;
             margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
         }
+        .balance-line {
+            .balance-value {
+                width: calc(100% - 100px);
+            }
+            .white-light-blue-btn {
+                width: 100px;
+                text-align: center;
+            }
+        }
         .send-to {
             margin: 0 -65px;
             background-color: white;

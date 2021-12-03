@@ -58,15 +58,17 @@
             </div>
         </div>
         <div class="container-fluid no-gutter-xs">
-            <div class="row fs-0 padding-top-50 padding-top-xs-20">
-                <div class="col-xs-12 col-md-5 inline-block padding-bottom-sm-20 padding-bottom-xs-20 balance-line">
-                    <div class="from-box module padding-top-10 padding-bottom-10">
-                        <div class="padding-bottom-10 fs-20 color-light-blue">{{'send-amount' | translate}}</div>
-                        <div class="balance-line">
-                            <a href="javascript:void(0);" class="inline-block line-height-26 white-light-blue-btn padding-top-0 padding-left-5 padding-bottom-0 padding-right-5 fs-14 fs-xs-12 light-blue-border max-btn">MAX</a>
-                            <div class="inline-block balance-value fs-20">Balance: <span class="color-light-blue"><span class="amount"></span> DCN</span></div>
-                        </div>
-                        <div class="padding-top-20 inputable-line">
+            <div class="row fs-0 padding-top-40 padding-top-xs-25">
+                <div class="balance-line padding-bottom-40 padding-bottom-xs-15 fs-0 col-xs-12 col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3">
+                    <div class="inline-block balance-value fs-20">
+                        <span class="inline-block display-block-xs color-light-blue fs-xs-16 padding-right-10">Balance:</span> <span class="color-black inline-block max-amount"><span class="amount"></span> DCN</span>
+                    </div>
+                    <a href="javascript:void(0);" class="inline-block line-height-30 white-light-blue-btn padding-top-0 padding-bottom-0 fs-16 fs-xs-14 light-blue-border max-btn">MAX</a>
+                </div>
+                <div class="col-xs-12 col-md-5 inline-block padding-bottom-sm-20 padding-bottom-xs-20">
+                    <div class="from-box module padding-top-10 padding-bottom-10 padding-left-20 padding-right-20 padding-left-xs-10 padding-right-xs-10">
+                        <div class="padding-bottom-5 padding-bottom-xs-0 fs-20 color-light-blue">{{'send-amount' | translate}}</div>
+                        <div class="inputable-line">
                             <input type="number" class="inputable-amount inline-block" id="crypto-amount" placeholder="0.0"/>
                             <select class="inline-block fs-24 fs-xs-22 padding-left-10 crypto-label input-label" id="active-crypto">
                                 <option value="dcn-l2">DCN2.0</option>
@@ -96,9 +98,9 @@
                     <img src="assets/images/equal-icon.svg" class="width-100 max-width-30" alt="Edit icon" itemprop="contentUrl"/>
                 </figure>
                 <div class="col-xs-12 col-md-5 inline-block">
-                    <div class="to-box module padding-top-25 padding-bottom-25">
-                        <div class="padding-bottom-5 fs-20 color-light-blue">{{'equal-to' | translate}}</div>
-                        <div class="padding-top-20 inputable-line">
+                    <div class="to-box module padding-top-10 padding-bottom-10 padding-left-20 padding-right-20 padding-left-xs-10 padding-right-xs-10">
+                        <div class="padding-bottom-5 padding-bottom-xs-0 fs-20 color-light-blue">{{'equal-to' | translate}}</div>
+                        <div class="inputable-line">
                             <input type="number" class="inline-block" id="usd-val" placeholder="0.0"/>
                             <div class="inline-block token-label fs-24 fs-xs-22">$ USD</div>
                         </div>

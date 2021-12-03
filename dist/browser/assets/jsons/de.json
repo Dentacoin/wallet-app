@@ -53,7 +53,7 @@
   "proceed" : "ODER OHNE FORTFAHREN",
   "tx-history" : "Verlauf der Transaktionen",
   "show-more" : "Mehr zeigen",
-  "no-tx" : "Keine Transaktionen vorhanden",
+  "no-tx" : "Keine Transaktionen vorhanden.",
   "dcn-address" : "Ihre Dentacoin-Adresse",
   "smth-wrong" : "Bei unserem externen Anbieter ist ein Fehler aufgetreten. Bitte versuchen Sie es später noch einmal.",
   "min-tx-limit" : "Das minimale Transaktionslimit beträgt",
@@ -78,7 +78,6 @@
   "greater-dcn-value" : "Stellen Sie sicher, dass der DCN-Wert größer als 10 ist. Sie können nicht weniger als 10 DCN senden.",
   "higher-than-balance" : "Der Betrag, den Sie senden möchten, ist höher als Ihr Guthaben.",
   "enter-valid-address" : "Bitte geben Sie eine gültige Wallet-Adresse ein. Sie sollte mit \"0x\" beginnen und von 40 Zeichen (Zahlen und Buchstaben) gefolgt werden.",
-  "checkbox" : "Bitte, markieren Sie das Kontrollkästchen.",
   "sending-conf" : "Bestätigung senden",
   "to-label" : "An:",
   "from-label" : "Von:",
@@ -235,5 +234,8 @@
   "secure-place" : "Drucken Sie dieses Dokument aus und bewahren Sie es an einem sicheren Ort auf.",
   "never-share" : "Teilen Sie dieses Dokument niemals mit jemandem, um den Diebstahl Ihres Geldes zu verhindern!",
   "to-unlock" : "Um Ihr Vermögen zu verwalten, öffnen Sie bitte die Dentacoin Wallet-App oder gehen Sie auf: wallet.dentacoin.com. Wählen Sie „Vorhandene Wallet importieren“, schreiben Sie den privaten Schlüssel in das entsprechende Feld oder scannen Sie den QR-Code. Sie sehen den DCN-Betrag, den Sie besitzen.",
-  "use-a4" : "Bitte wählen Sie das Papierformat A4 für eine optimale Anzeige."
+  "use-a4" : "Bitte wählen Sie das Papierformat A4 für eine optimale Anzeige.",
+
+
+  "checkbox" : "Bitte, markieren Sie das Kontrollkästchen."
 }

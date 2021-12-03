@@ -19,8 +19,8 @@
     <allow-intent href="geo:*" />
     <preference name="orientation" value="portrait" />
     <platform name="android">
-        <resource-file src="google-services.json" target="app/google-services.json" />
-        <preference name="android-targetSdkVersion" value="29" />
+        <resource-file src="google-services.json" target="app/google-services.json"/>
+        <preference name="android-targetSdkVersion" value="30"/>
         <allow-intent href="market:*" />
         <icon width="48" height="48" density="hdpi" src="/app-resources/images/wallet-app-icon-48x48px.png"/>
         <icon width="72" height="72" density="xhdpi" src="/app-resources/images/wallet-app-icon-72x72px.png"/>

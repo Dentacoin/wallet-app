@@ -63,12 +63,19 @@ app-homepage {
                 display: block;
                 @include rounded(30px);
                 @include box-shadow(0 6px 10px 0px rgba(0, 0, 0, 0.3));
+                &:hover {
+                    color: white;
+                }
+                h2 {
+                    text-shadow: 0 1px 4px black;
+                }
                 .address-value {
                     border: 0;
                     background: transparent;
                     color: white;
                     width: 400px;
                     font-weight: 500;
+                    text-shadow: 0 1px 2px black;
                     @include breakpoint($xs) {
                         width: 260px;
                         font-size: 12px;
@@ -90,8 +97,8 @@ app-homepage {
                 }
                 @include breakpoint($xxs) {
                     .address-value {
-                        font-size: 10px !important;
-                        width: 230px;
+                        font-size: 9px !important;
+                        width: 240px;
                         text-align: center;
                     }
                     .copy-icon, .qr-code-icon {
@@ -145,7 +152,8 @@ app-homepage {
                     }
                     .learn-more-btn {
                         display: block;
-                        margin: 0 auto;
+                        margin-left: 115px;
+                        text-align: left;
                     }
                 }
             }

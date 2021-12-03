@@ -260,6 +260,12 @@ body {
     display: block;
 }
 
+.display-block-xs {
+    @include breakpoint($xs) {
+        display: block !important;
+    }
+}
+
 .display-block-important {
     display: block !important;
 }
@@ -539,9 +545,6 @@ img {
     }
     @include breakpoint($xs) {
         padding: 0;
-        &:before {
-            display: none;
-        }
         a {
             padding: 10px 0;
             width: 50%;
@@ -869,9 +872,38 @@ img {
         .modal-dialog {
             width: 95%;
             max-width: 500px;
+            .slick-dots {
+                text-align: center;
+                > li {
+                    display: inline-block;
+                    padding-left: 5px;
+                    padding-right: 5px;
+                    button {
+                        font-size: 0;
+                        border: 0;
+                        width: 12px;
+                        height: 12px;
+                        background-color: #dddddd;
+                        @include rounded(50%);
+                        @include simple_transition(.3s);
+                        &:focus {
+                            outline: none;
+                        }
+                    }
+                    &.slick-active {
+                        button {
+                            background-color: black;
+                        }
+                    }
+                }
+                @include breakpoint($xs) {
+                    width: 100%;
+                }
+            }
             figure {
                 img {
                     width: 150px;
+                    margin: 0 auto;
                 }
             }
             .bottom-menu {
@@ -881,22 +913,6 @@ img {
                     color: $light_blue;
                     img {
                         float: right;
-                    }
-                }
-            }
-            .popup-bullets {
-                ul {
-                    font-size: 0;
-                    li {
-                        width: 10px;
-                        height: 10px;
-                        margin: 0 5px;
-                        background-color: #dddddd;
-                        display: inline-block;
-                        @include rounded(50%);
-                        &.active {
-                            background-color: black;
-                        }
                     }
                 }
             }
@@ -1225,7 +1241,7 @@ img {
     }*/
     &.mobile-dentacoin-address-and-qr {
         .modal-body {
-            padding-bottom: 30px;
+            padding: 30px 10px;
             text-align: center;
             #mobile-qrcode {
                 img {
@@ -1235,7 +1251,7 @@ img {
             .address-value {
                 border: 0;
                 background: transparent;
-                width: 225px;
+                width: 250px;
                 font-size: 12px;
                 font-weight: 500;
             }
@@ -1319,7 +1335,7 @@ img {
                         width: calc(100% - 200px);
                         padding-right: 100px;
                     }
-                    &.fee {
+                    &.fee, &.nonce {
                         font-size: 0;
                         .value {
                             .eth-value {
@@ -1328,22 +1344,12 @@ img {
                             }
                             .tx-settings-icon {
                                 width: 40px;
-                                padding-left: 10px;
-                                svg {
-                                    width: 100%;
-                                }
+                                padding-left: 15px;
                             }
                         }
                         &.changed-settings {
                             .value {
                                 color: $light_blue;
-                                .tx-settings-icon {
-                                    svg {
-                                        path {
-                                            fill: $light_blue !important;
-                                        }
-                                    }
-                                }
                             }
                         }
                     }
@@ -2334,4 +2340,8 @@ nav.sidenav {
     @include breakpoint($xs)    {
         width: 100%;
     }
+}
+
+.ptr--ptr {
+    background-color: white;
 }

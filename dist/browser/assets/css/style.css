@@ -465,16 +465,17 @@
   border-radius: 10px; }
   .module.from-box .balance-line .max-btn, .module.to-box .balance-line .max-btn {
     width: 50px;
-    margin-right: 20px;
     text-align: center; }
-  .module.from-box .balance-line .balance-value, .module.to-box .balance-line .balance-value {
-    color: #888888;
-    width: calc(100% - 70px);
-    padding-left: 10px;
-    text-align: right; }
   .module.from-box .balance-line .you-get-label, .module.to-box .balance-line .you-get-label {
     width: 70px;
     color: #888888; }
+  .module.from-box .balance-line .balance-value, .module.to-box .balance-line .balance-value {
+    color: #888888;
+    width: calc(100% - 50px);
+    padding-left: 10px;
+    text-align: right; }
+    .module.from-box .balance-line .balance-value.you-get-balance, .module.to-box .balance-line .balance-value.you-get-balance {
+      width: calc(100% - 70px); }
   .module.from-box .inputable-line, .module.to-box .inputable-line {
     font-size: 0; }
     .module.from-box .inputable-line input[type="number"], .module.from-box .inputable-line .transfer-to-amount, .module.to-box .inputable-line input[type="number"], .module.to-box .inputable-line .transfer-to-amount {
@@ -4304,6 +4305,10 @@ body {
 .display-block {
   display: block; }
 
+@media screen and (max-width: 767px) {
+  .display-block-xs {
+    display: block !important; } }
+
 .display-block-important {
   display: block !important; }
 
@@ -4572,8 +4577,6 @@ img {
   @media screen and (max-width: 767px) {
     .transaction-and-withdraw-history-btns {
       padding: 0; }
-      .transaction-and-withdraw-history-btns:before {
-        display: none; }
       .transaction-and-withdraw-history-btns a {
         padding: 10px 0;
         width: 50%;
@@ -5066,8 +5069,37 @@ img {
   .bootbox.l2-information-popup .modal-dialog {
     width: 95%;
     max-width: 500px; }
+    .bootbox.l2-information-popup .modal-dialog .slick-dots {
+      text-align: center; }
+      .bootbox.l2-information-popup .modal-dialog .slick-dots > li {
+        display: inline-block;
+        padding-left: 5px;
+        padding-right: 5px; }
+        .bootbox.l2-information-popup .modal-dialog .slick-dots > li button {
+          font-size: 0;
+          border: 0;
+          width: 12px;
+          height: 12px;
+          background-color: #dddddd;
+          -webkit-border-radius: 50%;
+          -moz-border-radius: 50%;
+          -ms-border-radius: 50%;
+          border-radius: 50%;
+          -webkit-transition: 0.3s;
+          -moz-transition: 0.3s;
+          -o-transition: 0.3s;
+          -ms-transition: 0.3s;
+          transition: 0.3s; }
+          .bootbox.l2-information-popup .modal-dialog .slick-dots > li button:focus {
+            outline: none; }
+        .bootbox.l2-information-popup .modal-dialog .slick-dots > li.slick-active button {
+          background-color: black; }
+      @media screen and (max-width: 767px) {
+        .bootbox.l2-information-popup .modal-dialog .slick-dots {
+          width: 100%; } }
     .bootbox.l2-information-popup .modal-dialog figure img {
-      width: 150px; }
+      width: 150px;
+      margin: 0 auto; }
     .bootbox.l2-information-popup .modal-dialog .bottom-menu {
       border-top: 1.5px solid #00b7e2; }
       .bootbox.l2-information-popup .modal-dialog .bottom-menu a {
@@ -5075,20 +5107,6 @@ img {
         color: #00b7e2; }
         .bootbox.l2-information-popup .modal-dialog .bottom-menu a img {
           float: right; }
-    .bootbox.l2-information-popup .modal-dialog .popup-bullets ul {
-      font-size: 0; }
-      .bootbox.l2-information-popup .modal-dialog .popup-bullets ul li {
-        width: 10px;
-        height: 10px;
-        margin: 0 5px;
-        background-color: #dddddd;
-        display: inline-block;
-        -webkit-border-radius: 50%;
-        -moz-border-radius: 50%;
-        -ms-border-radius: 50%;
-        border-radius: 50%; }
-        .bootbox.l2-information-popup .modal-dialog .popup-bullets ul li.active {
-          background-color: black; }
   .bootbox.overlap-loading-popup {
     z-index: 10050; }
   .bootbox.download-mobile-app .phone-container {
@@ -5151,14 +5169,14 @@ img {
     .bootbox.login-metamask-desktop .modal-dialog figure.gif img {
       width: 100%; }
   .bootbox.mobile-dentacoin-address-and-qr .modal-body {
-    padding-bottom: 30px;
+    padding: 30px 10px;
     text-align: center; }
     .bootbox.mobile-dentacoin-address-and-qr .modal-body #mobile-qrcode img {
       margin: 0 auto; }
     .bootbox.mobile-dentacoin-address-and-qr .modal-body .address-value {
       border: 0;
       background: transparent;
-      width: 225px;
+      width: 250px;
       font-size: 12px;
       font-weight: 500; }
     .bootbox.mobile-dentacoin-address-and-qr .modal-body .mobile-copy-address {
@@ -5224,20 +5242,16 @@ img {
           text-align: right;
           width: calc(100% - 200px);
           padding-right: 100px; }
-        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row.fee {
+        .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row.fee, .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row.nonce {
           font-size: 0; }
-          .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row.fee .value .eth-value {
+          .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row.fee .value .eth-value, .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row.nonce .value .eth-value {
             font-size: 16px;
             width: calc(100% - 40px); }
-          .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row.fee .value .tx-settings-icon {
+          .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row.fee .value .tx-settings-icon, .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row.nonce .value .tx-settings-icon {
             width: 40px;
-            padding-left: 10px; }
-            .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row.fee .value .tx-settings-icon svg {
-              width: 100%; }
-          .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row.fee.changed-settings .value {
+            padding-left: 15px; }
+          .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row.fee.changed-settings .value, .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row.nonce.changed-settings .value {
             color: #00b7e2; }
-            .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row.fee.changed-settings .value .tx-settings-icon svg path {
-              fill: #00b7e2 !important; }
         @media screen and (max-width: 767px) {
           .bootbox.transaction-confirmation-popup .modal-dialog .modal-body .confirm-row .label {
             width: 100%;
@@ -6102,6 +6116,9 @@ nav.sidenav {
     nav.sidenav {
       width: 100%; } }
 
+.ptr--ptr {
+  background-color: white; }
+
 header {
   position: relative;
   z-index: 150;
@@ -6323,12 +6340,17 @@ app-homepage .main-wrapper {
       -moz-box-shadow: 0 6px 10px 0px rgba(0, 0, 0, 0.3);
       -ms-box-shadow: 0 6px 10px 0px rgba(0, 0, 0, 0.3);
       box-shadow: 0 6px 10px 0px rgba(0, 0, 0, 0.3); }
+      app-homepage .main-wrapper .custom-background .eth-address-container:hover {
+        color: white; }
+      app-homepage .main-wrapper .custom-background .eth-address-container h2 {
+        text-shadow: 0 1px 4px black; }
       app-homepage .main-wrapper .custom-background .eth-address-container .address-value {
         border: 0;
         background: transparent;
         color: white;
         width: 400px;
-        font-weight: 500; }
+        font-weight: 500;
+        text-shadow: 0 1px 2px black; }
         @media screen and (max-width: 767px) {
           app-homepage .main-wrapper .custom-background .eth-address-container .address-value {
             width: 260px;
@@ -6345,8 +6367,8 @@ app-homepage .main-wrapper {
             vertical-align: bottom; } }
       @media screen and (max-width: 450px) {
         app-homepage .main-wrapper .custom-background .eth-address-container .address-value {
-          font-size: 10px !important;
-          width: 230px;
+          font-size: 9px !important;
+          width: 240px;
           text-align: center; }
         app-homepage .main-wrapper .custom-background .eth-address-container .copy-icon img, app-homepage .main-wrapper .custom-background .eth-address-container .qr-code-icon img {
           max-width: 20px !important; } }
@@ -6395,7 +6417,8 @@ app-homepage .main-wrapper {
             width: calc(100% - 100px); }
           app-homepage .main-wrapper .bottom-side .join-the-future .learn-more-btn {
             display: block;
-            margin: 0 auto; } }
+            margin-left: 115px;
+            text-align: left; } }
   @media screen and (max-width: 767px) {
     app-homepage .main-wrapper {
       margin-bottom: 20px;
@@ -6601,6 +6624,11 @@ app-send-page .section-amount-to {
     -webkit-appearance: none;
     margin: 0;
     /* <-- Apparently some margin are still there even though it's hidden */ }
+  app-send-page .section-amount-to .balance-line .balance-value {
+    width: calc(100% - 100px); }
+  app-send-page .section-amount-to .balance-line .white-light-blue-btn {
+    width: 100px;
+    text-align: center; }
   app-send-page .section-amount-to .send-to {
     margin: 0 -65px;
     background-color: white;

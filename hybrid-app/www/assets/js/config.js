@@ -12,7 +12,7 @@ var config_variable = {
     L2blockOfL1L2Integration: 35000,
     //delay_for_L2_withdrawal_execution: 604800,
     //delay_for_L2_withdrawal_execution: 86400,
-    delay_for_L2_withdrawal_execution: 300,
+    delay_for_L2_withdrawal_execution: 600,
     l1: {
         /*provider: 'https://mainnet.infura.io/v3/c6ab28412b494716bc5315550c0d4071',
         chain_id: 1,*/
