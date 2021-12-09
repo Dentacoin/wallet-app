@@ -1,11 +1,10 @@
-var closeOnLoadLoader = true;
 //importing methods for keystore import, export, decrypt
-var {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey} = require('./helper');
-//const { getMessagesAndProofsForL2Transaction } = require('../../../node_modules/@eth-optimism/message-relayer');
-var getMessagesAndProofsForL2Transaction;
+const {getWeb3, getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey} = require('./helper');
+const { getMessagesAndProofsForL2Transaction } = require('../../../node_modules/@eth-optimism/message-relayer');
+const {config_variable} = require('./mainnet-config');
 
-var {config_variable} = require('./config');
 var assurance_config;
+var closeOnLoadLoader = true;
 var iframeHeightListenerInit = true;
 var isDeviceReady = false;
 var lastHybridScreen;
@@ -43,7 +42,6 @@ window.addEventListener('load', function () {
 // event called only on hybrid app
 document.addEventListener('deviceready', async function () {
     console.log('================= deviceready ===================');
-    console.log(cordova.file, 'cordova.file');
     isDeviceReady = true;
 
     // overwrite window.open to work with inappbrowser
@@ -152,7 +150,7 @@ var getL1Instance;
 var getL2Instance;
 var L1DCNContract;
 var L2DCNContract;
-var OVM_L1CrossDomainMessengerContract;
+//var OVM_L1CrossDomainMessengerContract;
 var core_db_clinics;
 var core_db_clinics_time_to_request;
 var load_qr_code_lib = true;
@@ -248,7 +246,7 @@ var dApp = {
             continueWithContractInstanceInit();
         }
 
-        function continueWithContractInstanceInit() {
+        async function continueWithContractInstanceInit() {
             if ((typeof(global_state.account) == 'undefined' || !projectData.utils.innerAddressCheck(global_state.account)) || (typeof(web3) !== 'undefined' && window.localStorage.getItem('custom_wallet_over_external_web3_provider') == null)) {
                 console.log('hide menu');
                 $('.logo-and-settings-row .open-settings-col').addClass('hide');
@@ -273,7 +271,7 @@ var dApp = {
                 L1DCNContract = getL1Instance(config_variable.l1.abi_definitions.dcn_contract_abi, config_variable.l1.addresses.dcn_contract_address);
                 getL2Instance = getContractInstance(dApp.web3_l2);
                 L2DCNContract = getL2Instance(config_variable.l2.abi_definitions.dcn_contract_abi, config_variable.l2.addresses.dcn_contract_address);
-                OVM_L1CrossDomainMessengerContract = getL2Instance(config_variable.l2.abi_definitions.OVM_L1CrossDomainMessenger_abi, config_variable.l2.addresses.OVM_L1CrossDomainMessenger_address);
+                //OVM_L1CrossDomainMessengerContract = getL2Instance(config_variable.l2.abi_definitions.OVM_L1CrossDomainMessenger_abi, config_variable.l2.addresses.OVM_L1CrossDomainMessenger_address);
 
                 if (callback != undefined) {
                     callback();
@@ -284,16 +282,6 @@ var dApp = {
         }
     },
     helper: {
-        getBlockNum: function () {
-            return new Promise(function (resolve, reject) {
-                dApp.web3_l1.eth.getBlockNumber(function (error, result) {
-                    if (!error) {
-                        global_state.curr_block = result;
-                        resolve(global_state.curr_block);
-                    }
-                });
-            });
-        },
         addBlockTimestampToTransaction: function (blockNumber, object_key) {
             dApp.web3_l1.eth.getBlock(blockNumber, function (error, result) {
                 if (error !== null) {
@@ -3082,14 +3070,18 @@ var projectData = {
         },
         androidFileUpload: function(file_uri, callback) {
             //opening filepicker for Android
+            // window.FilePath.resolveNativePath is asking for multimedia permission
             window.FilePath.resolveNativePath(file_uri, successNative, function(e) {
                 console.log(e);
                 alert('Something went wrong with uploading your Backup file. Please contact admin@dentacoin.com.');
             });
 
             function successNative(finalPath) {
+                console.log(finalPath, 'finalPath');
                 window.resolveLocalFileSystemURL(finalPath, function (entry) {
+                    console.log(entry, 'entry');
                     entry.file(function (file) {
+                        console.log(file, 'file');
                         callback(file, file.name);
                     }, function (err) {
                         alert('Something went wrong with uploading your Backup file. Please contact admin@dentacoin.com.');
@@ -4089,7 +4081,7 @@ window.refreshApp = function () {
     L1DCNContract = undefined;
     getL1Instance = undefined;
     L2DCNContract = undefined;
-    OVM_L1CrossDomainMessengerContract = undefined;
+    //OVM_L1CrossDomainMessengerContract = undefined;
     getL2Instance = undefined;
     tx_history = [];
 
@@ -4767,28 +4759,55 @@ function styleKeystoreUploadBtn() {
         if (basic.getMobileOperatingSystem() == 'Android') {
             //ANDROID
             $('.custom-upload-button').click(function () {
-                var this_btn = $(this);
-                fileChooser.open(function (file_uri) {
-                    projectData.general_logic.androidFileUpload(file_uri, function (file, fileName) {
-                        var reader = new FileReader();
-
-                        if (this_btn != undefined) {
-                            projectData.general_logic.initCustomInputFileAnimation(this_btn, fileName);
-                        }
-
-                        reader.onloadend = function () {
-                            var keystore_string = this.result;
-                            setTimeout(function () {
-                                proceedWithImportingAfterKeystoreUploading(keystore_string);
-                            }, 500);
-                        };
-
-                        reader.readAsText(file);
+                if (device.platform == 'Android' && device.version == '11') {
+                    var permissions = cordova.plugins.permissions;
+                    permissions.checkPermission('android.permission.READ_EXTERNAL_STORAGE', function(READ_EXTERNAL_STORAGE) {
+                        console.log(READ_EXTERNAL_STORAGE, 'READ_EXTERNAL_STORAGE');
+                        permissions.checkPermission('android.permission.WRITE_EXTERNAL_STORAGE', function(WRITE_EXTERNAL_STORAGE) {
+                            console.log(WRITE_EXTERNAL_STORAGE, 'WRITE_EXTERNAL_STORAGE');
+                            if (READ_EXTERNAL_STORAGE.hasPermission && WRITE_EXTERNAL_STORAGE.hasPermission) {
+                                proceedWithFileChooser();
+                            } else {
+                                basic.showDialog('<img src="assets/images/give-access-icon.png" class="width-100 max-width-180"/><div class="fs-26 fs-xs-24 lato-bold padding-top-20">Access needed</div><div class="padding-top-10 padding-bottom-15 fs-18 fs-xs-16">For successful import of your backup file, you need to allow manually access of Dentacoin Wallet app to your files in the Settings of your device.</div><div class="text-center"><a href="https://support.dentacoin.com/en/question/i-can-t-upload-my-backup-file/" target="_blank" class="color-light-blue inline-block fs-18 data-external-link text-decoration-underline">Learn more here.</a></div>', 'tx-response-popup', null, true);
+                            }
+                        }, function() {
+                            console.log('error WRITE_EXTERNAL_STORAGE');
+                        });
+                    }, function() {
+                        console.log('error READ_EXTERNAL_STORAGE');
                     });
-                }, function (err) {
-                    console.log(err);
-                    alert($('.translates-holder').attr('upload-failed'));
-                });
+                } else {
+                    proceedWithFileChooser();
+                }
+
+                function proceedWithFileChooser() {
+                    var this_btn = $(this);
+                    fileChooser.open(function (file_uri) {
+                        console.log(file_uri, 'file_uri');
+                        projectData.general_logic.androidFileUpload(file_uri, function (file, fileName) {
+                            console.log(file, 'file');
+                            console.log(fileName, 'fileName');
+                            var reader = new FileReader();
+
+                            if (this_btn != undefined) {
+                                projectData.general_logic.initCustomInputFileAnimation(this_btn, fileName);
+                            }
+
+                            reader.onloadend = function () {
+                                var keystore_string = this.result;
+                                console.log(this, 'this');
+                                setTimeout(function () {
+                                    proceedWithImportingAfterKeystoreUploading(keystore_string);
+                                }, 500);
+                            };
+
+                            reader.readAsText(file);
+                        });
+                    }, function (err) {
+                        console.log(err);
+                        alert($('.translates-holder').attr('upload-failed'));
+                    });
+                }
             });
         } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
             //iOS
