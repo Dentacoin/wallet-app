@@ -941,13 +941,16 @@ var projectData = {
                                         var l1_dcn_balance = parseInt(await L1DCNContract.methods.balanceOf(global_state.account).call());
                                         var l2_dcn_balance = parseInt(await L2DCNContract.methods.balanceOf(global_state.account).call());
                                         if (l1_dcn_balance > 0 && l2_dcn_balance == 0) {
-                                            $('#active-crypto').val('dcn-l1');
+                                            $('.balance-line .balance-value .max-amount').html('<span class="amount">'+l1_dcn_balance.toLocaleString()+'</span> DCN');
+                                            $('.section-amount-to #active-crypto').val('dcn-l1');
+                                        } else {
+                                            $('.balance-line .balance-value .max-amount').html('<span class="amount">'+l2_dcn_balance.toLocaleString()+'</span> DCN');
+                                            $('.section-amount-to #active-crypto').val('dcn-l2');
                                         }
 
                                         /*$('.spendable-amount').addClass('active').html('<div class="spendable-dcn-amount fs-18 fs-xs-16 lato-bold" data-value="' + l1_dcn_balance + '"><label class="color-light-blue renew-on-lang-switch" data-slug="spendable-amount">'+$('.translates-holder').attr('spendable-amount')+' </label><span></span></div>');
                                         $('.spendable-amount .spendable-dcn-amount span').html(l1_dcn_balance.toLocaleString() + ' DCN');*/
-                                        $('.balance-line .balance-value .max-amount').html('<span class="amount">'+l1_dcn_balance.toLocaleString()+'</span> DCN');
-                                        $('.section-amount-to #active-crypto').val('dcn-l1');
+
 
                                         $('.max-btn').click(function () {
                                             //$('.section-amount-to input#crypto-amount').val($('.spendable-dcn-amount').attr('data-value'));
@@ -2087,7 +2090,7 @@ var projectData = {
 
                             $('.cached-keystore-file .confirm-transaction.keystore-file').click(function () {
                                 var eth_fee_check;
-                                var current_eth_fee = projectData.utils.fromWei((($('.tx-data-holder').attr('data-visibleGasPriceNumber') * 1000000000) * gasLimit).toString(), 'ether');
+                                var current_eth_fee = projectData.utils.fromWei((parseInt($('.tx-data-holder').attr('data-visibleGasPriceNumber') * 1000000000) * gasLimit).toString(), 'ether');
                                 if (token_symbol == 'DCN' || token_symbol == 'DCN2.0') {
                                     eth_fee_check = parseFloat(current_eth_fee);
                                 } else if (token_symbol == 'ETH' || token_symbol == 'ETH2.0') {
@@ -2136,15 +2139,20 @@ var projectData = {
                             $(document).off('click', '.enter-private-key');
                             $(document).on('click', '.enter-private-key', function () {
                                 var eth_fee_check;
-                                var current_eth_fee = projectData.utils.fromWei((($('.tx-data-holder').attr('data-visibleGasPriceNumber') * 1000000000) * gasLimit).toString(), 'ether');
+                                var current_eth_fee = projectData.utils.fromWei((parseInt($('.tx-data-holder').attr('data-visibleGasPriceNumber') * 1000000000) * gasLimit).toString(), 'ether');
+                                console.log(current_eth_fee, 'current_eth_fee');
                                 if (token_symbol == 'DCN' || token_symbol == 'DCN2.0') {
                                     eth_fee_check = parseFloat(current_eth_fee);
+                                    console.log(eth_fee_check, 'eth_fee_check');
                                 } else if (token_symbol == 'ETH' || token_symbol == 'ETH2.0') {
                                     if (amount > 0) {
                                         var amount_decimal = new Decimal(amount);
                                         eth_fee_check = amount_decimal.plus(parseFloat(current_eth_fee));
                                     }
                                 }
+
+                                console.log(eth_balance, 'eth_balance');
+                                console.log(eth_balance.lessThan(eth_fee_check), 'eth_balance.lessThan(eth_fee_check)');
 
                                 if (parseInt(raw_eth_balance) == 0) {
                                     basic.showAlert($('.translates-holder').attr('no-balance'), '', true);
@@ -2191,7 +2199,7 @@ var projectData = {
                             //init keystore btn logic
                             styleKeystoreUploadBtnForTx(function (key) {
                                 var eth_fee_check;
-                                var current_eth_fee = projectData.utils.fromWei((($('.tx-data-holder').attr('data-visibleGasPriceNumber') * 1000000000) * gasLimit).toString(), 'ether');
+                                var current_eth_fee = projectData.utils.fromWei((parseInt($('.tx-data-holder').attr('data-visibleGasPriceNumber') * 1000000000) * gasLimit).toString(), 'ether');
                                 if (token_symbol == 'DCN' || token_symbol == 'DCN2.0') {
                                     eth_fee_check = parseFloat(current_eth_fee);
                                 } else if (token_symbol == 'ETH' || token_symbol == 'ETH2.0') {
@@ -3664,21 +3672,44 @@ function styleKeystoreUploadBtnForTx(callback) {
             $('.custom-upload-keystore-file-label').removeAttr('for');
             $('.custom-upload-keystore-file-label').click(function () {
                 if (basic.getMobileOperatingSystem() == 'Android') {
-                    fileChooser.open(function (file_uri) {
-                        projectData.general_logic.androidFileUpload(file_uri, function (file) {
-                            var reader = new FileReader();
-
-                            reader.onloadend = function () {
-                                var keystore_string = this.result;
-                                proceedWithTransactionFiringAfterHavingTheKeystoreFile(keystore_string);
-                            };
-
-                            reader.readAsText(file);
+                    if (device.platform == 'Android' && device.version == '11') {
+                        var permissions = cordova.plugins.permissions;
+                        permissions.checkPermission('android.permission.READ_EXTERNAL_STORAGE', function(READ_EXTERNAL_STORAGE) {
+                            console.log(READ_EXTERNAL_STORAGE, 'READ_EXTERNAL_STORAGE');
+                            permissions.checkPermission('android.permission.WRITE_EXTERNAL_STORAGE', function(WRITE_EXTERNAL_STORAGE) {
+                                console.log(WRITE_EXTERNAL_STORAGE, 'WRITE_EXTERNAL_STORAGE');
+                                if (READ_EXTERNAL_STORAGE.hasPermission && WRITE_EXTERNAL_STORAGE.hasPermission) {
+                                    proceedWithFileChooser();
+                                } else {
+                                    basic.showDialog('<img src="assets/images/give-access-icon.png" class="width-100 max-width-180"/><div class="fs-26 fs-xs-24 lato-bold padding-top-20">Access needed</div><div class="padding-top-10 padding-bottom-15 fs-18 fs-xs-16">For successful import of your backup file, you need to allow manually access of Dentacoin Wallet app to your files in the Settings of your device.</div><div class="text-center"><a href="https://support.dentacoin.com/en/question/i-can-t-upload-my-backup-file/" target="_blank" class="color-light-blue inline-block fs-18 data-external-link text-decoration-underline">Learn more here.</a></div>', 'tx-response-popup', null, true);
+                                }
+                            }, function() {
+                                console.log('error WRITE_EXTERNAL_STORAGE');
+                            });
+                        }, function() {
+                            console.log('error READ_EXTERNAL_STORAGE');
                         });
-                    }, function (err) {
-                        console.log(err);
-                        alert($('.translates-holder').attr('upload-failed'));
-                    });
+                    } else {
+                        proceedWithFileChooser();
+                    }
+
+                    function proceedWithFileChooser() {
+                        fileChooser.open(function (file_uri) {
+                            projectData.general_logic.androidFileUpload(file_uri, function (file) {
+                                var reader = new FileReader();
+
+                                reader.onloadend = function () {
+                                    var keystore_string = this.result;
+                                    proceedWithTransactionFiringAfterHavingTheKeystoreFile(keystore_string);
+                                };
+
+                                reader.readAsText(file);
+                            });
+                        }, function (err) {
+                            console.log(err);
+                            alert($('.translates-holder').attr('upload-failed'));
+                        });
+                    }
                 } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                     projectData.general_logic.iOSFileUpload(function (keystore_string, fileName) {
                         proceedWithTransactionFiringAfterHavingTheKeystoreFile(keystore_string, fileName);
@@ -4992,27 +5023,50 @@ $(document).on('click', '.open-settings', function () {
                         this_row.find('.error-handle').remove();
 
                         var this_btn = $(this);
-                        fileChooser.open(function (file_uri) {
-                            projectData.general_logic.androidFileUpload(file_uri, function (file) {
-                                var reader = new FileReader();
-                                projectData.general_logic.initCustomInputFileAnimation(this_btn);
-
-                                reader.onloadend = function () {
-                                    var keystore_string = this.result;
-
-                                    if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && projectData.utils.checksumAddress(JSON.parse(keystore_string).address) == projectData.utils.checksumAddress(global_state.account)) {
-                                        validateKeystoreFileAndPasswordForCachingKeystoreFile(this_camping_row, keystore_string, this_row);
+                        if (device.platform == 'Android' && device.version == '11') {
+                            var permissions = cordova.plugins.permissions;
+                            permissions.checkPermission('android.permission.READ_EXTERNAL_STORAGE', function(READ_EXTERNAL_STORAGE) {
+                                console.log(READ_EXTERNAL_STORAGE, 'READ_EXTERNAL_STORAGE');
+                                permissions.checkPermission('android.permission.WRITE_EXTERNAL_STORAGE', function(WRITE_EXTERNAL_STORAGE) {
+                                    console.log(WRITE_EXTERNAL_STORAGE, 'WRITE_EXTERNAL_STORAGE');
+                                    if (READ_EXTERNAL_STORAGE.hasPermission && WRITE_EXTERNAL_STORAGE.hasPermission) {
+                                        proceedWithFileChooser();
                                     } else {
-                                        $($('.translates-holder').attr('data-valid-keytore')).insertAfter(this_camping_row);
+                                        basic.showDialog('<img src="assets/images/give-access-icon.png" class="width-100 max-width-180"/><div class="fs-26 fs-xs-24 lato-bold padding-top-20">Access needed</div><div class="padding-top-10 padding-bottom-15 fs-18 fs-xs-16">For successful import of your backup file, you need to allow manually access of Dentacoin Wallet app to your files in the Settings of your device.</div><div class="text-center"><a href="https://support.dentacoin.com/en/question/i-can-t-upload-my-backup-file/" target="_blank" class="color-light-blue inline-block fs-18 data-external-link text-decoration-underline">Learn more here.</a></div>', 'tx-response-popup', null, true);
                                     }
-                                };
-
-                                reader.readAsText(file);
+                                }, function() {
+                                    console.log('error WRITE_EXTERNAL_STORAGE');
+                                });
+                            }, function() {
+                                console.log('error READ_EXTERNAL_STORAGE');
                             });
-                        }, function (err) {
-                            console.log(err);
-                            $('<div class="error-handle renew-on-lang-switch" data-slug="upload-failed">'+$('.translates-holder').attr('upload-failed')+'</div>').insertAfter(this_camping_row);
-                        });
+                        } else {
+                            proceedWithFileChooser();
+                        }
+
+                        function proceedWithFileChooser() {
+                            fileChooser.open(function (file_uri) {
+                                projectData.general_logic.androidFileUpload(file_uri, function (file) {
+                                    var reader = new FileReader();
+                                    projectData.general_logic.initCustomInputFileAnimation(this_btn);
+
+                                    reader.onloadend = function () {
+                                        var keystore_string = this.result;
+
+                                        if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && projectData.utils.checksumAddress(JSON.parse(keystore_string).address) == projectData.utils.checksumAddress(global_state.account)) {
+                                            validateKeystoreFileAndPasswordForCachingKeystoreFile(this_camping_row, keystore_string, this_row);
+                                        } else {
+                                            $($('.translates-holder').attr('data-valid-keytore')).insertAfter(this_camping_row);
+                                        }
+                                    };
+
+                                    reader.readAsText(file);
+                                });
+                            }, function (err) {
+                                console.log(err);
+                                $('<div class="error-handle renew-on-lang-switch" data-slug="upload-failed">'+$('.translates-holder').attr('upload-failed')+'</div>').insertAfter(this_camping_row);
+                            });
+                        }
                     });
                 } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                     //iOS
@@ -5337,28 +5391,51 @@ $(document).on('click', '.open-settings', function () {
                     $('.show-private-key-keystore-upload').click(function () {
                         this_row.find('.error-handle').remove();
                         var this_btn = $(this);
-                        fileChooser.open(function (file_uri) {
-                            projectData.general_logic.androidFileUpload(file_uri, function (file) {
-                                var reader = new FileReader();
-
-                                projectData.general_logic.initCustomInputFileAnimation(this_btn);
-
-                                reader.onloadend = function () {
-                                    var keystore_string = this.result;
-
-                                    if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && projectData.utils.checksumAddress(JSON.parse(keystore_string).address) == projectData.utils.checksumAddress(global_state.account)) {
-                                        decryptKeystoreFileAndShowPrivateKey(this_camping_row, keystore_string, this_row);
+                        if (device.platform == 'Android' && device.version == '11') {
+                            var permissions = cordova.plugins.permissions;
+                            permissions.checkPermission('android.permission.READ_EXTERNAL_STORAGE', function(READ_EXTERNAL_STORAGE) {
+                                console.log(READ_EXTERNAL_STORAGE, 'READ_EXTERNAL_STORAGE');
+                                permissions.checkPermission('android.permission.WRITE_EXTERNAL_STORAGE', function(WRITE_EXTERNAL_STORAGE) {
+                                    console.log(WRITE_EXTERNAL_STORAGE, 'WRITE_EXTERNAL_STORAGE');
+                                    if (READ_EXTERNAL_STORAGE.hasPermission && WRITE_EXTERNAL_STORAGE.hasPermission) {
+                                        proceedWithFileChooser();
                                     } else {
-                                        $($('.translates-holder').attr('data-valid-keytore')).insertAfter(this_camping_row);
+                                        basic.showDialog('<img src="assets/images/give-access-icon.png" class="width-100 max-width-180"/><div class="fs-26 fs-xs-24 lato-bold padding-top-20">Access needed</div><div class="padding-top-10 padding-bottom-15 fs-18 fs-xs-16">For successful import of your backup file, you need to allow manually access of Dentacoin Wallet app to your files in the Settings of your device.</div><div class="text-center"><a href="https://support.dentacoin.com/en/question/i-can-t-upload-my-backup-file/" target="_blank" class="color-light-blue inline-block fs-18 data-external-link text-decoration-underline">Learn more here.</a></div>', 'tx-response-popup', null, true);
                                     }
-                                };
-
-                                reader.readAsText(file);
+                                }, function() {
+                                    console.log('error WRITE_EXTERNAL_STORAGE');
+                                });
+                            }, function() {
+                                console.log('error READ_EXTERNAL_STORAGE');
                             });
-                        }, function (err) {
-                            console.log(err);
-                            $('<div class="error-handle renew-on-lang-switch" data-slug="upload-failed">'+$('.translates-holder').attr('upload-failed')+'</div>').insertAfter(this_camping_row);
-                        });
+                        } else {
+                            proceedWithFileChooser();
+                        }
+
+                        function proceedWithFileChooser() {
+                            fileChooser.open(function (file_uri) {
+                                projectData.general_logic.androidFileUpload(file_uri, function (file) {
+                                    var reader = new FileReader();
+
+                                    projectData.general_logic.initCustomInputFileAnimation(this_btn);
+
+                                    reader.onloadend = function () {
+                                        var keystore_string = this.result;
+
+                                        if (basic.isJsonString(keystore_string) && basic.property_exists(JSON.parse(keystore_string), 'address') && projectData.utils.checksumAddress(JSON.parse(keystore_string).address) == projectData.utils.checksumAddress(global_state.account)) {
+                                            decryptKeystoreFileAndShowPrivateKey(this_camping_row, keystore_string, this_row);
+                                        } else {
+                                            $($('.translates-holder').attr('data-valid-keytore')).insertAfter(this_camping_row);
+                                        }
+                                    };
+
+                                    reader.readAsText(file);
+                                });
+                            }, function (err) {
+                                console.log(err);
+                                $('<div class="error-handle renew-on-lang-switch" data-slug="upload-failed">'+$('.translates-holder').attr('upload-failed')+'</div>').insertAfter(this_camping_row);
+                            });
+                        }
                     });
                 } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
                     //iOS
