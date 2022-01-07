@@ -25,7 +25,6 @@
             "styles": [
               "./src/assets/libs/bootstrap/css/bootstrap.min.css",
               "./node_modules/slick-carousel/slick/slick.css",
-              "./src/assets/libs/font-awesome/css/font-awesome.min.css",
               "./src/assets/css/style.css"
             ],
             "scripts": [
@@ -35,9 +34,6 @@
               "./node_modules/bootbox.js/bootbox.min.js",
               "./node_modules/clipboard/dist/clipboard.min.js",
               "./node_modules/pulltorefreshjs/dist/index.umd.min.js",
-              "./node_modules/bignumber.js/bignumber.min.js",
-              "./node_modules/decimal.js/decimal.min.js",
-              "./src/assets/libs/truffle-contract/truffle-contract-compiled.js",
               "./src/assets/libs/qrcode/qrcode.js",
               "./src/assets/js/basic.js",
               "./src/assets/js/index-bundled.js"

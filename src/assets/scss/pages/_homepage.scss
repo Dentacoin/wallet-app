@@ -117,8 +117,11 @@ app-homepage {
                 .eth-logo {
                     max-width: 25px;
                 }
-                .currency-info, .currency-values {
-                    width: 50%;
+                .currency-info {
+                    width: 55%;
+                }
+                .currency-values {
+                    width: 45%;
                 }
                 &:last-child {
                     border: 0;

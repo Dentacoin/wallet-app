@@ -24,7 +24,8 @@ app-swap-page {
             right: 15px;
         }
         @include breakpoint($xs) {
-            margin: 0;
+            margin: -20px -30px 0;
+            @include rounded(0);
         }
     }
     .swapping-section {

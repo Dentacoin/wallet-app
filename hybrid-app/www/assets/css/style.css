@@ -4745,6 +4745,9 @@ img {
       @media screen and (max-width: 767px) {
         .camping-transaction-history .transaction-history table tbody tr td {
           font-size: 15px; } }
+      @media screen and (max-width: 450px) {
+        .camping-transaction-history .transaction-history table tbody tr td {
+          font-size: 14px; } }
     @media screen and (max-width: 767px) {
       .camping-transaction-history .transaction-history table tbody tr.loading-tr td:first-child {
         display: table-cell; } }
@@ -6037,6 +6040,8 @@ input[type=file].hide-input {
   -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
   -ms-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); }
+.tooltip.in {
+  opacity: 1; }
 
 select {
   -webkit-appearance: none;
@@ -6049,6 +6054,11 @@ select {
     background-image: url(../images/blue-caret.svg); }
   select.white-color {
     background-image: url(../images/white-caret.svg); }
+  select.red-color {
+    background-image: url(../images/red-caret.svg);
+    color: red !important; }
+    select.red-color option {
+      color: black; }
 
 nav.sidenav {
   position: fixed;
@@ -6383,8 +6393,10 @@ app-homepage .main-wrapper {
       border-bottom: 2px solid #f2f2f2; }
       app-homepage .main-wrapper .bottom-side .single-currency .eth-logo {
         max-width: 25px; }
-      app-homepage .main-wrapper .bottom-side .single-currency .currency-info, app-homepage .main-wrapper .bottom-side .single-currency .currency-values {
-        width: 50%; }
+      app-homepage .main-wrapper .bottom-side .single-currency .currency-info {
+        width: 55%; }
+      app-homepage .main-wrapper .bottom-side .single-currency .currency-values {
+        width: 45%; }
       app-homepage .main-wrapper .bottom-side .single-currency:last-child {
         border: 0; }
     app-homepage .main-wrapper .bottom-side .join-the-future {
@@ -6795,7 +6807,11 @@ app-swap-page .latest-dcn-popup {
     right: 15px; }
   @media screen and (max-width: 767px) {
     app-swap-page .latest-dcn-popup {
-      margin: 0; } }
+      margin: -20px -30px 0;
+      -webkit-border-radius: 0;
+      -moz-border-radius: 0;
+      -ms-border-radius: 0;
+      border-radius: 0; } }
 app-swap-page .swapping-section {
   width: 100%;
   max-width: 500px;

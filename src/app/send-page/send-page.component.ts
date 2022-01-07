@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import {Meta, Title} from '@angular/platform-browser';
+import {TranslateService} from '@ngx-translate/core';
 
 /*declare function getSendPageData(): any;*/
 
@@ -9,7 +10,7 @@ import {Meta, Title} from '@angular/platform-browser';
 })
 
 export class SendPageComponent {
-    constructor(private meta: Meta, private titleService: Title) {
+    constructor(private meta: Meta, private titleService: Title, public translate: TranslateService) {
         this.titleService.setTitle('Send Dentacoin (DCN) via Dentacoin Wallet App');
         this.meta.updateTag({name: 'description', content: 'Dentacoin Wallet App enables sending DCN tokens to any valid Ethereum address. Fast, secure and easier than ever!'});
         this.meta.updateTag({name: 'keywords', content: 'send dentacoin, store dentacoin, dentacoin wallet, pay with dentacoin'});

@@ -13,7 +13,7 @@
             </div>
             <a href="javascript:void(0);" class="close-btn fs-34 line-height-26 color-white">×</a>
         </div>
-        <h1 class="padding-top-10 padding-bottom-15 text-center fs-30 color-black">{{'swap-tokens-title' | translate}}</h1>
+        <h1 class="padding-top-10 padding-top-xs-20 padding-bottom-15 text-center fs-30 color-black">{{'swap-tokens-title' | translate}}</h1>
         <div class="swapping-section">
             <div class="from-box module">
                 <div class="balance-line">
@@ -25,8 +25,17 @@
                     <select class="inline-block fs-24 fs-xs-22 padding-left-10 current-from" data-current-layer="l1">
                         <option value="dcn-l1">DCN</option>
                         <option value="eth-l1">ETH</option>
-                        <option value="dcn-l2">DCN2.0</option><option value="eth-l2">ETH2.0</option>
+                        <option value="dcn-l2">DCN</option>
+                        <option value="eth-l2">ETH</option>
                     </select>
+                </div>
+                <div class="fs-0">
+                    <div class="inline-block text-right l1-network">
+                        <div class="inline-block fs-18 fs-xs-14 color-solid-gray cursor-pointer" data-placement="top" data-toggle="tooltip" data-trigger="click" [attr.data-title]="this.translate.instant('eth-network-desc')">Network: <img src="assets/images/eth-icon.svg" alt="Ethereum logo" class="width-100 max-width-20 margin-left-5"/></div>
+                    </div>
+                    <div class="inline-block text-right hide l2-network">
+                        <div class="inline-block fs-18 fs-xs-14 color-solid-gray cursor-pointer" data-placement="top" data-toggle="tooltip" data-trigger="click" [attr.data-title]="this.translate.instant('l2-eth-network-desc')">Network: <img src="assets/images/eth-2-icon.svg" alt="Ethereum logo" class="width-100 max-width-20 margin-left-5"/></div>
+                    </div>
                 </div>
             </div>
             <div class="padding-top-15 padding-bottom-15 text-center switch-layers-btn">
@@ -35,13 +44,21 @@
             <div class="to-box module">
                 <div class="balance-line">
                     <span class="inline-block you-get-label fs-20">{{'you-get-swap' | translate}}</span>
-                    <div class="inline-block you-get-balance balance-value fs-20">Balance: <span class="color-light-blue"><span class="amount"></span> DCN2.0</span></div>
+                    <div class="inline-block you-get-balance balance-value fs-20">Balance: <span class="color-light-blue"><span class="amount"></span> DCN</span></div>
                 </div>
                 <div class="padding-top-20 inputable-line">
                     <div class="transfer-to-amount inline-block">0.0</div>
-                    <select class="inline-block fs-24 fs-xs-22 padding-left-10 current-to">
-                        <option value="dcn-l2">DCN2.0</option>
+                    <select class="inline-block fs-24 fs-xs-22 padding-left-10 current-to red-color">
+                        <option value="dcn-l2">DCN</option>
                     </select>
+                </div>
+                <div class="fs-0">
+                    <div class="inline-block text-right hide l1-network">
+                        <div class="inline-block fs-18 fs-xs-14 color-solid-gray cursor-pointer" data-placement="top" data-toggle="tooltip" data-trigger="click" [attr.data-title]="this.translate.instant('eth-network-desc')">Network: <img src="assets/images/eth-icon.svg" alt="Ethereum logo" class="width-100 max-width-20 margin-left-5"/></div>
+                    </div>
+                    <div class="inline-block text-right l2-network">
+                        <div class="inline-block fs-18 fs-xs-14 color-solid-gray cursor-pointer" data-placement="top" data-toggle="tooltip" data-trigger="click" [attr.data-title]="this.translate.instant('l2-eth-network-desc')">Network: <img src="assets/images/eth-2-icon.svg" alt="Ethereum logo" class="width-100 max-width-20 margin-left-5"/></div>
+                    </div>
                 </div>
             </div>
         </div>

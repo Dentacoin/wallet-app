@@ -67,14 +67,22 @@
                 </div>
                 <div class="col-xs-12 col-md-5 inline-block padding-bottom-sm-20 padding-bottom-xs-20">
                     <div class="from-box module padding-top-10 padding-bottom-10 padding-left-20 padding-right-20 padding-left-xs-10 padding-right-xs-10">
-                        <div class="padding-bottom-5 padding-bottom-xs-0 fs-20 color-light-blue">{{'send-amount' | translate}}</div>
+                        <div class="fs-0">
+                            <div class="inline-block width-50 padding-bottom-5 padding-bottom-xs-0 fs-20 color-light-blue">{{'send-amount' | translate}}</div>
+                            <div class="inline-block width-50 padding-bottom-5 padding-bottom-xs-0 text-right hide l1-network">
+                                <div class="inline-block fs-18 fs-xs-14 color-solid-gray cursor-pointer" data-placement="top" data-toggle="tooltip" data-trigger="click" [attr.data-title]="this.translate.instant('eth-network-desc')">Network: <img src="assets/images/eth-icon.svg" alt="Ethereum logo" class="width-100 max-width-20 margin-left-5"/></div>
+                            </div>
+                            <div class="inline-block width-50 padding-bottom-5 padding-bottom-xs-0 text-right l2-network">
+                                <div class="inline-block fs-18 fs-xs-14 color-solid-gray cursor-pointer" data-placement="top" data-toggle="tooltip" data-trigger="click" [attr.data-title]="this.translate.instant('l2-eth-network-desc')">Network: <img src="assets/images/eth-2-icon.svg" alt="Ethereum logo" class="width-100 max-width-20 margin-left-5"/></div>
+                            </div>
+                        </div>
                         <div class="inputable-line">
-                            <input type="number" class="inputable-amount inline-block" id="crypto-amount" placeholder="0.0"/>
-                            <select class="inline-block fs-24 fs-xs-22 padding-left-10 crypto-label input-label" id="active-crypto">
-                                <option value="dcn-l2" selected>DCN2.0</option>
+                            <input type="number" autocomplete="off" class="inputable-amount inline-block" id="crypto-amount" placeholder="0.0"/>
+                            <select class="inline-block fs-24 fs-xs-22 padding-left-10 crypto-label input-label red-color" id="active-crypto">
+                                <option value="dcn-l2" selected>DCN</option>
                                 <option value="dcn-l1">DCN</option>
                                 <option value="eth-l1">ETH</option>
-                                <option value="eth-l2">ETH2.0</option>
+                                <option value="eth-l2">ETH</option>
                             </select>
                         </div>
                     </div>
@@ -88,9 +96,9 @@
                         </div>
                         <select class="inline-block crypto-label input-label" id="active-crypto">
                             <option value="dcn-l1">DCN</option>
-                            <option value="dcn-l2">DCN2.0</option>
+                            <option value="dcn-l2">DCN</option>
                             <option value="eth-l1">ETH</option>
-                            <option value="eth-l2">ETH2.0</option>
+                            <option value="eth-l2">ETH</option>
                         </select>
                     </div>
                 </div>-->
@@ -101,7 +109,7 @@
                     <div class="to-box module padding-top-10 padding-bottom-10 padding-left-20 padding-right-20 padding-left-xs-10 padding-right-xs-10">
                         <div class="padding-bottom-5 padding-bottom-xs-0 fs-20 color-light-blue">{{'equal-to' | translate}}</div>
                         <div class="inputable-line">
-                            <input type="number" class="inline-block" id="usd-val" placeholder="0.0"/>
+                            <input type="number" autocomplete="off" class="inline-block" id="usd-val" placeholder="0.0"/>
                             <div class="inline-block token-label fs-24 fs-xs-22">$ USD</div>
                         </div>
                     </div>

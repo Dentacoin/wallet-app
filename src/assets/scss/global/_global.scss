@@ -752,6 +752,9 @@ img {
                         @include breakpoint($xs) {
                             font-size: 15px;
                         }
+                        @include breakpoint($xxs) {
+                            font-size: 14px;
+                        }
                     }
                     &.loading-tr {
                         @include breakpoint($xs) {
@@ -2253,6 +2256,9 @@ input[type=file].hide-input {
         color: #333;
         @include box-shadow(0 5px 10px rgba(0,0,0,.2));
     }
+    &.in {
+        opacity: 1;
+    }
 }
 
 select {
@@ -2267,6 +2273,13 @@ select {
     }
     &.white-color {
         background-image: url(../images/white-caret.svg);
+    }
+    &.red-color {
+        background-image: url(../images/red-caret.svg);
+        color: red !important;
+        option {
+            color: black;
+        }
     }
 }
 
