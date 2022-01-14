@@ -511,7 +511,7 @@ var projectData = {
                 if (!$('.camp-for-custom-popover').hasClass('hide')) {
                     $('.camp-for-custom-popover').offset({
                         top: $('.more-info').height() + $('.more-info').offset().top + 15,
-                        left: $('.more-info').offset().left - 10
+                        left: $('.more-info').offset().left - 60
                     });
                 }
             }

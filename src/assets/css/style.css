@@ -5640,7 +5640,7 @@ input[type=file].hide-input {
   .camp-for-custom-popover .arrow {
     position: absolute;
     top: -9px;
-    left: 10px;
+    left: 60px;
     width: 15px;
     height: 15px;
     background: white;
