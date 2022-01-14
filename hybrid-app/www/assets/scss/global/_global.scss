@@ -1800,7 +1800,7 @@ input[type=file].hide-input {
 .camp-for-custom-popover {
     width: 250px;
     padding: 9px 14px;
-    border: 1px solid rgba(0,0,0,0.2); 
+    border: 1px solid rgba(0,0,0,0.2);
     background-color:white;
     font-size: 14px;
     z-index: 1030;
@@ -2285,7 +2285,7 @@ select {
 
 nav.sidenav {
     position: fixed;
-    z-index: 500;
+    z-index: 1033;   
     color: white;
     height: 100%;
     top: 0;
