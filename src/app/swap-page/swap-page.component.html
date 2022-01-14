@@ -22,19 +22,19 @@
                 </div>
                 <div class="padding-top-20 inputable-line">
                     <input type="number" class="inputable-amount inline-block" data-type="dcn-l1" placeholder="0.0"/>
-                    <select class="inline-block fs-24 fs-xs-22 padding-left-10 current-from" data-current-layer="l1">
+                    <select class="inline-block fs-22 padding-left-10 current-from" data-current-layer="l1">
                         <option value="dcn-l1">DCN</option>
                         <option value="eth-l1">ETH</option>
-                        <option value="dcn-l2">DCN</option>
-                        <option value="eth-l2">ETH</option>
+                        <option value="dcn-l2">DCN (Optimism)</option>
+                        <option value="eth-l2">ETH (Optimism)</option>
                     </select>
                 </div>
                 <div class="fs-0">
                     <div class="inline-block text-right l1-network">
-                        <div class="inline-block fs-18 fs-xs-14 color-solid-gray cursor-pointer padding-left-5 padding-right-5 padding-top-5 padding-bottom-5" data-placement="top" data-toggle="tooltip" data-trigger="click" [attr.data-title]="this.translate.instant('eth-network-desc')">Network: <img src="assets/images/eth-icon.svg" alt="Ethereum logo" class="width-100 max-width-20 margin-left-5"/></div>
+                        <div class="inline-block fs-18 fs-xs-14 color-solid-gray cursor-pointer padding-top-5 padding-bottom-5" data-placement="top" data-toggle="tooltip" data-trigger="click" [attr.data-title]="this.translate.instant('eth-network-desc')">Network: <img src="assets/images/eth-icon.svg" alt="Ethereum logo" class="width-100 max-width-20 margin-left-5"/></div>
                     </div>
                     <div class="inline-block text-right hide l2-network">
-                        <div class="inline-block fs-18 fs-xs-14 color-solid-gray cursor-pointer padding-left-5 padding-right-5 padding-top-5 padding-bottom-5" data-placement="top" data-toggle="tooltip" data-trigger="click" [attr.data-title]="this.translate.instant('l2-eth-network-desc')">Network: <img src="assets/images/eth-2-icon.svg" alt="Ethereum logo" class="width-100 max-width-20 margin-left-5"/></div>
+                        <div class="inline-block fs-18 fs-xs-14 color-solid-gray cursor-pointer padding-top-5 padding-bottom-5" data-placement="top" data-toggle="tooltip" data-trigger="click" [attr.data-title]="this.translate.instant('l2-eth-network-desc')">Network: <img src="assets/images/eth-2-icon.svg" alt="Ethereum logo" class="width-100 max-width-20 margin-left-5"/></div>
                     </div>
                 </div>
             </div>
@@ -48,16 +48,16 @@
                 </div>
                 <div class="padding-top-20 inputable-line">
                     <div class="transfer-to-amount inline-block">0.0</div>
-                    <select class="inline-block fs-24 fs-xs-22 padding-left-10 current-to red-color">
-                        <option value="dcn-l2">DCN</option>
+                    <select class="inline-block fs-22 padding-left-10 current-to red-color">
+                        <option value="dcn-l2">DCN (Optimism)</option>
                     </select>
                 </div>
                 <div class="fs-0">
                     <div class="inline-block text-right hide l1-network">
-                        <div class="inline-block fs-18 fs-xs-14 color-solid-gray cursor-pointer padding-left-5 padding-right-5 padding-top-5 padding-bottom-5" data-placement="top" data-toggle="tooltip" data-trigger="click" [attr.data-title]="this.translate.instant('eth-network-desc')">Network: <img src="assets/images/eth-icon.svg" alt="Ethereum logo" class="width-100 max-width-20 margin-left-5"/></div>
+                        <div class="inline-block fs-18 fs-xs-14 color-solid-gray cursor-pointer padding-top-5 padding-bottom-5" data-placement="top" data-toggle="tooltip" data-trigger="click" [attr.data-title]="this.translate.instant('eth-network-desc')">Network: <img src="assets/images/eth-icon.svg" alt="Ethereum logo" class="width-100 max-width-20 margin-left-5"/></div>
                     </div>
                     <div class="inline-block text-right l2-network">
-                        <div class="inline-block fs-18 fs-xs-14 color-solid-gray cursor-pointer padding-left-5 padding-right-5 padding-top-5 padding-bottom-5" data-placement="top" data-toggle="tooltip" data-trigger="click" [attr.data-title]="this.translate.instant('l2-eth-network-desc')">Network: <img src="assets/images/eth-2-icon.svg" alt="Ethereum logo" class="width-100 max-width-20 margin-left-5"/></div>
+                        <div class="inline-block fs-18 fs-xs-14 color-solid-gray cursor-pointer padding-top-5 padding-bottom-5" data-placement="top" data-toggle="tooltip" data-trigger="click" [attr.data-title]="this.translate.instant('l2-eth-network-desc')">Network: <img src="assets/images/eth-2-icon.svg" alt="Ethereum logo" class="width-100 max-width-20 margin-left-5"/></div>
                     </div>
                 </div>
             </div>

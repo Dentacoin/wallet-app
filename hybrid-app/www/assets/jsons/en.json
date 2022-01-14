@@ -162,6 +162,7 @@
   "enter-pass-secret" : "Please enter password for the secret key file.",
   "wallet-settings" : "DENTACOIN WALLET SETTINGS",
   "download" : "Download",
+  "download-two" : "Download",
   "very-important" : "It's very important to make a Backup, in order to protect your funds even if you lose your phone.",
   "backupfile" : "Backup File",
   "by-doing-so" : "By doing so, you will not be asked to upload it every time you want to access your wallet.",
@@ -203,6 +204,7 @@
   "free-download" : "Download for free:",
   "received-from" : "Received from",
   "sent-to" : "Sent to",
+  "transaction-id" : "transaction ID",
   "welcome-to-wallet" : "WELCOME TO <br class=\"show-on-xs\"> DENTACOIN WALLET",
   "the-easy-way" : "The easy way to securely store, send, receive, and buy DCN currency.",
   "create-btn-text" : "CREATE",
@@ -301,5 +303,11 @@
   "where-to-pay" : "Where to pay with DCN",
   "where-to-trade" : "Where to trade DCN",
   "contact-us" : "Contact us",
-  "withdraw-history" : "Withdraw history"
+  "withdraw-history" : "Withdraw history",
+  "swap" : "Swap",
+  "transaction" : "transaction",
+  "ready" : "(ready)",
+  "seven-days" : "(apr. 7 days)",
+  "pending-tx-id" : "Pending Transaction ID",
+  "withdraw-btn" : "WITHDRAW"
 }

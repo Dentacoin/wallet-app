@@ -1136,6 +1136,8 @@ var projectData = {
                                                 amount = parseFloat(amount).toFixedNoRounding(17).toString();
                                             }
 
+                                            var clinicsRequest = await projectData.requests.getDentaprimeClinicAddresses();
+
                                             if (meta_mask_installed) {
                                                 basic.showAlert('MetaMask currently not supported.', '', true);
                                                 return false;
@@ -1187,50 +1189,86 @@ var projectData = {
                                                         }
                                                     }, 500);
                                                 } else if ($('select#active-crypto').val() == 'dcn-l2' ) {
-                                                    basic.showDialog('<figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/attention-icon.svg" alt="Attention icon" itemprop="contentUrl" class="width-100 max-width-60"/></figure><div class="fs-30 fs-xs-22 calibri-bold padding-top-5 padding-bottom-5">'+$('.translates-holder').attr('attention')+'</div><div class="fs-20 fs-xs-16">'+$('.translates-holder').attr('check-if-sender-support-l2')+'</div><div class="margin-top-15 max-width-300 margin-0-auto confirm-container"><input type="text" autocomplete="off" class="confirm-text"/><a href="javascript:void(0);"><img src="assets/images/confirm-btn.png" alt="Confirm btn icon" itemprop="contentUrl"/></a></div>', 'sending-to-l2-wallet-confirmation-popup', true);
-                                                    $('.sending-to-l2-wallet-confirmation-popup .confirm-container .confirm-text').focus();
-
-                                                    $('.sending-to-l2-wallet-confirmation-popup .confirm-container a').click(async function() {
-                                                        if ($('.sending-to-l2-wallet-confirmation-popup .confirm-container .confirm-text').val().trim() == 'CONFIRM') {
-                                                            basic.closeDialog();
-                                                            projectData.general_logic.showLoader();
-                                                            setTimeout(async function() {
-                                                                if (parseInt(await L2DCNContract.methods.balanceOf(global_state.account).call()) < amount) {
-                                                                    projectData.general_logic.hideLoader();
-                                                                    basic.showAlert($('.translates-holder').attr('higher-than-balance'), '', true);
-                                                                } else {
-                                                                    var gasLimit = await L2DCNContract.methods.transfer(sending_to_address, amount).estimateGas({
-                                                                        from: global_state.account
-                                                                    });
-
-                                                                    projectData.general_logic.openTxConfirmationPopup('Send confirmation', config_variable.l2.addresses.dcn_contract_address, amount, 'DCN2.0', gasLimit, L2DCNContract.methods.transfer(sending_to_address, amount).encodeABI(), 'l2', 'transfer', null, null, sending_to_address);
-                                                                }
-                                                            }, 500);
+                                                    var showConfirmationPopup = true;
+                                                    if (clinicsRequest.success && clinicsRequest.data.length) {
+                                                        for (var i = 0, len = clinicsRequest.data.length; i < len; i+=1) {
+                                                            if (projectData.utils.checksumAddress(sending_to_address) == projectData.utils.checksumAddress(clinicsRequest.data[i].dcn_address)) {
+                                                                showConfirmationPopup = false;
+                                                                break;
+                                                            }
                                                         }
-                                                    });
+                                                    }
+
+                                                    if (showConfirmationPopup) {
+                                                        basic.showDialog('<figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/attention-icon.svg" alt="Attention icon" itemprop="contentUrl" class="width-100 max-width-60"/></figure><div class="fs-30 fs-xs-22 calibri-bold padding-top-5 padding-bottom-5">'+$('.translates-holder').attr('attention')+'</div><div class="fs-20 fs-xs-16">'+$('.translates-holder').attr('check-if-sender-support-l2')+'</div><div class="margin-top-15 max-width-300 margin-0-auto confirm-container"><input type="text" autocomplete="off" class="confirm-text"/><a href="javascript:void(0);"><img src="assets/images/confirm-btn.png" alt="Confirm btn icon" itemprop="contentUrl"/></a></div>', 'sending-to-l2-wallet-confirmation-popup', true);
+                                                        $('.sending-to-l2-wallet-confirmation-popup .confirm-container .confirm-text').focus();
+
+                                                        $('.sending-to-l2-wallet-confirmation-popup .confirm-container a').click(async function() {
+                                                            if ($('.sending-to-l2-wallet-confirmation-popup .confirm-container .confirm-text').val().trim() == 'CONFIRM') {
+                                                                basic.closeDialog();
+                                                                proceedToSendL2Tokens();
+                                                            }
+                                                        });
+                                                    } else {
+                                                        proceedToSendL2Tokens();
+                                                    }
+
+                                                    function proceedToSendL2Tokens() {
+                                                        projectData.general_logic.showLoader();
+                                                        setTimeout(async function() {
+                                                            if (parseInt(await L2DCNContract.methods.balanceOf(global_state.account).call()) < amount) {
+                                                                projectData.general_logic.hideLoader();
+                                                                basic.showAlert($('.translates-holder').attr('higher-than-balance'), '', true);
+                                                            } else {
+                                                                var gasLimit = await L2DCNContract.methods.transfer(sending_to_address, amount).estimateGas({
+                                                                    from: global_state.account
+                                                                });
+
+                                                                projectData.general_logic.openTxConfirmationPopup('Send confirmation', config_variable.l2.addresses.dcn_contract_address, amount, 'DCN2.0', gasLimit, L2DCNContract.methods.transfer(sending_to_address, amount).encodeABI(), 'l2', 'transfer', null, null, sending_to_address);
+                                                            }
+                                                        }, 500);
+                                                    }
                                                 } else if ($('select#active-crypto').val() == 'eth-l2') {
-                                                    basic.showDialog('<figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/attention-icon.svg" alt="Attention icon" itemprop="contentUrl" class="width-100 max-width-60"/></figure><div class="fs-30 fs-xs-22 calibri-bold padding-top-5 padding-bottom-5">Attention</div><div class="fs-20 fs-xs-16">'+$('.translates-holder').attr('check-if-sender-support-l2-eth')+'</div><div class="margin-top-15 max-width-300 margin-0-auto confirm-container"><input type="text" autocomplete="off" class="confirm-text"/><a href="javascript:void(0);"><img src="assets/images/confirm-btn.png" alt="Confirm btn icon" itemprop="contentUrl"/></a></div>', 'sending-to-l2-wallet-confirmation-popup', true);
-                                                    $('.sending-to-l2-wallet-confirmation-popup .confirm-container .confirm-text').focus();
-
-                                                    $('.sending-to-l2-wallet-confirmation-popup .confirm-container a').click(async function() {
-                                                        if ($('.sending-to-l2-wallet-confirmation-popup .confirm-container .confirm-text').val().trim() == 'CONFIRM') {
-                                                            basic.closeDialog();
-                                                            projectData.general_logic.showLoader();
-                                                            setTimeout(async function() {
-                                                                var l2_eth_balance = await dApp.web3_l2.eth.getBalance(global_state.account);
-                                                                if (l2_eth_balance < parseInt(projectData.utils.toWei(amount.toString()))) {
-                                                                    basic.showAlert($('.translates-holder').attr('higher-than-balance'), '', true);
-                                                                    projectData.general_logic.hideLoader();
-                                                                } else {
-                                                                    var gasLimit = await dApp.web3_l2.eth.estimateGas({
-                                                                        to: sending_to_address
-                                                                    });
-
-                                                                    projectData.general_logic.openTxConfirmationPopup('Send confirmation', sending_to_address, amount, 'ETH2.0', gasLimit, null, 'l2', 'transfer');
-                                                                }
-                                                            }, 500);
+                                                    var showConfirmationPopup = true;
+                                                    if (clinicsRequest.success && clinicsRequest.data.length) {
+                                                        for (var i = 0, len = clinicsRequest.data.length; i < len; i+=1) {
+                                                            if (projectData.utils.checksumAddress(sending_to_address) == projectData.utils.checksumAddress(clinicsRequest.data[i].dcn_address)) {
+                                                                showConfirmationPopup = false;
+                                                                break;
+                                                            }
                                                         }
-                                                    });
+                                                    }
+
+                                                    if (showConfirmationPopup) {
+                                                        basic.showDialog('<figure itemscope="" itemtype="http://schema.org/ImageObject"><img src="assets/images/attention-icon.svg" alt="Attention icon" itemprop="contentUrl" class="width-100 max-width-60"/></figure><div class="fs-30 fs-xs-22 calibri-bold padding-top-5 padding-bottom-5">Attention</div><div class="fs-20 fs-xs-16">'+$('.translates-holder').attr('check-if-sender-support-l2-eth')+'</div><div class="margin-top-15 max-width-300 margin-0-auto confirm-container"><input type="text" autocomplete="off" class="confirm-text"/><a href="javascript:void(0);"><img src="assets/images/confirm-btn.png" alt="Confirm btn icon" itemprop="contentUrl"/></a></div>', 'sending-to-l2-wallet-confirmation-popup', true);
+                                                        $('.sending-to-l2-wallet-confirmation-popup .confirm-container .confirm-text').focus();
+
+                                                        $('.sending-to-l2-wallet-confirmation-popup .confirm-container a').click(async function() {
+                                                            if ($('.sending-to-l2-wallet-confirmation-popup .confirm-container .confirm-text').val().trim() == 'CONFIRM') {
+                                                                basic.closeDialog();
+                                                                proceedToSendL2Tokens();
+                                                            }
+                                                        });
+                                                    } else {
+                                                        proceedToSendL2Tokens();
+                                                    }
+
+                                                    function proceedToSendL2Tokens() {
+                                                        projectData.general_logic.showLoader();
+                                                        setTimeout(async function() {
+                                                            var l2_eth_balance = await dApp.web3_l2.eth.getBalance(global_state.account);
+                                                            if (l2_eth_balance < parseInt(projectData.utils.toWei(amount.toString()))) {
+                                                                basic.showAlert($('.translates-holder').attr('higher-than-balance'), '', true);
+                                                                projectData.general_logic.hideLoader();
+                                                            } else {
+                                                                var gasLimit = await dApp.web3_l2.eth.estimateGas({
+                                                                    to: sending_to_address
+                                                                });
+
+                                                                projectData.general_logic.openTxConfirmationPopup('Send confirmation', sending_to_address, amount, 'ETH2.0', gasLimit, null, 'l2', 'transfer');
+                                                            }
+                                                        }, 500);
+                                                    }
                                                 }
                                             }
                                         });
@@ -1324,7 +1362,7 @@ var projectData = {
                         case 'dcn-l1':
                             $('.swapping-section .from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount" data-amount="'+l1_dcn_balance+'">'+l1_dcn_balance.toLocaleString()+'</span> DCN</span>');
                             $('.swapping-section .to-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount" data-amount="'+l2_dcn_balance+'">'+l2_dcn_balance.toLocaleString()+'</span> DCN</span>');
-                            $('.swapping-section .to-box .inputable-line').html('<div class="transfer-to-amount inline-block">0.0</div><select class="inline-block fs-24 padding-left-10 current-to"><option selected value="dcn-l2">DCN</option></select>');
+                            $('.swapping-section .to-box .inputable-line').html('<div class="transfer-to-amount inline-block">0.0</div><select class="inline-block fs-22 padding-left-10 current-to"><option selected value="dcn-l2">DCN (Optimism)</option></select>');
 
                             $('.current-currency-explanation').html($('.current-currency-explanation').attr('swap-dcn'));
                             $('.checkbox-row label').html($('.checkbox-row label').attr('swap-dcn'));
@@ -1360,7 +1398,7 @@ var projectData = {
 
                             $('.swapping-section .from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount" data-amount="'+L1EthBalance+'">'+L1EthBalance+'</span> ETH</span>');
                             $('.swapping-section .to-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount" data-amount="'+L2EthBalance+'">'+L2EthBalance+'</span> ETH</span>');
-                            $('.swapping-section .to-box .inputable-line').html('<div class="transfer-to-amount inline-block">0.0</div><select class="inline-block fs-24 padding-left-10 current-to"><option selected value="eth-l2">ETH</option></select>');
+                            $('.swapping-section .to-box .inputable-line').html('<div class="transfer-to-amount inline-block">0.0</div><select class="inline-block fs-22 padding-left-10 current-to"><option selected value="eth-l2">ETH (Optimism)</option></select>');
 
                             $('.current-currency-explanation').html($('.current-currency-explanation').attr('swap-eth'));
                             $('.checkbox-row label').html($('.checkbox-row label').attr('swap-eth'));
@@ -1377,7 +1415,7 @@ var projectData = {
                         case 'dcn-l2':
                             $('.swapping-section .from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount" data-amount="'+l2_dcn_balance+'">'+l2_dcn_balance.toLocaleString()+'</span> DCN</span>');
                             $('.swapping-section .to-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount" data-amount="'+l1_dcn_balance+'">'+l1_dcn_balance.toLocaleString()+'</span> DCN</span>');
-                            $('.swapping-section .to-box .inputable-line').html('<div class="transfer-to-amount inline-block">0.0</div><select class="inline-block fs-24 padding-left-10 current-to"><option selected value="dcn-l1">DCN</option></select>');
+                            $('.swapping-section .to-box .inputable-line').html('<div class="transfer-to-amount inline-block">0.0</div><select class="inline-block fs-22 padding-left-10 current-to"><option selected value="dcn-l1">DCN</option></select>');
 
                             $('.current-currency-explanation').html($('.current-currency-explanation').attr('swap-dcn2'));
                             $('.checkbox-row label').html($('.checkbox-row label').attr('swap-dcn2'));
@@ -1410,7 +1448,7 @@ var projectData = {
 
                             $('.swapping-section .from-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount" data-amount="'+L2EthBalance+'">'+L2EthBalance+'</span> ETH</span>');
                             $('.swapping-section .to-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount" data-amount="'+L1EthBalance+'">'+L1EthBalance+'</span> ETH</span>');
-                            $('.swapping-section .to-box .inputable-line').html('<div class="transfer-to-amount inline-block">0.0</div><select class="inline-block fs-24 padding-left-10 current-to"><option selected value="eth-l1">ETH</option></select>');
+                            $('.swapping-section .to-box .inputable-line').html('<div class="transfer-to-amount inline-block">0.0</div><select class="inline-block fs-22 padding-left-10 current-to"><option selected value="eth-l1">ETH</option></select>');
 
                             $('.current-currency-explanation').html($('.current-currency-explanation').attr('swap-eth2'));
                             $('.checkbox-row label').html($('.checkbox-row label').attr('swap-eth2'));
@@ -1451,13 +1489,13 @@ var projectData = {
                     }
 
                     if ($('select.current-from').val() == 'eth-l1') {
-                        $('select.current-from').html('<option value="dcn-l1">DCN</option><option value="eth-l1">ETH</option><option value="dcn-l2">DCN</option><option value="eth-l2" selected>ETH</option>');
+                        $('select.current-from').html('<option value="dcn-l1">DCN</option><option value="eth-l1">ETH</option><option value="dcn-l2">DCN (Optimism)</option><option value="eth-l2" selected>ETH (Optimism)</option>');
                     } else if ($('select.current-from').val() == 'eth-l2') {
-                        $('select.current-from').html('<option value="dcn-l1">DCN</option><option value="eth-l1" selected>ETH</option><option value="dcn-l2">DCN</option><option value="eth-l2">ETH</option>');
+                        $('select.current-from').html('<option value="dcn-l1">DCN</option><option value="eth-l1" selected>ETH</option><option value="dcn-l2">DCN (Optimism)</option><option value="eth-l2">ETH (Optimism)</option>');
                     } else if ($('select.current-from').val() == 'dcn-l1') {
-                        $('select.current-from').html('<option value="dcn-l1">DCN</option><option value="eth-l1">ETH</option><option value="dcn-l2" selected>DCN</option><option value="eth-l2">ETH</option>');
+                        $('select.current-from').html('<option value="dcn-l1">DCN</option><option value="eth-l1">ETH</option><option value="dcn-l2" selected>DCN (Optimism)</option><option value="eth-l2">ETH (Optimism)</option>');
                     } else if ($('select.current-from').val() == 'dcn-l2') {
-                        $('select.current-from').html('<option value="dcn-l1" selected>DCN</option><option value="eth-l1">ETH</option><option value="dcn-l2">DCN</option><option value="eth-l2">ETH</option>');
+                        $('select.current-from').html('<option value="dcn-l1" selected>DCN</option><option value="eth-l1">ETH</option><option value="dcn-l2">DCN (Optimism)</option><option value="eth-l2">ETH (Optimism)</option>');
                     }
 
                     $('select.current-from').trigger('change');
@@ -1846,7 +1884,7 @@ var projectData = {
                                             });
                                         } else {
                                             //nothing is cached
-                                            transaction_popup_html += '<div class="container-fluid proof-of-address padding-top-20 padding-bottom-20"> <div class="row fs-0"> <div class="col-xs-12 col-sm-5 inline-block padding-left-30 padding-left-xs-15 priv-key-btn"> <a href="javascript:void(0)" class="light-blue-white-btn text-center enter-private-key display-block-important fs-18 fs-xs-14 line-height-18"><span>'+$('.translates-holder').attr('enter-priv-key')+'</span></a> </div><div class="col-xs-12 col-sm-2 text-center calibri-bold fs-20 inline-block">or</div><div class="col-xs-12 col-sm-5 inline-block padding-right-30 padding-right-xs-15 keystore-btn"> <div class="upload-file-container" data-id="upload-keystore-file"><input type="file" id="upload-keystore-file" class="custom-upload-keystore-file hide-input"/> <div class="btn-wrapper"></div></div></div></div><div class="row on-change-result"></div></div>';
+                                            transaction_popup_html += '<div class="container-fluid proof-of-address padding-top-20 padding-bottom-20"> <div class="row fs-0"> <div class="col-xs-12 col-sm-5 inline-block padding-left-30 padding-left-xs-15 priv-key-btn"> <a href="javascript:void(0)" class="light-blue-white-btn text-center enter-private-key display-block-important fs-16 fs-xs-14 line-height-18"><span>'+$('.translates-holder').attr('enter-priv-key')+'</span></a> </div><div class="col-xs-12 col-sm-2 text-center calibri-bold fs-20 inline-block">or</div><div class="col-xs-12 col-sm-5 inline-block padding-right-30 padding-right-xs-15 keystore-btn"> <div class="upload-file-container" data-id="upload-keystore-file"><input type="file" id="upload-keystore-file" class="custom-upload-keystore-file hide-input"/> <div class="btn-wrapper"></div></div></div></div><div class="row on-change-result"></div></div>';
                                             basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
 
                                             //init private key btn logic
@@ -2050,7 +2088,7 @@ var projectData = {
                             });
                         } else {
                             //nothing is cached
-                            transaction_popup_html += '<div class="container-fluid proof-of-address padding-top-20 padding-bottom-20"> <div class="row fs-0"> <div class="col-xs-12 col-sm-5 inline-block padding-left-30 padding-left-xs-15 priv-key-btn"> <a href="javascript:void(0)" class="light-blue-white-btn text-center enter-private-key display-block-important fs-18 fs-xs-14 line-height-18"><span>'+$('.translates-holder').attr('enter-priv-key')+'</span></a> </div><div class="col-xs-12 col-sm-2 text-center calibri-bold fs-20 fs-xs-16 inline-block or-label">or</div><div class="col-xs-12 col-sm-5 inline-block padding-right-30 padding-right-xs-15 keystore-btn"><div class="upload-file-container" data-id="upload-keystore-file"><input type="file" id="upload-keystore-file" class="custom-upload-keystore-file hide-input"/> <div class="btn-wrapper"></div></div></div></div><div class="row on-change-result"></div></div>';
+                            transaction_popup_html += '<div class="container-fluid proof-of-address padding-top-20 padding-bottom-20"> <div class="row fs-0"> <div class="col-xs-12 col-sm-5 inline-block padding-left-30 padding-left-xs-15 priv-key-btn"> <a href="javascript:void(0)" class="light-blue-white-btn text-center enter-private-key display-block-important fs-16 fs-xs-14 line-height-18"><span>'+$('.translates-holder').attr('enter-priv-key')+'</span></a> </div><div class="col-xs-12 col-sm-2 text-center calibri-bold fs-20 fs-xs-16 inline-block or-label">or</div><div class="col-xs-12 col-sm-5 inline-block padding-right-30 padding-right-xs-15 keystore-btn"><div class="upload-file-container" data-id="upload-keystore-file"><input type="file" id="upload-keystore-file" class="custom-upload-keystore-file hide-input"/> <div class="btn-wrapper"></div></div></div></div><div class="row on-change-result"></div></div>';
                             basic.showDialog(transaction_popup_html, 'transaction-confirmation-popup', true);
                             projectData.general_logic.bindTxSettings(visibleGasPriceNumber, nonce);
 
@@ -2303,15 +2341,15 @@ var projectData = {
                                                     var aprTextContent = '';
                                                     if (timestamp_javascript + (config_variable.delay_for_L2_withdrawal_execution * 1000) < (new Date()).getTime()) {
                                                         // ready to relay
-                                                        btnHtml = '<a href="javascript:void(0);" class="fs-20 fs-xs-14 lato-bold withdraw-btn">WITHDRAW</a>';
-                                                        aprTextContent = '(ready)';
+                                                        btnHtml = '<a href="javascript:void(0);" class="fs-20 fs-xs-14 lato-bold withdraw-btn">'+$('.translates-holder').attr('withdraw-btn')+'</a>';
+                                                        aprTextContent = $('.translates-holder').attr('ready');
                                                     } else {
                                                         // not ready to relay yet
                                                         btnHtml = '<a href="javascript:void(0);" class="fs-20 fs-xs-14 lato-bold pending-btn">PENDING</a>';
-                                                        aprTextContent = '(apr. 7 days)';
+                                                        aprTextContent = $('.translates-holder').attr('seven-days');
                                                     }
 
-                                                    withdrawHistoryHtml += '<tr data-cryptoAmount="'+cryptoAmount+'" data-type="'+type+'" data-hash="'+element.transactionHash+'"><td class="icon"></td><td><ul><li>' + (date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() + '</li><li>' + hours + ':' + minutes + '</li></ul></td><td class="lato-bold"><div>Swapped <span class="hide-xs">transaction</span> <span class="yellow-text">'+aprTextContent+'</span></div><div><a target="_blank" href="' + config_variable.optimism_etherscan_domain + '/messagerelayer?search=' + element.transactionHash + '" class="color-white">Pending Transaction ID</a></div></td><td><div class="crypto-amount fs-18 fs-xs-14 lato-bold">+ '+cryptoAmountLabel+'</div><div class="crypto-amount-in-usd fs-16 fs-xs-13">'+cryptoAmountInUsd.toFixed(4)+' USD</div></td><td class="btn-td text-center">'+btnHtml+'</td></tr>';
+                                                    withdrawHistoryHtml += '<tr data-cryptoAmount="'+cryptoAmount+'" data-type="'+type+'" data-hash="'+element.transactionHash+'"><td class="icon"></td><td><ul><li>' + (date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() + '</li><li>' + hours + ':' + minutes + '</li></ul></td><td class="lato-bold"><div>'+$('.translates-holder').attr('swap')+' <span class="hide-xs">'+$('.translates-holder').attr('transaction')+'</span> <span class="yellow-text">'+aprTextContent+'</span></div><div><a target="_blank" href="' + config_variable.optimism_etherscan_domain + '/messagerelayer?search=' + element.transactionHash + '" class="color-white">'+$('.translates-holder').attr('pending-tx-id')+'</a></div></td><td><div class="crypto-amount fs-18 fs-xs-14 lato-bold">+ '+cryptoAmountLabel+'</div><div class="crypto-amount-in-usd fs-16 fs-xs-13">'+cryptoAmountInUsd.toFixed(4)+' USD</div></td><td class="btn-td text-center">'+btnHtml+'</td></tr>';
 
                                                     if (counter == withdrawEvents.length - 1) {
                                                         if (!$('.transaction-and-withdraw-history-btns a[data-display="camping-withdraw-history"]').length) {
@@ -3051,7 +3089,7 @@ var projectData = {
                 }
             }
 
-            var transaction_id_label = 'Transaction ID';
+            var transaction_id_label = $('.translates-holder').attr('transaction-id');
             if (pending != undefined) {
                 transaction_id_label += '<span class="pending-transaction inline-block">( Pending )</span>';
             }
@@ -3114,7 +3152,7 @@ var projectData = {
                 }
             }
 
-            var transaction_id_label = 'Transaction ID';
+            var transaction_id_label = $('.translates-holder').attr('transaction-id');
             if (pending != undefined) {
                 transaction_id_label += '<span class="pending-transaction inline-block">( Pending )</span>';
             }
@@ -3453,7 +3491,7 @@ function styleKeystoreUploadBtnForTx(callback) {
         var this_btn = $(this_btn_vanilla);
 
         var this_btn_parent = this_btn.closest('.upload-file-container');
-        this_btn_parent.find('.btn-wrapper').append("<label for='" + this_btn_parent.attr('data-id') + "'  role='button' class='light-blue-white-btn display-block-important custom-upload-keystore-file-label'><span class='display-block-important fs-18 fs-xs-14 text-center'>"+$('.translates-holder').attr('upload-backup')+"</span> <div class='fs-16 fs-xs-12'>"+$('.translates-holder').attr('recommended')+"</div></label>");
+        this_btn_parent.find('.btn-wrapper').append("<label for='" + this_btn_parent.attr('data-id') + "'  role='button' class='light-blue-white-btn display-block-important custom-upload-keystore-file-label'><span class='display-block-important fs-16 fs-xs-14 text-center'>"+$('.translates-holder').attr('upload-backup')+"</span> <div class='fs-16 fs-xs-12'>"+$('.translates-holder').attr('recommended')+"</div></label>");
 
         if (is_hybrid) {
             // MOBILE APP
@@ -3750,7 +3788,7 @@ function submitTransactionToBlockchain(web3_provider, transactionType, function_
                                             $('.camping-withdraw-history').html('<div class="container"><div class="row"><div class="col-xs-12 no-gutter-xs col-md-10 col-md-offset-1 padding-top-20 withdraw-history-scroll-parent"><table class="color-white"><tbody></tbody></table></div></div><div class="row camping-show-more"></div></div>');
                                         }
 
-                                        $('.camping-withdraw-history tbody').prepend('<tr><td class="icon"></td><td><ul><li>' + (date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() + '</li><li>' + hours + ':' + minutes + '</li></ul></td><td class="lato-bold"><div>Swapped <span class="hide-xs">transaction</span> <span class="yellow-text">(apr. 7 days)</span></div><div><a target="_blank" href="' + config_variable.optimism_etherscan_domain + '/messagerelayer?search=' + transactionHash + '" class="color-white">Pending Transaction ID</a></div></td><td><div class="crypto-amount fs-18 fs-xs-14 lato-bold">+ '+cryptoAmountLabel+'</div><div class="crypto-amount-in-usd fs-16 fs-xs-13">'+cryptoAmountInUsd.toFixed(4)+' USD</div></td><td class="btn-td text-center"><a href="javascript:void(0);" class="fs-20 fs-xs-14 lato-bold pending-btn">PENDING</a></td></tr>');
+                                        $('.camping-withdraw-history tbody').prepend('<tr><td class="icon"></td><td><ul><li>' + (date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() + '</li><li>' + hours + ':' + minutes + '</li></ul></td><td class="lato-bold"><div>'+$('.translates-holder').attr('swap')+' <span class="hide-xs">'+$('.translates-holder').attr('transaction')+'</span> <span class="yellow-text">'+$('.translates-holder').attr('seven-days')+'</span></div><div><a target="_blank" href="' + config_variable.optimism_etherscan_domain + '/messagerelayer?search=' + transactionHash + '" class="color-white">'+$('.translates-holder').attr('pending-tx-id')+'</a></div></td><td><div class="crypto-amount fs-18 fs-xs-14 lato-bold">+ '+cryptoAmountLabel+'</div><div class="crypto-amount-in-usd fs-16 fs-xs-13">'+cryptoAmountInUsd.toFixed(4)+' USD</div></td><td class="btn-td text-center"><a href="javascript:void(0);" class="fs-20 fs-xs-14 lato-bold pending-btn">PENDING</a></td></tr>');
                                     });
                                 } else if (symbol == 'DCN') {
                                     projectData.general_logic.displayMessageOnTransactionSend('<img src="assets/images/receive-dcn2.png" class="width-100 max-width-180"/><div class="fs-26 fs-xs-24 lato-bold padding-top-20">'+$('.translates-holder').attr('success')+'</div><div class="padding-top-10 padding-bottom-30 fs-18 fs-xs-16">'+$('.translates-holder').attr('your-tokens')+' <a href="' + etherscanDomain + '/tx/' + transactionHash + '" target="_blank" class="lato-bold color-light-blue data-external-link text-decoration-underline">Etherscan</a>.</div><div><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border close-tx-popup-btn padding-left-40 padding-right-40">OK</a></div>');
@@ -3822,7 +3860,7 @@ function submitTransactionToBlockchain(web3_provider, transactionType, function_
                                             $('.camping-withdraw-history').html('<div class="container"><div class="row"><div class="col-xs-12 no-gutter-xs col-md-10 col-md-offset-1 padding-top-20 withdraw-history-scroll-parent"><table class="color-white"><tbody></tbody></table></div></div><div class="row camping-show-more"></div></div>');
                                         }
 
-                                        $('.camping-withdraw-history tbody').prepend('<tr><td class="icon"></td><td><ul><li>' + (date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() + '</li><li>' + hours + ':' + minutes + '</li></ul></td><td class="lato-bold"><div>Swapped <span class="hide-xs">transaction</span> <span class="yellow-text">(apr. 7 days)</span></div><div><a target="_blank" href="' + config_variable.optimism_etherscan_domain + '/messagerelayer?search=' + transactionHash + '" class="color-white">Pending Transaction ID</a></div></td><td><div class="crypto-amount fs-18 fs-xs-14 lato-bold">+ '+cryptoAmountLabel+'</div><div class="crypto-amount-in-usd fs-16 fs-xs-13">'+cryptoAmountInUsd.toFixed(4)+' USD</div></td><td class="btn-td text-center"><a href="javascript:void(0);" class="fs-20 fs-xs-14 lato-bold pending-btn">PENDING</a></td></tr>');
+                                        $('.camping-withdraw-history tbody').prepend('<tr><td class="icon"></td><td><ul><li>' + (date_obj.getMonth() + 1) + '/' + date_obj.getDate() + '/' + date_obj.getFullYear() + '</li><li>' + hours + ':' + minutes + '</li></ul></td><td class="lato-bold"><div>'+$('.translates-holder').attr('swap')+' <span class="hide-xs">'+$('.translates-holder').attr('transaction')+'</span> <span class="yellow-text">'+$('.translates-holder').attr('seven-days')+'</span></div><div><a target="_blank" href="' + config_variable.optimism_etherscan_domain + '/messagerelayer?search=' + transactionHash + '" class="color-white">'+$('.translates-holder').attr('pending-tx-id')+'</a></div></td><td><div class="crypto-amount fs-18 fs-xs-14 lato-bold">+ '+cryptoAmountLabel+'</div><div class="crypto-amount-in-usd fs-16 fs-xs-13">'+cryptoAmountInUsd.toFixed(4)+' USD</div></td><td class="btn-td text-center"><a href="javascript:void(0);" class="fs-20 fs-xs-14 lato-bold pending-btn">PENDING</a></td></tr>');
                                     });
                                 } else if (symbol == 'ETH') {
                                     projectData.general_logic.displayMessageOnTransactionSend('<img src="assets/images/receive-eth2.png" class="width-100 max-width-180"/><div class="fs-26 fs-xs-24 lato-bold padding-top-20">'+$('.translates-holder').attr('success')+'</div><div class="padding-top-10 padding-bottom-30 fs-18 fs-xs-16">'+$('.translates-holder').attr('your-eth-tokens')+' <a href="' + etherscanDomain + '/tx/' + transactionHash + '" target="_blank" class="lato-bold color-light-blue data-external-link text-decoration-underline">Etherscan</a>.</div><div><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border close-tx-popup-btn padding-left-40 padding-right-40">OK</a></div>');
@@ -4369,9 +4407,11 @@ function initAccountChecker() {
                                     // WORKS ON SAMSUNG
                                     projectData.general_logic.hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function(savedToDownloadsFolder, savedToDownloadsFolderErr) {
                                         projectData.general_logic.hybridAppFileDownload(keystore_file_name, JSON.stringify(keystore), function (savedToInternalFolder, savedToInternalFolderErr) {
+                                            var timeoutSeconds = 6000;
                                             if (savedToDownloadsFolder) {
                                                 basic.showAlert($('.translates-holder').attr('file') + keystore_file_name + $('.translates-holder').attr('has-been-stored'), 'overlap-loading-popup', true);
                                             } else {
+                                                timeoutSeconds = 12000;
                                                 // when file cannot be downloaded to top Download folder
                                                 basic.showAlert($('.translates-holder').attr('when-file-cannot-be-saved-in-downloads'), 'overlap-loading-popup', true);
                                             }
@@ -4384,7 +4424,7 @@ function initAccountChecker() {
                                                 basic.closeDialog();
                                                 projectData.general_logic.hideLoader();
                                                 clearCreation();
-                                            }, 6000);
+                                            }, timeoutSeconds);
                                         }, cordova.file.externalDataDirectory, false);
                                     }, cordova.file.externalRootDirectory, true);
                                 } else if (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel') {
@@ -4805,12 +4845,11 @@ $(document).on('click', '.open-settings', function () {
     }
 
     if (window.localStorage.getItem('keystore_file') != null/* || (is_hybrid && basic.getMobileOperatingSystem() == 'iOS' && window.localStorage.getItem('keystore_file_ios_saved') == null)*/) {
-        var download_btn_label = $('.translates-holder').attr('download');
         var slug_attr = 'download';
         var warning_html = '';
 
         //if cached keystore file show the option for downloading it
-        settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important download-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path fill="#00B5E2" d="M14.4,10.4v3.2c0,0.1,0,0.2-0.1,0.3c0,0.1-0.1,0.2-0.2,0.3c-0.1,0.1-0.2,0.1-0.3,0.2c-0.1,0-0.2,0.1-0.3,0.1 H2.4c-0.1,0-0.2,0-0.3-0.1c-0.1,0-0.2-0.1-0.3-0.2S1.7,14,1.7,13.9c0-0.1-0.1-0.2-0.1-0.3v-3.2c0-0.4-0.4-0.8-0.8-0.8S0,10,0,10.4 v3.2c0,0.3,0.1,0.6,0.2,0.9c0.1,0.3,0.3,0.6,0.5,0.8c0.2,0.2,0.5,0.4,0.8,0.5C1.8,15.9,2.1,16,2.4,16h11.2c0.3,0,0.6-0.1,0.9-0.2 c0.3-0.1,0.6-0.3,0.8-0.5c0.2-0.2,0.4-0.5,0.5-0.8c0.1-0.3,0.2-0.6,0.2-0.9v-3.2c0-0.4-0.4-0.8-0.8-0.8S14.4,10,14.4,10.4z M8.8,8.5 V0.8C8.8,0.4,8.4,0,8,0C7.6,0,7.2,0.4,7.2,0.8v7.7L4.6,5.8c-0.3-0.3-0.8-0.3-1.1,0C3.1,6.1,3.1,6.7,3.4,7l4,4c0,0,0,0,0,0 c0.1,0.1,0.2,0.1,0.3,0.2c0.1,0,0.2,0.1,0.3,0.1c0,0,0,0,0,0c0.1,0,0.2,0,0.3-0.1c0.1,0,0.2-0.1,0.3-0.2l4-4c0.3-0.3,0.3-0.8,0-1.1 s-0.8-0.3-1.1,0L8.8,8.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="'+slug_attr+'">' + download_btn_label + ' <span class="renew-on-lang-switch" data-slug="backupfile">'+$('.translates-holder').attr('backupfile')+'</span></span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="very-important">'+$('.translates-holder').attr('very-important')+'</div><div class="camping-for-action"></div>' + warning_html + '</div>';
+        settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important download-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path fill="#00B5E2" d="M14.4,10.4v3.2c0,0.1,0,0.2-0.1,0.3c0,0.1-0.1,0.2-0.2,0.3c-0.1,0.1-0.2,0.1-0.3,0.2c-0.1,0-0.2,0.1-0.3,0.1 H2.4c-0.1,0-0.2,0-0.3-0.1c-0.1,0-0.2-0.1-0.3-0.2S1.7,14,1.7,13.9c0-0.1-0.1-0.2-0.1-0.3v-3.2c0-0.4-0.4-0.8-0.8-0.8S0,10,0,10.4 v3.2c0,0.3,0.1,0.6,0.2,0.9c0.1,0.3,0.3,0.6,0.5,0.8c0.2,0.2,0.5,0.4,0.8,0.5C1.8,15.9,2.1,16,2.4,16h11.2c0.3,0,0.6-0.1,0.9-0.2 c0.3-0.1,0.6-0.3,0.8-0.5c0.2-0.2,0.4-0.5,0.5-0.8c0.1-0.3,0.2-0.6,0.2-0.9v-3.2c0-0.4-0.4-0.8-0.8-0.8S14.4,10,14.4,10.4z M8.8,8.5 V0.8C8.8,0.4,8.4,0,8,0C7.6,0,7.2,0.4,7.2,0.8v7.7L4.6,5.8c-0.3-0.3-0.8-0.3-1.1,0C3.1,6.1,3.1,6.7,3.4,7l4,4c0,0,0,0,0,0 c0.1,0.1,0.2,0.1,0.3,0.2c0.1,0,0.2,0.1,0.3,0.1c0,0,0,0,0,0c0.1,0,0.2,0,0.3-0.1c0.1,0,0.2-0.1,0.3-0.2l4-4c0.3-0.3,0.3-0.8,0-1.1 s-0.8-0.3-1.1,0L8.8,8.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="'+slug_attr+'">' + $('.translates-holder').attr('download') + ' <span class="renew-on-lang-switch" data-slug="backupfile">'+$('.translates-holder').attr('backupfile')+'</span></span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="very-important">'+$('.translates-holder').attr('very-important')+'</div><div class="camping-for-action"></div>' + warning_html + '</div>';
     } else if (window.localStorage.getItem('keystore_file') == null) {
         //if not cached keystore file show the option for caching it
         settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important remember-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path fill="#00B5E2" d="M14,0H2C0.9,0,0,0.9,0,2v12c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V2C16,0.9,15.1,0,14,0z M15,14c0,0.6-0.4,1-1,1 H2c-0.6,0-1-0.4-1-1v-3h14V14z M15,10H1V6h14V10z M1,5V2c0-0.6,0.4-1,1-1h12c0.6,0,1,0.4,1,1v3H1z M14,3.5C14,3.8,13.8,4,13.5,4h-1 C12.2,4,12,3.8,12,3.5v-1C12,2.2,12.2,2,12.5,2h1C13.8,2,14,2.2,14,2.5V3.5z M14,8.5C14,8.8,13.8,9,13.5,9h-1C12.2,9,12,8.8,12,8.5 v-1C12,7.2,12.2,7,12.5,7h1C13.8,7,14,7.2,14,7.5V8.5z M14,13.5c0,0.3-0.2,0.5-0.5,0.5h-1c-0.3,0-0.5-0.2-0.5-0.5v-1 c0-0.3,0.2-0.5,0.5-0.5h1c0.3,0,0.5,0.2,0.5,0.5V13.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="remember-file">'+$('.translates-holder').attr('remember-file')+'</span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="by-doing-so">'+$('.translates-holder').attr('by-doing-so')+'</div><div class="camping-for-action"></div></div>';
@@ -5017,7 +5056,7 @@ $(document).on('click', '.open-settings', function () {
             $('.settings-popup .camping-for-action').html('');
             $('.settings-popup .error-handle').remove();
 
-            var downloadBtnLabel = $('.translates-holder').attr('download');
+            var downloadBtnLabel = $('.translates-holder').attr('download-two');
             var attrSlug = 'download';
             if (is_hybrid && (basic.getMobileOperatingSystem() == 'iOS' || navigator.platform == 'MacIntel')) {
                 downloadBtnLabel = $('.translates-holder').attr('export-btn');
