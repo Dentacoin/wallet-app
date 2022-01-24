@@ -112,7 +112,7 @@ var express = __webpack_require__(6);
 var path_1 = __webpack_require__(13);
 // Express server
 var app = express();
-var PORT = process.env.PORT || 4010;
+var PORT = process.env.PORT || 4000;
 var DIST_FOLDER = path_1.join(process.cwd(), 'dist/browser');
 // * NOTE :: leave this as require() since this file is built Dynamically from webpack
 var _a = __webpack_require__(129), AppServerModuleNgFactory = _a.AppServerModuleNgFactory, LAZY_MODULE_MAP = _a.LAZY_MODULE_MAP, ngExpressEngine = _a.ngExpressEngine, provideModuleMap = _a.provideModuleMap;
