@@ -479,14 +479,14 @@
   .module.from-box .inputable-line, .module.to-box .inputable-line {
     font-size: 0; }
     .module.from-box .inputable-line input[type="number"], .module.from-box .inputable-line .transfer-to-amount, .module.to-box .inputable-line input[type="number"], .module.to-box .inputable-line .transfer-to-amount {
-      width: calc(100% - 130px);
+      width: calc(100% - 185px);
       border: 0;
       padding: 5px 0;
       font-size: 24px; }
     .module.from-box .inputable-line select, .module.to-box .inputable-line select {
-      width: 110px;
+      width: 175px;
       text-align: left;
-      margin-left: 20px;
+      margin-left: 10px;
       border: 0;
       color: black;
       background-color: #dddddd;
@@ -495,8 +495,8 @@
       -ms-border-radius: 4px;
       border-radius: 4px; }
     .module.from-box .inputable-line .token-label, .module.to-box .inputable-line .token-label {
-      width: 110px;
-      margin-left: 20px;
+      width: 175px;
+      margin-left: 10px;
       text-align: center;
       border: 0;
       color: black;
@@ -507,12 +507,7 @@
       border-radius: 4px; }
   @media screen and (max-width: 767px) {
     .module.from-box, .module.to-box {
-      padding: 20px 20px; }
-      .module.from-box .inputable-line input[type="number"], .module.from-box .inputable-line .transfer-to-amount, .module.to-box .inputable-line input[type="number"], .module.to-box .inputable-line .transfer-to-amount {
-        width: calc(100% - 110px); }
-      .module.from-box .inputable-line select, .module.from-box .inputable-line .token-label, .module.to-box .inputable-line select, .module.to-box .inputable-line .token-label {
-        width: 100px;
-        margin-left: 10px; } }
+      padding: 10px; } }
 
 body {
   margin: 0;
@@ -4745,6 +4740,9 @@ img {
       @media screen and (max-width: 767px) {
         .camping-transaction-history .transaction-history table tbody tr td {
           font-size: 15px; } }
+      @media screen and (max-width: 450px) {
+        .camping-transaction-history .transaction-history table tbody tr td {
+          font-size: 14px; } }
     @media screen and (max-width: 767px) {
       .camping-transaction-history .transaction-history table tbody tr.loading-tr td:first-child {
         display: table-cell; } }
@@ -5104,20 +5102,24 @@ img {
       border-top: 1.5px solid #00b7e2; }
       .bootbox.l2-information-popup .modal-dialog .bottom-menu a {
         display: block;
-        color: #00b7e2; }
-        .bootbox.l2-information-popup .modal-dialog .bottom-menu a img {
-          float: right; }
+        color: #00b7e2;
+        font-size: 0; }
+        .bootbox.l2-information-popup .modal-dialog .bottom-menu a span {
+          width: calc(100% - 20px); }
   .bootbox.overlap-loading-popup {
     z-index: 10050; }
   .bootbox.download-mobile-app .phone-container {
     position: relative; }
-    .bootbox.download-mobile-app .phone-container .absolute-content {
-      bottom: 10px;
+    .bootbox.download-mobile-app .phone-container .app-store-link, .bootbox.download-mobile-app .phone-container .apk-link {
       position: absolute;
       left: 50%;
       -webkit-transform: translateX(-50%);
       -ms-transform: translateX(-50%);
       transform: translateX(-50%); }
+    .bootbox.download-mobile-app .phone-container .app-store-link {
+      bottom: 60px; }
+    .bootbox.download-mobile-app .phone-container .apk-link {
+      bottom: 5px; }
   .bootbox.sending-to-l2-wallet-confirmation-popup .modal-dialog {
     width: 95%;
     max-width: 600px;
@@ -5641,7 +5643,7 @@ input[type=file].hide-input {
   .camp-for-custom-popover .arrow {
     position: absolute;
     top: -9px;
-    left: 10px;
+    left: 60px;
     width: 15px;
     height: 15px;
     background: white;
@@ -6036,6 +6038,8 @@ input[type=file].hide-input {
   -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
   -ms-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); }
+.tooltip.in {
+  opacity: 1; }
 
 select {
   -webkit-appearance: none;
@@ -6048,10 +6052,15 @@ select {
     background-image: url(../images/blue-caret.svg); }
   select.white-color {
     background-image: url(../images/white-caret.svg); }
+  select.red-color {
+    background-image: url(../images/red-caret.svg);
+    color: red !important; }
+    select.red-color option {
+      color: black; }
 
 nav.sidenav {
   position: fixed;
-  z-index: 500;
+  z-index: 1033;
   color: white;
   height: 100%;
   top: 0;
@@ -6382,8 +6391,10 @@ app-homepage .main-wrapper {
       border-bottom: 2px solid #f2f2f2; }
       app-homepage .main-wrapper .bottom-side .single-currency .eth-logo {
         max-width: 25px; }
-      app-homepage .main-wrapper .bottom-side .single-currency .currency-info, app-homepage .main-wrapper .bottom-side .single-currency .currency-values {
-        width: 50%; }
+      app-homepage .main-wrapper .bottom-side .single-currency .currency-info {
+        width: 55%; }
+      app-homepage .main-wrapper .bottom-side .single-currency .currency-values {
+        width: 45%; }
       app-homepage .main-wrapper .bottom-side .single-currency:last-child {
         border: 0; }
     app-homepage .main-wrapper .bottom-side .join-the-future {
@@ -6794,7 +6805,11 @@ app-swap-page .latest-dcn-popup {
     right: 15px; }
   @media screen and (max-width: 767px) {
     app-swap-page .latest-dcn-popup {
-      margin: 0; } }
+      margin: -20px -30px 0;
+      -webkit-border-radius: 0;
+      -moz-border-radius: 0;
+      -ms-border-radius: 0;
+      border-radius: 0; } }
 app-swap-page .swapping-section {
   width: 100%;
   max-width: 500px;

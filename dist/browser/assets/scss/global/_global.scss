@@ -752,6 +752,9 @@ img {
                         @include breakpoint($xs) {
                             font-size: 15px;
                         }
+                        @include breakpoint($xxs) {
+                            font-size: 14px;
+                        }
                     }
                     &.loading-tr {
                         @include breakpoint($xs) {
@@ -911,8 +914,9 @@ img {
                 a {
                     display: block;
                     color: $light_blue;
-                    img {
-                        float: right;
+                    font-size: 0;
+                    span {
+                        width: calc(100% - 20px);
                     }
                 }
             }
@@ -924,9 +928,14 @@ img {
     &.download-mobile-app {
         .phone-container {
             position: relative;
-            .absolute-content {
-                bottom: 10px;
+            .app-store-link, .apk-link {
                 @include horizontal-align(absolute);
+            }
+            .app-store-link {
+                bottom: 60px;
+            }
+            .apk-link {
+                bottom: 5px;
             }
         }
     }
@@ -1806,7 +1815,7 @@ input[type=file].hide-input {
     .arrow {
         position: absolute;
         top: -9px;
-        left: 10px;
+        left: 60px;
         width: 15px;
         height: 15px;
         background: white;
@@ -2252,6 +2261,9 @@ input[type=file].hide-input {
         color: #333;
         @include box-shadow(0 5px 10px rgba(0,0,0,.2));
     }
+    &.in {
+        opacity: 1;
+    }
 }
 
 select {
@@ -2267,11 +2279,18 @@ select {
     &.white-color {
         background-image: url(../images/white-caret.svg);
     }
+    &.red-color {
+        background-image: url(../images/red-caret.svg);
+        color: red !important;
+        option {
+            color: black;
+        }
+    }
 }
 
 nav.sidenav {
     position: fixed;
-    z-index: 500;
+    z-index: 1033;
     color: white;
     height: 100%;
     top: 0;

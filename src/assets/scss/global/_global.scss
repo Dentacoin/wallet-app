@@ -928,9 +928,14 @@ img {
     &.download-mobile-app {
         .phone-container {
             position: relative;
-            .absolute-content {
-                bottom: 10px;
+            .app-store-link, .apk-link {
                 @include horizontal-align(absolute);
+            }
+            .app-store-link {
+                bottom: 60px;
+            }
+            .apk-link {
+                bottom: 5px;
             }
         }
     }
@@ -2285,7 +2290,7 @@ select {
 
 nav.sidenav {
     position: fixed;
-    z-index: 1033;   
+    z-index: 1033;
     color: white;
     height: 100%;
     top: 0;

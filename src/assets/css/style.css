@@ -5110,13 +5110,16 @@ img {
     z-index: 10050; }
   .bootbox.download-mobile-app .phone-container {
     position: relative; }
-    .bootbox.download-mobile-app .phone-container .absolute-content {
-      bottom: 10px;
+    .bootbox.download-mobile-app .phone-container .app-store-link, .bootbox.download-mobile-app .phone-container .apk-link {
       position: absolute;
       left: 50%;
       -webkit-transform: translateX(-50%);
       -ms-transform: translateX(-50%);
       transform: translateX(-50%); }
+    .bootbox.download-mobile-app .phone-container .app-store-link {
+      bottom: 60px; }
+    .bootbox.download-mobile-app .phone-container .apk-link {
+      bottom: 5px; }
   .bootbox.sending-to-l2-wallet-confirmation-popup .modal-dialog {
     width: 95%;
     max-width: 600px;
