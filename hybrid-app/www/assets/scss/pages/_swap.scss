@@ -44,4 +44,11 @@ app-swap-page {
             cursor: pointer;
         }
     }
+    .current-currency-explanation {
+        .swapping-dcn2 {
+            .right-text {
+                width: calc(100% - 90px);
+            }
+        }
+    }
 }

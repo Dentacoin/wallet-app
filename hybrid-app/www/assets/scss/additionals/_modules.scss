@@ -250,6 +250,16 @@
         }
         @include breakpoint($xs) {
             padding: 10px;
+            .inputable-line {
+                input[type="number"], .transfer-to-amount {
+                    width: calc(100% - 170px);
+                    overflow: hidden;
+                }
+                select {
+                    width: 160px;
+                    font-size: 20px !important;
+                }
+            }
         }
     }
 }

@@ -928,9 +928,17 @@ img {
     &.download-mobile-app {
         .phone-container {
             position: relative;
-            .absolute-content {
-                bottom: 10px;
+            .app-store-link, .huawei-link, .apk-link {
                 @include horizontal-align(absolute);
+            }
+            .app-store-link {
+                bottom: 115px;
+            }
+            .huawei-link {
+                bottom: 60px;
+            }
+            .apk-link {
+                bottom: 5px;
             }
         }
     }
@@ -1312,8 +1320,30 @@ img {
                         font-size: 28px;
                         line-height: 28px;
                         font-family: "Calibri-Bold";
+                        .above-tx-popup {
+                            padding: 0 10px;
+                            .left-side, .right-side {
+                                width: calc(50% - 40px);
+                            }
+                            .arrow-side {
+                                max-width: 80px;
+                                width: 100%;
+                            }
+                            .networks {
+                                color: #555555;
+                                font-family: 'Calibri-Regular';
+                            }
+                        }
                         @include breakpoint($xs) {
                             font-size: 22px;
+                            .above-tx-popup {
+                                .left-side, .right-side {
+                                    width: calc(50% - 20px);
+                                }
+                                .arrow-side {
+                                    max-width: 40px;
+                                }
+                            }
                         }
                     }
                     .usd-amount {
@@ -1332,6 +1362,7 @@ img {
                         color: $solid_gray;
                         width: 200px;
                         padding-left: 100px;
+                        text-align: left;
                     }
                     .value {
                         font-size: 16px;
@@ -1341,10 +1372,19 @@ img {
                     }
                     &.fee, &.nonce {
                         font-size: 0;
+                        .nonce-value {
+                            font-size: 16px;
+                            width: calc(100% - 40px);
+                        }
                         .value {
-                            .eth-value {
+                            .eth-value-holder {
                                 font-size: 16px;
                                 width: calc(100% - 40px);
+                                text-align: right;
+                                .usd-value {
+                                    font-size: 16px;
+                                    color: $solid_gray;
+                                }
                             }
                             .tx-settings-icon {
                                 width: 40px;
@@ -1352,8 +1392,36 @@ img {
                             }
                         }
                         &.changed-settings {
-                            .value {
+                            .value, .eth-value {
                                 color: $light_blue;
+                            }
+                        }
+                        &.first-step-withdraw, &.second-step-withdraw {
+                            .label {
+                                width: 300px;
+                                text-align: left;
+                            }
+                            .tx-settings-icon {
+                                text-align: right;
+                                width: calc(100% - 300px);
+                                padding-right: 100px;
+                            }
+                            .eth-value, .paid-now, .based-gwei {
+                                width: 300px;
+                                padding-left: 100px;
+                                font-size: 16px;
+                                text-align: left;
+                            }
+                            .based-gwei {
+                                font-size: 14px;
+                                color: $solid_gray;
+                            }
+                            .usd-value {
+                                font-size: 16px;
+                                color: $solid_gray;
+                                text-align: right;
+                                width: calc(100% - 300px);
+                                padding-right: 100px;
                             }
                         }
                     }
@@ -1366,6 +1434,28 @@ img {
                             text-align: left;
                             width: 100%;
                             padding: 0 15px !important;
+                        }
+                        &.fee, &.nonce {
+                            &.first-step-withdraw, &.second-step-withdraw {
+                                .label {
+                                    width: calc(100% - 40px);
+                                    padding: 0 15px !important;
+                                }
+                                .tx-settings-icon {
+                                    text-align: right;
+                                    width: 40px;
+                                    padding: 0 15px 0 0;
+                                }
+                                .eth-value, .paid-now, .based-gwei {
+                                    width: 100%;
+                                    padding: 0 15px !important;
+                                }
+                                .usd-value {
+                                    text-align: left;
+                                    width: 100%;
+                                    padding: 0 15px !important;
+                                }
+                            }
                         }
                     }
                     @media screen and (max-width: 400px) {
