@@ -3508,9 +3508,9 @@ var projectData = {
         validateAddressBeforeSwap: function(address, callback) {
             var ajaxUrl = '';
             if (environment == 'testnet') {
-                ajaxUrl = 'https://payment-server-info.dentacoin.com/testnet-validate-address-before-swap';
+                ajaxUrl = 'https://deposit-api-server-info.dentacoin.com/testnet-validate-address-before-swap';
             } else if (environment == 'mainnet') {
-                ajaxUrl = 'https://payment-server-info.dentacoin.com/validate-address-before-swap';
+                ajaxUrl = 'https://deposit-api-server-info.dentacoin.com/validate-address-before-swap';
             }
             $.ajax({
                 type: 'POST',
@@ -3527,9 +3527,9 @@ var projectData = {
         getDepositAPISwapLimits: function(callback) {
             var ajaxUrl = '';
             if (environment == 'testnet') {
-                ajaxUrl = 'https://payment-server-info.dentacoin.com/testnet-get-deposit-api-limits';
+                ajaxUrl = 'https://deposit-api-server-info.dentacoin.com/testnet-get-deposit-api-limits';
             } else if (environment == 'mainnet') {
-                ajaxUrl = 'https://payment-server-info.dentacoin.com/get-deposit-api-limits';
+                ajaxUrl = 'https://deposit-api-server-info.dentacoin.com/get-deposit-api-limits';
             }
             $.ajax({
                 type: 'POST',
