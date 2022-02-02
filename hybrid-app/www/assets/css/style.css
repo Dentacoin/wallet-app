@@ -516,7 +516,9 @@
         overflow: hidden; }
       .module.from-box .inputable-line select, .module.to-box .inputable-line select {
         width: 160px;
-        font-size: 20px !important; } }
+        font-size: 20px !important; }
+      .module.from-box .inputable-line .token-label, .module.to-box .inputable-line .token-label {
+        width: 160px; } }
 
 body {
   margin: 0;
