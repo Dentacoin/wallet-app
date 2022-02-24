@@ -18,4 +18,9 @@ app-buy-page {
             cursor: pointer;
         }
     }
+    .currency-description {
+        .description-content {
+            width: calc(100% - 50px);
+        }
+    }
 }

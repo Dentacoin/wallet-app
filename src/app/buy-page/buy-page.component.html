@@ -7,13 +7,6 @@
             <div class="row camping-for-issue-with-the-external-provider"></div>
             <div class="row">
                 <div class="col-xs-12 col-md-5 padding-bottom-xs-20 padding-bottom-sm-20">
-                    <!--<div class="custom-google-label-style module fs-0 flex">
-                        <div class="inline-block left-side">
-                            <label class="active-label" for="usd-value">{{'pay-with' | translate}}</label>
-                            <input type="number" id="usd-value"/>
-                        </div>
-                        <span class="inline-block input-label padding-top-10 padding-top-xs-15">USD</span>
-                    </div>-->
                     <div class="from-box module inline-block">
                         <div class="padding-bottom-10 fs-20 color-light-blue">{{'pay-with' | translate}}</div>
                         <div class="inputable-line">
@@ -29,33 +22,36 @@
                     </figure>
                 </div>
                 <div class="col-xs-12 col-md-5 padding-bottom-xs-20 inline-block">
-                    <!--<div class="custom-google-label-style module fs-0 flex">
-                        <div class="inline-block left-side">
-                            <label for="crypto-amount" class="active-label">{{'you-get' | translate}}</label>
-                            <input type="number" id="crypto-amount" readonly/>
-                        </div>
-                        <select class="inline-block crypto-label input-label" id="active-crypto">
-                            <option value="dcn">DCN</option>
-                            <option value="eth">ETH</option>
-                        </select>
-                    </div>-->
                     <div class="to-box module">
                         <div class="padding-bottom-10 fs-20 color-light-blue">{{'you-get' | translate}}</div>
                         <div class="inputable-line">
                             <input type="number" autocomplete="off" class="inputable-amount inline-block" id="crypto-amount" readonly placeholder="0.0"/>
-                            <select class="inline-block fs-24 fs-xs-22 padding-left-10" id="active-crypto">
+                            <select class="inline-block fs-22 padding-left-10" id="active-crypto">
+                                <option selected disabled>Select</option>
+                                <option value="dcn-l2">DCN (Optimism)</option>
                                 <option value="dcn">DCN</option>
                                 <option value="eth">ETH</option>
                             </select>
                         </div>
-                        <div class="text-right padding-top-5 text-right fs-18 fs-xs-14">
+                        <div class="text-right padding-top-5 fs-18 fs-xs-14 l1-network hide">
                             <div class="inline-block cursor-pointer" data-placement="top" data-toggle="tooltip" data-trigger="click" [attr.data-title]="this.translate.instant('eth-network-desc')">Network: <img src="assets/images/eth-icon.svg" alt="Ethereum logo" class="width-100 max-width-20 margin-left-5"/></div>
+                        </div>
+                        <div class="text-right padding-top-5 fs-18 fs-xs-14 l2-network hide">
+                            <div class="inline-block cursor-pointer" data-placement="top" data-toggle="tooltip" data-trigger="click" [attr.data-title]="this.translate.instant('l2-eth-network-desc')">Network: <img src="assets/images/eth-2-icon.svg" alt="Ethereum logo" class="width-100 max-width-20 margin-left-5"/></div>
                         </div>
                     </div>
                     <div class="fs-16 padding-left-15 padding-left-xs-0 calibri-light text-below-input"><figure itemscope="" itemtype="http://schema.org/ImageObject" class="inline-block margin-left-10 more-info" data-trigger="click" data-toggle="tooltip" data-placement="top" [attr.data-title]="this.translate.instant('determined')"><img alt="More info icon" itemprop="contentUrl" src="assets/images/more-info.svg" class="width-100 max-width-20 cursor-pointer"/></figure> {{'exchange-rate' | translate}}</div>
                 </div>
             </div>
-            <div class="row padding-top-50 padding-top-xs-0 padding-bottom-20">
+            <div class="row padding-top-25">
+                <div class="col-xs-12">
+                    <div class="alert alert-info currency-description hide fs-0 padding-left-30 padding-right-30 padding-left-xs-15 padding-right-xs-15">
+                        <img alt="Indacoin logo" itemprop="contentUrl" src="assets/images/eye-icon.svg" class="width-100 max-width-40 inline-block margin-right-10"/>
+                        <div class="inline-block description-content fs-16" [attr.data-dcn-l2-description]="this.translate.instant('data-dcn-l2-description')" [attr.data-dcn-description]="this.translate.instant('data-dcn-description')" [attr.data-eth-description]="this.translate.instant('data-eth-description')"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row padding-top-20 padding-top-xs-0 padding-bottom-20">
                 <div class="col-xs-12 col-md-6 col-md-offset-3">
                     <div class="custom-google-label-style module" data-input-light-blue-border="true">
                         <label for="dcn_address">{{'address-to-receive' | translate}}</label>

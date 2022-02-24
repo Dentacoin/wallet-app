@@ -57,6 +57,7 @@
   "dcn-address" : "Your Dentacoin Address",
   "smth-wrong" : "Something went wrong with our external provider. Please try again later.",
   "min-tx-limit" : "The minimum transaction limit is",
+  "select-token" : "Please select token.",
   "max-tx-limit" : "The maximum transaction limit is 6,000 USD.",
   "valid-wallet" : "Please enter a valid wallet address. It should start with \"0x\" and be followed by 40 characters (numbers and letters).",
   "valid-email" : "Please enter a valid email.",
@@ -307,5 +308,8 @@
   "ready" : "(ready)",
   "seven-days" : "(apr. 7 days)",
   "pending-tx-id" : "Pending Transaction ID",
-  "withdraw-btn" : "WITHDRAW"
+  "withdraw-btn" : "WITHDRAW",
+  "data-dcn-l2-description" : "You can use DCN on Optimism for staking (coming soon), for payments to partner dentists or for covering your Dentacoin Assurance fees. Note that it cannot be traded on other exchanges than Uniswap at the moment. Choose Dentacoin on Ethereum Mainnet for trading purposes.",
+  "data-dcn-description" : "DCN on Ethereum Mainnet is used mainly for trading purposes on exchange platforms. If you want to stake DCN (coming soon), choose DCN on Optimism.",
+  "data-eth-description" : "You can use ETH to cover transaction fees on Ethereum Mainnet. If you wish to cover fees on Optimism network, use the SWAP tab after purchase."
 }
