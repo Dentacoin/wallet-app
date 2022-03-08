@@ -518,6 +518,7 @@ var projectData = {
         buy_page: function () {
             projectData.utils.saveHybridAppCurrentScreen();
 
+            var urlInstance = new URL(window.location.href);
             var minimumIndacoinUsdForDcnTransaction = 50;
             var minimumIndacoinUsdForEthTransaction = 60;
 
@@ -575,24 +576,30 @@ var projectData = {
                 setTimeout(function() {
                     if (thisValue.val() == 'dcn') {
                         $('.min-usd-amount').html(minimumIndacoinUsdForDcnTransaction);
-                        $('section.ready-to-purchase-with-external-api #usd-value').val(minimumIndacoinUsdForDcnTransaction);
-                        projectData.requests.getCryptoDataByIndacoin('DCN%20(erc20)', minimumIndacoinUsdForDcnTransaction, function (onChangeDcnData) {
+                        if (urlInstance.searchParams.get('usd-value') == null) {
+                            $('section.ready-to-purchase-with-external-api #usd-value').val(minimumIndacoinUsdForDcnTransaction);
+                        }
+                        projectData.requests.getCryptoDataByIndacoin('DCN%20(erc20)', $('section.ready-to-purchase-with-external-api #usd-value').val().trim(), function (onChangeDcnData) {
                             $('section.ready-to-purchase-with-external-api #crypto-amount').val(parseInt(onChangeDcnData.dcn.value));
 
                             projectData.general_logic.hideLoader();
                         });
                     } else if (thisValue.val() == 'dcn-l2') {
                         $('.min-usd-amount').html(minimumIndacoinUsdForDcnTransaction);
-                        $('section.ready-to-purchase-with-external-api #usd-value').val(minimumIndacoinUsdForDcnTransaction);
-                        projectData.requests.getCryptoDataByIndacoin('DCN%20(Optimism)', minimumIndacoinUsdForDcnTransaction, function (onChangeDcnData) {
+                        if (urlInstance.searchParams.get('usd-value') == null) {
+                            $('section.ready-to-purchase-with-external-api #usd-value').val(minimumIndacoinUsdForDcnTransaction);
+                        }
+                        projectData.requests.getCryptoDataByIndacoin('DCN%20(Optimism)', $('section.ready-to-purchase-with-external-api #usd-value').val().trim(), function (onChangeDcnData) {
                             $('section.ready-to-purchase-with-external-api #crypto-amount').val(parseInt(onChangeDcnData.dcn.value));
 
                             projectData.general_logic.hideLoader();
                         });
                     } else if (thisValue.val() == 'eth') {
                         $('.min-usd-amount').html(minimumIndacoinUsdForEthTransaction);
-                        $('section.ready-to-purchase-with-external-api #usd-value').val(minimumIndacoinUsdForEthTransaction);
-                        projectData.requests.getCryptoDataByIndacoin('ETH', minimumIndacoinUsdForEthTransaction, function (onChangeEthData) {
+                        if (urlInstance.searchParams.get('usd-value') == null) {
+                            $('section.ready-to-purchase-with-external-api #usd-value').val(minimumIndacoinUsdForEthTransaction);
+                        }
+                        projectData.requests.getCryptoDataByIndacoin('ETH', $('section.ready-to-purchase-with-external-api #usd-value').val().trim(), function (onChangeEthData) {
                             $('section.ready-to-purchase-with-external-api #crypto-amount').val(onChangeEthData.eth.value);
 
                             projectData.general_logic.hideLoader();
@@ -675,6 +682,36 @@ var projectData = {
                     }
                 }
             });
+
+            function isInt(n){
+                return Number(n) === n && n % 1 === 0;
+            }
+
+            if (urlInstance.searchParams.get('buy-type') != null && urlInstance.searchParams.get('usd-value') != null) {
+                if (urlInstance.searchParams.get('buy-type') == 'dcn') {
+                    $('section.ready-to-purchase-with-external-api #active-crypto').val('dcn').trigger('change');
+                } else if (urlInstance.searchParams.get('buy-type') == 'eth') {
+                    $('section.ready-to-purchase-with-external-api #active-crypto').val('eth').trigger('change');
+                } else if (urlInstance.searchParams.get('buy-type') == 'dcn-l2') {
+                    $('section.ready-to-purchase-with-external-api #active-crypto').val('dcn-l2').trigger('change');
+                }
+
+                if (isInt(parseInt(urlInstance.searchParams.get('usd-value')))) {
+                    $('section.ready-to-purchase-with-external-api #usd-value').val(urlInstance.searchParams.get('usd-value')).trigger('input');
+                }
+            } else if (urlInstance.searchParams.get('usd-value') != null) {
+                if (isInt(parseInt(urlInstance.searchParams.get('usd-value')))) {
+                    $('section.ready-to-purchase-with-external-api #usd-value').val(urlInstance.searchParams.get('usd-value')).trigger('input');
+                }
+            } else if (urlInstance.searchParams.get('buy-type') != null) {
+                if (urlInstance.searchParams.get('buy-type') == 'dcn') {
+                    $('section.ready-to-purchase-with-external-api #active-crypto').val('dcn').trigger('change');
+                } else if (urlInstance.searchParams.get('buy-type') == 'eth') {
+                    $('section.ready-to-purchase-with-external-api #active-crypto').val('eth').trigger('change');
+                } else if (urlInstance.searchParams.get('buy-type') == 'dcn-l2') {
+                    $('section.ready-to-purchase-with-external-api #active-crypto').val('dcn-l2').trigger('change');
+                }
+            }
         },
         send_page: function () {
             projectData.utils.saveHybridAppCurrentScreen();
