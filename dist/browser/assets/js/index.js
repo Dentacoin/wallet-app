@@ -1528,7 +1528,7 @@ var projectData = {
                             $('.swapping-section .to-box .inputable-line').html('<div class="transfer-to-amount inline-block">0.0</div><select class="inline-block fs-22 padding-left-10 current-to"><option selected value="eth-l1">ETH</option></select>');
 
                             $('.current-currency-explanation').html($('.current-currency-explanation').attr('eth-dcn2'));
-                            $('.checkbox-row label').html($('.checkbox-row label').attr('eth-dcn2'));
+                            $('.checkbox-row label').html($('.checkbox-row label').attr('swap-eth2'));
                             $('select.current-from').attr('data-current-layer', 'l2');
 
                             $('.from-box .l2-network').removeClass('hide');
@@ -4105,7 +4105,7 @@ function submitTransactionToBlockchain(web3_provider, transactionType, function_
                         });
                     }
                 } else if (transactionType == 'approve') {
-                    projectData.general_logic.displayMessageOnTransactionSend('<img src="assets/images/approve-dcn2-pop-up-icon.png" class="width-100 max-width-180"/><div class="fs-26 fs-xs-24 lato-bold padding-top-20">'+$('.translates-holder').attr('successfully-approved')+'</div><div class="padding-top-10 padding-bottom-30 fs-18 fs-xs-16">'+$('.translates-holder').attr('successfully-approved-text')+'.</div><div><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border close-tx-popup-btn padding-left-40 padding-right-40">OK</a></div>');
+                    projectData.general_logic.displayMessageOnTransactionSend('<img src="assets/images/approve-dcn2-pop-up-icon.png" class="width-100 max-width-180"/><div class="fs-26 fs-xs-24 lato-bold padding-top-20">'+$('.translates-holder').attr('successfully-approved')+'</div><div class="padding-top-10 padding-bottom-30 fs-18 fs-xs-16">'+$('.translates-holder').attr('successfully-approved-text')+'</div><div><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border close-tx-popup-btn padding-left-40 padding-right-40">OK</a></div>');
 
                     $('.swap-btn').removeClass('hide');
                     $('.approve-withdraw-btn').addClass('hide');

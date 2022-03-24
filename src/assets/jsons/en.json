@@ -285,7 +285,7 @@
   "your-eth-tokens-sent" : "Your Optimistic Ethereum tokens are on the way to the Receiver's wallet. Check transaction status at",
   "successfully-swapped" : "Successfully swapped!",
   "successfully-approved" : "Successfully approved!",
-  "successfully-approved-text" : "You can now move forward to swap your DCN on Optimism to DCN on Ethereum Mainnet",
+  "successfully-approved-text" : "You can now move forward to swap your DCN on Optimism to DCN on Ethereum Mainnet.",
   "check-tx-at" : "Check transaction status at",
   "when-file-cannot-be-saved-in-downloads" : "The Backup File has been stored to the internal Dentacoin Wallet App folder of your device and remembered for faster transactions. Keep in mind that this is internal storage and once Dentacoin Wallet App is uninstalled, the Backup File of your Dentacoin Secret Key will be deleted automatically. It's your responsibility to make additional copies of the Backup File and keep them safe. Depending on your device, the app folder is located in Phone storage/ Android/ data/ wallet.dentacoin.com.",
   "file-already-existing" : "The Backup file already exists in the internal Dentacoin Wallet App folder (Phone storage/ Android/ data/ wallet.dentacoin.com).",
