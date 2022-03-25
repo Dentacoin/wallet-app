@@ -1527,8 +1527,9 @@ var projectData = {
                             $('.swapping-section .to-box .balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount" data-amount="'+L1EthBalance+'">'+L1EthBalance+'</span> ETH</span>');
                             $('.swapping-section .to-box .inputable-line').html('<div class="transfer-to-amount inline-block">0.0</div><select class="inline-block fs-22 padding-left-10 current-to"><option selected value="eth-l1">ETH</option></select>');
 
-                            $('.current-currency-explanation').html($('.current-currency-explanation').attr('eth-dcn2'));
-                            $('.checkbox-row label').html($('.checkbox-row label').attr('swap-eth2'));
+                            $('.current-currency-explanation').html($('.current-currency-explanation').attr('swap-eth2'));
+                            // same label text for dcn2 and eth2 swaps
+                            $('.checkbox-row label').html($('.checkbox-row label').attr('swap-dcn2'));
                             $('select.current-from').attr('data-current-layer', 'l2');
 
                             $('.from-box .l2-network').removeClass('hide');
