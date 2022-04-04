@@ -1,6 +1,7 @@
 //importing methods for keystore import, export, decrypt
 const {getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey} = require('./helper');
 const Web3 = require('../../../node_modules/web3');
+const Big = require('../../../node_modules/big.js');
 const { getMessagesAndProofsForL2Transaction } = require('../../../node_modules/@eth-optimism/message-relayer');
 const environment = 'mainnet';
 if (environment == 'testnet') {
@@ -722,6 +723,11 @@ var projectData = {
                 //reading all clinics/ dentists from the CoreDB EVERY 1h
                 projectData.general_logic.showLoader();
 
+                const ethers = require('../../../node_modules/ethers');
+                const optimismContracts = require('../../../node_modules/@eth-optimism/contracts');
+                const ethers_l2_provider = new ethers.providers.JsonRpcProvider(config_variable.l2.provider);
+                const GasPriceOracle = optimismContracts.getContractFactory('OVM_GasPriceOracle').attach(optimismContracts.predeploys.OVM_GasPriceOracle).connect(ethers_l2_provider);
+
                 setTimeout(async function () {
                     if (core_db_clinics == undefined || core_db_clinics_time_to_request < Date.now()) {
                         $.ajax({
@@ -1056,7 +1062,6 @@ var projectData = {
 
                                         //on input in dcn/ eth input change usd input
                                         $('.section-amount-to input#crypto-amount').unbind().on('keyup keydown input', function (e) {
-                                            console.log(e.keyCode, 'e');
                                             if (e.keyCode == 190 && ($('.section-amount-to #active-crypto').val() == 'dcn-l1' || $('.section-amount-to #active-crypto').val() == 'dcn-l2')) {
                                                 basic.closeDialog();
                                                 basic.showAlert($('.translates-holder').attr('no-decimals'), '', true);
@@ -1122,10 +1127,11 @@ var projectData = {
                                                 }
                                                 $('.section-amount-to input#usd-val').val(($('.section-amount-to input#crypto-amount').val().trim() * dentacoin_data).toFixed(to_fixed_num)).trigger('change');
                                             } else if ($(this).val() == 'eth-l1' || $(this).val() == 'eth-l2') {
+                                                var cost;
                                                 var tokenLabel;
                                                 if ($(this).val() == 'eth-l1') {
                                                     // LAYER1 BALANCE
-                                                    var eth_balance = BigInt(await dApp.web3_l1.eth.getBalance(global_state.account));
+                                                    var eth_balance = new Big(await dApp.web3_l1.eth.getBalance(global_state.account));
 
                                                     //calculating the fee from the gas price and the estimated gas price
                                                     var gasPriceObject = await projectData.requests.getGasPrice();
@@ -1137,28 +1143,49 @@ var projectData = {
                                                     var ethSendGasEstimation = await dApp.web3_l1.eth.estimateGas({
                                                         to: $('.section-amount-to .address-cell').attr('data-receiver')
                                                     });
+                                                    cost = parseInt(ethSendGasEstimation) * on_popup_load_gas_price;
                                                     tokenLabel = 'ETH';
                                                 } else if($(this).val() == 'eth-l2') {
                                                     // LAYER2 BALANCE
-                                                    var eth_balance = BigInt(await dApp.web3_l2.eth.getBalance(global_state.account));
+                                                    var eth_balance = new Big(await dApp.web3_l2.eth.getBalance(global_state.account));
                                                     var on_popup_load_gas_price = parseInt(await dApp.web3_l2.eth.getGasPrice());
+                                                    console.log(on_popup_load_gas_price, 'on_popup_load_gas_price');
                                                     $('app-send-page .main-wrapper').attr('data-on_popup_load_gas_price', on_popup_load_gas_price);
                                                     // add temporally one percent to
                                                     on_popup_load_gas_price = parseInt(on_popup_load_gas_price + (on_popup_load_gas_price * 0.01));
                                                     var ethSendGasEstimation = await dApp.web3_l2.eth.estimateGas({
                                                         to: $('.section-amount-to .address-cell').attr('data-receiver')
                                                     });
+
+                                                    var currentGasPriceInWei = parseInt(await dApp.web3_l2.eth.getGasPrice());
+                                                    console.log(currentGasPriceInWei, 'currentGasPriceInWei');
+                                                    var serializeTransactionObject = {
+                                                        gasPrice: dApp.web3_l2.utils.toHex(currentGasPriceInWei),
+                                                        gasLimit: 21000,
+                                                        value: dApp.web3_l2.utils.toHex(projectData.utils.toWei(eth_balance.toString())),
+                                                        to: $('.section-amount-to .address-cell').attr('data-receiver')
+                                                    };
+
+                                                    const L1FeeETHTransfer = await GasPriceOracle.getL1Fee(ethers.utils.serializeTransaction(serializeTransactionObject));
+                                                    console.log(parseInt(L1FeeETHTransfer.toString()), 'parseInt(L1FeeETHTransfer.toString())');
+                                                    cost = (parseInt(ethSendGasEstimation) * on_popup_load_gas_price) + parseInt(L1FeeETHTransfer.toString());
                                                     tokenLabel = 'ETH';
                                                 }
 
-                                                var ethSendGasEstimationNumber = parseInt(ethSendGasEstimation);
-                                                var cost = ethSendGasEstimationNumber * on_popup_load_gas_price;
-                                                var correctSendAmount = projectData.utils.fromWei((eth_balance - BigInt(cost)).toString());
+                                                console.log(eth_balance.toString(), 'Full balance');
+                                                console.log(serializeTransactionObject, 'serializeTransactionObject');
+                                                console.log(cost, 'Cost');
+                                                console.log((eth_balance.minus(cost)).toString(), 'Balance - Cost');
+                                                var correctSendAmount = projectData.utils.fromWei((eth_balance.minus(cost)).toString());
                                                 if (parseFloat(correctSendAmount) < 0) {
                                                     correctSendAmount = 0;
                                                 }
 
-                                                if (eth_balance > parseInt(ethSendGasEstimation)) {
+                                                console.log(eth_balance > parseInt(cost), 'eth_balance > parseInt(cost)');
+                                                console.log(eth_balance > eth_balance.plus(1), 'eth_balance > eth_balance.plus(1)');
+                                                console.log(eth_balance > eth_balance.minus(1), 'eth_balance > eth_balance.minus(1)');
+
+                                                if (eth_balance > parseInt(cost)) {
                                                     $('.balance-line .balance-value .max-amount').html('<span class="amount" data-amount="'+correctSendAmount+'">'+correctSendAmount+'</span> ' + tokenLabel);
                                                 } else {
                                                     $('.balance-line .balance-value').html('Balance: <span class="color-light-blue"><span class="amount" data-amount="0">0</span> '+tokenLabel+'</span>');
@@ -1173,6 +1200,7 @@ var projectData = {
 
                                         $('.section-amount-to .open-transaction-recipe').unbind().click(async function () {
                                             var amount = $('.section-amount-to input#crypto-amount').val().trim();
+                                            console.log(amount, 'amount');
                                             var usd_val = $('.section-amount-to input#usd-val').val().trim();
                                             var sending_to_address = $('.section-amount-to .address-cell').attr('data-receiver');
 
@@ -1315,6 +1343,8 @@ var projectData = {
                                                         projectData.general_logic.showLoader();
                                                         setTimeout(async function() {
                                                             var l2_eth_balance = await dApp.web3_l2.eth.getBalance(global_state.account);
+                                                            console.log(projectData.utils.toWei(amount.toString()), 'projectData.utils.toWei(amount.toString())');
+                                                            console.log(parseInt(projectData.utils.toWei(amount.toString())), 'parseInt(projectData.utils.toWei(amount.toString()))');
                                                             if (l2_eth_balance < parseInt(projectData.utils.toWei(amount.toString()))) {
                                                                 basic.showAlert($('.translates-holder').attr('higher-than-balance'), '', true);
                                                                 projectData.general_logic.hideLoader();
@@ -2045,6 +2075,7 @@ var projectData = {
     },
     general_logic: {
         openTxConfirmationPopup: async function(popupTitle, to, amount, token_symbol, gasLimit, function_abi, layer, transactionType, swapType, swapToAmount, visible_to, data) {
+            console.log(gasLimit, 'gasLimit');
             const ethers = require('../../../node_modules/ethers');
             const optimismContracts = require('../../../node_modules/@eth-optimism/contracts');
             const ethers_l2_provider = new ethers.providers.JsonRpcProvider(config_variable.l2.provider);
@@ -2076,15 +2107,14 @@ var projectData = {
                 ethFeeLabel = 'ETH';
                 web3_provider = dApp.web3_l2;
                 if ($('app-send-page .main-wrapper').length && $('app-send-page .main-wrapper').attr('data-on_popup_load_gas_price') != undefined) {
-                    on_popup_load_gas_price = parseInt(parseInt($('app-send-page .main-wrapper').attr('data-on_popup_load_gas_price')) + (parseInt($('app-send-page .main-wrapper').attr('data-on_popup_load_gas_price')) * 0.05));
+                    on_popup_load_gas_price = parseInt($('app-send-page .main-wrapper').attr('data-on_popup_load_gas_price'));
                     visibleGasPriceNumber = on_popup_load_gas_price / 1000000000;
                 } else if ($('app-swap-page .main-wrapper').length && $('app-swap-page .main-wrapper').attr('data-on_popup_load_gas_price') != undefined) {
-                    on_popup_load_gas_price = parseInt(parseInt($('app-swap-page .main-wrapper').attr('data-on_popup_load_gas_price')) + (parseInt($('app-swap-page .main-wrapper').attr('data-on_popup_load_gas_price')) * 0.05));
+                    on_popup_load_gas_price = parseInt($('app-swap-page .main-wrapper').attr('data-on_popup_load_gas_price'));
                     visibleGasPriceNumber = on_popup_load_gas_price / 1000000000;
                 } else {
                     currentGasPriceInWei = parseInt(await dApp.web3_l2.eth.getGasPrice());
                     on_popup_load_gas_price = currentGasPriceInWei;
-                    on_popup_load_gas_price = parseInt(currentGasPriceInWei + (currentGasPriceInWei * 0.05));
                     visibleGasPriceNumber = on_popup_load_gas_price / 1000000000;
                 }
             }
@@ -2164,7 +2194,7 @@ var projectData = {
                         serializeTransactionObject.data = function_abi;
                         serializeTransactionObject.to = to;
                     } else if (amount != null) {
-                        serializeTransactionObject.value = parseInt(projectData.utils.toWei(amount));
+                        serializeTransactionObject.value = web3_provider.utils.toHex(projectData.utils.toWei(amount));
                         serializeTransactionObject.to = to;
                     }
                     const L1FeeETHTransfer = await GasPriceOracle.getL1Fee(ethers.utils.serializeTransaction(serializeTransactionObject));
@@ -2196,11 +2226,11 @@ var projectData = {
                     }
 
                     web3_provider.eth.getBalance(global_state.account, function (error, eth_balance) {
-                        console.log(eth_balance, 'eth_balance');
                         if (error) {
                             console.log(error);
                         } else {
-                            var eth_balance = parseInt(eth_balance);
+                            var eth_balance = new Big(eth_balance);
+                            console.log(eth_balance.toString(), 'eth_balance');
 
                             if (window.localStorage.getItem('keystore_file') != null) {
                                 //cached keystore path on mobile device or cached keystore file on browser
@@ -2221,27 +2251,28 @@ var projectData = {
                                             serializeTransactionObject.data = function_abi;
                                             serializeTransactionObject.to = to;
                                         } else if (amount != null) {
-                                            serializeTransactionObject.value = parseInt(projectData.utils.toWei(amount));
+                                            serializeTransactionObject.value = web3_provider.utils.toHex(projectData.utils.toWei(amount));
                                             serializeTransactionObject.to = to;
                                         }
                                         const L1FeeETHTransfer = await GasPriceOracle.getL1Fee(ethers.utils.serializeTransaction(serializeTransactionObject));
                                         current_eth_fee_in_wei += parseInt(L1FeeETHTransfer.toString());
 
                                         if (transactionType == 'swap' && swapType == 'dcn-l2-to-dcn-l1' && data != undefined) {
-                                            console.log('ADD MORE WEI TO TX FEE FROM THE VALUE');
                                             current_eth_fee_in_wei += parseInt(data);
                                         }
                                     }
 
-                                    console.log(eth_balance, 'eth_balance');
-                                    console.log(current_eth_fee_in_wei, 'current_eth_fee_in_wei');
-
-                                    if (eth_balance == 0) {
+                                    if (eth_balance.eq(0)) {
                                         basic.showAlert($('.translates-holder').attr('no-balance'), '', true);
                                         $('.transaction-confirmation-popup .on-change-result').html('');
-                                    } else if (eth_balance < current_eth_fee_in_wei || ((token_symbol == 'ETH' || token_symbol == 'ETH2.0') && eth_balance - parseInt(projectData.utils.toWei(amount.toString())) < current_eth_fee_in_wei)) {
-                                        basic.showAlert($('.translates-holder').attr('not-enough-balance'), '', true);
-                                        $('.transaction-confirmation-popup .on-change-result').html('');
+                                    } else if (eth_balance < current_eth_fee_in_wei || ((token_symbol == 'ETH' || token_symbol == 'ETH2.0') && eth_balance.minus(parseInt(projectData.utils.toWei(amount.toString()))) < current_eth_fee_in_wei)) {
+                                        if (layer == 'l2' && (new Big(projectData.utils.toWei(amount.toString())).plus(current_eth_fee_in_wei)).div(eth_balance) > 1 && $('.section-amount-to #active-crypto').val() == 'eth-l2') {
+                                            basic.showAlert($('.translates-holder').attr('gas-fee-increased'), '', true);
+                                                $('.balance-line .balance-value .max-amount').html('<span class="amount" data-amount="'+projectData.utils.fromWei((eth_balance.minus(current_eth_fee_in_wei)).toString())+'">'+projectData.utils.fromWei((eth_balance.minus(current_eth_fee_in_wei)).toString())+'</span> ETH');
+                                        } else {
+                                            basic.showAlert($('.translates-holder').attr('not-enough-balance'), '', true);
+                                            $('.transaction-confirmation-popup .on-change-result').html('');
+                                        }
                                     } else {
                                         if ($('.cached-keystore-file #your-secret-key-password').val().trim() == '') {
                                             basic.showAlert($('.translates-holder').attr('valid-password'), '', true);
@@ -2286,7 +2317,7 @@ var projectData = {
                                             serializeTransactionObject.data = function_abi;
                                             serializeTransactionObject.to = to;
                                         } else if (amount != null) {
-                                            serializeTransactionObject.value = parseInt(projectData.utils.toWei(amount));
+                                            serializeTransactionObject.value = web3_provider.utils.toHex(projectData.utils.toWei(amount));
                                             serializeTransactionObject.to = to;
                                         }
                                         const L1FeeETHTransfer = await GasPriceOracle.getL1Fee(ethers.utils.serializeTransaction(serializeTransactionObject));
@@ -2297,15 +2328,25 @@ var projectData = {
                                         }
                                     }
 
-                                    if (eth_balance == 0) {
+                                    if (eth_balance.eq(0)) {
                                         basic.showAlert($('.translates-holder').attr('no-balance'), '', true);
                                         $('.transaction-confirmation-popup .on-change-result').html('');
-                                    } else if (eth_balance < current_eth_fee_in_wei || ((token_symbol == 'ETH' || token_symbol == 'ETH2.0') && eth_balance - parseInt(projectData.utils.toWei(amount.toString())) < current_eth_fee_in_wei)) {
-                                        basic.showAlert($('.translates-holder').attr('not-enough-balance'), '', true);
-                                        $('.transaction-confirmation-popup .on-change-result').html('');
+                                    } else if (eth_balance < current_eth_fee_in_wei || ((token_symbol == 'ETH' || token_symbol == 'ETH2.0') && eth_balance.minus(parseInt(projectData.utils.toWei(amount.toString()))) < current_eth_fee_in_wei)) {
+                                        if (layer == 'l2' && (new Big(projectData.utils.toWei(amount.toString())).plus(current_eth_fee_in_wei)).div(eth_balance) > 1 && $('.section-amount-to #active-crypto').val() == 'eth-l2') {
+                                            basic.showAlert($('.translates-holder').attr('gas-fee-increased'), '', true);
+                                            $('.balance-line .balance-value .max-amount').html('<span class="amount" data-amount="'+projectData.utils.fromWei((eth_balance.minus(current_eth_fee_in_wei)).toString())+'">'+projectData.utils.fromWei((eth_balance.minus(current_eth_fee_in_wei)).toString())+'</span> ETH');
+                                        } else {
+                                            basic.showAlert($('.translates-holder').attr('not-enough-balance'), '', true);
+                                            $('.transaction-confirmation-popup .on-change-result').html('');
+                                        }
                                     } else {
                                         $('.proof-of-address #upload-keystore-file').val('');
-                                        $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-20"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-private-key">'+$('.translates-holder').attr('your-priv-key')+'</label><input type="text" autocomplete="off" id="your-private-key" maxlength="64" class="full-rounded"/></div></div><div class="btn-container col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction private-key">'+$('.translates-holder').attr('confirm-btn')+'</a></div>');
+                                        $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-20"><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-private-key">'+$('.translates-holder').attr('your-priv-key')+'</label><input type="text" autocomplete="off" id="your-private-key" maxlength="64" class="full-rounded"/></div></div><div class="padding-top-10 col-xs-12 text-center"><a class="inline-block max-width-80 scan-qr-code-importing-priv-key" href="javascript:void(0)"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img alt="Scan QR code icon" class="width-100" itemprop="contentUrl" src="assets/images/scan-qr-code.svg"></figure></a></div><div class="btn-container padding-top-25 col-xs-12"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction private-key">'+$('.translates-holder').attr('confirm-btn')+'</a></div>');
+
+                                        projectData.general_logic.initScan($('.proof-of-address .on-change-result .scan-qr-code-importing-priv-key'), $('.proof-of-address .on-change-result #your-private-key'), function () {
+                                            $('.proof-of-address .on-change-result #your-private-key').focus();
+                                            $('.proof-of-address .on-change-result label[for="your-private-key"]').addClass('active-label');
+                                        });
 
                                         $('#your-private-key').focus();
                                         $('label[for="your-private-key"]').addClass('active-label');
@@ -2353,7 +2394,7 @@ var projectData = {
                                             serializeTransactionObject.data = function_abi;
                                             serializeTransactionObject.to = to;
                                         } else if (amount != null) {
-                                            serializeTransactionObject.value = parseInt(projectData.utils.toWei(amount));
+                                            serializeTransactionObject.value = web3_provider.utils.toHex(projectData.utils.toWei(amount));
                                             serializeTransactionObject.to = to;
                                         }
                                         const L1FeeETHTransfer = await GasPriceOracle.getL1Fee(ethers.utils.serializeTransaction(serializeTransactionObject));
@@ -2364,12 +2405,17 @@ var projectData = {
                                         }
                                     }
 
-                                    if (eth_balance == 0) {
+                                    if (eth_balance.eq(0)) {
                                         basic.showAlert($('.translates-holder').attr('no-balance'), '', true);
                                         $('.transaction-confirmation-popup .on-change-result').html('');
-                                    } else if (eth_balance < current_eth_fee_in_wei || ((token_symbol == 'ETH' || token_symbol == 'ETH2.0') && eth_balance - parseInt(projectData.utils.toWei(amount.toString())) < current_eth_fee_in_wei)) {
-                                        basic.showAlert($('.translates-holder').attr('not-enough-balance'), '', true);
-                                        $('.transaction-confirmation-popup .on-change-result').html('');
+                                    } else if (eth_balance < current_eth_fee_in_wei || ((token_symbol == 'ETH' || token_symbol == 'ETH2.0') && eth_balance.minus(parseInt(projectData.utils.toWei(amount.toString()))) < current_eth_fee_in_wei)) {
+                                        if (layer == 'l2' && (new Big(projectData.utils.toWei(amount.toString())).plus(current_eth_fee_in_wei)).div(eth_balance) > 1 && $('.section-amount-to #active-crypto').val() == 'eth-l2') {
+                                            basic.showAlert($('.translates-holder').attr('gas-fee-increased'), '', true);
+                                            $('.balance-line .balance-value .max-amount').html('<span class="amount" data-amount="'+projectData.utils.fromWei((eth_balance.minus(current_eth_fee_in_wei)).toString())+'">'+projectData.utils.fromWei((eth_balance.minus(current_eth_fee_in_wei)).toString())+'</span> ETH');
+                                        } else {
+                                            basic.showAlert($('.translates-holder').attr('not-enough-balance'), '', true);
+                                            $('.transaction-confirmation-popup .on-change-result').html('');
+                                        }
                                         projectData.general_logic.hideLoader();
                                     } else {
                                         if (data != undefined && data != null) {
@@ -2854,7 +2900,7 @@ var projectData = {
                                 serializeTransactionObject.data = $('.tx-data-holder').attr('data-function_abi');
                                 serializeTransactionObject.to = $('.tx-data-holder').attr('data-to');
                             } else if ($('.tx-data-holder').attr('data-amount') != undefined && $('.tx-data-holder').attr('data-amount') != null) {
-                                serializeTransactionObject.value = parseInt(projectData.utils.toWei($('.tx-data-holder').attr('data-amount')));
+                                serializeTransactionObject.value = dApp.web3_l2.utils.toHex(projectData.utils.toWei($('.tx-data-holder').attr('data-amount')));
                                 serializeTransactionObject.to = $('.tx-data-holder').attr('data-to');
                             }
                             const L1FeeETHTransfer = await GasPriceOracle.getL1Fee(ethers.utils.serializeTransaction(serializeTransactionObject));
@@ -3985,6 +4031,8 @@ function submitTransactionToBlockchain(web3_provider, transactionType, function_
             } else if (symbol == 'ETH2.0') {
                 transaction_obj.to = to;
                 // passing value only when transfering, not when swapping
+                console.log(token_val, 'token_val');
+                console.log(projectData.utils.toWei(token_val.toString()), 'projectData.utils.toWei(token_val.toString()');
                 if (transactionType == 'transfer' && token_val > 0) {
                     transaction_obj.value = web3_provider.utils.toHex(projectData.utils.toWei(token_val.toString()));
                 }
@@ -5613,7 +5661,12 @@ $(document).on('click', '.open-settings', function () {
 
         $('.settings-popup .camping-for-action').html('');
         $('.settings-popup .error-handle').remove();
-        this_camping_row.html('<div class="padding-top-20"><div class="custom-google-label-style margin-bottom-15 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-private-key" class="renew-on-lang-switch" data-slug="priv-key">'+$('.translates-holder').attr('priv-key')+'</label><input type="text" autocomplete="off" id="generate-keystore-private-key" class="full-rounded" maxlength="64"/></div></div><div><div class="custom-google-label-style margin-bottom-15 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-password" class="renew-on-lang-switch" data-slug="pass-label">'+$('.translates-holder').attr('pass-label')+'</label><input type="password" id="generate-keystore-password" class="full-rounded"/></div></div><div><div class="custom-google-label-style margin-bottom-15 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-repeat-password" class="renew-on-lang-switch" data-slug="repeat-pass-label">'+$('.translates-holder').attr('repeat-pass-label')+'</label><input type="password" id="generate-keystore-repeat-password" class="full-rounded"/></div></div><div class="text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 generate-keystore-keystore-action text-uppercase renew-on-lang-switch" data-slug="generate-backup">'+$('.translates-holder').attr('generate-backup')+'</a></div>');
+        this_camping_row.html('<div class="padding-top-20"><div class="custom-google-label-style margin-bottom-10 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-private-key" class="renew-on-lang-switch" data-slug="priv-key">'+$('.translates-holder').attr('priv-key')+'</label><input type="text" autocomplete="off" id="generate-keystore-private-key" class="full-rounded" maxlength="64"/></div></div><div class="text-center padding-bottom-20"><a class="inline-block max-width-80 scan-qr-code-importing-priv-key" href="javascript:void(0)"><figure itemscope="" itemtype="http://schema.org/ImageObject"><img alt="Scan QR code icon" class="width-100" itemprop="contentUrl" src="assets/images/scan-qr-code.svg"></figure></a></div><div><div class="custom-google-label-style margin-bottom-15 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-password" class="renew-on-lang-switch" data-slug="pass-label">'+$('.translates-holder').attr('pass-label')+'</label><input type="password" id="generate-keystore-password" class="full-rounded"/></div></div><div><div class="custom-google-label-style margin-bottom-15 max-width-400 margin-left-right-auto module" data-input-light-blue-border="true"><label for="generate-keystore-repeat-password" class="renew-on-lang-switch" data-slug="repeat-pass-label">'+$('.translates-holder').attr('repeat-pass-label')+'</label><input type="password" id="generate-keystore-repeat-password" class="full-rounded"/></div></div><div class="text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border fs-xs-18 width-xs-100 generate-keystore-keystore-action text-uppercase renew-on-lang-switch" data-slug="generate-backup">'+$('.translates-holder').attr('generate-backup')+'</a></div>');
+
+        projectData.general_logic.initScan(this_camping_row.find('.scan-qr-code-importing-priv-key'), this_camping_row.find('#generate-keystore-private-key'), function () {
+            this_camping_row.find('#generate-keystore-private-key').focus();
+            this_camping_row.find('label[for="generate-keystore-private-key"]').addClass('active-label');
+        });
 
         $('#generate-keystore-private-key').focus();
         $('label[for="generate-keystore-private-key"]').addClass('active-label');

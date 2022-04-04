@@ -34,6 +34,7 @@
               "./node_modules/bootbox.js/bootbox.min.js",
               "./node_modules/clipboard/dist/clipboard.min.js",
               "./node_modules/pulltorefreshjs/dist/index.umd.min.js",
+              "./node_modules/big.js/big.js",
               "./src/assets/libs/qrcode/qrcode.js",
               "./src/assets/js/basic.js",
               "./src/assets/js/index-bundled.js"
