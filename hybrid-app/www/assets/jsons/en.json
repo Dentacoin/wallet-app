@@ -256,6 +256,7 @@
   "dcn2-swap-understand" : "I understand and I want to proceed.",
   "eth-swap-understand" : "I understand that Optimistic ETH can only be used for transactions on Optimism. Swapping back to ETH on Ethereum Mainnet takes 1 week and requires transaction fees.",
   "not-enough-balance" : "It seems that you don't have enough ETH in this wallet to execute this transaction. Please, refill it. If you don't want to use exchange platforms, one easy way to do so is buy it directly with your bank card <a href='https://wallet.dentacoin.com/buy' target='_blank' class='lato-bold text-decoration-underline color-light-blue'>here</a>.",
+  "gas-fee-increased" : "The gas fee has increased. Go back and decrease the amount you send to leave more ETH for gas fee.",
   "for-the-moment" : "For the moment, you can only buy DCN on the main Ethereum network (used for trading). If you want to stake it or use it for Dentacoin Assurance fees, use the SWAP function after purchase to convert it to DCN on Optimism.",
   "no-decimals" : "Decimal point is not valid as DCN has no decimals.",
   "attention" : "Attention",
