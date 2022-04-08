@@ -5137,7 +5137,6 @@ $(document).on('click', 'header .open-wallet-menu', function () {
                 if (!is_hybrid) {
                     $('.popup-scan-qr-code').modal('hide');
                 }
-                console.log(scannedContent, 'scannedContent');
                 initWalletConnectLogic(scannedContent, true);
             });
         //}
