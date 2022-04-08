@@ -31,6 +31,8 @@
     "@nguniversal/module-map-ngfactory-loader": "8.1.1",
     "@ngx-translate/core": "^11.0.1",
     "@ngx-translate/http-loader": "^4.0.0",
+    "@walletconnect/client": "^1.7.7",
+    "abi-decoder": "^2.4.0",
     "big.js": "^6.1.1",
     "ethereumjs-wallet": "^0.6.3",
     "ethers": "^5.5.3",

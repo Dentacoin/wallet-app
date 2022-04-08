@@ -5073,6 +5073,28 @@ img {
     @media screen and (max-width: 767px) {
       .bootbox .bootbox-close-button {
         top: 10px; } }
+  .bootbox.confirm-walletconnect-connection .modal-dialog {
+    width: 95%;
+    max-width: 500px; }
+    .bootbox.confirm-walletconnect-connection .modal-dialog .image img {
+      -webkit-border-radius: 50%;
+      -moz-border-radius: 50%;
+      -ms-border-radius: 50%;
+      border-radius: 50%; }
+    .bootbox.confirm-walletconnect-connection .modal-dialog .link a {
+      color: #555555; }
+    .bootbox.confirm-walletconnect-connection .modal-dialog .network-options a {
+      width: 48%;
+      border: 2px solid #dddddd;
+      border-radius: 6px;
+      display: inline-block;
+      padding: 7px; }
+      .bootbox.confirm-walletconnect-connection .modal-dialog .network-options a.selected {
+        background-color: #dddddd; }
+      .bootbox.confirm-walletconnect-connection .modal-dialog .network-options a:nth-child(even) {
+        margin-left: 4%; }
+    .bootbox.confirm-walletconnect-connection .modal-dialog .address-line {
+      border-bottom: 2px solid #00b7e2; }
   .bootbox.tx-response-popup .modal-dialog {
     text-align: center; }
   .bootbox.l2-information-popup .modal-dialog {
@@ -6177,6 +6199,18 @@ nav.sidenav {
             margin-right: 10px; }
           nav.sidenav .wrapper ul li a:hover {
             text-decoration: underline; }
+          nav.sidenav .wrapper ul li a.wallet-connect-scanner {
+            color: #3b99fc;
+            background-color: white;
+            padding: 5px 10px;
+            display: inline-block;
+            width: 200px;
+            -webkit-border-radius: 4px;
+            -moz-border-radius: 4px;
+            -ms-border-radius: 4px;
+            border-radius: 4px; }
+            nav.sidenav .wrapper ul li a.wallet-connect-scanner img {
+              max-width: 25px; }
     nav.sidenav .wrapper .border-bottom {
       border-bottom: 1.5px solid white; }
       nav.sidenav .wrapper .border-bottom .log-out:hover {
@@ -6209,7 +6243,17 @@ header {
       width: 130px; }
     @media screen and (max-width: 767px) {
       header .logo {
-        padding-bottom: 5px; } }
+        padding-bottom: 5px; }
+        header .logo img {
+          width: 110px; } }
+  header .connected-to-walletconnect {
+    color: white;
+    background-color: #0bd4c2;
+    padding: 5px 10px;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    -ms-border-radius: 4px;
+    border-radius: 4px; }
   header .nav-row {
     background-color: white;
     padding-top: 5px;

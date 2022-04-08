@@ -10,7 +10,16 @@ header {
         }
         @include breakpoint($xs)    {
             padding-bottom: 5px;
+            img {
+                width: 110px;
+            }
         }
+    }
+    .connected-to-walletconnect {
+        color: white;
+        background-color: #0bd4c2;
+        padding: 5px 10px;
+        @include rounded(4px);
     }
     .nav-row {
         background-color: white;

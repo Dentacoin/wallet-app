@@ -866,6 +866,40 @@ img {
             top: 10px;
         }
     }
+    &.confirm-walletconnect-connection {
+        .modal-dialog {
+            width: 95%;
+            max-width: 500px;
+            .image {
+                img {
+                    @include rounded(50%);
+                }
+            }
+            .link {
+                a {
+                    color: #555555;
+                }
+            }
+            .network-options {
+                a {
+                    width: 48%;
+                    border: 2px solid #dddddd;
+                    border-radius: 6px;
+                    display: inline-block;
+                    padding: 7px;
+                    &.selected {
+                        background-color: #dddddd;
+                    }
+                    &:nth-child(even) {
+                        margin-left: 4%;
+                    }
+                }
+            }
+            .address-line {
+                border-bottom: 2px solid $light_blue;
+            }
+        }
+    }
     &.tx-response-popup {
         .modal-dialog {
             text-align: center;
@@ -2420,6 +2454,17 @@ nav.sidenav {
                     }
                     &:hover {
                         text-decoration: underline;
+                    }
+                    &.wallet-connect-scanner {
+                        color: #3b99fc;
+                        background-color: white;
+                        padding: 5px 10px;
+                        display: inline-block;
+                        width: 200px;
+                        @include rounded(4px);
+                        img {
+                            max-width: 25px;
+                        }
                     }
                 }
             }
