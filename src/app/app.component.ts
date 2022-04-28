@@ -29,5 +29,17 @@ export class AppComponent implements OnInit {
         window.document.addEventListener('redirectToHomepage', (e: any) => {
             this.redirectsService.toHomepage();
         });
+
+        window.document.addEventListener('redirectToBuy', (e: any) => {
+            this.redirectsService.toBuyPage();
+        });
+
+        window.document.addEventListener('redirectToSend', (e: any) => {
+            this.redirectsService.toSend();
+        });
+
+        window.document.addEventListener('redirectToSwap', (e: any) => {
+            this.redirectsService.toSwap();
+        });
     }
 }

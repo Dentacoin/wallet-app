@@ -346,6 +346,15 @@ var AppComponent = /** @class */ (function () {
         window.document.addEventListener('redirectToHomepage', function (e) {
             _this.redirectsService.toHomepage();
         });
+        window.document.addEventListener('redirectToBuy', function (e) {
+            _this.redirectsService.toBuyPage();
+        });
+        window.document.addEventListener('redirectToSend', function (e) {
+            _this.redirectsService.toSend();
+        });
+        window.document.addEventListener('redirectToSwap', function (e) {
+            _this.redirectsService.toSwap();
+        });
     };
     AppComponent.ctorParameters = function () { return [
         { type: language_service_1.LanguageService },

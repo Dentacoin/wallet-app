@@ -3299,6 +3299,7 @@ var projectData = {
                                 }
                             },
                             function (error) {
+                                console.log(error, 'error');
                                 alert($('.translates-holder').attr('scanning-failed'));
                             }
                         );
@@ -6333,3 +6334,22 @@ var assuranceTransactions = {
         callback('0x' + contract_cancellation_transaction.serialize().toString('hex'));
     }
 };*/
+
+// method to handle deep linking
+function handleOpenURL(url) {
+    var urlInstance = new URL(url);
+    console.log(url, 'url');
+    console.log(urlInstance, 'urlInstance');
+    if (urlInstance.searchParams.get('redirect-to') != null) {
+        if (urlInstance.searchParams.get('redirect-to') == 'buy') {
+            var event = new CustomEvent('redirectToBuy');
+            document.dispatchEvent(event);
+        } else if (urlInstance.searchParams.get('redirect-to') == 'send') {
+            var event = new CustomEvent('redirectToSend');
+            document.dispatchEvent(event);
+        } else if (urlInstance.searchParams.get('redirect-to') == 'swap') {
+            var event = new CustomEvent('redirectToSwap');
+            document.dispatchEvent(event);
+        }
+    }
+}
