@@ -22,7 +22,7 @@
   "_resolved": "https://registry.npmjs.org/cordova-plugin-customurlscheme/-/cordova-plugin-customurlscheme-5.0.2.tgz",
   "_shasum": "c6246e469a2c23772ebfb545138354cb0dc1a683",
   "_spec": "cordova-plugin-customurlscheme",
-  "_where": "D:\\wamp\\www\\wallet-v2\\hybrid-app",
+  "_where": "/Users/dentacoin/Documents/projects/wallet-app/hybrid-app",
   "author": {
     "name": "Eddy Verbruggen",
     "email": "eddyverbruggen@gmail.com",
