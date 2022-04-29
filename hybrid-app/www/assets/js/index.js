@@ -155,12 +155,6 @@ var is_hybrid = $('body').hasClass('hybrid-app');
 var meta_mask_installed = false;
 var temporally_timestamps = {};
 var global_state = {};
-var getL1Instance;
-var getL2Instance;
-var L1DCNContract;
-var L2DCNContract;
-var L2StakingContract;
-//var OVM_L1CrossDomainMessengerContract;
 var core_db_clinics;
 var core_db_clinics_time_to_request;
 var load_qr_code_lib = true;
@@ -171,8 +165,8 @@ var tx_history = [];
 var dApp = {
     loaded: false,
     web3Provider: null,
-    web3_l1: null,
-    web3_l2: null,
+    web3_l1: new Web3(new Web3.providers.HttpProvider(config_variable.l1.provider)),
+    web3_l2: new Web3(new Web3.providers.HttpProvider(config_variable.l2.provider)),
     init: function (callback) {
         dApp.loaded = true;
 
@@ -249,10 +243,6 @@ var dApp = {
                 global_state.account = window.localStorage.getItem('current_account');
             }
 
-            dApp.web3_l1 = new Web3(new Web3.providers.HttpProvider(config_variable.l1.provider));
-            dApp.web3_l2 = new Web3(new Web3.providers.HttpProvider(config_variable.l2.provider));
-            dApp.web3_l1_assurance = new Web3(new Web3.providers.HttpProvider(assurance_config.infura_node));
-
             continueWithContractInstanceInit();
         //}
 
@@ -266,24 +256,6 @@ var dApp = {
 
             //init contract
             if (typeof(global_state.account) != 'undefined' && projectData.utils.innerAddressCheck(global_state.account)) {
-                /*console.log(typeof(web3) === 'undefined', 'typeof(web3) === \'undefined\'');
-                console.log(window.localStorage.getItem('custom_wallet_over_external_web3_provider') == 'true', 'window.localStorage.getItem(custom_wallet_over_external_web3_provider) == true');
-                console.log($('.logo-and-settings-row .open-settings-col').length == 0, '$(\'.logo-and-settings-row .open-settings-col\').length == 0)');
-                console.log($('.logo-and-settings-row').length > 0, '$(\'.logo-and-settings-row\').length > 0');
-                console.log((typeof(web3) === 'undefined' || window.localStorage.getItem('custom_wallet_over_external_web3_provider') == 'true') && $('.logo-and-settings-row .open-settings-col').length == 0 && $('.logo-and-settings-row').length > 0);
-                if ((typeof(web3) === 'undefined' || window.localStorage.getItem('custom_wallet_over_external_web3_provider') == 'true') && $('.logo-and-settings-row .open-settings-col').length == 0 && $('.logo-and-settings-row').length > 0) {
-                    console.log('show');
-                    $('.logo-and-settings-row').append('<div class="col-xs-6 inline-block open-settings-col"><figure itemscope="" itemtype="http://schema.org/Organization" class="text-right"><a href="javascript:void(0)" itemprop="url" class="open-wallet-menu"><ul><li></li><li></li><li></li></ul></a></figure></div>');
-                }*/
-
-                // get the contract artifact file and use it to instantiate a truffle contract abstraction
-                getL1Instance = getContractInstance(dApp.web3_l1);
-                L1DCNContract = getL1Instance(config_variable.l1.abi_definitions.dcn_contract_abi, config_variable.l1.addresses.dcn_contract_address);
-                getL2Instance = getContractInstance(dApp.web3_l2);
-                L2DCNContract = getL2Instance(config_variable.l2.abi_definitions.dcn_contract_abi, config_variable.l2.addresses.dcn_contract_address);
-                L2StakingContract = getL2Instance(config_variable.l2.abi_definitions.staking_contract_abi, config_variable.l2.addresses.staking_contract_address);
-                //OVM_L1CrossDomainMessengerContract = getL2Instance(config_variable.l2.abi_definitions.OVM_L1CrossDomainMessenger_abi, config_variable.l2.addresses.OVM_L1CrossDomainMessenger_address);
-
                 if (callback != undefined) {
                     callback();
                 }
@@ -291,25 +263,14 @@ var dApp = {
                 projectData.general_logic.buildTransactionHistory();
             }
         }
-    },
-    helper: {
-        addBlockTimestampToTransaction: function (blockNumber, object_key) {
-            dApp.web3_l1.eth.getBlock(blockNumber, function (error, result) {
-                if (error !== null) {
-
-                }
-                if (result != undefined && result != null) {
-                    temporally_timestamps[object_key] = result.timestamp;
-                }
-            });
-        },
-        getAddressETHBalance: function (address) {
-            return new Promise(function (resolve, reject) {
-                resolve(dApp.web3_l1.eth.getBalance(address));
-            });
-        }
     }
 };
+
+var getL1Instance = getContractInstance(dApp.web3_l1);
+var L1DCNContract = getL1Instance(config_variable.l1.abi_definitions.dcn_contract_abi, config_variable.l1.addresses.dcn_contract_address);
+var getL2Instance = getContractInstance(dApp.web3_l2);
+var L2DCNContract = getL2Instance(config_variable.l2.abi_definitions.dcn_contract_abi, config_variable.l2.addresses.dcn_contract_address);
+var L2StakingContract = getL2Instance(config_variable.l2.abi_definitions.staking_contract_abi, config_variable.l2.addresses.staking_contract_address);
 
 //logic splitted by pages
 var projectData = {
@@ -4283,12 +4244,6 @@ window.refreshApp = function () {
     core_db_clinics = undefined;
     core_db_clinics_time_to_request = undefined;
     load_qr_code_lib = true;
-    L1DCNContract = undefined;
-    getL1Instance = undefined;
-    L2DCNContract = undefined;
-    L2StakingContract = undefined;
-    //OVM_L1CrossDomainMessengerContract = undefined;
-    getL2Instance = undefined;
     tx_history = [];
 
     executeGlobalLogic();
@@ -5132,15 +5087,17 @@ $(document).on('click', 'header .open-wallet-menu', function () {
         initWalletConnectLogicBool = false;
 
         //opening WalletConnect scanner
-        //if (basic.isMobile() || is_hybrid) {
+        if ((basic.isMobile() || is_hybrid)) {
             $('nav.sidenav .wallet-connect-scanner').parent().removeClass('hide');
-            projectData.general_logic.initScan($('nav.sidenav .wallet-connect-scanner'), undefined, function (scannedContent) {
-                if (!is_hybrid) {
-                    $('.popup-scan-qr-code').modal('hide');
-                }
-                initWalletConnectLogic(scannedContent, true);
-            });
-        //}
+            if (window.localStorage.getItem('walletconnect') == null) {
+                projectData.general_logic.initScan($('nav.sidenav .wallet-connect-scanner'), undefined, function (scannedContent) {
+                    if (!is_hybrid) {
+                        $('.popup-scan-qr-code').modal('hide');
+                    }
+                    initWalletConnectLogic(scannedContent, true);
+                });
+            }
+        }
     }
 });
 
@@ -6336,7 +6293,7 @@ var assuranceTransactions = {
 };*/
 
 // method to handle deep linking
-function handleOpenURL(url) {
+window.handleOpenURL = function(url) {
     var urlInstance = new URL(url);
     console.log(url, 'url');
     console.log(urlInstance, 'urlInstance');
