@@ -1,8 +1,9 @@
 //importing methods for keystore import, export, decrypt
 const {getContractInstance, generateKeystoreFile, importKeystoreFile, decryptKeystore, validatePrivateKey, generateKeystoreFromPrivateKey} = require('./helper');
-const Web3 = require('../../../node_modules/web3');
-const Big = require('../../../node_modules/big.js');
-const { getMessagesAndProofsForL2Transaction } = require('../../../node_modules/@eth-optimism/message-relayer');
+const Web3 = require('web3');
+const Big = require('big.js');
+const ethers = require('ethers');
+WalletConnect = WalletConnect.default;
 const environment = 'mainnet';
 if (environment == 'testnet') {
     var {config_variable} = require('./testnet-config');
@@ -10,6 +11,7 @@ if (environment == 'testnet') {
     var {config_variable} = require('./mainnet-config');
 }
 
+var connector;
 var assurance_config;
 var closeOnLoadLoader = true;
 var iframeHeightListenerInit = true;
@@ -153,11 +155,6 @@ var is_hybrid = $('body').hasClass('hybrid-app');
 var meta_mask_installed = false;
 var temporally_timestamps = {};
 var global_state = {};
-var getL1Instance;
-var getL2Instance;
-var L1DCNContract;
-var L2DCNContract;
-//var OVM_L1CrossDomainMessengerContract;
 var core_db_clinics;
 var core_db_clinics_time_to_request;
 var load_qr_code_lib = true;
@@ -168,8 +165,8 @@ var tx_history = [];
 var dApp = {
     loaded: false,
     web3Provider: null,
-    web3_l1: null,
-    web3_l2: null,
+    web3_l1: new Web3(new Web3.providers.HttpProvider(config_variable.l1.provider)),
+    web3_l2: new Web3(new Web3.providers.HttpProvider(config_variable.l2.provider)),
     init: function (callback) {
         dApp.loaded = true;
 
@@ -246,10 +243,6 @@ var dApp = {
                 global_state.account = window.localStorage.getItem('current_account');
             }
 
-            dApp.web3_l1 = new Web3(new Web3.providers.HttpProvider(config_variable.l1.provider));
-            dApp.web3_l2 = new Web3(new Web3.providers.HttpProvider(config_variable.l2.provider));
-            dApp.web3_l1_assurance = new Web3(new Web3.providers.HttpProvider(assurance_config.infura_node));
-
             continueWithContractInstanceInit();
         //}
 
@@ -263,23 +256,6 @@ var dApp = {
 
             //init contract
             if (typeof(global_state.account) != 'undefined' && projectData.utils.innerAddressCheck(global_state.account)) {
-                /*console.log(typeof(web3) === 'undefined', 'typeof(web3) === \'undefined\'');
-                console.log(window.localStorage.getItem('custom_wallet_over_external_web3_provider') == 'true', 'window.localStorage.getItem(custom_wallet_over_external_web3_provider) == true');
-                console.log($('.logo-and-settings-row .open-settings-col').length == 0, '$(\'.logo-and-settings-row .open-settings-col\').length == 0)');
-                console.log($('.logo-and-settings-row').length > 0, '$(\'.logo-and-settings-row\').length > 0');
-                console.log((typeof(web3) === 'undefined' || window.localStorage.getItem('custom_wallet_over_external_web3_provider') == 'true') && $('.logo-and-settings-row .open-settings-col').length == 0 && $('.logo-and-settings-row').length > 0);
-                if ((typeof(web3) === 'undefined' || window.localStorage.getItem('custom_wallet_over_external_web3_provider') == 'true') && $('.logo-and-settings-row .open-settings-col').length == 0 && $('.logo-and-settings-row').length > 0) {
-                    console.log('show');
-                    $('.logo-and-settings-row').append('<div class="col-xs-6 inline-block open-settings-col"><figure itemscope="" itemtype="http://schema.org/Organization" class="text-right"><a href="javascript:void(0)" itemprop="url" class="open-wallet-menu"><ul><li></li><li></li><li></li></ul></a></figure></div>');
-                }*/
-
-                // get the contract artifact file and use it to instantiate a truffle contract abstraction
-                getL1Instance = getContractInstance(dApp.web3_l1);
-                L1DCNContract = getL1Instance(config_variable.l1.abi_definitions.dcn_contract_abi, config_variable.l1.addresses.dcn_contract_address);
-                getL2Instance = getContractInstance(dApp.web3_l2);
-                L2DCNContract = getL2Instance(config_variable.l2.abi_definitions.dcn_contract_abi, config_variable.l2.addresses.dcn_contract_address);
-                //OVM_L1CrossDomainMessengerContract = getL2Instance(config_variable.l2.abi_definitions.OVM_L1CrossDomainMessenger_abi, config_variable.l2.addresses.OVM_L1CrossDomainMessenger_address);
-
                 if (callback != undefined) {
                     callback();
                 }
@@ -287,25 +263,14 @@ var dApp = {
                 projectData.general_logic.buildTransactionHistory();
             }
         }
-    },
-    helper: {
-        addBlockTimestampToTransaction: function (blockNumber, object_key) {
-            dApp.web3_l1.eth.getBlock(blockNumber, function (error, result) {
-                if (error !== null) {
-
-                }
-                if (result != undefined && result != null) {
-                    temporally_timestamps[object_key] = result.timestamp;
-                }
-            });
-        },
-        getAddressETHBalance: function (address) {
-            return new Promise(function (resolve, reject) {
-                resolve(dApp.web3_l1.eth.getBalance(address));
-            });
-        }
     }
 };
+
+var getL1Instance = getContractInstance(dApp.web3_l1);
+var L1DCNContract = getL1Instance(config_variable.l1.abi_definitions.dcn_contract_abi, config_variable.l1.addresses.dcn_contract_address);
+var getL2Instance = getContractInstance(dApp.web3_l2);
+var L2DCNContract = getL2Instance(config_variable.l2.abi_definitions.dcn_contract_abi, config_variable.l2.addresses.dcn_contract_address);
+var L2StakingContract = getL2Instance(config_variable.l2.abi_definitions.staking_contract_abi, config_variable.l2.addresses.staking_contract_address);
 
 //logic splitted by pages
 var projectData = {
@@ -316,6 +281,12 @@ var projectData = {
             if (typeof(global_state.account) != 'undefined') {
                 projectData.general_logic.showLoader();
                 projectData.general_logic.showMobileAppBannerForDesktopBrowsers();
+
+                console.log(window.localStorage.getItem('walletconnect_uri') != null, 'window.localStorage.getItem(\'walletconnect_uri\') != null');
+                console.log(!$('header .open-settings-col .connected-to-walletconnect').length, '!$(\'header .open-settings-col .connected-to-walletconnect\').length');
+                if (window.localStorage.getItem('walletconnect_uri') != null && !$('header .open-settings-col .connected-to-walletconnect').length) {
+                    initWalletConnectLogic(window.localStorage.getItem('walletconnect_uri'), false);
+                }
 
                 function refreshAccountDataButtonLogic(buildTransactionHistory) {
                     clearInterval(request_interval_for_rest_of_transaction_history);
@@ -520,8 +491,17 @@ var projectData = {
             projectData.utils.saveHybridAppCurrentScreen();
 
             var urlInstance = new URL(window.location.href);
-            var minimumIndacoinUsdForDcnTransaction = 50;
-            var minimumIndacoinUsdForEthTransaction = 60;
+            var indacoinPurchaseLimits = {
+                min: 50,
+                max: 6000
+            };
+            var transakPurchaseLimits = {
+                min: 30,
+                max: 1500
+            };
+            $('.transak-info-text .max-daily-limit').html(transakPurchaseLimits.max);
+            $('.indacoin-info-text .max-daily-limit').html(indacoinPurchaseLimits.max);
+            $('.indacoin-info-text .min-usd-amount').html(transakPurchaseLimits.min);
 
             projectData.general_logic.showMobileAppBannerForDesktopBrowsers();
 
@@ -539,30 +519,51 @@ var projectData = {
             // on currency switch from the dropdown
             $('section.ready-to-purchase-with-external-api #active-crypto').unbind().on('change', function () {
                 var thisValue = $(this);
-                if (thisValue.val() == 'dcn-l2') {
-                    $('.min-usd-amount').html(minimumIndacoinUsdForDcnTransaction);
-                    thisValue.addClass('red-color');
+                thisValue.removeClass('red-color');
+
+                if ($('section.ready-to-purchase-with-external-api .currency-description').hasClass('hide')) {
+                    $('section.ready-to-purchase-with-external-api .currency-description').removeClass('hide');
+                }
+                if (thisValue.val() == 'dcn-l2' || thisValue.val() == 'eth-l2') {
                     $('.to-box .l1-network').addClass('hide');
                     $('.to-box .l2-network').removeClass('hide');
 
-                    if ($('section.ready-to-purchase-with-external-api .currency-description').hasClass('hide')) {
-                        $('section.ready-to-purchase-with-external-api .currency-description').removeClass('hide');
+                    if (thisValue.val() == 'dcn-l2') {
+                        $('.indacoin-info-text').show();
+                        $('.transak-info-text').hide();
+
+                        $('.indacoin-info').removeClass('hide');
+                        $('.transak-info').addClass('hide');
+
+                        $('section.ready-to-purchase-with-external-api .currency-description .description-content').html($('section.ready-to-purchase-with-external-api .currency-description .description-content').attr('data-dcn-l2-description'));
+                    } else if (thisValue.val() == 'eth-l2') {
+                        $('.indacoin-info-text').hide();
+                        $('.transak-info-text').show();
+
+                        $('.indacoin-info').addClass('hide');
+                        $('.transak-info').removeClass('hide');
+
+                        $('section.ready-to-purchase-with-external-api .currency-description .description-content').html($('section.ready-to-purchase-with-external-api .currency-description .description-content').attr('data-l2-eth-network-desc'));
                     }
-                    $('section.ready-to-purchase-with-external-api .currency-description .description-content').html($('section.ready-to-purchase-with-external-api .currency-description .description-content').attr('data-dcn-l2-description'));
                 } else {
-                    thisValue.removeClass('red-color');
                     $('.to-box .l1-network').removeClass('hide');
                     $('.to-box .l2-network').addClass('hide');
 
-                    if ($('section.ready-to-purchase-with-external-api .currency-description').hasClass('hide')) {
-                        $('section.ready-to-purchase-with-external-api .currency-description').removeClass('hide');
-                    }
-
                     if (thisValue.val() == 'dcn') {
-                        $('.min-usd-amount').html(minimumIndacoinUsdForDcnTransaction);
+                        $('.indacoin-info-text').show();
+                        $('.transak-info-text').hide();
+
+                        $('.indacoin-info').removeClass('hide');
+                        $('.transak-info').addClass('hide');
+
                         $('section.ready-to-purchase-with-external-api .currency-description .description-content').html($('section.ready-to-purchase-with-external-api .currency-description .description-content').attr('data-dcn-description'));
                     } else if (thisValue.val() == 'eth') {
-                        $('.min-usd-amount').html(minimumIndacoinUsdForEthTransaction);
+                        $('.indacoin-info-text').hide();
+                        $('.transak-info-text').show();
+
+                        $('.indacoin-info').addClass('hide');
+                        $('.transak-info').removeClass('hide');
+
                         $('section.ready-to-purchase-with-external-api .currency-description .description-content').html($('section.ready-to-purchase-with-external-api .currency-description .description-content').attr('data-eth-description'));
                     }
                 }
@@ -576,9 +577,9 @@ var projectData = {
                 projectData.general_logic.showLoader();
                 setTimeout(function() {
                     if (thisValue.val() == 'dcn') {
-                        $('.min-usd-amount').html(minimumIndacoinUsdForDcnTransaction);
+                        $('.min-usd-amount').html(indacoinPurchaseLimits.min);
                         if (urlInstance.searchParams.get('usd-value') == null) {
-                            $('section.ready-to-purchase-with-external-api #usd-value').val(minimumIndacoinUsdForDcnTransaction);
+                            $('section.ready-to-purchase-with-external-api #usd-value').val(indacoinPurchaseLimits.min);
                         }
                         projectData.requests.getCryptoDataByIndacoin('DCN%20(erc20)', $('section.ready-to-purchase-with-external-api #usd-value').val().trim(), function (onChangeDcnData) {
                             $('section.ready-to-purchase-with-external-api #crypto-amount').val(parseInt(onChangeDcnData.dcn.value));
@@ -586,9 +587,9 @@ var projectData = {
                             projectData.general_logic.hideLoader();
                         });
                     } else if (thisValue.val() == 'dcn-l2') {
-                        $('.min-usd-amount').html(minimumIndacoinUsdForDcnTransaction);
+                        $('.min-usd-amount').html(indacoinPurchaseLimits.min);
                         if (urlInstance.searchParams.get('usd-value') == null) {
-                            $('section.ready-to-purchase-with-external-api #usd-value').val(minimumIndacoinUsdForDcnTransaction);
+                            $('section.ready-to-purchase-with-external-api #usd-value').val(indacoinPurchaseLimits.min);
                         }
                         projectData.requests.getCryptoDataByIndacoin('DCN%20(Optimism)', $('section.ready-to-purchase-with-external-api #usd-value').val().trim(), function (onChangeDcnData) {
                             $('section.ready-to-purchase-with-external-api #crypto-amount').val(parseInt(onChangeDcnData.dcn.value));
@@ -596,12 +597,24 @@ var projectData = {
                             projectData.general_logic.hideLoader();
                         });
                     } else if (thisValue.val() == 'eth') {
-                        $('.min-usd-amount').html(minimumIndacoinUsdForEthTransaction);
+                        $('.min-usd-amount').html(transakPurchaseLimits.min);
                         if (urlInstance.searchParams.get('usd-value') == null) {
-                            $('section.ready-to-purchase-with-external-api #usd-value').val(minimumIndacoinUsdForEthTransaction);
+                            $('section.ready-to-purchase-with-external-api #usd-value').val(transakPurchaseLimits.min);
                         }
-                        projectData.requests.getCryptoDataByIndacoin('ETH', $('section.ready-to-purchase-with-external-api #usd-value').val().trim(), function (onChangeEthData) {
-                            $('section.ready-to-purchase-with-external-api #crypto-amount').val(onChangeEthData.eth.value);
+
+                        projectData.requests.getCryptoDataByTransak('ETH', $('section.ready-to-purchase-with-external-api #usd-value').val().trim(), 'ethereum', function (response) {
+                            $('section.ready-to-purchase-with-external-api #crypto-amount').val(response);
+
+                            projectData.general_logic.hideLoader();
+                        });
+                    } else if (thisValue.val() == 'eth-l2') {
+                        $('.min-usd-amount').html(transakPurchaseLimits.min);
+                        if (urlInstance.searchParams.get('usd-value') == null) {
+                            $('section.ready-to-purchase-with-external-api #usd-value').val(transakPurchaseLimits.min);
+                        }
+
+                        projectData.requests.getCryptoDataByTransak('ETH', $('section.ready-to-purchase-with-external-api #usd-value').val().trim(), 'optimism', function (response) {
+                            $('section.ready-to-purchase-with-external-api #crypto-amount').val(response);
 
                             projectData.general_logic.hideLoader();
                         });
@@ -611,23 +624,26 @@ var projectData = {
 
             // on changing the usd value
             $('section.ready-to-purchase-with-external-api #usd-value').unbind().on('input', function () {
-                var minimumIndacoinUsdForTransaction;
-                if ($('section.ready-to-purchase-with-external-api #active-crypto') == 'eth') {
-                    minimumIndacoinUsdForTransaction = minimumIndacoinUsdForEthTransaction;
+                var minimumUsdForTransaction;
+                var maximumUsdForTransaction;
+                if ($('section.ready-to-purchase-with-external-api #active-crypto').val().trim() == 'eth' || $('section.ready-to-purchase-with-external-api #active-crypto').val().trim() == 'eth-l2') {
+                    minimumUsdForTransaction = transakPurchaseLimits.min;
+                    maximumUsdForTransaction = transakPurchaseLimits.max;
                 } else {
-                    minimumIndacoinUsdForTransaction = minimumIndacoinUsdForDcnTransaction;
+                    minimumUsdForTransaction = indacoinPurchaseLimits.min;
+                    maximumUsdForTransaction = indacoinPurchaseLimits.max;
                 }
 
-                if ($(this).val().trim() < minimumIndacoinUsdForTransaction) {
+                if ($(this).val().trim() < minimumUsdForTransaction) {
                     $(this).parent().addClass('error-field');
                 } else {
                     $(this).parent().removeClass('error-field');
                 }
 
                 if (parseFloat($(this).val().trim()) < 0) {
-                    $(this).val(minimumIndacoinUsdForTransaction);
-                } else if (parseFloat($(this).val().trim()) > 6000) {
-                    $(this).val(6000);
+                    $(this).val(minimumUsdForTransaction);
+                } else if (parseFloat($(this).val().trim()) > maximumUsdForTransaction) {
+                    $(this).val(maximumUsdForTransaction);
                 }
 
                 if ($('section.ready-to-purchase-with-external-api #active-crypto').val() == 'dcn') {
@@ -639,8 +655,12 @@ var projectData = {
                         $('section.ready-to-purchase-with-external-api #crypto-amount').val(Math.floor(onInputDcnData.dcn.value));
                     });
                 } else if ($('section.ready-to-purchase-with-external-api #active-crypto').val() == 'eth') {
-                    projectData.requests.getCryptoDataByIndacoin('ETH', $(this).val().trim(), function (onInputEthData) {
-                        $('section.ready-to-purchase-with-external-api #crypto-amount').val(onInputEthData.eth.value);
+                    projectData.requests.getCryptoDataByTransak('ETH', $('section.ready-to-purchase-with-external-api #usd-value').val().trim(), 'ethereum', function (response) {
+                        $('section.ready-to-purchase-with-external-api #crypto-amount').val(response);
+                    });
+                } else if ($('section.ready-to-purchase-with-external-api #active-crypto').val() == 'eth-l2') {
+                    projectData.requests.getCryptoDataByTransak('ETH', $('section.ready-to-purchase-with-external-api #usd-value').val().trim(), 'optimism', function (response) {
+                        $('section.ready-to-purchase-with-external-api #crypto-amount').val(response);
                     });
                 }
             });
@@ -652,17 +672,20 @@ var projectData = {
                 if (currency == null) {
                     basic.showAlert($('.translates-holder').attr('select-token'), '', true);
                 } else {
-                    var minimumIndacoinUsdForTransaction;
-                    if (currency == 'eth') {
-                        minimumIndacoinUsdForTransaction = minimumIndacoinUsdForEthTransaction;
+                    var minimumUsdForTransaction;
+                    var maximumUsdForTransaction;
+                    if (currency == 'eth' || currency == 'eth-l2') {
+                        minimumUsdForTransaction = transakPurchaseLimits.min;
+                        maximumUsdForTransaction = transakPurchaseLimits.max;
                     } else {
-                        minimumIndacoinUsdForTransaction = minimumIndacoinUsdForDcnTransaction;
+                        minimumUsdForTransaction = indacoinPurchaseLimits.min;
+                        maximumUsdForTransaction = indacoinPurchaseLimits.max;
                     }
 
-                    if (parseFloat($('section.ready-to-purchase-with-external-api #usd-value').val().trim()) < minimumIndacoinUsdForTransaction) {
-                        basic.showAlert($('.translates-holder').attr('min-tx-limit') + ' ' + minimumIndacoinUsdForTransaction+' USD.', '', true);
-                    } else if (parseFloat($('section.ready-to-purchase-with-external-api #usd-value').val().trim()) > 6000) {
-                        basic.showAlert($('.translates-holder').attr('max-tx-limit'), '', true);
+                    if (parseFloat($('section.ready-to-purchase-with-external-api #usd-value').val().trim()) < minimumUsdForTransaction) {
+                        basic.showAlert($('.translates-holder').attr('min-tx-limit') + ' ' + minimumUsdForTransaction+' USD.', '', true);
+                    } else if (parseFloat($('section.ready-to-purchase-with-external-api #usd-value').val().trim()) > maximumUsdForTransaction) {
+                        basic.showAlert($('.translates-holder').attr('max-tx-limit') + ' ' + maximumUsdForTransaction + ' USD.', '', true);
                     } else if (!projectData.utils.innerAddressCheck($('section.ready-to-purchase-with-external-api input#dcn_address').val().trim())) {
                         basic.showAlert($('.translates-holder').attr('valid-wallet'), '', true);
                     } else if (!basic.validateEmail($('section.ready-to-purchase-with-external-api input#email').val().trim())) {
@@ -670,16 +693,24 @@ var projectData = {
                     } else if (!$('section.ready-to-purchase-with-external-api #privacy-policy-agree').is(':checked')) {
                         basic.showAlert($('.translates-holder').attr('agree-policy'), '', true);
                     } else {
-                        var indacoinCurToParamater;
-                        if (currency == 'dcn-l2') {
-                            indacoinCurToParamater = 'DCN%20(Optimism)';
-                        } else if (currency == 'dcn') {
-                            indacoinCurToParamater = 'DCN%20(erc20)';
-                        } else if (currency == 'eth') {
-                            indacoinCurToParamater = 'ETH';
-                        }
+                        if (currency == 'dcn-l2' || currency == 'dcn') {
+                            var indacoinCurToParamater = 'DCN%20(erc20)';
+                            if (currency == 'dcn-l2') {
+                                indacoinCurToParamater = 'DCN%20(Optimism)';
+                            }
 
-                        window.open('https://indacoin.io/payment/en?partner=dentacoin&cur_from=USD&cur_to=' + indacoinCurToParamater + '&amount=' + $('section.ready-to-purchase-with-external-api #usd-value').val().trim() + '&address=' + $('section.ready-to-purchase-with-external-api input#dcn_address').val().trim() + '&user_id=' + $('section.ready-to-purchase-with-external-api input#email').val().trim(), '_blank');
+                            window.open('https://indacoin.io/payment/en?partner=dentacoin&cur_from=USD&cur_to=' + indacoinCurToParamater + '&amount=' + $('section.ready-to-purchase-with-external-api #usd-value').val().trim() + '&address=' + $('section.ready-to-purchase-with-external-api input#dcn_address').val().trim() + '&user_id=' + $('section.ready-to-purchase-with-external-api input#email').val().trim(), '_blank');
+                        } else {
+                            var network = 'ethereum';
+                            if (currency == 'eth-l2') {
+                                network = 'optimism';
+                            }
+                            var url = 'https://dentacoin.com/transak-payment-widget?fiatAmount=' + $('section.ready-to-purchase-with-external-api #usd-value').val().trim() + '&network=' + network + '&walletAddress=' + $('section.ready-to-purchase-with-external-api input#dcn_address').val().trim() + '&email=' + $('section.ready-to-purchase-with-external-api input#email').val().trim();
+                            if (is_hybrid || basic.isMobile()) {
+                                url += '&widgetHeight=500px&widgetWidth=350px';
+                            }
+                            window.open(url, '_blank');
+                        }
                     }
                 }
             });
@@ -693,6 +724,8 @@ var projectData = {
                     $('section.ready-to-purchase-with-external-api #active-crypto').val('dcn').trigger('change');
                 } else if (urlInstance.searchParams.get('buy-type') == 'eth') {
                     $('section.ready-to-purchase-with-external-api #active-crypto').val('eth').trigger('change');
+                }  else if (urlInstance.searchParams.get('buy-type') == 'eth-l2') {
+                    $('section.ready-to-purchase-with-external-api #active-crypto').val('eth-l2').trigger('change');
                 } else if (urlInstance.searchParams.get('buy-type') == 'dcn-l2') {
                     $('section.ready-to-purchase-with-external-api #active-crypto').val('dcn-l2').trigger('change');
                 }
@@ -709,6 +742,8 @@ var projectData = {
                     $('section.ready-to-purchase-with-external-api #active-crypto').val('dcn').trigger('change');
                 } else if (urlInstance.searchParams.get('buy-type') == 'eth') {
                     $('section.ready-to-purchase-with-external-api #active-crypto').val('eth').trigger('change');
+                } else if (urlInstance.searchParams.get('buy-type') == 'eth-l2') {
+                    $('section.ready-to-purchase-with-external-api #active-crypto').val('eth-l2').trigger('change');
                 } else if (urlInstance.searchParams.get('buy-type') == 'dcn-l2') {
                     $('section.ready-to-purchase-with-external-api #active-crypto').val('dcn-l2').trigger('change');
                 }
@@ -723,8 +758,7 @@ var projectData = {
                 //reading all clinics/ dentists from the CoreDB EVERY 1h
                 projectData.general_logic.showLoader();
 
-                const ethers = require('../../../node_modules/ethers');
-                const optimismContracts = require('../../../node_modules/@eth-optimism/contracts');
+                const optimismContracts = require('@eth-optimism/contracts');
                 const ethers_l2_provider = new ethers.providers.JsonRpcProvider(config_variable.l2.provider);
                 const GasPriceOracle = optimismContracts.getContractFactory('OVM_GasPriceOracle').attach(optimismContracts.predeploys.OVM_GasPriceOracle).connect(ethers_l2_provider);
 
@@ -1256,7 +1290,7 @@ var projectData = {
                                                             // adding 25 percent to the gas limit just in case
                                                             gasLimit = Math.round(gasLimit + (gasLimit * 0.25));
 
-                                                            projectData.general_logic.openTxConfirmationPopup('Send confirmation', config_variable.l1.addresses.dcn_contract_address, amount, 'DCN', gasLimit, L1DCNContract.methods.transfer(sending_to_address, amount).encodeABI(), 'l1', 'transfer', null, null, sending_to_address);
+                                                            projectData.general_logic.openTxConfirmationPopup('Send confirmation', config_variable.l1.addresses.dcn_contract_address, amount, 'DCN', gasLimit, L1DCNContract.methods.transfer(sending_to_address, amount).encodeABI(), 'l1', 'transfer', null, sending_to_address);
                                                         }
                                                     }, 500);
                                                 } else if ($('select#active-crypto').val() == 'eth-l1') {
@@ -1310,7 +1344,7 @@ var projectData = {
                                                                     from: global_state.account
                                                                 });
 
-                                                                projectData.general_logic.openTxConfirmationPopup('Send confirmation', config_variable.l2.addresses.dcn_contract_address, amount, 'DCN2.0', gasLimit, L2DCNContract.methods.transfer(sending_to_address, amount).encodeABI(), 'l2', 'transfer', null, null, sending_to_address);
+                                                                projectData.general_logic.openTxConfirmationPopup('Send confirmation', config_variable.l2.addresses.dcn_contract_address, amount, 'DCN2.0', gasLimit, L2DCNContract.methods.transfer(sending_to_address, amount).encodeABI(), 'l2', 'transfer', null, sending_to_address);
                                                             }
                                                         }, 500);
                                                     }
@@ -1376,7 +1410,7 @@ var projectData = {
         },
         swap_page: async function () {
             projectData.general_logic.showLoader();
-            const l2StandardBridgeArtifact = require(`../../../node_modules/@eth-optimism/contracts/artifacts/contracts/L2/messaging/L2StandardBridge.sol/L2StandardBridge.json`);
+            const l2StandardBridgeArtifact = require('@eth-optimism/contracts/artifacts/contracts/L2/messaging/L2StandardBridge.sol/L2StandardBridge.json');
             const L2StandardBridge = getL2Instance(l2StandardBridgeArtifact.abi, config_variable.l2.addresses.OVM_L2StandardBridge_address);
 
             $(document).off('click', '.latest-dcn-popup .close-btn');
@@ -1732,7 +1766,7 @@ var projectData = {
                                     // using hardcoded gasLimit, because we cannot proceed to display error popup when user has no ETH on Optimism balance
                                     var gasLimit = 120000;
 
-                                    projectData.general_logic.openTxConfirmationPopup('Swap confirmation', config_variable.l2.addresses.withdraw_deposits_address, amount, 'DCN2.0', gasLimit, L2WithdrawContract.methods.deposit(amount).encodeABI(), 'l2', 'swap', 'dcn-l2-to-dcn-l1', $('.swapping-section .to-box .inputable-line .transfer-to-amount').html(), undefined, eth_deposit_value);
+                                    projectData.general_logic.openTxConfirmationPopup('Swap confirmation', config_variable.l2.addresses.withdraw_deposits_address, amount, 'DCN2.0', gasLimit, L2WithdrawContract.methods.deposit(amount).encodeABI(), 'l2', 'swap', 'dcn-l2-to-dcn-l1', undefined, eth_deposit_value);
                                 }
                             } else if ($('select.current-from').val() == 'eth-l2' && $('select.current-to').val() == 'eth-l1') {
                                 if (l2_eth_balance < parseInt(projectData.utils.toWei(amount.toString()))) {
@@ -1743,7 +1777,7 @@ var projectData = {
                                         from: global_state.account
                                     });
 
-                                    projectData.general_logic.openTxConfirmationPopup('Swap confirmation<div style="color: #555555;" class="calibri-regular fs-18">Step 1 Initiate</div>', config_variable.l2.addresses.OVM_L2StandardBridge_address, amount, 'ETH2.0', gasLimit, L2StandardBridge.methods.withdraw('0xDeadDeAddeAddEAddeadDEaDDEAdDeaDDeAD0000', projectData.utils.toWei(amount.toString()), 2000000, '0x').encodeABI(), 'l2', 'swap', 'eth-l2-to-eth-l1', $('.swapping-section .to-box .inputable-line .transfer-to-amount').html());
+                                    projectData.general_logic.openTxConfirmationPopup('Swap confirmation<div style="color: #555555;" class="calibri-regular fs-18">Step 1 Initiate</div>', config_variable.l2.addresses.OVM_L2StandardBridge_address, amount, 'ETH2.0', gasLimit, L2StandardBridge.methods.withdraw('0xDeadDeAddeAddEAddeadDEaDDEAdDeaDDeAD0000', projectData.utils.toWei(amount.toString()), 2000000, '0x').encodeABI(), 'l2', 'swap', 'eth-l2-to-eth-l1');
                                 }
                             }
                         }, 500);
@@ -1992,7 +2026,7 @@ var projectData = {
                                             transactionPopupTitle = 'Cancel Contract';
                                         }
 
-                                        var transaction_popup_html = '<div class="title">' + transactionPopupTitle + '</div><div class="pictogram-and-dcn-usd-price"><svg version="1.1" class="width-100 max-width-100 margin-bottom-10" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><style type="text/css">.st0-recipe{fill:#FFFFFF;}.st1-recipe{fill:#CA675A;}.st2-recipe{fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="100" width="105.7" x="-7.2" y="-6.4"></sliceSourceBounds></sfw></metadata><circle class="st0-recipe" cx="50" cy="50" r="50"/><g><g><g><path class="st1-recipe" d="M50.1,93.7c-18.7,0-36-12.4-41.3-31.3C2.4,39.6,15.8,16,38.5,9.6C48.9,6.7,60,7.8,69.6,12.8c1.2,0.6,1.6,2,1,3.2s-2,1.6-3.2,1c-8.6-4.4-18.4-5.4-27.7-2.8c-20.1,5.6-32,26.7-26.3,46.9s26.7,32.1,46.9,26.4s32.1-26.7,26.4-46.9c-1.1-3.9-2.8-7.6-5-10.9c-0.7-1.1-0.4-2.6,0.7-3.3c1.1-0.7,2.6-0.4,3.3,0.7c2.5,3.8,4.4,7.9,5.6,12.3c6.4,22.8-7,46.5-29.7,52.8C57.8,93.2,53.9,93.7,50.1,93.7z"/></g><g><path class="st1-recipe" d="M33.1,78.6c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.4l40.4-50.5c0.8-1,2.3-1.2,3.4-0.4c1,0.8,1.2,2.3,0.4,3.4L35,77.7C34.5,78.3,33.8,78.6,33.1,78.6z"/></g><g><g><path class="st2-recipe" d="M105.7,56.9"/></g></g></g><g><path class="st1-recipe" d="M73.7,54.2c-0.1,0-0.2,0-0.2,0c-1.3-0.2-2.3-1.4-2.2-2.7L74,23.9L47.6,39.8c-1.1,0.7-2.6,0.3-3.3-0.8c-0.7-1.1-0.3-2.6,0.8-3.3l34.5-20.8L76.1,52C76,53.2,74.9,54.2,73.7,54.2z"/></g></g></svg>' + transactionPopupExtraHtml + '</div></div><div class="confirm-row from"> <div class="label inline-block">From:</div><div class="value inline-block">' + global_state.account + '</div></div><div class="confirm-row fee"> <div class="label inline-block">Ether fee:</div><div class="value inline-block">' + parseFloat(scanObject[0]).toFixed(8) + '</div></div>';
+                                        var transaction_popup_html = '<div class="title">' + transactionPopupTitle + '</div><div class="pictogram-and-dcn-usd-price"><svg version="1.1" class="width-100 max-width-100 margin-bottom-10" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><style type="text/css">.st0-recipe{fill:#FFFFFF;}.st1-recipe{fill:#CA675A;}.st2-recipe{fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;}</style><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="100" width="105.7" x="-7.2" y="-6.4"></sliceSourceBounds></sfw></metadata><circle class="st0-recipe" cx="50" cy="50" r="50"/><g><g><g><path class="st1-recipe" d="M50.1,93.7c-18.7,0-36-12.4-41.3-31.3C2.4,39.6,15.8,16,38.5,9.6C48.9,6.7,60,7.8,69.6,12.8c1.2,0.6,1.6,2,1,3.2s-2,1.6-3.2,1c-8.6-4.4-18.4-5.4-27.7-2.8c-20.1,5.6-32,26.7-26.3,46.9s26.7,32.1,46.9,26.4s32.1-26.7,26.4-46.9c-1.1-3.9-2.8-7.6-5-10.9c-0.7-1.1-0.4-2.6,0.7-3.3c1.1-0.7,2.6-0.4,3.3,0.7c2.5,3.8,4.4,7.9,5.6,12.3c6.4,22.8-7,46.5-29.7,52.8C57.8,93.2,53.9,93.7,50.1,93.7z"/></g><g><path class="st1-recipe" d="M33.1,78.6c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.4l40.4-50.5c0.8-1,2.3-1.2,3.4-0.4c1,0.8,1.2,2.3,0.4,3.4L35,77.7C34.5,78.3,33.8,78.6,33.1,78.6z"/></g><g><g><path class="st2-recipe" d="M105.7,56.9"/></g></g></g><g><path class="st1-recipe" d="M73.7,54.2c-0.1,0-0.2,0-0.2,0c-1.3-0.2-2.3-1.4-2.2-2.7L74,23.9L47.6,39.8c-1.1,0.7-2.6,0.3-3.3-0.8c-0.7-1.1-0.3-2.6,0.8-3.3l34.5-20.8L76.1,52C76,53.2,74.9,54.2,73.7,54.2z"/></g></g></svg>' + transactionPopupExtraHtml + '</div></div><div class="confirm-row from"> <div class="label inline-block">From:</div><div class="value inline-block">' + global_state.account + '</div></div><div class="confirm-row fee"> <div class="label inline-block">Ether fee:</div><div class="value inline-block">' + parseFloat(scanObject[0]).toFixed(8) + '</div></div>';
 
                                         if (window.localStorage.getItem('keystore_file') != null) {
                                             //cached keystore path on mobile device or cached keystore file on browser
@@ -2074,10 +2108,9 @@ var projectData = {
         }
     },
     general_logic: {
-        openTxConfirmationPopup: async function(popupTitle, to, amount, token_symbol, gasLimit, function_abi, layer, transactionType, swapType, swapToAmount, visible_to, data) {
+        openTxConfirmationPopup: async function(popupTitle, to, amount, token_symbol, gasLimit, function_abi, layer, transactionType, swapType, visible_to, data) {
             console.log(gasLimit, 'gasLimit');
-            const ethers = require('../../../node_modules/ethers');
-            const optimismContracts = require('../../../node_modules/@eth-optimism/contracts');
+            const optimismContracts = require('@eth-optimism/contracts');
             const ethers_l2_provider = new ethers.providers.JsonRpcProvider(config_variable.l2.provider);
             const GasPriceOracle = optimismContracts.getContractFactory('OVM_GasPriceOracle').attach(optimismContracts.predeploys.OVM_GasPriceOracle).connect(ethers_l2_provider);
             var ethFeeLabel;
@@ -2124,7 +2157,7 @@ var projectData = {
             to = projectData.utils.checksumAddress(to);
 
             if (transactionType == 'transfer') {
-                var txIcon = '<svg version="1.1" class="width-100 max-width-100 margin-bottom-10" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="100" width="105.7" x="-7.2" y="-6.4"></sliceSourceBounds></sfw></metadata><circle style="fill:#FFFFFF;" cx="50" cy="50" r="50"/><g><g><g><path fill="#CA675A" d="M50.1,93.7c-18.7,0-36-12.4-41.3-31.3C2.4,39.6,15.8,16,38.5,9.6C48.9,6.7,60,7.8,69.6,12.8c1.2,0.6,1.6,2,1,3.2s-2,1.6-3.2,1c-8.6-4.4-18.4-5.4-27.7-2.8c-20.1,5.6-32,26.7-26.3,46.9s26.7,32.1,46.9,26.4s32.1-26.7,26.4-46.9c-1.1-3.9-2.8-7.6-5-10.9c-0.7-1.1-0.4-2.6,0.7-3.3c1.1-0.7,2.6-0.4,3.3,0.7c2.5,3.8,4.4,7.9,5.6,12.3c6.4,22.8-7,46.5-29.7,52.8C57.8,93.2,53.9,93.7,50.1,93.7z"/></g><g><path fill="#CA675A" d="M33.1,78.6c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.4l40.4-50.5c0.8-1,2.3-1.2,3.4-0.4c1,0.8,1.2,2.3,0.4,3.4L35,77.7C34.5,78.3,33.8,78.6,33.1,78.6z"/></g><g><g><path style="fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;" d="M105.7,56.9"/></g></g></g><g><path fill="#CA675A" d="M73.7,54.2c-0.1,0-0.2,0-0.2,0c-1.3-0.2-2.3-1.4-2.2-2.7L74,23.9L47.6,39.8c-1.1,0.7-2.6,0.3-3.3-0.8c-0.7-1.1-0.3-2.6,0.8-3.3l34.5-20.8L76.1,52C76,53.2,74.9,54.2,73.7,54.2z"/></g></g></svg>';
+                var txIcon = '<svg version="1.1" class="width-100 max-width-100 margin-bottom-10" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="100" width="105.7" x="-7.2" y="-6.4"></sliceSourceBounds></sfw></metadata><circle style="fill:#FFFFFF;" cx="50" cy="50" r="50"/><g><g><g><path fill="#CA675A" d="M50.1,93.7c-18.7,0-36-12.4-41.3-31.3C2.4,39.6,15.8,16,38.5,9.6C48.9,6.7,60,7.8,69.6,12.8c1.2,0.6,1.6,2,1,3.2s-2,1.6-3.2,1c-8.6-4.4-18.4-5.4-27.7-2.8c-20.1,5.6-32,26.7-26.3,46.9s26.7,32.1,46.9,26.4s32.1-26.7,26.4-46.9c-1.1-3.9-2.8-7.6-5-10.9c-0.7-1.1-0.4-2.6,0.7-3.3c1.1-0.7,2.6-0.4,3.3,0.7c2.5,3.8,4.4,7.9,5.6,12.3c6.4,22.8-7,46.5-29.7,52.8C57.8,93.2,53.9,93.7,50.1,93.7z"/></g><g><path fill="#CA675A" d="M33.1,78.6c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.4l40.4-50.5c0.8-1,2.3-1.2,3.4-0.4c1,0.8,1.2,2.3,0.4,3.4L35,77.7C34.5,78.3,33.8,78.6,33.1,78.6z"/></g><g><g><path style="fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;" d="M105.7,56.9"/></g></g></g><g><path fill="#CA675A" d="M73.7,54.2c-0.1,0-0.2,0-0.2,0c-1.3-0.2-2.3-1.4-2.2-2.7L74,23.9L47.6,39.8c-1.1,0.7-2.6,0.3-3.3-0.8c-0.7-1.1-0.3-2.6,0.8-3.3l34.5-20.8L76.1,52C76,53.2,74.9,54.2,73.7,54.2z"/></g></g></svg>';
                 if (token_symbol == 'DCN' || token_symbol == 'DCN2.0') {
                     projectData.requests.getDentacoinDataByCoingecko(function(usdPrice) {
                         proceedWithTxConfirmationPopupInitialization(txIcon, '<div class="dcn-amount">-' + parseInt(amount).toLocaleString() + ' DCN</div>', '<div class="usd-amount">=$' + (amount * usdPrice).toFixed(2) + '</div>');
@@ -2134,11 +2167,11 @@ var projectData = {
                         proceedWithTxConfirmationPopupInitialization(txIcon, '<div class="dcn-amount">-' + amount + ' ETH</div>', '<div class="usd-amount">=$' + (amount * ethereum_data.market_data.current_price.usd).toFixed(2) + '</div>');
                     });
                 }
-            } else if (transactionType == 'approve') {
-                var txIcon = '<svg version="1.1" class="width-100 max-width-100 margin-bottom-10" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 606.6 606.8" style="enable-background:new 0 0 606.6 606.8;" xml:space="preserve"><g><g><g><path style="fill:#1FC0DE;" d="M302.9,606.8c-51.4,0-102.3-13.2-148.3-39.1C83.9,527.9,33,463,11.2,385C-33.8,224,60.6,56.3,221.7,11.3C295.5-9.4,373.8-1.5,441.9,33.6c8.3,4.3,11.6,14.5,7.3,22.8c-4.3,8.3-14.5,11.6-22.8,7.3c-60.6-31.1-130.1-38.2-195.7-19.8c-143.1,40-227,189-187,332.1c19.4,69.3,64.6,126.9,127.3,162.3s135.5,44.1,204.7,24.7c143.1-40,227-189,187-332.1c-7.7-27.7-19.7-53.7-35.5-77.3c-5.2-7.8-3.1-18.3,4.7-23.5c7.8-5.2,18.3-3.1,23.5,4.7c17.8,26.6,31.2,55.9,39.9,87c45,161.1-49.4,328.7-210.4,373.7C357.9,603,330.3,606.8,302.9,606.8z"/></g><g><g><path style="fill:none;stroke:#1FC0DE;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;" d="M697.3,345.9"/></g></g></g><g><g><path style="fill:#1FC0DE;" d="M298.8,429.6c-5.2,0-10.4-2.4-13.7-6.9L140.3,224.1c-5.5-7.5-3.9-18.1,3.7-23.6c7.5-5.5,18.1-3.9,23.6,3.7l144.8,198.5c5.5,7.5,3.9,18.1-3.7,23.6C305.7,428.5,302.2,429.6,298.8,429.6z"/></g><g><path style="fill:none;stroke:#1FC0DE;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;" d="M366.6,168.9"/></g><g><path style="fill:#1FC0DE;" d="M298.7,429.6c-2.9,0-5.8-0.7-8.5-2.3c-8.1-4.7-10.8-15.1-6.1-23.1L478,72.1c4.7-8.1,15-10.8,23.1-6.1c8.1,4.7,10.8,15.1,6.1,23.1l-193.9,332C310.2,426.6,304.5,429.6,298.7,429.6z"/></g></g></g></svg>';
+            } else if (transactionType == 'approve' || transactionType == 'stake' || transactionType == 'unstake' || transactionType == 'claimReward') {
+                var txIcon = '<svg version="1.1" class="width-100 max-width-100 margin-bottom-10" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 606.6 606.8" style="enable-background:new 0 0 606.6 606.8;" xml:space="preserve"><g><g><g><path style="fill:#1FC0DE;" d="M302.9,606.8c-51.4,0-102.3-13.2-148.3-39.1C83.9,527.9,33,463,11.2,385C-33.8,224,60.6,56.3,221.7,11.3C295.5-9.4,373.8-1.5,441.9,33.6c8.3,4.3,11.6,14.5,7.3,22.8c-4.3,8.3-14.5,11.6-22.8,7.3c-60.6-31.1-130.1-38.2-195.7-19.8c-143.1,40-227,189-187,332.1c19.4,69.3,64.6,126.9,127.3,162.3s135.5,44.1,204.7,24.7c143.1-40,227-189,187-332.1c-7.7-27.7-19.7-53.7-35.5-77.3c-5.2-7.8-3.1-18.3,4.7-23.5c7.8-5.2,18.3-3.1,23.5,4.7c17.8,26.6,31.2,55.9,39.9,87c45,161.1-49.4,328.7-210.4,373.7C357.9,603,330.3,606.8,302.9,606.8z"/></g><g><g><path style="fill:none;stroke:#1FC0DE;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;" d="M697.3,345.9"/></g></g></g><g><g><path style="fill:#1FC0DE;" d="M298.8,429.6c-5.2,0-10.4-2.4-13.7-6.9L140.3,224.1c-5.5-7.5-3.9-18.1,3.7-23.6c7.5-5.5,18.1-3.9,23.6,3.7l144.8,198.5c5.5,7.5,3.9,18.1-3.7,23.6C305.7,428.5,302.2,429.6,298.8,429.6z"/></g><g><path style="fill:none;stroke:#1FC0DE;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;" d="M366.6,168.9"/></g><g><path style="fill:#1FC0DE;" d="M298.7,429.6c-2.9,0-5.8-0.7-8.5-2.3c-8.1-4.7-10.8-15.1-6.1-23.1L478,72.1c4.7-8.1,15-10.8,23.1-6.1c8.1,4.7,10.8,15.1,6.1,23.1l-193.9,332C310.2,426.6,304.5,429.6,298.7,429.6z"/></g></g></g></svg>';
                 proceedWithTxConfirmationPopupInitialization(txIcon, '', '');
             } else if (transactionType == 'swap') {
-                var txIcon = '<svg version="1.1" class="width-100 max-width-100 margin-bottom-10" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><path style="fill:#FFF" d="M50,0C22.4,0,0,22.4,0,50c0,27.6,22.4,50,50,50s50-22.4,50-50C100,22.4,77.6,0,50,0z M17.8,79.2 c0.2-0.1,0.3-0.3,0.4-0.5c0,0.6,0.2,1.1,0.5,1.5C18.4,79.9,18.1,79.5,17.8,79.2z"/> <g> <g> <g> <g> <path style="fill:none;stroke:#5CCB92;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10" d="M105.7,57"/> </g> </g> </g> <g> <g> <path style="fill:#57D3D9" d="M36.3,83.5L41.3,56c0.2-1,1.1-1.6,2.1-1.5c1,0.2,1.6,1.1,1.5,2.1l-3.7,20.5l20.7-10.3c0.9-0.5,2-0.1,2.4,0.8 c0.5,0.9,0.1,2-0.8,2.4L36.3,83.5z"/> </g> <g> <path style="fill:#57D3D9" d="M64.1,19.4l-6,27.3c-0.2,1-1.2,1.6-2.1,1.4c-1-0.2-1.6-1.2-1.4-2.1L59,25.7l-21.1,9.5c-0.9,0.4-2,0-2.4-0.9 c-0.4-0.9,0-2,0.9-2.4L64.1,19.4z"/> </g> <g> <path style="fill:#57D3D9" d="M42.4,77.8c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.5l41-51.3c0.8-1,2.3-1.2,3.4-0.4 c1,0.8,1.2,2.3,0.4,3.5l-41,51.3C43.8,77.5,43.1,77.8,42.4,77.8z"/> </g> <g> <g> <path style="fill:#57D3D9" d="M81.3,29c0.2,0.3,0.4,0.6,0.6,0.9L44.3,76.9c-0.5,0.6-1.2,0.9-1.9,0.9c-0.5,0-1-0.2-1.5-0.5 c-1-0.8-1.2-2.3-0.4-3.5l38.3-48.1c0.2,0.2,0.4,0.5,0.7,0.8C80.1,27.4,80.7,28.1,81.3,29z"/> </g> </g> </g> </g> <g> <g> <g> <path style="fill:#57D3D9" d="M15.3,78.4c-0.5,0-1-0.2-1.5-0.6c-1-0.8-1.1-2.3-0.3-3.4l42.3-48.9c0.8-1,2.3-1.1,3.4-0.3 c1,0.8,1.1,2.3,0.3,3.4L17.2,77.6C16.7,78.2,16,78.5,15.3,78.4z"/> </g> <g> <g> <path style="fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10" d="M219.1,57.2"/> </g> </g> </g> </g> <path style="fill:#57D3D9" d="M79.7,19.7C79.7,19.7,79.7,19.7,79.7,19.7c-0.2-0.2-0.3-0.3-0.5-0.5c0,0,0,0,0,0c-7.6-7-17.9-11.3-29.1-11.3 c-23.8,0-43,19.3-43,43c0,7,1.7,13.5,4.6,19.3c0.6,1.2,2.3,1.4,3.1,0.4l0.7-0.8c0.5-0.6,0.6-1.5,0.3-2.2c-2.4-5-3.8-10.7-3.8-16.6 c0-21,17-38.1,38.1-38.1c10,0,19.1,3.9,26,10.2c0.4,0.5,1.1,0.7,1.8,0.7c1.4,0,2.5-1.1,2.5-2.5C80.3,20.7,80.1,20.2,79.7,19.7z M87.8,30.1C87.8,30.1,87.8,30.1,87.8,30.1c-0.1-0.2-0.2-0.4-0.3-0.5c0-0.1-0.1-0.1-0.1-0.2c0,0,0,0,0,0c-0.2-0.2-0.3-0.3-0.5-0.4 c0,0,0,0,0,0c-0.4-0.3-0.9-0.4-1.4-0.4c-0.8,0-1.4,0.3-1.9,0.9c-0.1,0.1-0.1,0.2-0.2,0.2c-0.3,0.4-0.4,0.9-0.4,1.4 c0,0.3,0.1,0.6,0.2,0.9c0,0,0,0,0,0c0.1,0.2,0.2,0.4,0.3,0.6c3,5.5,4.8,11.8,4.8,18.5c0,21-17,38.1-38.1,38.1 c-10.8,0-20.5-4.5-27.4-11.6c0,0,0,0,0,0c-0.1-0.1-0.3-0.3-0.4-0.4c-0.7-0.8-1.9-0.7-2.6,0.1l-1.4,1.6c0,0-0.1,0.1-0.1,0.1v0 c0,0.6,0.2,1.1,0.5,1.5c0.1,0.1,0.1,0.2,0.2,0.2c7.8,8.3,18.9,13.5,31.2,13.5c23.8,0,43-19.2,43-43C93.2,43.4,91.2,36.3,87.8,30.1z" /> <circle style="fill:#57D3D9" cx="13.8" cy="69" r="2.4"/> <path style="fill:#57D3D9" d="M80.3,21.3c0,1.4-1.1,2.5-2.5,2.5c-0.7,0-1.3-0.3-1.8-0.7c-0.5-0.4-0.7-1.1-0.7-1.7c0-1.4,1.1-2.5,2.5-2.5 c0.5,0,1,0.2,1.4,0.4c0,0,0,0,0,0c0.2,0.1,0.3,0.3,0.5,0.4c0,0,0,0,0,0C80.1,20.2,80.3,20.7,80.3,21.3z"/> <path style="fill:#57D3D9" d="M87.9,30.9c0,1.4-1.1,2.5-2.5,2.5c-0.7,0-1.3-0.3-1.8-0.7c-0.1-0.1-0.2-0.2-0.2-0.3c-0.1-0.2-0.2-0.4-0.3-0.6 c0,0,0,0,0,0c-0.1-0.3-0.2-0.6-0.2-0.9c0-0.5,0.2-1,0.4-1.4c0.1-0.1,0.1-0.2,0.2-0.2c0.5-0.5,1.1-0.9,1.9-0.9c0.5,0,1,0.2,1.4,0.4 c0,0,0,0,0,0c0.2,0.1,0.3,0.3,0.5,0.4c0,0,0,0,0,0c0.1,0.1,0.1,0.1,0.1,0.2c0.1,0.2,0.2,0.3,0.3,0.5c0,0,0,0,0,0 C87.9,30.4,87.9,30.6,87.9,30.9z"/> <path style="fill:#57D3D9" d="M23.1,78.7c0,1.4-1.1,2.4-2.4,2.4c-0.7,0-1.3-0.3-1.7-0.7c-0.1-0.1-0.1-0.2-0.2-0.2c-0.3-0.4-0.5-1-0.5-1.5v0 c0-1.3,1.1-2.4,2.4-2.4c0.5,0,0.9,0.2,1.3,0.4c0,0,0,0,0.1,0c0.3,0.2,0.5,0.4,0.6,0.6c0,0,0,0,0,0C23,77.7,23.1,78.2,23.1,78.7z"/></svg>';
+                var txIcon = '<svg version="1.1" class="width-100 max-width-100 margin-bottom-10" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><path style="fill:#FFF" d="M50,0C22.4,0,0,22.4,0,50c0,27.6,22.4,50,50,50s50-22.4,50-50C100,22.4,77.6,0,50,0z M17.8,79.2 c0.2-0.1,0.3-0.3,0.4-0.5c0,0.6,0.2,1.1,0.5,1.5C18.4,79.9,18.1,79.5,17.8,79.2z"/> <g> <g> <g> <g> <path style="fill:none;stroke:#5CCB92;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10" d="M105.7,57"/> </g> </g> </g> <g> <g> <path style="fill:#57D3D9" d="M36.3,83.5L41.3,56c0.2-1,1.1-1.6,2.1-1.5c1,0.2,1.6,1.1,1.5,2.1l-3.7,20.5l20.7-10.3c0.9-0.5,2-0.1,2.4,0.8 c0.5,0.9,0.1,2-0.8,2.4L36.3,83.5z"/> </g> <g> <path style="fill:#57D3D9" d="M64.1,19.4l-6,27.3c-0.2,1-1.2,1.6-2.1,1.4c-1-0.2-1.6-1.2-1.4-2.1L59,25.7l-21.1,9.5c-0.9,0.4-2,0-2.4-0.9 c-0.4-0.9,0-2,0.9-2.4L64.1,19.4z"/> </g> <g> <path style="fill:#57D3D9" d="M42.4,77.8c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.5l41-51.3c0.8-1,2.3-1.2,3.4-0.4 c1,0.8,1.2,2.3,0.4,3.5l-41,51.3C43.8,77.5,43.1,77.8,42.4,77.8z"/> </g> <g> <g> <path style="fill:#57D3D9" d="M81.3,29c0.2,0.3,0.4,0.6,0.6,0.9L44.3,76.9c-0.5,0.6-1.2,0.9-1.9,0.9c-0.5,0-1-0.2-1.5-0.5 c-1-0.8-1.2-2.3-0.4-3.5l38.3-48.1c0.2,0.2,0.4,0.5,0.7,0.8C80.1,27.4,80.7,28.1,81.3,29z"/> </g> </g> </g> </g> <g> <g> <g> <path style="fill:#57D3D9" d="M15.3,78.4c-0.5,0-1-0.2-1.5-0.6c-1-0.8-1.1-2.3-0.3-3.4l42.3-48.9c0.8-1,2.3-1.1,3.4-0.3 c1,0.8,1.1,2.3,0.3,3.4L17.2,77.6C16.7,78.2,16,78.5,15.3,78.4z"/> </g> <g> <g> <path style="fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10" d="M219.1,57.2"/> </g> </g> </g> </g> <path style="fill:#57D3D9" d="M79.7,19.7C79.7,19.7,79.7,19.7,79.7,19.7c-0.2-0.2-0.3-0.3-0.5-0.5c0,0,0,0,0,0c-7.6-7-17.9-11.3-29.1-11.3 c-23.8,0-43,19.3-43,43c0,7,1.7,13.5,4.6,19.3c0.6,1.2,2.3,1.4,3.1,0.4l0.7-0.8c0.5-0.6,0.6-1.5,0.3-2.2c-2.4-5-3.8-10.7-3.8-16.6 c0-21,17-38.1,38.1-38.1c10,0,19.1,3.9,26,10.2c0.4,0.5,1.1,0.7,1.8,0.7c1.4,0,2.5-1.1,2.5-2.5C80.3,20.7,80.1,20.2,79.7,19.7z M87.8,30.1C87.8,30.1,87.8,30.1,87.8,30.1c-0.1-0.2-0.2-0.4-0.3-0.5c0-0.1-0.1-0.1-0.1-0.2c0,0,0,0,0,0c-0.2-0.2-0.3-0.3-0.5-0.4 c0,0,0,0,0,0c-0.4-0.3-0.9-0.4-1.4-0.4c-0.8,0-1.4,0.3-1.9,0.9c-0.1,0.1-0.1,0.2-0.2,0.2c-0.3,0.4-0.4,0.9-0.4,1.4 c0,0.3,0.1,0.6,0.2,0.9c0,0,0,0,0,0c0.1,0.2,0.2,0.4,0.3,0.6c3,5.5,4.8,11.8,4.8,18.5c0,21-17,38.1-38.1,38.1 c-10.8,0-20.5-4.5-27.4-11.6c0,0,0,0,0,0c-0.1-0.1-0.3-0.3-0.4-0.4c-0.7-0.8-1.9-0.7-2.6,0.1l-1.4,1.6c0,0-0.1,0.1-0.1,0.1v0 c0,0.6,0.2,1.1,0.5,1.5c0.1,0.1,0.1,0.2,0.2,0.2c7.8,8.3,18.9,13.5,31.2,13.5c23.8,0,43-19.2,43-43C93.2,43.4,91.2,36.3,87.8,30.1z" /> <circle style="fill:#57D3D9" cx="13.8" cy="69" r="2.4"/> <path style="fill:#57D3D9" d="M80.3,21.3c0,1.4-1.1,2.5-2.5,2.5c-0.7,0-1.3-0.3-1.8-0.7c-0.5-0.4-0.7-1.1-0.7-1.7c0-1.4,1.1-2.5,2.5-2.5 c0.5,0,1,0.2,1.4,0.4c0,0,0,0,0,0c0.2,0.1,0.3,0.3,0.5,0.4c0,0,0,0,0,0C80.1,20.2,80.3,20.7,80.3,21.3z"/> <path style="fill:#57D3D9" d="M87.9,30.9c0,1.4-1.1,2.5-2.5,2.5c-0.7,0-1.3-0.3-1.8-0.7c-0.1-0.1-0.2-0.2-0.2-0.3c-0.1-0.2-0.2-0.4-0.3-0.6 c0,0,0,0,0,0c-0.1-0.3-0.2-0.6-0.2-0.9c0-0.5,0.2-1,0.4-1.4c0.1-0.1,0.1-0.2,0.2-0.2c0.5-0.5,1.1-0.9,1.9-0.9c0.5,0,1,0.2,1.4,0.4 c0,0,0,0,0,0c0.2,0.1,0.3,0.3,0.5,0.4c0,0,0,0,0,0c0.1,0.1,0.1,0.1,0.1,0.2c0.1,0.2,0.2,0.3,0.3,0.5c0,0,0,0,0,0 C87.9,30.4,87.9,30.6,87.9,30.9z"/> <path style="fill:#57D3D9" d="M23.1,78.7c0,1.4-1.1,2.4-2.4,2.4c-0.7,0-1.3-0.3-1.7-0.7c-0.1-0.1-0.1-0.2-0.2-0.2c-0.3-0.4-0.5-1-0.5-1.5v0 c0-1.3,1.1-2.4,2.4-2.4c0.5,0,0.9,0.2,1.3,0.4c0,0,0,0,0.1,0c0.3,0.2,0.5,0.4,0.6,0.6c0,0,0,0,0,0C23,77.7,23.1,78.2,23.1,78.7z"/></svg>';
 
                 var belowTxIconHtml;
                 switch(swapType) {
@@ -2148,9 +2181,6 @@ var projectData = {
                     case 'eth-l1-to-eth-l2':
                         belowTxIconHtml = '<div class="fs-0 above-tx-popup"><div class="inline-block text-right fs-28 fs-xs-20 left-side">'+amount+' ETH</div><div class="inline-block arrow-side padding-left-25 padding-right-25 padding-left-xs-10 padding-right-xs-10"><img src="assets/images/long-right-arrow.svg" class="width-100"/></div><div class="inline-block fs-28 fs-xs-20 right-side text-left">'+amount+' ETH</div><div class="fs-0 above-tx-popup padding-top-5 networks"><div class="inline-block text-right fs-16 fs-xs-12 left-side"><span class="inline-block padding-right-10 padding-right-xs-5">Ethereum</span><img src="assets/images/eth-icon.svg" class="inline-block" width="20"/></div><div class="inline-block arrow-side padding-left-25 padding-right-25 padding-left-xs-10 padding-right-xs-10"><img src="assets/images/long-right-arrow.svg" class="width-100"/></div><div class="inline-block fs-16 fs-xs-12 right-side text-left"><span class="inline-block padding-right-10 padding-right-xs-5">Optimistic Ethereum</span><img src="assets/images/eth-2-icon.svg" class="inline-block" width="20"/></div></div>';
                         break;
-                    /*case 'eth-l1-to-dcn-l2':
-                        belowTxIconHtml = amount + ' ETH <=> ' + parseInt(swapToAmount).toLocaleString() + ' DCN';
-                        break;*/
                     case 'dcn-l2-to-dcn-l1':
                         belowTxIconHtml = '<div class="fs-0 above-tx-popup"><div class="inline-block text-right fs-28 fs-xs-20 left-side">'+parseInt(amount).toLocaleString()+' DCN</div><div class="inline-block arrow-side padding-left-25 padding-right-25 padding-left-xs-10 padding-right-xs-10"><img src="assets/images/long-right-arrow.svg" class="width-100"/></div><div class="inline-block fs-28 fs-xs-20 right-side text-left">'+parseInt(amount).toLocaleString()+' DCN</div><div class="fs-0 above-tx-popup padding-top-5 networks"><div class="inline-block text-right fs-16 fs-xs-12 left-side"><img src="assets/images/dcn-l2-logo.svg" class="inline-block" width="20"/><span class="inline-block padding-left-10 padding-right-10 padding-left-xs-5 padding-right-xs-5">Dentacoin (L2)</span><img src="assets/images/eth-2-icon.svg" class="inline-block" width="20"/></div><div class="inline-block arrow-side padding-left-25 padding-right-25 padding-left-xs-10 padding-right-xs-10"><img src="assets/images/long-right-arrow.svg" class="width-100"/></div><div class="inline-block fs-16 fs-xs-12 right-side text-left"><img src="assets/images/dentacoin-logo.svg" class="inline-block" width="20"/><span class="inline-block padding-left-10 padding-right-10 padding-left-xs-5 padding-right-xs-5">Dentacoin</span><img src="assets/images/eth-icon.svg" class="inline-block" width="20"/></div></div>';
                         break;
@@ -2161,7 +2191,7 @@ var projectData = {
 
                 proceedWithTxConfirmationPopupInitialization(txIcon, '', '<div class="dcn-amount">'+belowTxIconHtml+'</div>');
             } else if (transactionType == 'l2-withdraw') {
-                var txIcon = '<svg version="1.1" class="width-100 max-width-100 margin-bottom-10" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><path style="fill:#FFF" d="M50,0C22.4,0,0,22.4,0,50c0,27.6,22.4,50,50,50s50-22.4,50-50C100,22.4,77.6,0,50,0z M17.8,79.2 c0.2-0.1,0.3-0.3,0.4-0.5c0,0.6,0.2,1.1,0.5,1.5C18.4,79.9,18.1,79.5,17.8,79.2z"/> <g> <g> <g> <g> <path style="fill:none;stroke:#5CCB92;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10" d="M105.7,57"/> </g> </g> </g> <g> <g> <path style="fill:#57D3D9" d="M36.3,83.5L41.3,56c0.2-1,1.1-1.6,2.1-1.5c1,0.2,1.6,1.1,1.5,2.1l-3.7,20.5l20.7-10.3c0.9-0.5,2-0.1,2.4,0.8 c0.5,0.9,0.1,2-0.8,2.4L36.3,83.5z"/> </g> <g> <path style="fill:#57D3D9" d="M64.1,19.4l-6,27.3c-0.2,1-1.2,1.6-2.1,1.4c-1-0.2-1.6-1.2-1.4-2.1L59,25.7l-21.1,9.5c-0.9,0.4-2,0-2.4-0.9 c-0.4-0.9,0-2,0.9-2.4L64.1,19.4z"/> </g> <g> <path style="fill:#57D3D9" d="M42.4,77.8c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.5l41-51.3c0.8-1,2.3-1.2,3.4-0.4 c1,0.8,1.2,2.3,0.4,3.5l-41,51.3C43.8,77.5,43.1,77.8,42.4,77.8z"/> </g> <g> <g> <path style="fill:#57D3D9" d="M81.3,29c0.2,0.3,0.4,0.6,0.6,0.9L44.3,76.9c-0.5,0.6-1.2,0.9-1.9,0.9c-0.5,0-1-0.2-1.5-0.5 c-1-0.8-1.2-2.3-0.4-3.5l38.3-48.1c0.2,0.2,0.4,0.5,0.7,0.8C80.1,27.4,80.7,28.1,81.3,29z"/> </g> </g> </g> </g> <g> <g> <g> <path style="fill:#57D3D9" d="M15.3,78.4c-0.5,0-1-0.2-1.5-0.6c-1-0.8-1.1-2.3-0.3-3.4l42.3-48.9c0.8-1,2.3-1.1,3.4-0.3 c1,0.8,1.1,2.3,0.3,3.4L17.2,77.6C16.7,78.2,16,78.5,15.3,78.4z"/> </g> <g> <g> <path style="fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10" d="M219.1,57.2"/> </g> </g> </g> </g> <path style="fill:#57D3D9" d="M79.7,19.7C79.7,19.7,79.7,19.7,79.7,19.7c-0.2-0.2-0.3-0.3-0.5-0.5c0,0,0,0,0,0c-7.6-7-17.9-11.3-29.1-11.3 c-23.8,0-43,19.3-43,43c0,7,1.7,13.5,4.6,19.3c0.6,1.2,2.3,1.4,3.1,0.4l0.7-0.8c0.5-0.6,0.6-1.5,0.3-2.2c-2.4-5-3.8-10.7-3.8-16.6 c0-21,17-38.1,38.1-38.1c10,0,19.1,3.9,26,10.2c0.4,0.5,1.1,0.7,1.8,0.7c1.4,0,2.5-1.1,2.5-2.5C80.3,20.7,80.1,20.2,79.7,19.7z M87.8,30.1C87.8,30.1,87.8,30.1,87.8,30.1c-0.1-0.2-0.2-0.4-0.3-0.5c0-0.1-0.1-0.1-0.1-0.2c0,0,0,0,0,0c-0.2-0.2-0.3-0.3-0.5-0.4 c0,0,0,0,0,0c-0.4-0.3-0.9-0.4-1.4-0.4c-0.8,0-1.4,0.3-1.9,0.9c-0.1,0.1-0.1,0.2-0.2,0.2c-0.3,0.4-0.4,0.9-0.4,1.4 c0,0.3,0.1,0.6,0.2,0.9c0,0,0,0,0,0c0.1,0.2,0.2,0.4,0.3,0.6c3,5.5,4.8,11.8,4.8,18.5c0,21-17,38.1-38.1,38.1 c-10.8,0-20.5-4.5-27.4-11.6c0,0,0,0,0,0c-0.1-0.1-0.3-0.3-0.4-0.4c-0.7-0.8-1.9-0.7-2.6,0.1l-1.4,1.6c0,0-0.1,0.1-0.1,0.1v0 c0,0.6,0.2,1.1,0.5,1.5c0.1,0.1,0.1,0.2,0.2,0.2c7.8,8.3,18.9,13.5,31.2,13.5c23.8,0,43-19.2,43-43C93.2,43.4,91.2,36.3,87.8,30.1z" /> <circle style="fill:#57D3D9" cx="13.8" cy="69" r="2.4"/> <path style="fill:#57D3D9" d="M80.3,21.3c0,1.4-1.1,2.5-2.5,2.5c-0.7,0-1.3-0.3-1.8-0.7c-0.5-0.4-0.7-1.1-0.7-1.7c0-1.4,1.1-2.5,2.5-2.5 c0.5,0,1,0.2,1.4,0.4c0,0,0,0,0,0c0.2,0.1,0.3,0.3,0.5,0.4c0,0,0,0,0,0C80.1,20.2,80.3,20.7,80.3,21.3z"/> <path style="fill:#57D3D9" d="M87.9,30.9c0,1.4-1.1,2.5-2.5,2.5c-0.7,0-1.3-0.3-1.8-0.7c-0.1-0.1-0.2-0.2-0.2-0.3c-0.1-0.2-0.2-0.4-0.3-0.6 c0,0,0,0,0,0c-0.1-0.3-0.2-0.6-0.2-0.9c0-0.5,0.2-1,0.4-1.4c0.1-0.1,0.1-0.2,0.2-0.2c0.5-0.5,1.1-0.9,1.9-0.9c0.5,0,1,0.2,1.4,0.4 c0,0,0,0,0,0c0.2,0.1,0.3,0.3,0.5,0.4c0,0,0,0,0,0c0.1,0.1,0.1,0.1,0.1,0.2c0.1,0.2,0.2,0.3,0.3,0.5c0,0,0,0,0,0 C87.9,30.4,87.9,30.6,87.9,30.9z"/> <path style="fill:#57D3D9" d="M23.1,78.7c0,1.4-1.1,2.4-2.4,2.4c-0.7,0-1.3-0.3-1.7-0.7c-0.1-0.1-0.1-0.2-0.2-0.2c-0.3-0.4-0.5-1-0.5-1.5v0 c0-1.3,1.1-2.4,2.4-2.4c0.5,0,0.9,0.2,1.3,0.4c0,0,0,0,0.1,0c0.3,0.2,0.5,0.4,0.6,0.6c0,0,0,0,0,0C23,77.7,23.1,78.2,23.1,78.7z"/></svg>';
+                var txIcon = '<svg version="1.1" class="width-100 max-width-100 margin-bottom-10" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100.1 100" style="enable-background:new 0 0 100.1 100;" xml:space="preserve"><path style="fill:#FFF" d="M50,0C22.4,0,0,22.4,0,50c0,27.6,22.4,50,50,50s50-22.4,50-50C100,22.4,77.6,0,50,0z M17.8,79.2 c0.2-0.1,0.3-0.3,0.4-0.5c0,0.6,0.2,1.1,0.5,1.5C18.4,79.9,18.1,79.5,17.8,79.2z"/> <g> <g> <g> <g> <path style="fill:none;stroke:#5CCB92;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10" d="M105.7,57"/> </g> </g> </g> <g> <g> <path style="fill:#57D3D9" d="M36.3,83.5L41.3,56c0.2-1,1.1-1.6,2.1-1.5c1,0.2,1.6,1.1,1.5,2.1l-3.7,20.5l20.7-10.3c0.9-0.5,2-0.1,2.4,0.8 c0.5,0.9,0.1,2-0.8,2.4L36.3,83.5z"/> </g> <g> <path style="fill:#57D3D9" d="M64.1,19.4l-6,27.3c-0.2,1-1.2,1.6-2.1,1.4c-1-0.2-1.6-1.2-1.4-2.1L59,25.7l-21.1,9.5c-0.9,0.4-2,0-2.4-0.9 c-0.4-0.9,0-2,0.9-2.4L64.1,19.4z"/> </g> <g> <path style="fill:#57D3D9" d="M42.4,77.8c-0.5,0-1-0.2-1.5-0.5c-1-0.8-1.2-2.3-0.4-3.5l41-51.3c0.8-1,2.3-1.2,3.4-0.4 c1,0.8,1.2,2.3,0.4,3.5l-41,51.3C43.8,77.5,43.1,77.8,42.4,77.8z"/> </g> <g> <g> <path style="fill:#57D3D9" d="M81.3,29c0.2,0.3,0.4,0.6,0.6,0.9L44.3,76.9c-0.5,0.6-1.2,0.9-1.9,0.9c-0.5,0-1-0.2-1.5-0.5 c-1-0.8-1.2-2.3-0.4-3.5l38.3-48.1c0.2,0.2,0.4,0.5,0.7,0.8C80.1,27.4,80.7,28.1,81.3,29z"/> </g> </g> </g> </g> <g> <g> <g> <path style="fill:#57D3D9" d="M15.3,78.4c-0.5,0-1-0.2-1.5-0.6c-1-0.8-1.1-2.3-0.3-3.4l42.3-48.9c0.8-1,2.3-1.1,3.4-0.3 c1,0.8,1.1,2.3,0.3,3.4L17.2,77.6C16.7,78.2,16,78.5,15.3,78.4z"/> </g> <g> <g> <path style="fill:none;stroke:#CA675A;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10" d="M219.1,57.2"/> </g> </g> </g> </g> <path style="fill:#57D3D9" d="M79.7,19.7C79.7,19.7,79.7,19.7,79.7,19.7c-0.2-0.2-0.3-0.3-0.5-0.5c0,0,0,0,0,0c-7.6-7-17.9-11.3-29.1-11.3 c-23.8,0-43,19.3-43,43c0,7,1.7,13.5,4.6,19.3c0.6,1.2,2.3,1.4,3.1,0.4l0.7-0.8c0.5-0.6,0.6-1.5,0.3-2.2c-2.4-5-3.8-10.7-3.8-16.6 c0-21,17-38.1,38.1-38.1c10,0,19.1,3.9,26,10.2c0.4,0.5,1.1,0.7,1.8,0.7c1.4,0,2.5-1.1,2.5-2.5C80.3,20.7,80.1,20.2,79.7,19.7z M87.8,30.1C87.8,30.1,87.8,30.1,87.8,30.1c-0.1-0.2-0.2-0.4-0.3-0.5c0-0.1-0.1-0.1-0.1-0.2c0,0,0,0,0,0c-0.2-0.2-0.3-0.3-0.5-0.4 c0,0,0,0,0,0c-0.4-0.3-0.9-0.4-1.4-0.4c-0.8,0-1.4,0.3-1.9,0.9c-0.1,0.1-0.1,0.2-0.2,0.2c-0.3,0.4-0.4,0.9-0.4,1.4 c0,0.3,0.1,0.6,0.2,0.9c0,0,0,0,0,0c0.1,0.2,0.2,0.4,0.3,0.6c3,5.5,4.8,11.8,4.8,18.5c0,21-17,38.1-38.1,38.1 c-10.8,0-20.5-4.5-27.4-11.6c0,0,0,0,0,0c-0.1-0.1-0.3-0.3-0.4-0.4c-0.7-0.8-1.9-0.7-2.6,0.1l-1.4,1.6c0,0-0.1,0.1-0.1,0.1v0 c0,0.6,0.2,1.1,0.5,1.5c0.1,0.1,0.1,0.2,0.2,0.2c7.8,8.3,18.9,13.5,31.2,13.5c23.8,0,43-19.2,43-43C93.2,43.4,91.2,36.3,87.8,30.1z" /> <circle style="fill:#57D3D9" cx="13.8" cy="69" r="2.4"/> <path style="fill:#57D3D9" d="M80.3,21.3c0,1.4-1.1,2.5-2.5,2.5c-0.7,0-1.3-0.3-1.8-0.7c-0.5-0.4-0.7-1.1-0.7-1.7c0-1.4,1.1-2.5,2.5-2.5 c0.5,0,1,0.2,1.4,0.4c0,0,0,0,0,0c0.2,0.1,0.3,0.3,0.5,0.4c0,0,0,0,0,0C80.1,20.2,80.3,20.7,80.3,21.3z"/> <path style="fill:#57D3D9" d="M87.9,30.9c0,1.4-1.1,2.5-2.5,2.5c-0.7,0-1.3-0.3-1.8-0.7c-0.1-0.1-0.2-0.2-0.2-0.3c-0.1-0.2-0.2-0.4-0.3-0.6 c0,0,0,0,0,0c-0.1-0.3-0.2-0.6-0.2-0.9c0-0.5,0.2-1,0.4-1.4c0.1-0.1,0.1-0.2,0.2-0.2c0.5-0.5,1.1-0.9,1.9-0.9c0.5,0,1,0.2,1.4,0.4 c0,0,0,0,0,0c0.2,0.1,0.3,0.3,0.5,0.4c0,0,0,0,0,0c0.1,0.1,0.1,0.1,0.1,0.2c0.1,0.2,0.2,0.3,0.3,0.5c0,0,0,0,0,0 C87.9,30.4,87.9,30.6,87.9,30.9z"/> <path style="fill:#57D3D9" d="M23.1,78.7c0,1.4-1.1,2.4-2.4,2.4c-0.7,0-1.3-0.3-1.7-0.7c-0.1-0.1-0.1-0.2-0.2-0.2c-0.3-0.4-0.5-1-0.5-1.5v0 c0-1.3,1.1-2.4,2.4-2.4c0.5,0,0.9,0.2,1.3,0.4c0,0,0,0,0.1,0c0.3,0.2,0.5,0.4,0.6,0.6c0,0,0,0,0,0C23,77.7,23.1,78.2,23.1,78.7z"/></svg>';
                 var belowTxIconHtml;
                 switch(swapType) {
                     case 'dcn-l2-to-dcn-l1':
@@ -2176,6 +2206,7 @@ var projectData = {
             }
 
             async function proceedWithTxConfirmationPopupInitialization(txIcon, belowTxIconHtml, usdHtml) {
+                console.log('proceedWithTxConfirmationPopupInitialization');
                 var visibleToAddress = projectData.utils.checksumAddress(to);
                 if (visible_to != undefined) {
                     visibleToAddress = projectData.utils.checksumAddress(visible_to);
@@ -2522,7 +2553,7 @@ var projectData = {
             });
         },
         buildWithdrawHistory: async function () {
-            const l2StandardBridgeArtifact = require(`../../../node_modules/@eth-optimism/contracts/artifacts/contracts/L2/messaging/L2StandardBridge.sol/L2StandardBridge.json`);
+            const l2StandardBridgeArtifact = require('@eth-optimism/contracts/artifacts/contracts/L2/messaging/L2StandardBridge.sol/L2StandardBridge.json');
             const L2StandardBridge = getL2Instance(l2StandardBridgeArtifact.abi, config_variable.l2.addresses.OVM_L2StandardBridge_address);
 
             /*L2StandardBridge.getPastEvents('WithdrawalInitiated', {
@@ -2627,6 +2658,8 @@ var projectData = {
 
                                                         $('.camping-withdraw-history').html('<div class="container"><div class="row"><div class="col-xs-12 no-gutter-xs col-md-10 col-md-offset-1 padding-top-20 withdraw-history-scroll-parent"><table class="color-white"><tbody>'+withdrawHistoryHtml+'</tbody></table></div></div><div class="row camping-show-more"></div></div>');
 
+
+                                                        var { getMessagesAndProofsForL2Transaction } = require('@eth-optimism/message-relayer');
                                                         $(document).off('click', '.withdraw-btn');
                                                         $(document).on('click', '.withdraw-btn', async function() {
                                                             projectData.general_logic.showLoader();
@@ -2662,7 +2695,7 @@ var projectData = {
                                                                     var gasLimit = 900000;
 
                                                                     projectData.general_logic.hideLoader();
-                                                                    projectData.general_logic.openTxConfirmationPopup('Swap confirmation<div style="color: #555555;" class="calibri-regular fs-18">Step 2 Initiate</div>', to, thisCryptoAmount, type, gasLimit, L1CrossDomainMessengerContract.methods.relayMessage(messagePairs[0].message.target, messagePairs[0].message.sender, messagePairs[0].message.message, messagePairs[0].message.messageNonce, messagePairs[0].proof).encodeABI(), 'l1', 'l2-withdraw', swapType, null, null, txHash);
+                                                                    projectData.general_logic.openTxConfirmationPopup('Swap confirmation<div style="color: #555555;" class="calibri-regular fs-18">Step 2 Initiate</div>', to, thisCryptoAmount, type, gasLimit, L1CrossDomainMessengerContract.methods.relayMessage(messagePairs[0].message.target, messagePairs[0].message.sender, messagePairs[0].message.message, messagePairs[0].message.messageNonce, messagePairs[0].proof).encodeABI(), 'l1', 'l2-withdraw', swapType, null, txHash);
                                                                 } else {
                                                                     projectData.general_logic.hideLoader();
                                                                     basic.showAlert($('.translates-holder').attr('not-yet'), '', true);
@@ -2885,8 +2918,7 @@ var projectData = {
 
                         var eth_fee_in_wei = (parseFloat($('.tx-settings-popup #edit-gas-price').val().trim()) * 1000000000) * parseInt($('.tx-data-holder').attr('data-gasLimit'));
                         if ($('.tx-data-holder').attr('data-layer') == 'l2') {
-                            const ethers = require('../../../node_modules/ethers');
-                            const optimismContracts = require('../../../node_modules/@eth-optimism/contracts');
+                            const optimismContracts = require('@eth-optimism/contracts');
                             const ethers_l2_provider = new ethers.providers.JsonRpcProvider(config_variable.l2.provider);
                             const GasPriceOracle = optimismContracts.getContractFactory('OVM_GasPriceOracle').attach(optimismContracts.predeploys.OVM_GasPriceOracle).connect(ethers_l2_provider);
 
@@ -3292,6 +3324,7 @@ var projectData = {
                                 }
                             },
                             function (error) {
+                                console.log(error, 'error');
                                 alert($('.translates-holder').attr('scanning-failed'));
                             }
                         );
@@ -3639,6 +3672,24 @@ var projectData = {
                 }
             });
         },
+        getCryptoDataByTransak: function(cryptocurrency_symbol, usd_value, network, callback) {
+            if (usd_value != undefined && usd_value != null && usd_value != '') {
+                $.ajax({
+                    type: 'GET',
+                    url: 'https://staging-api.transak.com/api/v2/currencies/price?fiatAmount='+usd_value+'&fiatCurrency=USD&cryptoCurrency='+cryptocurrency_symbol+'&isBuyOrSell=BUY&paymentMethod=credit_debit_card&network=' + network,
+                    dataType: 'json',
+                    success: function (response) {
+                        callback(response.response.cryptoAmount);
+                    },
+                    error: function() {
+                        projectData.general_logic.hideLoader();
+                        alert($('.translates-holder').attr('smth-went-wrong') + ' (Code error 10.2.1).');
+                    }
+                });
+            } else {
+                callback(0);
+            }
+        },
         convertUsdToDcn: async function (usd_val) {
             var ajaxResponse = await $.ajax({
                 type: 'GET',
@@ -3850,7 +3901,7 @@ function styleKeystoreUploadBtnForTx(callback) {
                         fileNameHtml = '<div class="fs-14 light-gray-color text-center padding-bottom-10 padding-top-15 file-name">' + fileName + '</div>';
                     }
 
-                    $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5">'+fileNameHtml+'<div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">'+$('.translates-holder').attr('password-label')+'</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"/></div></div><div class="col-xs-12"><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-tx-sign" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-tx-sign"><span class="padding-left-5 padding-right-5 inline-block">'+$('.translates-holder').attr('remember-file')+'</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block tx-sign-more-info-keystore-remember fs-0" data-content="'+$('.translates-holder').attr('remembering-file')+'"><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path fill="#939DA8" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div></div><div class="btn-container col-xs-12 padding-top-25"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">'+$('.translates-holder').attr('confirm')+'</a></div>');
+                    $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5">'+fileNameHtml+'<div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">'+$('.translates-holder').attr('password-label')+'</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"/></div></div><div class="col-xs-12"><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-tx-sign" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-tx-sign"><span class="padding-left-5 padding-right-5 inline-block">'+$('.translates-holder').attr('remember-file')+'</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block tx-sign-more-info-keystore-remember fs-0" data-content="'+$('.translates-holder').attr('remembering-file')+'"><svg class="max-width-20 width-100" version="1.1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path fill="#939DA8" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div></div><div class="btn-container col-xs-12 padding-top-25"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">'+$('.translates-holder').attr('confirm')+'</a></div>');
 
                     $('.tx-sign-more-info-keystore-remember').popover({
                         trigger: 'click'
@@ -3898,7 +3949,7 @@ function styleKeystoreUploadBtnForTx(callback) {
                     reader.addEventListener('load', function (e) {
                         if (basic.isJsonString(e.target.result) && basic.property_exists(JSON.parse(e.target.result), 'address') && projectData.utils.checksumAddress(JSON.parse(e.target.result).address) == projectData.utils.checksumAddress(global_state.account)) {
                             var keystore_string = e.target.result;
-                            $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="fs-14 light-gray-color text-center padding-bottom-10 padding-top-15 file-name">' + fileName + '</div><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">'+$('.translates-holder').attr('password-label')+'</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"/></div></div><div class="col-xs-12"><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-tx-sign" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-tx-sign"><span class="padding-left-5 padding-right-5 inline-block">'+$('.translates-holder').attr('remember-file')+'</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block tx-sign-more-info-keystore-remember fs-0" data-content="'+$('.translates-holder').attr('remembering-file')+'"><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path fill="#939DA8" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div></div><div class="btn-container col-xs-12 padding-top-25"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">'+$('.translates-holder').attr('confirm-btn')+'</a></div>');
+                            $('.proof-of-address .on-change-result').html('<div class="col-xs-12 col-sm-8 col-sm-offset-2 padding-top-5"><div class="fs-14 light-gray-color text-center padding-bottom-10 padding-top-15 file-name">' + fileName + '</div><div class="custom-google-label-style module" data-input-light-blue-border="true"><label for="your-secret-key-password">'+$('.translates-holder').attr('password-label')+'</label><input type="password" id="your-secret-key-password" maxlength="100" class="full-rounded"/></div></div><div class="col-xs-12"><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-tx-sign" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-tx-sign"><span class="padding-left-5 padding-right-5 inline-block">'+$('.translates-holder').attr('remember-file')+'</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block tx-sign-more-info-keystore-remember fs-0" data-content="'+$('.translates-holder').attr('remembering-file')+'"><svg class="max-width-20 width-100" version="1.1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path fill="#939DA8" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div></div><div class="btn-container col-xs-12 padding-top-25"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border confirm-transaction keystore-file">'+$('.translates-holder').attr('confirm-btn')+'</a></div>');
 
                             $('.tx-sign-more-info-keystore-remember').popover({
                                 trigger: 'click'
@@ -4005,40 +4056,32 @@ function submitTransactionToBlockchain(web3_provider, transactionType, function_
             gas: web3_provider.utils.toHex($('.tx-data-holder').attr('data-gasLimit')),
             gasPrice: web3_provider.utils.toHex($('.tx-data-holder').attr('data-on_popup_load_gas_price')),
             nonce: web3_provider.utils.toHex($('.tx-data-holder').attr('data-nonce')),
-            chainId: config_variable.l2.chain_id
+            chainId: config_variable.l2.chain_id,
+            to: to
         };
 
         if (function_abi != null) {
             transaction_obj.data = function_abi;
         }
 
-        if (transactionType == 'approve') {
-            transaction_obj.to = to;
-        } else {
-            if (symbol == 'DCN2.0') {
-                if (transactionType == 'transfer') {
-                    transaction_obj.to = config_variable.l2.addresses.dcn_contract_address;
-                } else {
-                    transaction_obj.to = to;
-                }
-
-                if (transactionType == 'swap' && data != undefined) {
-                    transaction_obj.value = web3_provider.utils.toHex(data);
-                }
-
-                token_label = 'Dentacoin (L2) tokens';
-                etherscanDomain = config_variable.optimism_etherscan_domain;
-            } else if (symbol == 'ETH2.0') {
-                transaction_obj.to = to;
-                // passing value only when transfering, not when swapping
-                console.log(token_val, 'token_val');
-                console.log(projectData.utils.toWei(token_val.toString()), 'projectData.utils.toWei(token_val.toString()');
-                if (transactionType == 'transfer' && token_val > 0) {
-                    transaction_obj.value = web3_provider.utils.toHex(projectData.utils.toWei(token_val.toString()));
-                }
-                token_label = 'Ethers 2.0';
-                etherscanDomain = config_variable.optimism_etherscan_domain;
+        if (symbol == 'DCN2.0') {
+            if (transactionType == 'transfer') {
+                transaction_obj.to = config_variable.l2.addresses.dcn_contract_address;
             }
+
+            if (transactionType == 'swap' && data != undefined) {
+                transaction_obj.value = web3_provider.utils.toHex(data);
+            }
+
+            token_label = 'Dentacoin (L2) tokens';
+            etherscanDomain = config_variable.optimism_etherscan_domain;
+        } else if (symbol == 'ETH2.0') {
+            // passing value only when transfering, not when swapping
+            if (transactionType == 'transfer' && token_val > 0) {
+                transaction_obj.value = web3_provider.utils.toHex(projectData.utils.toWei(token_val.toString()));
+            }
+            token_label = 'Ethers 2.0';
+            etherscanDomain = config_variable.optimism_etherscan_domain;
         }
 
         decryptedAccount.signTransaction(transaction_obj, function(error, signedTx) {
@@ -4058,6 +4101,12 @@ function submitTransactionToBlockchain(web3_provider, transactionType, function_
             basic.closeDialog();
             if (err) {
                 basic.showAlert($('.translates-holder').attr('failed-tx') + 'Code error - 3.', '', true);
+
+                if (connector != undefined && data != undefined && basic.property_exists(data, 'type') && data.type == 'walletconnect') {
+                    connector.rejectRequest({
+                        id: data.request_id
+                    });
+                }
             } else {
                 var pending_history_transaction;
                 if (transactionType == 'transfer' || transactionType == 'swap') {
@@ -4178,12 +4227,40 @@ function submitTransactionToBlockchain(web3_provider, transactionType, function_
                             projectData.general_logic.firePushNotification('Sent ' + token_val + ' ' + symbol, 'To: ' + formattedTo);
                         });
                     }
-                } else if (transactionType == 'approve') {
-                    projectData.general_logic.displayMessageOnTransactionSend('<img src="assets/images/approve-dcn2-pop-up-icon.png" class="width-100 max-width-180"/><div class="fs-26 fs-xs-24 lato-bold padding-top-20">'+$('.translates-holder').attr('successfully-approved')+'</div><div class="padding-top-10 padding-bottom-30 fs-18 fs-xs-16">'+$('.translates-holder').attr('successfully-approved-text')+'</div><div><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border close-tx-popup-btn padding-left-40 padding-right-40">OK</a></div>');
+                } else if (transactionType == 'stake' || transactionType == 'unstake' || transactionType == 'claimReward') {
+                    var popupImage = '<svg version="1.1" class="width-100 max-width-80" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 606.6 606.8" style="enable-background:new 0 0 606.6 606.8;" xml:space="preserve"><g><g><g><path style="fill:#1FC0DE;" d="M302.9,606.8c-51.4,0-102.3-13.2-148.3-39.1C83.9,527.9,33,463,11.2,385C-33.8,224,60.6,56.3,221.7,11.3C295.5-9.4,373.8-1.5,441.9,33.6c8.3,4.3,11.6,14.5,7.3,22.8c-4.3,8.3-14.5,11.6-22.8,7.3c-60.6-31.1-130.1-38.2-195.7-19.8c-143.1,40-227,189-187,332.1c19.4,69.3,64.6,126.9,127.3,162.3s135.5,44.1,204.7,24.7c143.1-40,227-189,187-332.1c-7.7-27.7-19.7-53.7-35.5-77.3c-5.2-7.8-3.1-18.3,4.7-23.5c7.8-5.2,18.3-3.1,23.5,4.7c17.8,26.6,31.2,55.9,39.9,87c45,161.1-49.4,328.7-210.4,373.7C357.9,603,330.3,606.8,302.9,606.8z"/></g><g><g><path style="fill:none;stroke:#1FC0DE;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;" d="M697.3,345.9"/></g></g></g><g><g><path style="fill:#1FC0DE;" d="M298.8,429.6c-5.2,0-10.4-2.4-13.7-6.9L140.3,224.1c-5.5-7.5-3.9-18.1,3.7-23.6c7.5-5.5,18.1-3.9,23.6,3.7l144.8,198.5c5.5,7.5,3.9,18.1-3.7,23.6C305.7,428.5,302.2,429.6,298.8,429.6z"/></g><g><path style="fill:none;stroke:#1FC0DE;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;" d="M366.6,168.9"/></g><g><path style="fill:#1FC0DE;" d="M298.7,429.6c-2.9,0-5.8-0.7-8.5-2.3c-8.1-4.7-10.8-15.1-6.1-23.1L478,72.1c4.7-8.1,15-10.8,23.1-6.1c8.1,4.7,10.8,15.1,6.1,23.1l-193.9,332C310.2,426.6,304.5,429.6,298.7,429.6z"/></g></g></g></svg>';
+                    if (transactionType == 'stake') {
+                        projectData.general_logic.displayMessageOnTransactionSend(popupImage + '<div class="fs-26 fs-xs-24 lato-bold padding-top-20">'+$('.translates-holder').attr('successfully-staked')+'</div><div class="padding-top-10 padding-bottom-30 fs-18 fs-xs-16">'+$('.translates-holder').attr('successfully-text-staking')+'</div><div><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border close-tx-popup-btn padding-left-40 padding-right-40">OK</a></div>');
+                    } else if (transactionType == 'unstake') {
+                        projectData.general_logic.displayMessageOnTransactionSend(popupImage + '<div class="fs-26 fs-xs-24 lato-bold padding-top-20">'+$('.translates-holder').attr('successfully-unstaked')+'</div><div class="padding-top-10 padding-bottom-30 fs-18 fs-xs-16">'+$('.translates-holder').attr('successfully-text-staking')+'</div><div><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border close-tx-popup-btn padding-left-40 padding-right-40">OK</a></div>');
+                    } else if (transactionType == 'claimReward') {
+                        projectData.general_logic.displayMessageOnTransactionSend(popupImage + '<div class="fs-26 fs-xs-24 lato-bold padding-top-20">'+$('.translates-holder').attr('successfully-claimed-rewards')+'</div><div class="padding-top-10 padding-bottom-30 fs-18 fs-xs-16">'+$('.translates-holder').attr('successfully-text-staking')+'</div><div><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border close-tx-popup-btn padding-left-40 padding-right-40">OK</a></div>');
+                    }
 
-                    $('.swap-btn').removeClass('hide');
-                    $('.approve-withdraw-btn').addClass('hide');
-                    $('.current-currency-explanation').html($('.current-currency-explanation').attr('swap-dcn2'));
+                    if (connector != undefined) {
+                        connector.approveRequest({
+                            id: data.request_id,
+                            result: transactionHash
+                        });
+                    }
+                } else if (transactionType == 'approve') {
+                    if (data != undefined && basic.property_exists(data, 'type') && data.type == 'walletconnect') {
+                        projectData.general_logic.displayMessageOnTransactionSend('<img src="assets/images/approve-dcn2-pop-up-icon.png" class="width-100 max-width-180"/><div class="fs-26 fs-xs-24 lato-bold padding-top-20">'+$('.translates-holder').attr('successfully-approved')+'</div><div class="padding-top-10 padding-bottom-30 fs-18 fs-xs-16">'+$('.translates-holder').attr('successfully-text-staking')+'</div><div><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border close-tx-popup-btn padding-left-40 padding-right-40">OK</a></div>');
+
+                        if (connector != undefined) {
+                            connector.approveRequest({
+                                id: data.request_id,
+                                result: transactionHash
+                            });
+                        }
+                    } else {
+                        // swap page approval for the Optimism withdrawal API
+                        projectData.general_logic.displayMessageOnTransactionSend('<img src="assets/images/approve-dcn2-pop-up-icon.png" class="width-100 max-width-180"/><div class="fs-26 fs-xs-24 lato-bold padding-top-20">'+$('.translates-holder').attr('successfully-approved')+'</div><div class="padding-top-10 padding-bottom-30 fs-18 fs-xs-16">'+$('.translates-holder').attr('successfully-approved-text')+'</div><div><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border close-tx-popup-btn padding-left-40 padding-right-40">OK</a></div>');
+
+                        $('.swap-btn').removeClass('hide');
+                        $('.approve-withdraw-btn').addClass('hide');
+                        $('.current-currency-explanation').html($('.current-currency-explanation').attr('swap-dcn2'));
+                    }
                 } else if (transactionType == 'l2-withdraw') {
                     $('.camping-withdraw-history tr[data-hash="'+data+'"]').remove();
                     projectData.requests.saveMessageRelay(projectData.utils.checksumAddress(global_state.account), data);
@@ -4249,11 +4326,6 @@ window.refreshApp = function () {
     core_db_clinics = undefined;
     core_db_clinics_time_to_request = undefined;
     load_qr_code_lib = true;
-    L1DCNContract = undefined;
-    getL1Instance = undefined;
-    L2DCNContract = undefined;
-    //OVM_L1CrossDomainMessengerContract = undefined;
-    getL2Instance = undefined;
     tx_history = [];
 
     executeGlobalLogic();
@@ -4836,7 +4908,7 @@ function styleKeystoreUploadBtn() {
             $('.import-private-key-row').hide();
 
             //show continue button next step button
-            $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('<div class="enter-pass-label"><label class="renew-on-lang-switch" data-slug="enter-pass-secret">'+$('.translates-holder').attr('enter-pass-secret')+'</label></div><div class="field-parent margin-bottom-15 max-width-300 margin-left-right-auto"><div class="custom-google-label-style module text-left" data-input-light-blue-border="true"><label for="import-keystore-password" class="renew-on-lang-switch" data-slug="enter-pass-label">'+$('.translates-holder').attr('enter-pass-label')+'</label><input type="password" id="import-keystore-password" class="full-rounded import-keystore-password"/></div></div><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-import" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-import"><span class="padding-left-5 padding-right-5 inline-block renew-on-lang-switch" data-slug="remember-file">'+$('.translates-holder').attr('remember-file')+'</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block import-more-info-keystore-remember fs-0" data-content="'+$('.translates-holder').attr('remembering-file')+'"><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path fill="#939DA8" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="continue-btn padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border renew-on-lang-switch" data-slug="CONTINUE-btn">'+$('.translates-holder').attr('CONTINUE-btn')+'</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block renew-on-lang-switch" data-slug="go-back">'+$('.translates-holder').attr('go-back')+'</span></a></div>');
+            $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('<div class="enter-pass-label"><label class="renew-on-lang-switch" data-slug="enter-pass-secret">'+$('.translates-holder').attr('enter-pass-secret')+'</label></div><div class="field-parent margin-bottom-15 max-width-300 margin-left-right-auto"><div class="custom-google-label-style module text-left" data-input-light-blue-border="true"><label for="import-keystore-password" class="renew-on-lang-switch" data-slug="enter-pass-label">'+$('.translates-holder').attr('enter-pass-label')+'</label><input type="password" id="import-keystore-password" class="full-rounded import-keystore-password"/></div></div><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-import" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-import"><span class="padding-left-5 padding-right-5 inline-block renew-on-lang-switch" data-slug="remember-file">'+$('.translates-holder').attr('remember-file')+'</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block import-more-info-keystore-remember fs-0" data-content="'+$('.translates-holder').attr('remembering-file')+'"><svg class="max-width-20 width-100" version="1.1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path fill="#939DA8" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="continue-btn padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border renew-on-lang-switch" data-slug="CONTINUE-btn">'+$('.translates-holder').attr('CONTINUE-btn')+'</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block renew-on-lang-switch" data-slug="go-back">'+$('.translates-holder').attr('go-back')+'</span></a></div>');
 
             $('.import-more-info-keystore-remember').popover({
                 trigger: 'click'
@@ -5023,7 +5095,7 @@ function styleKeystoreUploadBtn() {
 
                         setTimeout(function () {
                             //show continue button next step button
-                            $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('<div class="enter-pass-label"><label class="renew-on-lang-switch" data-slug="enter-pass-secret">'+$('.translates-holder').attr('enter-pass-secret')+'</label></div><div class="field-parent margin-bottom-15 max-width-300 margin-left-right-auto"><div class="custom-google-label-style module text-left" data-input-light-blue-border="true"><label for="import-keystore-password" class="renew-on-lang-switch" data-slug="enter-pass-label">'+$('.translates-holder').attr('enter-pass-label')+'</label><input type="password" id="import-keystore-password" class="full-rounded import-keystore-password"/></div></div><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-import" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-import"><span class="padding-left-5 padding-right-5 inline-block renew-on-lang-switch" data-slug="remember-file">'+$('.translates-holder').attr('remember-file')+'</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block import-more-info-keystore-remember fs-0" data-content="'+$('.translates-holder').attr('remembering-file')+'"><svg class="max-width-20 width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path fill="#939DA8" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="continue-btn padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border renew-on-lang-switch" data-slug="CONTINUE-btn">'+$('.translates-holder').attr('CONTINUE-btn')+'</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block renew-on-lang-switch" data-slug="go-back">'+$('.translates-holder').attr('go-back')+'</span></a></div>');
+                            $('.custom-auth-popup .popup-right .popup-body .camping-for-action').html('<div class="enter-pass-label"><label class="renew-on-lang-switch" data-slug="enter-pass-secret">'+$('.translates-holder').attr('enter-pass-secret')+'</label></div><div class="field-parent margin-bottom-15 max-width-300 margin-left-right-auto"><div class="custom-google-label-style module text-left" data-input-light-blue-border="true"><label for="import-keystore-password" class="renew-on-lang-switch" data-slug="enter-pass-label">'+$('.translates-holder').attr('enter-pass-label')+'</label><input type="password" id="import-keystore-password" class="full-rounded import-keystore-password"/></div></div><div class="text-center padding-top-10"><input type="checkbox" checked id="agree-to-cache-import" class="inline-block zoom-checkbox"/><label class="inline-block cursor-pointer" for="agree-to-cache-import"><span class="padding-left-5 padding-right-5 inline-block renew-on-lang-switch" data-slug="remember-file">'+$('.translates-holder').attr('remember-file')+'</span></label><a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" class="inline-block import-more-info-keystore-remember fs-0" data-content="'+$('.translates-holder').attr('remembering-file')+'"><svg class="max-width-20 width-100" version="1.1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" style="enable-background:new 0 0 20 20;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="20" width="20" x="2" y="8"></sliceSourceBounds></sfw></metadata><g><path fill="#939DA8" d="M10,0C4.5,0,0,4.5,0,10c0,5.5,4.5,10,10,10s10-4.5,10-10C20,4.5,15.5,0,10,0z M9,4h2v2H9V4z M12,15H8v-2h1v-3H8V8h3v5h1V15z"/></g></svg></a></div><div class="continue-btn padding-bottom-10 btn-container text-center"><a href="javascript:void(0)" class="white-light-blue-btn light-blue-border renew-on-lang-switch" data-slug="CONTINUE-btn">'+$('.translates-holder').attr('CONTINUE-btn')+'</a></div><div class="text-left padding-bottom-30"><a href="javascript:void(0)" class="fs-16 inline-block refresh-import-init-page"><svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="long-arrow-left" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="inline-block margin-right-5 max-width-20 width-100"><path fill="currentColor" d="M152.485 396.284l19.626-19.626c4.753-4.753 4.675-12.484-.173-17.14L91.22 282H436c6.627 0 12-5.373 12-12v-28c0-6.627-5.373-12-12-12H91.22l80.717-77.518c4.849-4.656 4.927-12.387.173-17.14l-19.626-19.626c-4.686-4.686-12.284-4.686-16.971 0L3.716 247.515c-4.686 4.686-4.686 12.284 0 16.971l131.799 131.799c4.686 4.685 12.284 4.685 16.97-.001z"></path></svg><span class="inline-block renew-on-lang-switch" data-slug="go-back">'+$('.translates-holder').attr('go-back')+'</span></a></div>');
 
                             $('.import-more-info-keystore-remember').popover({
                                 trigger: 'click'
@@ -5089,9 +5161,186 @@ function styleKeystoreUploadBtn() {
 }
 
 //opening WALLET menu
+var initWalletConnectLogicBool = true;
 $(document).on('click', 'header .open-wallet-menu', function () {
     $('nav.sidenav').addClass('active');
+
+    if (initWalletConnectLogicBool) {
+        initWalletConnectLogicBool = false;
+
+        //opening WalletConnect scanner
+        if ((basic.isMobile() || is_hybrid)) {
+            $('nav.sidenav .wallet-connect-scanner').parent().removeClass('hide');
+            if (window.localStorage.getItem('walletconnect') == null) {
+                projectData.general_logic.initScan($('nav.sidenav .wallet-connect-scanner'), undefined, function (scannedContent) {
+                    if (!is_hybrid) {
+                        $('.popup-scan-qr-code').modal('hide');
+                    }
+                    initWalletConnectLogic(scannedContent, true);
+                });
+            }
+        }
+    }
 });
+
+function initWalletConnectLogic(uri, approve_session) {
+    connector = new WalletConnect({
+        uri: uri
+    });
+
+    if (!approve_session && !$('header .open-settings-col .connected-to-walletconnect').length) {
+        $('header .open-settings-col').prepend('<a href="javascript:void(0);" class="connected-to-walletconnect inline-block fs-14 lato-bold margin-right-10"><img src="assets/images/walletconnect-white.svg" alt="WalletConnect icon" width="25" class="inline-block"/> <span class="inline-block">Connected</span></a>');
+
+        $('nav.sidenav .wallet-connect-scanner').unbind();
+        $('nav.sidenav .wallet-connect-scanner').click(function() {
+            openWalletConnectConnectionInfoPopup();
+        });
+    }
+
+    const whitelistedWalletConnectConnections = ['https://stakedcn.com'];
+    connector.on('session_request', (error, payload) => {
+        if (error) {
+            throw error;
+        } else {
+            console.log(payload, 'session_request');
+
+            if (payload.params.length) {
+                if (whitelistedWalletConnectConnections.includes(payload.params[0].peerMeta.url)) {
+                    var networksHtml = '';
+                    if (payload.params[0].peerMeta.url == 'https://stakedcn.com') {
+                        networksHtml = '<div class="fs-18 calibri-bold padding-bottom-5">Network:</div><div class="network-options fs-0"><a href="javascript:void(0);" class="selected fs-16" data-chain-id="10"><img src="assets/images/eth-2-icon.svg" alt="Optimism logo" width="28" class="margin-right-5"/> Optimism</a></div>';
+                    }
+                    basic.showDialog('<div class="image text-center"><img class="max-width-80" src="'+payload.params[0].peerMeta.icons[0]+'"/></div><div class="text-center padding-top-10 fs-26 line-height-30 calibri-bold">Dentacoin Staking wants to connect to your wallet</div><div class="text-center fs-18 link padding-top-5 padding-bottom-25"><a href="'+payload.params[0].peerMeta.url+'" target="_blank" class="text-decoration-underline">'+payload.params[0].peerMeta.url+'</a></div>' + networksHtml + '<div class="padding-top-15 padding-bottom-20 address-line fs-16 text-center">'+global_state.account.substr(0, 13)+'....'+global_state.account.substr(-13)+'</div><div class="padding-top-25 padding-bottom-25 fs-16"><div><img src="assets/images/wallet-icon-1.svg" alt="" class="width-100 max-width-20 margin-right-10"> View your wallet balance and activity</div><div class="padding-top-5"><img src="assets/images/shield-check-icon.svg" alt="" class="width-100 max-width-20 margin-right-10"> Request approval for transaction</div></div><div class="text-center"><a href="javascript:void(0);" class="confirm-connection white-light-blue-btn padding-left-30 padding-right-30">CONNECT</a></div>', 'confirm-walletconnect-connection', null, true);
+
+                    $('.bootbox.confirm-walletconnect-connection .confirm-connection').click(function() {
+                        $('.bootbox.confirm-walletconnect-connection').modal('hide');
+
+                        if (approve_session) {
+                            window.localStorage.setItem('walletconnect_uri', uri);
+                            connector.approveSession({
+                                accounts: [global_state.account],
+                                chainId: 10
+                            });
+                            $('nav.sidenav .wallet-connect-scanner').unbind();
+                            $('nav.sidenav .wallet-connect-scanner').click(function() {
+                                openWalletConnectConnectionInfoPopup();
+                            });
+                        }
+
+                        if (!$('header .open-settings-col .connected-to-walletconnect').length) {
+                            $('header .open-settings-col').prepend('<a href="javascript:void(0);" class="connected-to-walletconnect inline-block fs-14 lato-bold margin-right-10"><img src="assets/images/walletconnect-white.svg" alt="WalletConnect icon" width="25" class="inline-block"/> <span class="inline-block">Connected</span></a>');
+                        }
+                    });
+                } else {
+                    basic.showAlert('Connecting WalletConnect to this website is not yet supported.', '', true);
+                }
+            }
+        }
+    });
+
+    connector.on('call_request', async function(error, payload) {
+        if (error) {
+            throw error;
+        }
+        console.log(payload, 'call_request');
+        if (payload.method == 'eth_sendTransaction' && payload.params.length) {
+            var abiDecoder = require('abi-decoder');
+            if (projectData.utils.checksumAddress(payload.params[0].to) == projectData.utils.checksumAddress(config_variable.l2.addresses.dcn_contract_address)) {
+                abiDecoder.addABI(config_variable.l2.abi_definitions.dcn_contract_abi);
+                var decodedInput = abiDecoder.decodeMethod(payload.params[0].data);
+                console.log(decodedInput, 'decodedInput');
+
+                var to = projectData.utils.checksumAddress(config_variable.l2.addresses.dcn_contract_address);
+                var gasLimit = await L2DCNContract.methods.approve(decodedInput.params[0].value, decodedInput.params[1].value).estimateGas({
+                    from: global_state.account
+                });
+
+                // adding 25 percent to the gas limit just in case
+                gasLimit = Math.round(gasLimit + (gasLimit * 0.25));
+
+                projectData.general_logic.openTxConfirmationPopup('Approve confirmation', to, null, 'DCN2.0', gasLimit, L2DCNContract.methods.approve(decodedInput.params[0].value, decodedInput.params[1].value).encodeABI(), 'l2', 'approve', null, null, {type: 'walletconnect', request_id: payload.id});
+            } else if (projectData.utils.checksumAddress(payload.params[0].to) == projectData.utils.checksumAddress(config_variable.l2.addresses.staking_contract_address)) {
+                abiDecoder.addABI(config_variable.l2.abi_definitions.staking_contract_abi);
+                var decodedInput = abiDecoder.decodeMethod(payload.params[0].data);
+                console.log(decodedInput, 'decodedInput');
+
+                var to = projectData.utils.checksumAddress(config_variable.l2.addresses.staking_contract_address);
+                switch(decodedInput.name) {
+                    case 'stake':
+                        var gasLimit = await L2StakingContract.methods.stake(decodedInput.params[0].value).estimateGas({
+                            from: global_state.account
+                        });
+
+                        // adding 25 percent to the gas limit just in case
+                        gasLimit = Math.round(gasLimit + (gasLimit * 0.25));
+
+                        projectData.general_logic.openTxConfirmationPopup('Stake confirmation', to, null, 'DCN2.0', gasLimit, L2StakingContract.methods.stake(decodedInput.params[0].value).encodeABI(), 'l2', 'stake', null, null, {type: 'walletconnect', request_id: payload.id});
+                        break;
+                    case 'unstake':
+                        var gasLimit = await L2StakingContract.methods.unstake(decodedInput.params[0].value).estimateGas({
+                            from: global_state.account
+                        });
+
+                        // adding 25 percent to the gas limit just in case
+                        gasLimit = Math.round(gasLimit + (gasLimit * 0.25));
+
+                        projectData.general_logic.openTxConfirmationPopup('Unstake confirmation', to, null, 'DCN2.0', gasLimit, L2StakingContract.methods.unstake(decodedInput.params[0].value).encodeABI(), 'l2', 'unstake', null, null, {type: 'walletconnect', request_id: payload.id});
+                        break;
+                    case 'claimReward':
+                        var gasLimit = await L2StakingContract.methods.claimReward().estimateGas({
+                            from: global_state.account
+                        });
+
+                        // adding 25 percent to the gas limit just in case
+                        gasLimit = Math.round(gasLimit + (gasLimit * 0.25));
+
+                        projectData.general_logic.openTxConfirmationPopup('Claim rewards confirmation', to, null, 'DCN2.0', gasLimit, L2StakingContract.methods.claimReward().encodeABI(), 'l2', 'claimReward', null, null, {type: 'walletconnect', request_id: payload.id});
+                        break;
+                }
+            }
+        }
+    });
+
+    connector.on('disconnect', (error, payload) => {
+        if (error) {
+            throw error;
+        }
+        console.log('disconnect');
+        window.localStorage.removeItem('walletconnect_uri');
+        $('header .open-settings-col .connected-to-walletconnect').remove();
+
+        $('nav.sidenav .wallet-connect-scanner').unbind();
+        projectData.general_logic.initScan($('nav.sidenav .wallet-connect-scanner'), undefined, function (scannedContent) {
+            if (!is_hybrid) {
+                $('.popup-scan-qr-code').modal('hide');
+            }
+            initWalletConnectLogic(scannedContent, true);
+        });
+    });
+}
+
+// open walletconnect info popup
+$(document).on('click', 'header .open-settings-col .connected-to-walletconnect', function () {
+    openWalletConnectConnectionInfoPopup();
+});
+
+function openWalletConnectConnectionInfoPopup() {
+    var walletconnectData = JSON.parse(window.localStorage.getItem('walletconnect'));
+    var network = '<img src="assets/images/eth-2-icon.svg" alt="Optimism logo" width="28" class="margin-right-5"/> Optimism';
+    if (walletconnectData.chainId == 1) {
+        network = '<img src="assets/images/eth-icon.svg" alt="Ethereum logo" width="28" class="margin-right-5"/> Ethereum';
+    }
+    if (walletconnectData.peerMeta.url == 'https://stakedcn.com') {
+        basic.showDialog('<div class="image text-center"><img class="max-width-80" src="'+walletconnectData.peerMeta.icons[0]+'"/></div><div class="text-center padding-top-10 fs-26 line-height-30 calibri-bold">Dentacoin Staking</div><div class="padding-bottom-10 padding-top-35 fs-17"><span class="calibri-bold color-black inline-block padding-right-15">Connected to:</span><span class="inline-block"><a href="'+walletconnectData.peerMeta.url+'" target="_blank" class="text-decoration-underline">'+walletconnectData.peerMeta.url+'</a></span></div><div class="padding-bottom-10 fs-17"><span class="calibri-bold color-black inline-block padding-right-15">Network:</span><span class="inline-block">'+network+'</span></div><div class="padding-bottom-50 fs-17"><span class="calibri-bold color-black inline-block padding-right-15">Address:</span><span class="inline-block">'+global_state.account.substr(0, 10)+'....'+global_state.account.substr(-10)+'</span></div><div class="text-center"><a href="javascript:void(0);" class="disconnect-connection white-light-blue-btn padding-left-30 padding-right-30">DISCONNECT</a></div>', 'confirm-walletconnect-connection', null, true);
+
+        $('.bootbox.confirm-walletconnect-connection .disconnect-connection').click(function() {
+            $('.bootbox.confirm-walletconnect-connection').modal('hide');
+            if (connector != undefined) {
+                connector.killSession();
+            }
+        });
+    }
+}
 
 //logging out of the application
 $(document).on('click', 'nav.sidenav .log-out', function () {
@@ -5105,6 +5354,20 @@ $(document).on('click', 'nav.sidenav .log-out', function () {
             } else {
                 window.localStorage.clear();
             }
+
+            if (connector != undefined) {
+                connector.killSession();
+            }
+
+            // walletconnect clear logic
+            $('header .open-settings-col .connected-to-walletconnect').remove();
+            $('nav.sidenav .wallet-connect-scanner').unbind();
+            projectData.general_logic.initScan($('nav.sidenav .wallet-connect-scanner'), undefined, function (scannedContent) {
+                if (!is_hybrid) {
+                    $('.popup-scan-qr-code').modal('hide');
+                }
+                initWalletConnectLogic(scannedContent, true);
+            });
 
             refreshApp();
             const event = new CustomEvent('redirectToHomepage');
@@ -5141,10 +5404,10 @@ $(document).on('click', '.open-settings', function () {
         var warning_html = '';
 
         //if cached keystore file show the option for downloading it
-        settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important download-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path fill="#00B5E2" d="M14.4,10.4v3.2c0,0.1,0,0.2-0.1,0.3c0,0.1-0.1,0.2-0.2,0.3c-0.1,0.1-0.2,0.1-0.3,0.2c-0.1,0-0.2,0.1-0.3,0.1 H2.4c-0.1,0-0.2,0-0.3-0.1c-0.1,0-0.2-0.1-0.3-0.2S1.7,14,1.7,13.9c0-0.1-0.1-0.2-0.1-0.3v-3.2c0-0.4-0.4-0.8-0.8-0.8S0,10,0,10.4 v3.2c0,0.3,0.1,0.6,0.2,0.9c0.1,0.3,0.3,0.6,0.5,0.8c0.2,0.2,0.5,0.4,0.8,0.5C1.8,15.9,2.1,16,2.4,16h11.2c0.3,0,0.6-0.1,0.9-0.2 c0.3-0.1,0.6-0.3,0.8-0.5c0.2-0.2,0.4-0.5,0.5-0.8c0.1-0.3,0.2-0.6,0.2-0.9v-3.2c0-0.4-0.4-0.8-0.8-0.8S14.4,10,14.4,10.4z M8.8,8.5 V0.8C8.8,0.4,8.4,0,8,0C7.6,0,7.2,0.4,7.2,0.8v7.7L4.6,5.8c-0.3-0.3-0.8-0.3-1.1,0C3.1,6.1,3.1,6.7,3.4,7l4,4c0,0,0,0,0,0 c0.1,0.1,0.2,0.1,0.3,0.2c0.1,0,0.2,0.1,0.3,0.1c0,0,0,0,0,0c0.1,0,0.2,0,0.3-0.1c0.1,0,0.2-0.1,0.3-0.2l4-4c0.3-0.3,0.3-0.8,0-1.1 s-0.8-0.3-1.1,0L8.8,8.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="'+slug_attr+'">' + $('.translates-holder').attr('download') + ' <span class="renew-on-lang-switch" data-slug="backupfile">'+$('.translates-holder').attr('backupfile')+'</span></span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="very-important">'+$('.translates-holder').attr('very-important')+'</div><div class="camping-for-action"></div>' + warning_html + '</div>';
+        settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important download-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path fill="#00B5E2" d="M14.4,10.4v3.2c0,0.1,0,0.2-0.1,0.3c0,0.1-0.1,0.2-0.2,0.3c-0.1,0.1-0.2,0.1-0.3,0.2c-0.1,0-0.2,0.1-0.3,0.1 H2.4c-0.1,0-0.2,0-0.3-0.1c-0.1,0-0.2-0.1-0.3-0.2S1.7,14,1.7,13.9c0-0.1-0.1-0.2-0.1-0.3v-3.2c0-0.4-0.4-0.8-0.8-0.8S0,10,0,10.4 v3.2c0,0.3,0.1,0.6,0.2,0.9c0.1,0.3,0.3,0.6,0.5,0.8c0.2,0.2,0.5,0.4,0.8,0.5C1.8,15.9,2.1,16,2.4,16h11.2c0.3,0,0.6-0.1,0.9-0.2 c0.3-0.1,0.6-0.3,0.8-0.5c0.2-0.2,0.4-0.5,0.5-0.8c0.1-0.3,0.2-0.6,0.2-0.9v-3.2c0-0.4-0.4-0.8-0.8-0.8S14.4,10,14.4,10.4z M8.8,8.5 V0.8C8.8,0.4,8.4,0,8,0C7.6,0,7.2,0.4,7.2,0.8v7.7L4.6,5.8c-0.3-0.3-0.8-0.3-1.1,0C3.1,6.1,3.1,6.7,3.4,7l4,4c0,0,0,0,0,0 c0.1,0.1,0.2,0.1,0.3,0.2c0.1,0,0.2,0.1,0.3,0.1c0,0,0,0,0,0c0.1,0,0.2,0,0.3-0.1c0.1,0,0.2-0.1,0.3-0.2l4-4c0.3-0.3,0.3-0.8,0-1.1 s-0.8-0.3-1.1,0L8.8,8.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="'+slug_attr+'">' + $('.translates-holder').attr('download') + ' <span class="renew-on-lang-switch" data-slug="backupfile">'+$('.translates-holder').attr('backupfile')+'</span></span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="very-important">'+$('.translates-holder').attr('very-important')+'</div><div class="camping-for-action"></div>' + warning_html + '</div>';
     } else if (window.localStorage.getItem('keystore_file') == null) {
         //if not cached keystore file show the option for caching it
-        settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important remember-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path fill="#00B5E2" d="M14,0H2C0.9,0,0,0.9,0,2v12c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V2C16,0.9,15.1,0,14,0z M15,14c0,0.6-0.4,1-1,1 H2c-0.6,0-1-0.4-1-1v-3h14V14z M15,10H1V6h14V10z M1,5V2c0-0.6,0.4-1,1-1h12c0.6,0,1,0.4,1,1v3H1z M14,3.5C14,3.8,13.8,4,13.5,4h-1 C12.2,4,12,3.8,12,3.5v-1C12,2.2,12.2,2,12.5,2h1C13.8,2,14,2.2,14,2.5V3.5z M14,8.5C14,8.8,13.8,9,13.5,9h-1C12.2,9,12,8.8,12,8.5 v-1C12,7.2,12.2,7,12.5,7h1C13.8,7,14,7.2,14,7.5V8.5z M14,13.5c0,0.3-0.2,0.5-0.5,0.5h-1c-0.3,0-0.5-0.2-0.5-0.5v-1 c0-0.3,0.2-0.5,0.5-0.5h1c0.3,0,0.5,0.2,0.5,0.5V13.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="remember-file">'+$('.translates-holder').attr('remember-file')+'</span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="by-doing-so">'+$('.translates-holder').attr('by-doing-so')+'</div><div class="camping-for-action"></div></div>';
+        settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important remember-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path fill="#00B5E2" d="M14,0H2C0.9,0,0,0.9,0,2v12c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V2C16,0.9,15.1,0,14,0z M15,14c0,0.6-0.4,1-1,1 H2c-0.6,0-1-0.4-1-1v-3h14V14z M15,10H1V6h14V10z M1,5V2c0-0.6,0.4-1,1-1h12c0.6,0,1,0.4,1,1v3H1z M14,3.5C14,3.8,13.8,4,13.5,4h-1 C12.2,4,12,3.8,12,3.5v-1C12,2.2,12.2,2,12.5,2h1C13.8,2,14,2.2,14,2.5V3.5z M14,8.5C14,8.8,13.8,9,13.5,9h-1C12.2,9,12,8.8,12,8.5 v-1C12,7.2,12.2,7,12.5,7h1C13.8,7,14,7.2,14,7.5V8.5z M14,13.5c0,0.3-0.2,0.5-0.5,0.5h-1c-0.3,0-0.5-0.2-0.5-0.5v-1 c0-0.3,0.2-0.5,0.5-0.5h1c0.3,0,0.5,0.2,0.5,0.5V13.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="remember-file">'+$('.translates-holder').attr('remember-file')+'</span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="by-doing-so">'+$('.translates-holder').attr('by-doing-so')+'</div><div class="camping-for-action"></div></div>';
 
         $(document).off('click', '.settings-popup .remember-keystore');
         $(document).on('click', '.settings-popup .remember-keystore', function () {
@@ -5298,10 +5561,10 @@ $(document).on('click', '.open-settings', function () {
         showPkText = $('.translates-holder').attr('upload-to-show-second-option');
     }
 
-    settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important generate-keystore"><svg class="margin-right-5 inline-block max-width-30" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 66.3 74.8" style="enable-background:new 0 0 66.3 74.8;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="74.8" width="66.3" x="16.6" y="37.3"></sliceSourceBounds></sfw></metadata><path fill="#00B5E2" d="M66.3,37.4c0-13.7-8.6-26.1-21.4-31c-0.8-0.3-1.6,0.1-1.9,0.9c-0.3,0.8,0.1,1.6,0.9,1.9c11.6,4.4,19.5,15.7,19.5,28.2c0,15.5-11.8,28.3-26.8,29.9l2.1-2.6c0.5-0.6,0.4-1.6-0.2-2.1c-0.6-0.5-1.6-0.4-2.1,0.2l-4.1,5.1c-0.3,0.2-0.4,0.6-0.5,1c0,0,0,0.1,0,0.1c0,0,0,0,0,0.1c0,0,0,0,0,0.1c0,0.1,0,0.2,0,0.2c0,0,0,0,0,0c0.1,0.3,0.2,0.7,0.5,0.9l5.3,4.3c0.3,0.2,0.6,0.3,0.9,0.3c0.4,0,0.9-0.2,1.2-0.6c0.5-0.6,0.4-1.6-0.2-2.1L37,70.3C53.5,68.3,66.3,54.3,66.3,37.4z M34.3,6.7c0.1-0.1,0.1-0.1,0.1-0.2c0,0,0,0,0,0c0-0.1,0.1-0.1,0.1-0.2c0,0,0-0.1,0-0.1c0-0.1,0-0.1,0-0.2c0,0,0-0.1,0-0.1c0,0,0,0,0-0.1c0,0,0,0,0-0.1c0-0.1,0-0.1,0-0.2c0,0,0-0.1,0-0.1c0-0.1,0-0.1-0.1-0.2c0,0,0,0,0-0.1c0-0.1-0.1-0.1-0.1-0.2c0,0,0,0,0,0c0-0.1-0.1-0.1-0.2-0.2c0,0,0,0,0,0c0,0-0.1-0.1-0.1-0.1l-5.3-4.3c-0.6-0.5-1.6-0.4-2.1,0.2c-0.5,0.6-0.4,1.6,0.2,2.1l2.3,1.8C12.8,6.5,0,20.5,0,37.4c0,13.8,8.7,26.3,21.6,31.1c0.2,0.1,0.3,0.1,0.5,0.1c0.6,0,1.2-0.4,1.4-1c0.3-0.8-0.1-1.6-0.9-1.9C10.9,61.3,3,49.9,3,37.4C3,21.9,14.8,9.1,29.8,7.5l-2.1,2.6c-0.5,0.6-0.4,1.6,0.2,2.1c0.3,0.2,0.6,0.3,0.9,0.3c0.4,0,0.9-0.2,1.2-0.6L34.3,6.7C34.3,6.7,34.3,6.7,34.3,6.7z"/><g transform="translate(0,-952.36218)"><path fill="#00B5E2" d="M31.6,974.2c3,3,3.3,7.8,0.9,11.2l16.5,16.5c0.5,0.5,0.5,1.4,0,1.9l-3.7,3.7c-0.5,0.5-1.4,0.5-1.9,0c-0.5-0.5-0.5-1.4,0-1.9l2.7-2.7l-3.9-3.9l-4.2,4.2c-0.5,0.5-1.4,0.5-1.9,0c-0.5-0.5-0.5-1.4,0-1.9l4.2-4.2l-9.7-9.7c-3.4,2.4-8.2,2.2-11.2-0.9c-3.4-3.4-3.4-8.9,0-12.2C22.7,970.8,28.2,970.8,31.6,974.2z M29.7,976.1c-2.3-2.3-6.1-2.3-8.4,0c-2.3,2.3-2.3,6.1,0,8.4c2.3,2.3,6.1,2.3,8.4,0C32,982.2,32,978.4,29.7,976.1L29.7,976.1z"/></g></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="generate-backup">'+$('.translates-holder').attr('generate-backup')+'</span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="easy-to-easy">'+$('.translates-holder').attr('easy-to-easy')+'</div><div class="camping-for-action"></div></div><div class="option-row"><a href="javascript:void(0)" class="display-block-important show-private-key"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 21.3" style="enable-background:new 0 0 16 21.3;" xml:space="preserve"><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="21.3" width="16" x="1" y="5.5"/></sfw></metadata><path fill="#00B5E2" d="M5.3,0C5.1,0,5,0.1,4.9,0.2L0.2,4.9C0.1,5,0,5.2,0,5.3v13.9c0,1.1,0.9,2.1,2.1,2.1h11.8c1.1,0,2.1-0.9,2.1-2.1 V2.1C16,0.9,15.1,0,13.9,0H5.3C5.3,0,5.3,0,5.3,0z M6.2,1.2h7.7c0.5,0,0.9,0.4,0.9,0.9v17.2c0,0.5-0.4,0.9-0.9,0.9H2.1 c-0.5,0-0.9-0.4-0.9-0.9v-13h4.4C6,6.2,6.2,6,6.2,5.6V1.2z M5,1.7V5H1.7L5,1.7z M4.4,9.8c-1.1,0-2.1,0.9-2.1,2.1s0.9,2.1,2.1,2.1 c0.9,0,1.7-0.6,2-1.5h3.6v0.9c0,0.3,0.3,0.6,0.6,0.6c0.3,0,0.6-0.3,0.6-0.6c0,0,0,0,0,0v-0.9h1.2v0.9c0,0.3,0.3,0.6,0.6,0.6 c0.3,0,0.6-0.3,0.6-0.6c0,0,0,0,0,0v-1.5c0-0.3-0.3-0.6-0.6-0.6H6.4C6.2,10.4,5.4,9.8,4.4,9.8L4.4,9.8z M4.4,11 c0.5,0,0.9,0.4,0.9,0.9c0,0.5-0.4,0.9-0.9,0.9c-0.5,0-0.9-0.4-0.9-0.9C3.6,11.3,3.9,11,4.4,11z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="display-key">'+$('.translates-holder').attr('display-key')+'</span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="upload-to-show">'+showPkText+'</div><div class="camping-for-action"></div></div>';
+    settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important generate-keystore"><svg class="margin-right-5 inline-block max-width-30" version="1.1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 66.3 74.8" style="enable-background:new 0 0 66.3 74.8;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="74.8" width="66.3" x="16.6" y="37.3"></sliceSourceBounds></sfw></metadata><path fill="#00B5E2" d="M66.3,37.4c0-13.7-8.6-26.1-21.4-31c-0.8-0.3-1.6,0.1-1.9,0.9c-0.3,0.8,0.1,1.6,0.9,1.9c11.6,4.4,19.5,15.7,19.5,28.2c0,15.5-11.8,28.3-26.8,29.9l2.1-2.6c0.5-0.6,0.4-1.6-0.2-2.1c-0.6-0.5-1.6-0.4-2.1,0.2l-4.1,5.1c-0.3,0.2-0.4,0.6-0.5,1c0,0,0,0.1,0,0.1c0,0,0,0,0,0.1c0,0,0,0,0,0.1c0,0.1,0,0.2,0,0.2c0,0,0,0,0,0c0.1,0.3,0.2,0.7,0.5,0.9l5.3,4.3c0.3,0.2,0.6,0.3,0.9,0.3c0.4,0,0.9-0.2,1.2-0.6c0.5-0.6,0.4-1.6-0.2-2.1L37,70.3C53.5,68.3,66.3,54.3,66.3,37.4z M34.3,6.7c0.1-0.1,0.1-0.1,0.1-0.2c0,0,0,0,0,0c0-0.1,0.1-0.1,0.1-0.2c0,0,0-0.1,0-0.1c0-0.1,0-0.1,0-0.2c0,0,0-0.1,0-0.1c0,0,0,0,0-0.1c0,0,0,0,0-0.1c0-0.1,0-0.1,0-0.2c0,0,0-0.1,0-0.1c0-0.1,0-0.1-0.1-0.2c0,0,0,0,0-0.1c0-0.1-0.1-0.1-0.1-0.2c0,0,0,0,0,0c0-0.1-0.1-0.1-0.2-0.2c0,0,0,0,0,0c0,0-0.1-0.1-0.1-0.1l-5.3-4.3c-0.6-0.5-1.6-0.4-2.1,0.2c-0.5,0.6-0.4,1.6,0.2,2.1l2.3,1.8C12.8,6.5,0,20.5,0,37.4c0,13.8,8.7,26.3,21.6,31.1c0.2,0.1,0.3,0.1,0.5,0.1c0.6,0,1.2-0.4,1.4-1c0.3-0.8-0.1-1.6-0.9-1.9C10.9,61.3,3,49.9,3,37.4C3,21.9,14.8,9.1,29.8,7.5l-2.1,2.6c-0.5,0.6-0.4,1.6,0.2,2.1c0.3,0.2,0.6,0.3,0.9,0.3c0.4,0,0.9-0.2,1.2-0.6L34.3,6.7C34.3,6.7,34.3,6.7,34.3,6.7z"/><g transform="translate(0,-952.36218)"><path fill="#00B5E2" d="M31.6,974.2c3,3,3.3,7.8,0.9,11.2l16.5,16.5c0.5,0.5,0.5,1.4,0,1.9l-3.7,3.7c-0.5,0.5-1.4,0.5-1.9,0c-0.5-0.5-0.5-1.4,0-1.9l2.7-2.7l-3.9-3.9l-4.2,4.2c-0.5,0.5-1.4,0.5-1.9,0c-0.5-0.5-0.5-1.4,0-1.9l4.2-4.2l-9.7-9.7c-3.4,2.4-8.2,2.2-11.2-0.9c-3.4-3.4-3.4-8.9,0-12.2C22.7,970.8,28.2,970.8,31.6,974.2z M29.7,976.1c-2.3-2.3-6.1-2.3-8.4,0c-2.3,2.3-2.3,6.1,0,8.4c2.3,2.3,6.1,2.3,8.4,0C32,982.2,32,978.4,29.7,976.1L29.7,976.1z"/></g></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="generate-backup">'+$('.translates-holder').attr('generate-backup')+'</span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="easy-to-easy">'+$('.translates-holder').attr('easy-to-easy')+'</div><div class="camping-for-action"></div></div><div class="option-row"><a href="javascript:void(0)" class="display-block-important show-private-key"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" viewBox="0 0 16 21.3" style="enable-background:new 0 0 16 21.3;" xml:space="preserve"><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="21.3" width="16" x="1" y="5.5"/></sfw></metadata><path fill="#00B5E2" d="M5.3,0C5.1,0,5,0.1,4.9,0.2L0.2,4.9C0.1,5,0,5.2,0,5.3v13.9c0,1.1,0.9,2.1,2.1,2.1h11.8c1.1,0,2.1-0.9,2.1-2.1 V2.1C16,0.9,15.1,0,13.9,0H5.3C5.3,0,5.3,0,5.3,0z M6.2,1.2h7.7c0.5,0,0.9,0.4,0.9,0.9v17.2c0,0.5-0.4,0.9-0.9,0.9H2.1 c-0.5,0-0.9-0.4-0.9-0.9v-13h4.4C6,6.2,6.2,6,6.2,5.6V1.2z M5,1.7V5H1.7L5,1.7z M4.4,9.8c-1.1,0-2.1,0.9-2.1,2.1s0.9,2.1,2.1,2.1 c0.9,0,1.7-0.6,2-1.5h3.6v0.9c0,0.3,0.3,0.6,0.6,0.6c0.3,0,0.6-0.3,0.6-0.6c0,0,0,0,0,0v-0.9h1.2v0.9c0,0.3,0.3,0.6,0.6,0.6 c0.3,0,0.6-0.3,0.6-0.6c0,0,0,0,0,0v-1.5c0-0.3-0.3-0.6-0.6-0.6H6.4C6.2,10.4,5.4,9.8,4.4,9.8L4.4,9.8z M4.4,11 c0.5,0,0.9,0.4,0.9,0.9c0,0.5-0.4,0.9-0.9,0.9c-0.5,0-0.9-0.4-0.9-0.9C3.6,11.3,3.9,11,4.4,11z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="display-key">'+$('.translates-holder').attr('display-key')+'</span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="upload-to-show">'+showPkText+'</div><div class="camping-for-action"></div></div>';
 
     if (window.localStorage.getItem('keystore_file') != null) {
-        settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important forget-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path fill="#00B5E2" d="M14,0H2C0.9,0,0,0.9,0,2v12c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V2C16,0.9,15.1,0,14,0z M15,14c0,0.6-0.4,1-1,1 H2c-0.6,0-1-0.4-1-1v-3h14V14z M15,10H1V6h14V10z M1,5V2c0-0.6,0.4-1,1-1h12c0.6,0,1,0.4,1,1v3H1z M14,3.5C14,3.8,13.8,4,13.5,4h-1 C12.2,4,12,3.8,12,3.5v-1C12,2.2,12.2,2,12.5,2h1C13.8,2,14,2.2,14,2.5V3.5z M14,8.5C14,8.8,13.8,9,13.5,9h-1C12.2,9,12,8.8,12,8.5 v-1C12,7.2,12.2,7,12.5,7h1C13.8,7,14,7.2,14,7.5V8.5z M14,13.5c0,0.3-0.2,0.5-0.5,0.5h-1c-0.3,0-0.5-0.2-0.5-0.5v-1 c0-0.3,0.2-0.5,0.5-0.5h1c0.3,0,0.5,0.2,0.5,0.5V13.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="forget-file">'+$('.translates-holder').attr('forget-file')+'</span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="you-will-be-asked">'+$('.translates-holder').attr('you-will-be-asked')+'</div></div>';
+        settings_html += '<div class="option-row"><a href="javascript:void(0)" class="display-block-important forget-keystore"><svg class="margin-right-5 inline-block max-width-30" xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve"><metadata><sfw xmlns="http://ns.adobe.com/SaveForWeb/1.0/"><slices/><sliceSourceBounds bottomLeftOrigin="true" height="16" width="16" x="1" y="5.5"/></sfw></metadata><path fill="#00B5E2" d="M14,0H2C0.9,0,0,0.9,0,2v12c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V2C16,0.9,15.1,0,14,0z M15,14c0,0.6-0.4,1-1,1 H2c-0.6,0-1-0.4-1-1v-3h14V14z M15,10H1V6h14V10z M1,5V2c0-0.6,0.4-1,1-1h12c0.6,0,1,0.4,1,1v3H1z M14,3.5C14,3.8,13.8,4,13.5,4h-1 C12.2,4,12,3.8,12,3.5v-1C12,2.2,12.2,2,12.5,2h1C13.8,2,14,2.2,14,2.5V3.5z M14,8.5C14,8.8,13.8,9,13.5,9h-1C12.2,9,12,8.8,12,8.5 v-1C12,7.2,12.2,7,12.5,7h1C13.8,7,14,7.2,14,7.5V8.5z M14,13.5c0,0.3-0.2,0.5-0.5,0.5h-1c-0.3,0-0.5-0.2-0.5-0.5v-1 c0-0.3,0.2-0.5,0.5-0.5h1c0.3,0,0.5,0.2,0.5,0.5V13.5z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="forget-file">'+$('.translates-holder').attr('forget-file')+'</span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="you-will-be-asked">'+$('.translates-holder').attr('you-will-be-asked')+'</div></div>';
 
         //removing the cached keystore file from localstorage
         if (!forgetWalletLogicInitiated) {
@@ -5330,7 +5593,7 @@ $(document).on('click', '.open-settings', function () {
 
     //shop Help center menu element (FAQ) only on mobile
     if (basic.isMobile()) {
-        settings_html += '<div class="option-row"><a href="https://dentacoin.com/how-to-create-wallet" target="_blank" class="display-block-important data-external-link"><svg class="margin-right-5 inline-block max-width-30" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 73.9 73.9" style="enable-background:new 0 0 73.9 73.9;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="74" width="74" x="0" y="-0.1"></sliceSourceBounds></sfw></metadata><circle style="fill:none;stroke:#00B7E2;stroke-width:3;stroke-miterlimit:10;" cx="37" cy="37" r="35.5"/><path d="M46,38.6"/><path style="fill:#00B7E2;" d="M36.8,17.1c-5.8,0-11.4,3.8-11.4,11c0,1.9,1.6,3.4,3.4,3.4c1.9,0,3.4-1.6,3.4-3.4c0-3.8,4.1-3.9,4.5-3.9s4.5,0.2,4.5,3.9v0.8c0,1.6-0.8,2.8-2.2,3.6l-3,1.7c-1.7,0.9-2.7,2.7-2.7,4.5v2.8c0,1.9,1.6,3.4,3.4,3.4s3.4-1.6,3.4-3.4v-1.7l2.2-1.1c3.6-1.9,5.8-5.6,5.8-9.7v-0.9C48.2,20.9,42.4,17.1,36.8,17.1z"/><path style="fill:#00B7E2;" d="M36.8,48.9c-5.6,0-5.6,8.8,0,8.8S42.4,48.9,36.8,48.9z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="help-center">'+$('.translates-holder').attr('help-center')+'</span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="having-diff">'+$('.translates-holder').attr('having-diff')+' <a href="mailto:admin@dentacoin.com" class="color-light-blue">admin@dentacoin.com</a>.</div></div>';
+        settings_html += '<div class="option-row"><a href="https://dentacoin.com/how-to-create-wallet" target="_blank" class="display-block-important data-external-link"><svg class="margin-right-5 inline-block max-width-30" version="1.1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 73.9 73.9" style="enable-background:new 0 0 73.9 73.9;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="74" width="74" x="0" y="-0.1"></sliceSourceBounds></sfw></metadata><circle style="fill:none;stroke:#00B7E2;stroke-width:3;stroke-miterlimit:10;" cx="37" cy="37" r="35.5"/><path d="M46,38.6"/><path style="fill:#00B7E2;" d="M36.8,17.1c-5.8,0-11.4,3.8-11.4,11c0,1.9,1.6,3.4,3.4,3.4c1.9,0,3.4-1.6,3.4-3.4c0-3.8,4.1-3.9,4.5-3.9s4.5,0.2,4.5,3.9v0.8c0,1.6-0.8,2.8-2.2,3.6l-3,1.7c-1.7,0.9-2.7,2.7-2.7,4.5v2.8c0,1.9,1.6,3.4,3.4,3.4s3.4-1.6,3.4-3.4v-1.7l2.2-1.1c3.6-1.9,5.8-5.6,5.8-9.7v-0.9C48.2,20.9,42.4,17.1,36.8,17.1z"/><path style="fill:#00B7E2;" d="M36.8,48.9c-5.6,0-5.6,8.8,0,8.8S42.4,48.9,36.8,48.9z"/></svg><span class="inline-block color-light-blue fs-18 lato-bold renew-on-lang-switch" data-slug="help-center">'+$('.translates-holder').attr('help-center')+'</span></a><div class="fs-14 option-description renew-on-lang-switch" data-slug="having-diff">'+$('.translates-holder').attr('having-diff')+' <a href="mailto:admin@dentacoin.com" class="color-light-blue">admin@dentacoin.com</a>.</div></div>';
     }
 
     $('.settings-popup .popup-body').html(settings_html);
@@ -5480,7 +5743,7 @@ $(document).on('click', '.open-settings', function () {
                     setTimeout(function () {
                         decryptKeystore(window.localStorage.getItem('keystore_file'), $('#show-private-key-password').val().trim(), function (success, to_string, error, error_message) {
                             if (success) {
-                                this_camping_row.html('<a href="javascript:void(0);" data-key="'+to_string+'" class="margin-top-10 fs-20 fs-xs-16 color-light-blue print-private-key inline-block white-light-blue-btn"><?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/"><!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/"><!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/"><!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/"><!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/"><!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/"><!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/"><!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/"><svg version="1.1" style="width: 30px; display: inline-block; vertical-align: middle;" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 28 28.1" style="enable-background:new 0 0 28 28.1;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="28.1" width="28" x="0" y="0"></sliceSourceBounds></sfw></metadata><path style="fill:white;" d="M25,6h-3V2c0-1.1-0.9-2-2-2H8C6.9,0,6,0.9,6,2v4H3C1.3,6,0,7.3,0,9c0,0,0,0,0,0.1V19c0,1.7,1.3,3,2.9,3.1c0,0,0,0,0.1,0h3v4c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2v-4h3c1.7,0,3-1.3,3-3c0,0,0,0,0-0.1V9.1C28,7.4,26.7,6,25,6L25,6z M8,2h12v4H8V2z M20,26H8v-9h12V26z M26,18.9c0,0.6-0.4,1-0.9,1.1c0,0,0,0-0.1,0h-3v-3c0-1.1-0.9-2-2-2H8c-1.1,0-2,0.9-2,2v3H3c-0.6,0-1-0.4-1-1c0,0,0,0,0-0.1V9c0-0.6,0.4-1,0.9-1.1c0,0,0,0,0.1,0h22c0.6,0,1,0.4,1,1c0,0,0,0,0,0.1V18.9z M18,23c0,0.6-0.4,1-1,1h-6c-0.6,0-1-0.4-1-1s0.4-1,1-1h6C17.6,22,18,22.4,18,23z M18,20c0,0.6-0.4,1-1,1h-6c-0.6,0-1-0.4-1-1s0.4-1,1-1h6C17.6,19,18,19.4,18,20z M24,11c0,0.6-0.4,1-1,1h-2c-0.6,0-1-0.4-1-1s0.4-1,1-1h2C23.6,10,24,10.4,24,11z"/></svg> <span class="inline-block renew-on-lang-switch" data-slug="print-pk-text">'+$('.translates-holder').attr('print-pk-text')+'</span></a><div class="padding-top-5 fs-14 color-light-blue text-left renew-on-lang-switch" data-slug="use-a4">'+$('.translates-holder').attr('use-a4')+'</div><div class="private-key-holder"><div class="scroll-content"><a href="javascript:void(0);" class="copy-private-key inline-block padding-right-5" data-toggle="tooltip" title="Copied." data-placement="right" data-clipboard-target="#copy-private-key"><svg class="width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 19.8 24" style="enable-background:new 0 0 19.8 24;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="24" width="19.8" x="1.2" y="0"></sliceSourceBounds></sfw></metadata><g><path fill="#303030" d="M19.8,2.9c0,4.9,0,9.9,0,14.8c0,0.1,0,0.1,0,0.2c-0.2,1.4-1.2,2.4-2.6,2.7c-0.2,0-0.2,0.1-0.2,0.3c0,1.3-0.6,2.2-1.8,2.8c-0.3,0.2-0.7,0.2-1,0.3c-3.8,0-7.5,0-11.3,0c0,0-0.1,0-0.1,0c-1.3-0.3-2.2-1-2.6-2.3C0.1,21.4,0,21.3,0,21.1c0-4.9,0-9.9,0-14.8c0,0,0-0.1,0-0.1c0.3-1.6,1.6-2.7,3.2-2.7c2.5,0,5.1,0,7.6,0c0.7,0,1.3,0.3,1.9,0.8c1.1,1.1,2.3,2.3,3.4,3.4c0.5,0.5,0.8,1.1,0.8,1.9c0,3,0,6.1,0,9.1c0,0.1,0,0.2,0,0.3c0.2-0.1,0.3-0.1,0.4-0.2c0.6-0.3,0.8-0.9,0.8-1.6c0-4.2,0-8.4,0-12.6c0-0.4,0-0.9,0-1.3c0-1-0.7-1.7-1.7-1.7c-3.7,0-7.3,0-11,0c-0.5,0-1,0.2-1.3,0.6c0,0.1-0.1,0.1-0.2,0.1c-0.5,0-1.1,0-1.6,0c0,0,0-0.1,0-0.1c0-0.1,0-0.1,0.1-0.2c0.3-0.9,0.9-1.5,1.8-1.8C4.5,0.1,4.7,0.1,5,0c4,0,8,0,11.9,0c0,0,0.1,0,0.1,0c1.4,0.2,2.3,1.2,2.6,2.5C19.7,2.7,19.7,2.8,19.8,2.9z M1.6,13.7c0,2.3,0,4.6,0,6.9c0,1.1,0.7,1.7,1.7,1.7c3.4,0,6.8,0,10.2,0c1.1,0,1.8-0.7,1.8-1.8c0-3.7,0-7.3,0-11c0-0.1,0-0.1,0-0.2c0-0.2-0.1-0.2-0.3-0.2c-0.6,0-1.1,0-1.7,0c-1.4,0-2.3-1-2.3-2.4c0-0.5,0-1,0-1.5C11,5.1,11,5,10.8,5c-2.5,0-5,0-7.5,0C3,5,2.8,5.1,2.5,5.2C1.9,5.5,1.6,6.1,1.6,6.8C1.6,9.1,1.6,11.4,1.6,13.7z"/><path fill="#303030" d="M8.5,17.5c1.4,0,2.8,0,4.1,0c0.6,0,0.9,0.3,1,0.8c0.1,0.5-0.2,1-0.7,1.1c-0.1,0-0.2,0-0.3,0c-2.8,0-5.5,0-8.3,0c-0.6,0-1.1-0.4-1.1-0.9c0-0.5,0.4-0.9,1-0.9c0.6,0,1.3,0,1.9,0C6.9,17.5,7.7,17.5,8.5,17.5z"/><path fill="#303030" d="M8.4,15.3c-1.4,0-2.8,0-4.2,0c-0.4,0-0.8-0.2-0.9-0.6c-0.1-0.4,0-0.8,0.3-1c0.2-0.1,0.4-0.2,0.6-0.2c2.8,0,5.7,0,8.5,0c0.5,0,0.9,0.4,0.9,0.9c0,0.5-0.4,0.9-0.9,1c-0.6,0-1.2,0-1.8,0C10.1,15.3,9.3,15.3,8.4,15.3z"/><path fill="#303030" d="M6.7,11.2c-0.8,0-1.6,0-2.4,0c-0.4,0-0.7-0.2-0.9-0.6c-0.2-0.3-0.1-0.7,0.1-1c0.2-0.2,0.4-0.3,0.7-0.3c1.6,0,3.2,0,4.9,0c0.6,0,1,0.4,1,1c0,0.5-0.4,0.9-1,0.9C8.3,11.2,7.5,11.2,6.7,11.2z"/></g></svg></a><textarea readonly="" class="inline-block" id="copy-private-key">' + to_string + '</textarea></div></div><div class="padding-top-10 padding-bottom-15 fs-14 color-warning-red renew-on-lang-switch" data-slug="not-recomm">'+$('.translates-holder').attr('not-recomm')+'</div><div class="padding-top-10 padding-bottom-10 padding-left-70 padding-right-70 padding-left-xs-10 padding-right-xs-10 text-left fs-14 color-white row-with-warning-red-background renew-on-lang-switch" data-slug="dont-lose-it"><div>'+$('.translates-holder').attr('dont-lose-it')+'</div><div class="renew-on-lang-switch" data-slug="make-backup">'+$('.translates-holder').attr('make-backup')+'</div></div>');
+                                this_camping_row.html('<a href="javascript:void(0);" data-key="'+to_string+'" class="margin-top-10 fs-20 fs-xs-16 color-light-blue print-private-key inline-block white-light-blue-btn"><?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/"><!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/"><!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/"><!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/"><!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/"><!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/"><!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/"><!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/"><svg version="1.1" style="width: 30px; display: inline-block; vertical-align: middle;" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 28 28.1" style="enable-background:new 0 0 28 28.1;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="28.1" width="28" x="0" y="0"></sliceSourceBounds></sfw></metadata><path style="fill:white;" d="M25,6h-3V2c0-1.1-0.9-2-2-2H8C6.9,0,6,0.9,6,2v4H3C1.3,6,0,7.3,0,9c0,0,0,0,0,0.1V19c0,1.7,1.3,3,2.9,3.1c0,0,0,0,0.1,0h3v4c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2v-4h3c1.7,0,3-1.3,3-3c0,0,0,0,0-0.1V9.1C28,7.4,26.7,6,25,6L25,6z M8,2h12v4H8V2z M20,26H8v-9h12V26z M26,18.9c0,0.6-0.4,1-0.9,1.1c0,0,0,0-0.1,0h-3v-3c0-1.1-0.9-2-2-2H8c-1.1,0-2,0.9-2,2v3H3c-0.6,0-1-0.4-1-1c0,0,0,0,0-0.1V9c0-0.6,0.4-1,0.9-1.1c0,0,0,0,0.1,0h22c0.6,0,1,0.4,1,1c0,0,0,0,0,0.1V18.9z M18,23c0,0.6-0.4,1-1,1h-6c-0.6,0-1-0.4-1-1s0.4-1,1-1h6C17.6,22,18,22.4,18,23z M18,20c0,0.6-0.4,1-1,1h-6c-0.6,0-1-0.4-1-1s0.4-1,1-1h6C17.6,19,18,19.4,18,20z M24,11c0,0.6-0.4,1-1,1h-2c-0.6,0-1-0.4-1-1s0.4-1,1-1h2C23.6,10,24,10.4,24,11z"/></svg> <span class="inline-block renew-on-lang-switch" data-slug="print-pk-text">'+$('.translates-holder').attr('print-pk-text')+'</span></a><div class="padding-top-5 fs-14 color-light-blue text-left renew-on-lang-switch" data-slug="use-a4">'+$('.translates-holder').attr('use-a4')+'</div><div class="private-key-holder"><div class="scroll-content"><a href="javascript:void(0);" class="copy-private-key inline-block padding-right-5" data-toggle="tooltip" title="Copied." data-placement="right" data-clipboard-target="#copy-private-key"><svg class="width-100" version="1.1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 19.8 24" style="enable-background:new 0 0 19.8 24;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="24" width="19.8" x="1.2" y="0"></sliceSourceBounds></sfw></metadata><g><path fill="#303030" d="M19.8,2.9c0,4.9,0,9.9,0,14.8c0,0.1,0,0.1,0,0.2c-0.2,1.4-1.2,2.4-2.6,2.7c-0.2,0-0.2,0.1-0.2,0.3c0,1.3-0.6,2.2-1.8,2.8c-0.3,0.2-0.7,0.2-1,0.3c-3.8,0-7.5,0-11.3,0c0,0-0.1,0-0.1,0c-1.3-0.3-2.2-1-2.6-2.3C0.1,21.4,0,21.3,0,21.1c0-4.9,0-9.9,0-14.8c0,0,0-0.1,0-0.1c0.3-1.6,1.6-2.7,3.2-2.7c2.5,0,5.1,0,7.6,0c0.7,0,1.3,0.3,1.9,0.8c1.1,1.1,2.3,2.3,3.4,3.4c0.5,0.5,0.8,1.1,0.8,1.9c0,3,0,6.1,0,9.1c0,0.1,0,0.2,0,0.3c0.2-0.1,0.3-0.1,0.4-0.2c0.6-0.3,0.8-0.9,0.8-1.6c0-4.2,0-8.4,0-12.6c0-0.4,0-0.9,0-1.3c0-1-0.7-1.7-1.7-1.7c-3.7,0-7.3,0-11,0c-0.5,0-1,0.2-1.3,0.6c0,0.1-0.1,0.1-0.2,0.1c-0.5,0-1.1,0-1.6,0c0,0,0-0.1,0-0.1c0-0.1,0-0.1,0.1-0.2c0.3-0.9,0.9-1.5,1.8-1.8C4.5,0.1,4.7,0.1,5,0c4,0,8,0,11.9,0c0,0,0.1,0,0.1,0c1.4,0.2,2.3,1.2,2.6,2.5C19.7,2.7,19.7,2.8,19.8,2.9z M1.6,13.7c0,2.3,0,4.6,0,6.9c0,1.1,0.7,1.7,1.7,1.7c3.4,0,6.8,0,10.2,0c1.1,0,1.8-0.7,1.8-1.8c0-3.7,0-7.3,0-11c0-0.1,0-0.1,0-0.2c0-0.2-0.1-0.2-0.3-0.2c-0.6,0-1.1,0-1.7,0c-1.4,0-2.3-1-2.3-2.4c0-0.5,0-1,0-1.5C11,5.1,11,5,10.8,5c-2.5,0-5,0-7.5,0C3,5,2.8,5.1,2.5,5.2C1.9,5.5,1.6,6.1,1.6,6.8C1.6,9.1,1.6,11.4,1.6,13.7z"/><path fill="#303030" d="M8.5,17.5c1.4,0,2.8,0,4.1,0c0.6,0,0.9,0.3,1,0.8c0.1,0.5-0.2,1-0.7,1.1c-0.1,0-0.2,0-0.3,0c-2.8,0-5.5,0-8.3,0c-0.6,0-1.1-0.4-1.1-0.9c0-0.5,0.4-0.9,1-0.9c0.6,0,1.3,0,1.9,0C6.9,17.5,7.7,17.5,8.5,17.5z"/><path fill="#303030" d="M8.4,15.3c-1.4,0-2.8,0-4.2,0c-0.4,0-0.8-0.2-0.9-0.6c-0.1-0.4,0-0.8,0.3-1c0.2-0.1,0.4-0.2,0.6-0.2c2.8,0,5.7,0,8.5,0c0.5,0,0.9,0.4,0.9,0.9c0,0.5-0.4,0.9-0.9,1c-0.6,0-1.2,0-1.8,0C10.1,15.3,9.3,15.3,8.4,15.3z"/><path fill="#303030" d="M6.7,11.2c-0.8,0-1.6,0-2.4,0c-0.4,0-0.7-0.2-0.9-0.6c-0.2-0.3-0.1-0.7,0.1-1c0.2-0.2,0.4-0.3,0.7-0.3c1.6,0,3.2,0,4.9,0c0.6,0,1,0.4,1,1c0,0.5-0.4,0.9-1,0.9C8.3,11.2,7.5,11.2,6.7,11.2z"/></g></svg></a><textarea readonly="" class="inline-block" id="copy-private-key">' + to_string + '</textarea></div></div><div class="padding-top-10 padding-bottom-15 fs-14 color-warning-red renew-on-lang-switch" data-slug="not-recomm">'+$('.translates-holder').attr('not-recomm')+'</div><div class="padding-top-10 padding-bottom-10 padding-left-70 padding-right-70 padding-left-xs-10 padding-right-xs-10 text-left fs-14 color-white row-with-warning-red-background renew-on-lang-switch" data-slug="dont-lose-it"><div>'+$('.translates-holder').attr('dont-lose-it')+'</div><div class="renew-on-lang-switch" data-slug="make-backup">'+$('.translates-holder').attr('make-backup')+'</div></div>');
 
                                 $('.print-private-key').click(function() {
                                     projectData.general_logic.generatePrivateKeyFile($(this).attr('data-key'));
@@ -5527,7 +5790,7 @@ $(document).on('click', '.open-settings', function () {
                         setTimeout(function () {
                             decryptKeystore(keystore_string, $('.settings-popup #show-private-key-password').val().trim(), function (success, to_string, error, error_message) {
                                 if (success) {
-                                    this_camping_row.html('<a href="javascript:void(0);" data-key="'+to_string+'" class="margin-top-10 fs-20 fs-xs-16 color-light-blue print-private-key inline-block white-light-blue-btn"><?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/"><!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/"><!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/"><!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/"><!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/"><!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/"><!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/"><!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/"><svg version="1.1" style="width: 30px; display: inline-block; vertical-align: middle;" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 28 28.1" style="enable-background:new 0 0 28 28.1;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="28.1" width="28" x="0" y="0"></sliceSourceBounds></sfw></metadata><path style="fill:white" d="M25,6h-3V2c0-1.1-0.9-2-2-2H8C6.9,0,6,0.9,6,2v4H3C1.3,6,0,7.3,0,9c0,0,0,0,0,0.1V19c0,1.7,1.3,3,2.9,3.1c0,0,0,0,0.1,0h3v4c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2v-4h3c1.7,0,3-1.3,3-3c0,0,0,0,0-0.1V9.1C28,7.4,26.7,6,25,6L25,6z M8,2h12v4H8V2z M20,26H8v-9h12V26z M26,18.9c0,0.6-0.4,1-0.9,1.1c0,0,0,0-0.1,0h-3v-3c0-1.1-0.9-2-2-2H8c-1.1,0-2,0.9-2,2v3H3c-0.6,0-1-0.4-1-1c0,0,0,0,0-0.1V9c0-0.6,0.4-1,0.9-1.1c0,0,0,0,0.1,0h22c0.6,0,1,0.4,1,1c0,0,0,0,0,0.1V18.9z M18,23c0,0.6-0.4,1-1,1h-6c-0.6,0-1-0.4-1-1s0.4-1,1-1h6C17.6,22,18,22.4,18,23z M18,20c0,0.6-0.4,1-1,1h-6c-0.6,0-1-0.4-1-1s0.4-1,1-1h6C17.6,19,18,19.4,18,20z M24,11c0,0.6-0.4,1-1,1h-2c-0.6,0-1-0.4-1-1s0.4-1,1-1h2C23.6,10,24,10.4,24,11z"/></svg> <span class="inline-block renew-on-lang-switch" data-slug="print-pk-text">'+$('.translates-holder').attr('print-pk-text')+'</span></a><div class="padding-top-5 fs-14 color-light-blue text-left renew-on-lang-switch" data-slug="use-a4">'+$('.translates-holder').attr('use-a4')+'</div><div class="private-key-holder"><div class="scroll-content"><a href="javascript:void(0);" class="copy-private-key inline-block padding-right-5" data-toggle="tooltip" title="Copied." data-placement="right" data-clipboard-target="#copy-private-key"><svg class="width-100" version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 19.8 24" style="enable-background:new 0 0 19.8 24;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="24" width="19.8" x="1.2" y="0"></sliceSourceBounds></sfw></metadata><g><path fill="#303030" d="M19.8,2.9c0,4.9,0,9.9,0,14.8c0,0.1,0,0.1,0,0.2c-0.2,1.4-1.2,2.4-2.6,2.7c-0.2,0-0.2,0.1-0.2,0.3c0,1.3-0.6,2.2-1.8,2.8c-0.3,0.2-0.7,0.2-1,0.3c-3.8,0-7.5,0-11.3,0c0,0-0.1,0-0.1,0c-1.3-0.3-2.2-1-2.6-2.3C0.1,21.4,0,21.3,0,21.1c0-4.9,0-9.9,0-14.8c0,0,0-0.1,0-0.1c0.3-1.6,1.6-2.7,3.2-2.7c2.5,0,5.1,0,7.6,0c0.7,0,1.3,0.3,1.9,0.8c1.1,1.1,2.3,2.3,3.4,3.4c0.5,0.5,0.8,1.1,0.8,1.9c0,3,0,6.1,0,9.1c0,0.1,0,0.2,0,0.3c0.2-0.1,0.3-0.1,0.4-0.2c0.6-0.3,0.8-0.9,0.8-1.6c0-4.2,0-8.4,0-12.6c0-0.4,0-0.9,0-1.3c0-1-0.7-1.7-1.7-1.7c-3.7,0-7.3,0-11,0c-0.5,0-1,0.2-1.3,0.6c0,0.1-0.1,0.1-0.2,0.1c-0.5,0-1.1,0-1.6,0c0,0,0-0.1,0-0.1c0-0.1,0-0.1,0.1-0.2c0.3-0.9,0.9-1.5,1.8-1.8C4.5,0.1,4.7,0.1,5,0c4,0,8,0,11.9,0c0,0,0.1,0,0.1,0c1.4,0.2,2.3,1.2,2.6,2.5C19.7,2.7,19.7,2.8,19.8,2.9z M1.6,13.7c0,2.3,0,4.6,0,6.9c0,1.1,0.7,1.7,1.7,1.7c3.4,0,6.8,0,10.2,0c1.1,0,1.8-0.7,1.8-1.8c0-3.7,0-7.3,0-11c0-0.1,0-0.1,0-0.2c0-0.2-0.1-0.2-0.3-0.2c-0.6,0-1.1,0-1.7,0c-1.4,0-2.3-1-2.3-2.4c0-0.5,0-1,0-1.5C11,5.1,11,5,10.8,5c-2.5,0-5,0-7.5,0C3,5,2.8,5.1,2.5,5.2C1.9,5.5,1.6,6.1,1.6,6.8C1.6,9.1,1.6,11.4,1.6,13.7z"/><path fill="#303030" d="M8.5,17.5c1.4,0,2.8,0,4.1,0c0.6,0,0.9,0.3,1,0.8c0.1,0.5-0.2,1-0.7,1.1c-0.1,0-0.2,0-0.3,0c-2.8,0-5.5,0-8.3,0c-0.6,0-1.1-0.4-1.1-0.9c0-0.5,0.4-0.9,1-0.9c0.6,0,1.3,0,1.9,0C6.9,17.5,7.7,17.5,8.5,17.5z"/><path fill="#303030" d="M8.4,15.3c-1.4,0-2.8,0-4.2,0c-0.4,0-0.8-0.2-0.9-0.6c-0.1-0.4,0-0.8,0.3-1c0.2-0.1,0.4-0.2,0.6-0.2c2.8,0,5.7,0,8.5,0c0.5,0,0.9,0.4,0.9,0.9c0,0.5-0.4,0.9-0.9,1c-0.6,0-1.2,0-1.8,0C10.1,15.3,9.3,15.3,8.4,15.3z"/><path fill="#303030" d="M6.7,11.2c-0.8,0-1.6,0-2.4,0c-0.4,0-0.7-0.2-0.9-0.6c-0.2-0.3-0.1-0.7,0.1-1c0.2-0.2,0.4-0.3,0.7-0.3c1.6,0,3.2,0,4.9,0c0.6,0,1,0.4,1,1c0,0.5-0.4,0.9-1,0.9C8.3,11.2,7.5,11.2,6.7,11.2z"/></g></svg></a><textarea readonly="" class="inline-block" id="copy-private-key">' + to_string + '</textarea></div></div><div class="padding-top-10 padding-bottom-15 fs-14 color-warning-red renew-on-lang-switch" data-slug="not-recomm">'+$('.translates-holder').attr('not-recomm')+'</div><div class="padding-top-10 padding-bottom-10 padding-left-70 padding-right-70 padding-left-xs-10 padding-right-xs-10 text-left fs-14 color-white row-with-warning-red-background"><div class="renew-on-lang-switch" data-slug="dont-lose-it">'+$('.translates-holder').attr('dont-lose-it')+'</div><div class="renew-on-lang-switch" data-slug="make-backup">'+$('.translates-holder').attr('make-backup')+'</div></div>');
+                                    this_camping_row.html('<a href="javascript:void(0);" data-key="'+to_string+'" class="margin-top-10 fs-20 fs-xs-16 color-light-blue print-private-key inline-block white-light-blue-btn"><?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/"><!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/"><!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/"><!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/"><!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/"><!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/"><!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/"><!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/"><svg version="1.1" style="width: 30px; display: inline-block; vertical-align: middle;" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 28 28.1" style="enable-background:new 0 0 28 28.1;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="28.1" width="28" x="0" y="0"></sliceSourceBounds></sfw></metadata><path style="fill:white" d="M25,6h-3V2c0-1.1-0.9-2-2-2H8C6.9,0,6,0.9,6,2v4H3C1.3,6,0,7.3,0,9c0,0,0,0,0,0.1V19c0,1.7,1.3,3,2.9,3.1c0,0,0,0,0.1,0h3v4c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2v-4h3c1.7,0,3-1.3,3-3c0,0,0,0,0-0.1V9.1C28,7.4,26.7,6,25,6L25,6z M8,2h12v4H8V2z M20,26H8v-9h12V26z M26,18.9c0,0.6-0.4,1-0.9,1.1c0,0,0,0-0.1,0h-3v-3c0-1.1-0.9-2-2-2H8c-1.1,0-2,0.9-2,2v3H3c-0.6,0-1-0.4-1-1c0,0,0,0,0-0.1V9c0-0.6,0.4-1,0.9-1.1c0,0,0,0,0.1,0h22c0.6,0,1,0.4,1,1c0,0,0,0,0,0.1V18.9z M18,23c0,0.6-0.4,1-1,1h-6c-0.6,0-1-0.4-1-1s0.4-1,1-1h6C17.6,22,18,22.4,18,23z M18,20c0,0.6-0.4,1-1,1h-6c-0.6,0-1-0.4-1-1s0.4-1,1-1h6C17.6,19,18,19.4,18,20z M24,11c0,0.6-0.4,1-1,1h-2c-0.6,0-1-0.4-1-1s0.4-1,1-1h2C23.6,10,24,10.4,24,11z"/></svg> <span class="inline-block renew-on-lang-switch" data-slug="print-pk-text">'+$('.translates-holder').attr('print-pk-text')+'</span></a><div class="padding-top-5 fs-14 color-light-blue text-left renew-on-lang-switch" data-slug="use-a4">'+$('.translates-holder').attr('use-a4')+'</div><div class="private-key-holder"><div class="scroll-content"><a href="javascript:void(0);" class="copy-private-key inline-block padding-right-5" data-toggle="tooltip" title="Copied." data-placement="right" data-clipboard-target="#copy-private-key"><svg class="width-100" version="1.1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 19.8 24" style="enable-background:new 0 0 19.8 24;" xml:space="preserve"><metadata><sfw xmlns="&ns_sfw;"><slices></slices><sliceSourceBounds bottomLeftOrigin="true" height="24" width="19.8" x="1.2" y="0"></sliceSourceBounds></sfw></metadata><g><path fill="#303030" d="M19.8,2.9c0,4.9,0,9.9,0,14.8c0,0.1,0,0.1,0,0.2c-0.2,1.4-1.2,2.4-2.6,2.7c-0.2,0-0.2,0.1-0.2,0.3c0,1.3-0.6,2.2-1.8,2.8c-0.3,0.2-0.7,0.2-1,0.3c-3.8,0-7.5,0-11.3,0c0,0-0.1,0-0.1,0c-1.3-0.3-2.2-1-2.6-2.3C0.1,21.4,0,21.3,0,21.1c0-4.9,0-9.9,0-14.8c0,0,0-0.1,0-0.1c0.3-1.6,1.6-2.7,3.2-2.7c2.5,0,5.1,0,7.6,0c0.7,0,1.3,0.3,1.9,0.8c1.1,1.1,2.3,2.3,3.4,3.4c0.5,0.5,0.8,1.1,0.8,1.9c0,3,0,6.1,0,9.1c0,0.1,0,0.2,0,0.3c0.2-0.1,0.3-0.1,0.4-0.2c0.6-0.3,0.8-0.9,0.8-1.6c0-4.2,0-8.4,0-12.6c0-0.4,0-0.9,0-1.3c0-1-0.7-1.7-1.7-1.7c-3.7,0-7.3,0-11,0c-0.5,0-1,0.2-1.3,0.6c0,0.1-0.1,0.1-0.2,0.1c-0.5,0-1.1,0-1.6,0c0,0,0-0.1,0-0.1c0-0.1,0-0.1,0.1-0.2c0.3-0.9,0.9-1.5,1.8-1.8C4.5,0.1,4.7,0.1,5,0c4,0,8,0,11.9,0c0,0,0.1,0,0.1,0c1.4,0.2,2.3,1.2,2.6,2.5C19.7,2.7,19.7,2.8,19.8,2.9z M1.6,13.7c0,2.3,0,4.6,0,6.9c0,1.1,0.7,1.7,1.7,1.7c3.4,0,6.8,0,10.2,0c1.1,0,1.8-0.7,1.8-1.8c0-3.7,0-7.3,0-11c0-0.1,0-0.1,0-0.2c0-0.2-0.1-0.2-0.3-0.2c-0.6,0-1.1,0-1.7,0c-1.4,0-2.3-1-2.3-2.4c0-0.5,0-1,0-1.5C11,5.1,11,5,10.8,5c-2.5,0-5,0-7.5,0C3,5,2.8,5.1,2.5,5.2C1.9,5.5,1.6,6.1,1.6,6.8C1.6,9.1,1.6,11.4,1.6,13.7z"/><path fill="#303030" d="M8.5,17.5c1.4,0,2.8,0,4.1,0c0.6,0,0.9,0.3,1,0.8c0.1,0.5-0.2,1-0.7,1.1c-0.1,0-0.2,0-0.3,0c-2.8,0-5.5,0-8.3,0c-0.6,0-1.1-0.4-1.1-0.9c0-0.5,0.4-0.9,1-0.9c0.6,0,1.3,0,1.9,0C6.9,17.5,7.7,17.5,8.5,17.5z"/><path fill="#303030" d="M8.4,15.3c-1.4,0-2.8,0-4.2,0c-0.4,0-0.8-0.2-0.9-0.6c-0.1-0.4,0-0.8,0.3-1c0.2-0.1,0.4-0.2,0.6-0.2c2.8,0,5.7,0,8.5,0c0.5,0,0.9,0.4,0.9,0.9c0,0.5-0.4,0.9-0.9,1c-0.6,0-1.2,0-1.8,0C10.1,15.3,9.3,15.3,8.4,15.3z"/><path fill="#303030" d="M6.7,11.2c-0.8,0-1.6,0-2.4,0c-0.4,0-0.7-0.2-0.9-0.6c-0.2-0.3-0.1-0.7,0.1-1c0.2-0.2,0.4-0.3,0.7-0.3c1.6,0,3.2,0,4.9,0c0.6,0,1,0.4,1,1c0,0.5-0.4,0.9-1,0.9C8.3,11.2,7.5,11.2,6.7,11.2z"/></g></svg></a><textarea readonly="" class="inline-block" id="copy-private-key">' + to_string + '</textarea></div></div><div class="padding-top-10 padding-bottom-15 fs-14 color-warning-red renew-on-lang-switch" data-slug="not-recomm">'+$('.translates-holder').attr('not-recomm')+'</div><div class="padding-top-10 padding-bottom-10 padding-left-70 padding-right-70 padding-left-xs-10 padding-right-xs-10 text-left fs-14 color-white row-with-warning-red-background"><div class="renew-on-lang-switch" data-slug="dont-lose-it">'+$('.translates-holder').attr('dont-lose-it')+'</div><div class="renew-on-lang-switch" data-slug="make-backup">'+$('.translates-holder').attr('make-backup')+'</div></div>');
 
                                     $('.print-private-key').click(function() {
                                         projectData.general_logic.generatePrivateKeyFile($(this).attr('data-key'));
@@ -6110,3 +6373,22 @@ var assuranceTransactions = {
         callback('0x' + contract_cancellation_transaction.serialize().toString('hex'));
     }
 };*/
+
+// method to handle deep linking
+window.handleOpenURL = function(url) {
+    var urlInstance = new URL(url);
+    console.log(url, 'url');
+    console.log(urlInstance, 'urlInstance');
+    if (urlInstance.searchParams.get('redirect-to') != null) {
+        if (urlInstance.searchParams.get('redirect-to') == 'buy') {
+            var event = new CustomEvent('redirectToBuy');
+            document.dispatchEvent(event);
+        } else if (urlInstance.searchParams.get('redirect-to') == 'send') {
+            var event = new CustomEvent('redirectToSend');
+            document.dispatchEvent(event);
+        } else if (urlInstance.searchParams.get('redirect-to') == 'swap') {
+            var event = new CustomEvent('redirectToSwap');
+            document.dispatchEvent(event);
+        }
+    }
+}

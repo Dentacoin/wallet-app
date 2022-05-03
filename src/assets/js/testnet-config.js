@@ -1,4 +1,5 @@
 var config_variable = {
+    transak_api_key: 'ca55ce43-0421-4c7e-a89b-93ebda818cc8',
     etherscan_api_key: 'Y9EGXZ7UVGHSUS2N6FSNDCB6E5VCR7EUWD',
     etherscan_domain: 'https://kovan.etherscan.io',
     etherscan_api_domain: 'https://api-kovan.etherscan.io',
