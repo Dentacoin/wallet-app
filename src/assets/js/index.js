@@ -699,7 +699,7 @@ var projectData = {
                                 indacoinCurToParamater = 'DCN%20(Optimism)';
                             }
 
-                            window.open('https://indacoin.io/payment/en?partner=dentacoin&cur_from=USD&cur_to=' + indacoinCurToParamater + '&amount=' + $('section.ready-to-purchase-with-external-api #usd-value').val().trim() + '&address=' + $('section.ready-to-purchase-with-external-api input#dcn_address').val().trim() + '&user_id=' + $('section.ready-to-purchase-with-external-api input#email').val().trim(), '_blank');
+                            window.open('https://indacoin.io/payment/en?partner=dentacoin&cur_from=USD&cur_to=' + indacoinCurToParamater + '&amount=' + $('section.ready-to-purchase-with-external-api #usd-value').val().trim() + '&address=' + $('section.ready-to-purchase-with-external-api input#dcn_address').val().trim() + '&user_id=' + $('section.ready-to-purchase-with-external-api input#email').val().trim(), '_system');
                         } else {
                             var network = 'ethereum';
                             if (currency == 'eth-l2') {
@@ -709,7 +709,7 @@ var projectData = {
                             if (is_hybrid || basic.isMobile()) {
                                 url += '&widgetHeight=500px&widgetWidth=350px';
                             }
-                            window.open(url, '_blank');
+                            window.open(url, '_system');
                         }
                     }
                 }
