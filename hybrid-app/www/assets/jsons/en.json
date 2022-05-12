@@ -310,7 +310,7 @@
   "not-enough-l2-dcn-balance" : "You don't have enough Dentacoin on Optimism balance to complete the swap.",
   "not-enough-l2-eth-balance" : "You don't have enough ETH on Optimism balance to complete the swap.",
   "eth-network-desc" : "Traded on most exchanges. Swap to DCN on Optimism for cheaper payments to dentists, Dentacoin Assurance fees, or staking.",
-  "l2-eth-network-desc" : "Provides cheaper transactions. If you wish to trade DCN on exchanges (excl. Uniswap), first swap it to DCN on Ethereum Mainnet.",
+  "l2-eth-network-desc" : "You can use it to cover transaction fees on Optimism network.",
   "settings-menu" : "Settings",
   "where-to-pay" : "Where to pay with DCN",
   "where-to-trade" : "Where to trade DCN",
@@ -322,7 +322,7 @@
   "seven-days" : "(apr. 7 days)",
   "pending-tx-id" : "Pending Transaction ID",
   "withdraw-btn" : "WITHDRAW",
-  "data-dcn-l2-description" : "You can use DCN on Optimism for staking (coming soon), for payments to partner dentists or for covering your Dentacoin Assurance fees. Note that it cannot be traded on other exchanges than Uniswap at the moment. Choose Dentacoin on Ethereum Mainnet for trading purposes.",
-  "data-dcn-description" : "DCN on Ethereum Mainnet is used mainly for trading purposes on exchange platforms. If you want to stake DCN (coming soon), choose DCN on Optimism.",
+  "data-dcn-l2-description" : "You can use DCN on Optimism for <a href='https://stakedcn.com/' target='_blank' class='lato-bold text-decoration-underline color-light-blue'>staking</a>, for payments to partner dentists or for covering your Dentacoin Assurance fees. Note that it cannot be traded on other exchanges than Uniswap at the moment. Choose Dentacoin on Ethereum Mainnet for trading purposes.",
+  "data-dcn-description" : "DCN on Ethereum Mainnet is used mainly for trading purposes on exchange platforms. If you want to <a href='https://stakedcn.com/' target='_blank' class='lato-bold text-decoration-underline color-light-blue'>stake DCN</a>, choose DCN on Optimism.",
   "data-eth-description" : "You can use ETH to cover transaction fees on Ethereum Mainnet. If you wish to cover fees on Optimism network, use the SWAP tab after purchase."
 }
