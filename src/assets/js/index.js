@@ -707,7 +707,7 @@ var projectData = {
                             }
                             var url = 'https://dentacoin.com/transak-payment-widget?cryptoAmount=' + $('section.ready-to-purchase-with-external-api #crypto-amount').val().trim() + '&network=' + network + '&walletAddress=' + $('section.ready-to-purchase-with-external-api input#dcn_address').val().trim() + '&email=' + $('section.ready-to-purchase-with-external-api input#email').val().trim();
                             if (is_hybrid || basic.isMobile()) {
-                                url += '&widgetHeight=500px&widgetWidth=350px';
+                                url += '&widgetHeight=600px&widgetWidth=350px';
                             }
                             window.open(url, '_system');
                         }
