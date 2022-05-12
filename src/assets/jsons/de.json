@@ -310,7 +310,7 @@
   "not-enough-l2-dcn-balance" : "Sie haben nicht genug Dentacoin-auf-Optimism-Guthaben, um den Swap abzuschließen.",
   "not-enough-l2-eth-balance" : "Sie haben nicht genug Ether-auf-Optimism-Guthaben, um den Swap abzuschließen.",
   "eth-network-desc" : "An den meisten Krypto-Börsen gehandelt. Wechseln Sie zu DCN auf Optimism, um günstigere Zahlungen an Zahnärzte und Dentacoin-Assurance-Gebühren zu genießen. Und das beste daran: DCN auf Optimism können Sie demnächst für Staking benutzen. ",
-  "l2-eth-network-desc" : "Ermöglicht günstigere Transaktionen. Wenn Sie DCN an Krypto-Börsen handeln möchten (außer Uniswap), tauschen Sie DCN auf Optimism zuerst zu DCN auf Ethereum Mainnet aus.",
+  "l2-eth-network-desc" : "Sie können ihn verwenden, um Transaktionsgebühren im Optimism-Netzwerk zu begleichen.",
   "settings-menu" : "Einstellungen",
   "where-to-pay" : "Wo kann man mit DCN bezahlen",
   "where-to-trade" : "Wo kann man DCN handeln",
@@ -322,7 +322,7 @@
   "seven-days" : "(ca. 7 Tage)",
   "pending-tx-id" : "Ausstehende Transaktions-ID",
   "withdraw-btn" : "ABHEBEN",
-  "data-dcn-l2-description" : "Sie können DCN auf Optimism für Staking (demnächst verfügbar), für Zahlungen an Partnerzahnärzte oder zur Deckung Ihrer Dentacoin Assurance-Gebühren verwenden. Beachten Sie, dass er derzeit nicht an anderen Börsen als Uniswap gehandelt werden kann. Wählen Sie Dentacoin im Ethereum Mainnet für Handelszwecke.",
-  "data-dcn-description" : "DCN auf Ethereum Mainnet wird hauptsächlich für Handelszwecke auf Börsenplattformen verwendet. Wenn Sie DCN staken möchten (demnächst verfügbar), wählen Sie bitte DCN auf Optimism.",
+  "data-dcn-l2-description" : "Sie können DCN auf Optimism für <a href='https://stakedcn.com/' target='_blank' class='lato-bold text-decoration-underline color-light-blue'>Staking</a>, für Zahlungen an Partnerzahnärzte oder zur Deckung Ihrer Dentacoin Assurance-Gebühren verwenden. Beachten Sie, dass er derzeit nicht an anderen Börsen als Uniswap gehandelt werden kann. Wählen Sie Dentacoin im Ethereum Mainnet für Handelszwecke.",
+  "data-dcn-description" : "DCN auf Ethereum Mainnet wird hauptsächlich für Handelszwecke auf Börsenplattformen verwendet. Wenn Sie <a href='https://stakedcn.com/' target='_blank' class='lato-bold text-decoration-underline color-light-blue'>DCN staken</a> möchten, wählen Sie bitte DCN auf Optimism.",
   "data-eth-description" : "Sie können ETH verwenden, um Transaktionsgebühren im Ethereum Mainnet zu decken. Wenn Sie Gebühren im Optimism-Netzwerk abdecken möchten, klicken Sie nach dem Kauf auf SWAP."
 }

@@ -705,7 +705,7 @@ var projectData = {
                             if (currency == 'eth-l2') {
                                 network = 'optimism';
                             }
-                            var url = 'https://dentacoin.com/transak-payment-widget?fiatAmount=' + $('section.ready-to-purchase-with-external-api #usd-value').val().trim() + '&network=' + network + '&walletAddress=' + $('section.ready-to-purchase-with-external-api input#dcn_address').val().trim() + '&email=' + $('section.ready-to-purchase-with-external-api input#email').val().trim();
+                            var url = 'https://dentacoin.com/transak-payment-widget?cryptoAmount=' + $('section.ready-to-purchase-with-external-api #crypto-amount').val().trim() + '&network=' + network + '&walletAddress=' + $('section.ready-to-purchase-with-external-api input#dcn_address').val().trim() + '&email=' + $('section.ready-to-purchase-with-external-api input#email').val().trim();
                             if (is_hybrid || basic.isMobile()) {
                                 url += '&widgetHeight=500px&widgetWidth=350px';
                             }
