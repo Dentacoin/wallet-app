@@ -5180,6 +5180,7 @@ $(document).on('click', 'header .open-wallet-menu', function () {
 });
 
 function initWalletConnectLogic(uri, approve_session) {
+    console.log('initWalletConnectLogic');
     console.log(uri, approve_session, 'initWalletConnectLogic');
     connector = new WalletConnect({
         uri: uri
@@ -5195,6 +5196,7 @@ function initWalletConnectLogic(uri, approve_session) {
     }
 
     const whitelistedWalletConnectConnections = ['https://stakedcn.com'];
+    console.log(whitelistedWalletConnectConnections, 'whitelistedWalletConnectConnections');
     connector.on('session_request', (error, payload) => {
         if (error) {
             throw error;
@@ -6383,6 +6385,8 @@ window.handleOpenURL = function(url) {
         // WalletConnect
         setTimeout(function() {
             console.log('call initWalletConnectLogic');
+            console.log(typeof(initWalletConnectLogic), 'typeof(initWalletConnectLogic)');
+            console.log(typeof(window.initWalletConnectLogic), 'typeof(window.initWalletConnectLogic)');
             initWalletConnectLogic(urlInstance.searchParams.get('uri'), true);
         }, 5000);
     } else if (urlInstance.searchParams.get('redirect-to') != null) {
@@ -6397,4 +6401,4 @@ window.handleOpenURL = function(url) {
             document.dispatchEvent(event);
         }
     }
-}
+};
