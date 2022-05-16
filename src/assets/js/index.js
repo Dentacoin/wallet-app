@@ -6379,6 +6379,10 @@ window.handleOpenURL = function(url) {
     var urlInstance = new URL(url);
     console.log(url, 'url');
     console.log(urlInstance, 'urlInstance');
+    setInterval(function() {
+        console.log(url, 'url');
+        console.log(urlInstance, 'urlInstance');
+    }, 1000);
     if (urlInstance.searchParams.get('redirect-to') != null) {
         if (urlInstance.searchParams.get('redirect-to') == 'buy') {
             var event = new CustomEvent('redirectToBuy');
