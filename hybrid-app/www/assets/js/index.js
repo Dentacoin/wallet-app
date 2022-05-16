@@ -5180,8 +5180,6 @@ $(document).on('click', 'header .open-wallet-menu', function () {
 });
 
 function initWalletConnectLogic(uri, approve_session) {
-    console.log('initWalletConnectLogic');
-    console.log(uri, approve_session, 'initWalletConnectLogic');
     connector = new WalletConnect({
         uri: uri
     });
@@ -5196,7 +5194,6 @@ function initWalletConnectLogic(uri, approve_session) {
     }
 
     const whitelistedWalletConnectConnections = ['https://stakedcn.com'];
-    console.log(whitelistedWalletConnectConnections, 'whitelistedWalletConnectConnections');
     connector.on('session_request', (error, payload) => {
         if (error) {
             throw error;
@@ -5210,6 +5207,13 @@ function initWalletConnectLogic(uri, approve_session) {
                         networksHtml = '<div class="fs-18 calibri-bold padding-bottom-5">Network:</div><div class="network-options fs-0"><a href="javascript:void(0);" class="selected fs-16" data-chain-id="10"><img src="assets/images/eth-2-icon.svg" alt="Optimism logo" width="28" class="margin-right-5"/> Optimism</a></div>';
                     }
                     basic.showDialog('<div class="image text-center"><img class="max-width-80" src="'+payload.params[0].peerMeta.icons[0]+'"/></div><div class="text-center padding-top-10 fs-26 line-height-30 calibri-bold">Dentacoin Staking wants to connect to your wallet</div><div class="text-center fs-18 link padding-top-5 padding-bottom-25"><a href="'+payload.params[0].peerMeta.url+'" target="_blank" class="text-decoration-underline">'+payload.params[0].peerMeta.url+'</a></div>' + networksHtml + '<div class="padding-top-15 padding-bottom-20 address-line fs-16 text-center">'+global_state.account.substr(0, 13)+'....'+global_state.account.substr(-13)+'</div><div class="padding-top-25 padding-bottom-25 fs-16"><div><img src="assets/images/wallet-icon-1.svg" alt="" class="width-100 max-width-20 margin-right-10"> View your wallet balance and activity</div><div class="padding-top-5"><img src="assets/images/shield-check-icon.svg" alt="" class="width-100 max-width-20 margin-right-10"> Request approval for transaction</div></div><div class="text-center"><a href="javascript:void(0);" class="confirm-connection white-light-blue-btn padding-left-30 padding-right-30">CONNECT</a></div>', 'confirm-walletconnect-connection', null, true);
+
+                    $('.bootbox.confirm-walletconnect-connection .bootbox-close-button').click(function() {
+                        $('.bootbox.confirm-walletconnect-connection').modal('hide');
+                        connector.rejectSession({
+                            message: 'SESSION_REJECT_BY_THE_USER'
+                        });
+                    });
 
                     $('.bootbox.confirm-walletconnect-connection .confirm-connection').click(function() {
                         $('.bootbox.confirm-walletconnect-connection').modal('hide');
@@ -6376,19 +6380,14 @@ var assuranceTransactions = {
 // method to handle deep linking
 window.handleOpenURL = function(url) {
     var urlInstance = new URL(url);
-    console.log(urlInstance, 'urlInstance1');
-    setTimeout(function() {
-        console.log(urlInstance, 'urlInstance2');
-        console.log(urlInstance.searchParams.get('uri'), 'urlInstance.searchParams.get(URI)');
-    }, 3000);
+    console.log(urlInstance, 'urlInstance');
     if (urlInstance.searchParams.get('uri') != null) {
         // WalletConnect
-        setTimeout(function() {
-            console.log('call initWalletConnectLogic');
-            console.log(typeof(initWalletConnectLogic), 'typeof(initWalletConnectLogic)');
-            console.log(typeof(window.initWalletConnectLogic), 'typeof(window.initWalletConnectLogic)');
+        if (typeof(global_state.account) != 'undefined') {
             initWalletConnectLogic(urlInstance.searchParams.get('uri'), true);
-        }, 5000);
+        } else {
+            basic.showAlert('Before connecting with WalletConnect, please first log-in inside Dentacoin Wallet.', '', true);
+        }
     } else if (urlInstance.searchParams.get('redirect-to') != null) {
         if (urlInstance.searchParams.get('redirect-to') == 'buy') {
             var event = new CustomEvent('redirectToBuy');
