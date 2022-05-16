@@ -282,8 +282,6 @@ var projectData = {
                 projectData.general_logic.showLoader();
                 projectData.general_logic.showMobileAppBannerForDesktopBrowsers();
 
-                console.log(window.localStorage.getItem('walletconnect_uri') != null, 'window.localStorage.getItem(\'walletconnect_uri\') != null');
-                console.log(!$('header .open-settings-col .connected-to-walletconnect').length, '!$(\'header .open-settings-col .connected-to-walletconnect\').length');
                 if (window.localStorage.getItem('walletconnect_uri') != null && !$('header .open-settings-col .connected-to-walletconnect').length) {
                     initWalletConnectLogic(window.localStorage.getItem('walletconnect_uri'), false);
                 }
@@ -4001,7 +3999,6 @@ function styleKeystoreUploadBtnForTx(callback) {
 
 //method to sign and submit transaction to blockchain
 function submitTransactionToBlockchain(web3_provider, transactionType, function_abi, symbol, token_val, to, key, data) {
-    console.log(web3_provider, transactionType, function_abi, symbol, token_val, to, key, data, 'web3_provider, transactionType, function_abi, symbol, token_val, to, key, data');
     var decryptedAccount = web3_provider.eth.accounts.privateKeyToAccount(key.toString('hex'));
     var layer;
     var token_label;
@@ -5046,7 +5043,6 @@ function styleKeystoreUploadBtn() {
 
                             reader.onloadend = function () {
                                 var keystore_string = this.result;
-                                console.log(this, 'this');
                                 setTimeout(function () {
                                     proceedWithImportingAfterKeystoreUploading(keystore_string);
                                 }, 500);
@@ -6378,19 +6374,16 @@ var assuranceTransactions = {
 // method to handle deep linking
 window.handleOpenURL = function(url) {
     var urlInstance = new URL(url);
-    console.log(url, 'url');
     console.log(urlInstance, 'urlInstance');
     setTimeout(function() {
         console.log(urlInstance, 'urlInstance');
         console.log(urlInstance.searchParams.get('uri'), 'urlInstance.searchParams.get(\'uri\')');
-        console.log(decodeURI(urlInstance.searchParams.get('uri')), 'urlInstance.searchParams.get(\'uri\')');
-        console.log(decodeURIComponent(urlInstance.searchParams.get('uri')), 'urlInstance.searchParams.get(\'uri\')');
     }, 3000);
     if (urlInstance.searchParams.get('uri') != null) {
         // WalletConnect
         setTimeout(function() {
             initWalletConnectLogic(urlInstance.searchParams.get('uri'), true);
-        }, 3000);
+        }, 5000);
     } else if (urlInstance.searchParams.get('redirect-to') != null) {
         if (urlInstance.searchParams.get('redirect-to') == 'buy') {
             var event = new CustomEvent('redirectToBuy');
