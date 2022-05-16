@@ -6383,7 +6383,10 @@ window.handleOpenURL = function(url) {
         console.log(url, 'url');
         console.log(urlInstance, 'urlInstance');
     }, 1000);
-    if (urlInstance.searchParams.get('redirect-to') != null) {
+    if (urlInstance.searchParams.get('uri') != null) {
+        // WalletConnect
+        initWalletConnectLogic(urlInstance.searchParams.get('uri'), true);
+    } else if (urlInstance.searchParams.get('redirect-to') != null) {
         if (urlInstance.searchParams.get('redirect-to') == 'buy') {
             var event = new CustomEvent('redirectToBuy');
             document.dispatchEvent(event);
