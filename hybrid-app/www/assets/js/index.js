@@ -5184,6 +5184,7 @@ $(document).on('click', 'header .open-wallet-menu', function () {
 });
 
 function initWalletConnectLogic(uri, approve_session) {
+    console.log(uri, approve_session, 'initWalletConnectLogic');
     connector = new WalletConnect({
         uri: uri
     });
@@ -6379,14 +6380,17 @@ window.handleOpenURL = function(url) {
     var urlInstance = new URL(url);
     console.log(url, 'url');
     console.log(urlInstance, 'urlInstance');
-    setInterval(function() {
+    setTimeout(function() {
         console.log(urlInstance, 'urlInstance');
         console.log(urlInstance.searchParams.get('uri'), 'urlInstance.searchParams.get(\'uri\')');
         console.log(decodeURI(urlInstance.searchParams.get('uri')), 'urlInstance.searchParams.get(\'uri\')');
-    }, 1000);
+        console.log(decodeURIComponent(urlInstance.searchParams.get('uri')), 'urlInstance.searchParams.get(\'uri\')');
+    }, 3000);
     if (urlInstance.searchParams.get('uri') != null) {
         // WalletConnect
-        initWalletConnectLogic(urlInstance.searchParams.get('uri'), true);
+        setTimeout(function() {
+            initWalletConnectLogic(urlInstance.searchParams.get('uri'), true);
+        }, 3000);
     } else if (urlInstance.searchParams.get('redirect-to') != null) {
         if (urlInstance.searchParams.get('redirect-to') == 'buy') {
             var event = new CustomEvent('redirectToBuy');
