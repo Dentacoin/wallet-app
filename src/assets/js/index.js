@@ -6374,14 +6374,15 @@ var assuranceTransactions = {
 // method to handle deep linking
 window.handleOpenURL = function(url) {
     var urlInstance = new URL(url);
-    console.log(urlInstance, 'urlInstance');
+    console.log(urlInstance, 'urlInstance1');
     setTimeout(function() {
-        console.log(urlInstance, 'urlInstance');
-        console.log(urlInstance.searchParams.get('uri'), 'urlInstance.searchParams.get(\'uri\')');
+        console.log(urlInstance, 'urlInstance2');
+        console.log(urlInstance.searchParams.get('uri'), 'urlInstance.searchParams.get(URI)');
     }, 3000);
     if (urlInstance.searchParams.get('uri') != null) {
         // WalletConnect
         setTimeout(function() {
+            console.log('call initWalletConnectLogic');
             initWalletConnectLogic(urlInstance.searchParams.get('uri'), true);
         }, 5000);
     } else if (urlInstance.searchParams.get('redirect-to') != null) {
