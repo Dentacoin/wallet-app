@@ -6380,8 +6380,9 @@ window.handleOpenURL = function(url) {
     console.log(url, 'url');
     console.log(urlInstance, 'urlInstance');
     setInterval(function() {
-        console.log(url, 'url');
         console.log(urlInstance, 'urlInstance');
+        console.log(urlInstance.searchParams.get('uri'), 'urlInstance.searchParams.get(\'uri\')');
+        console.log(decodeURI(urlInstance.searchParams.get('uri')), 'urlInstance.searchParams.get(\'uri\')');
     }, 1000);
     if (urlInstance.searchParams.get('uri') != null) {
         // WalletConnect
