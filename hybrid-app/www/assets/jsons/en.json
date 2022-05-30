@@ -326,6 +326,7 @@
   "data-dcn-description" : "DCN on Ethereum Mainnet is used mainly for trading purposes on exchange platforms. If you want to <a href='https://stakedcn.com/' target='_blank' class='lato-bold text-decoration-underline color-light-blue'>stake DCN</a>, choose DCN on Optimism.",
   "data-eth-description" : "You can use ETH to cover transaction fees on Ethereum Mainnet. If you wish to cover fees on Optimism network, use the SWAP tab after purchase.",
   "uniswap-success" : "You've completed Uniswap transaction successfully.",
+  "buy-and-stake-success" : "You've completed Buy & Stake transaction successfully.",
   "proof" : "Proof.",
   "uniswap-important-note" : "Important note: Dentacoin Wallet supports only DCN and ETH. Buying any other crypto currency will not be displayed in your wallet."
 }

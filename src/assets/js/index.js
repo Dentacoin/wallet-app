@@ -271,7 +271,8 @@ var L1DCNContract = getL1Instance(config_variable.l1.abi_definitions.dcn_contrac
 var getL2Instance = getContractInstance(dApp.web3_l2);
 var L2DCNContract = getL2Instance(config_variable.l2.abi_definitions.dcn_contract_abi, config_variable.l2.addresses.dcn_contract_address);
 var L2StakingContract = getL2Instance(config_variable.l2.abi_definitions.staking_contract_abi, config_variable.l2.addresses.staking_contract_address);
-var UniswapV3Contract = getL2Instance(config_variable.l2.abi_definitions.uniswap_v3_abi, config_variable.l2.addresses.uniswap_v3_address);
+var L2StakingAcceleratorContract = getL2Instance(config_variable.l2.abi_definitions.staking_accelerator_abi, config_variable.l2.addresses.staking_accelerator);
+//var UniswapV3Contract = getL2Instance(config_variable.l2.abi_definitions.uniswap_v3_abi, config_variable.l2.addresses.uniswap_v3_address);
 
 //logic splitted by pages
 var projectData = {
@@ -2166,7 +2167,7 @@ var projectData = {
                         proceedWithTxConfirmationPopupInitialization(txIcon, '<div class="dcn-amount">-' + amount + ' ETH</div>', '<div class="usd-amount">=$' + (amount * ethereum_data.market_data.current_price.usd).toFixed(2) + '</div>');
                     });
                 }
-            } else if (transactionType == 'approve' || transactionType == 'stake' || transactionType == 'unstake' || transactionType == 'claimReward' || transactionType == 'uniswap-multicall') {
+            } else if (transactionType == 'approve' || transactionType == 'stake' || transactionType == 'unstake' || transactionType == 'claimReward' || transactionType == 'uniswap-multicall' || transactionType == 'buy-and-stake') {
                 var txIcon = '<svg version="1.1" class="width-100 max-width-100 margin-bottom-10" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 606.6 606.8" style="enable-background:new 0 0 606.6 606.8;" xml:space="preserve"><g><g><g><path style="fill:#1FC0DE;" d="M302.9,606.8c-51.4,0-102.3-13.2-148.3-39.1C83.9,527.9,33,463,11.2,385C-33.8,224,60.6,56.3,221.7,11.3C295.5-9.4,373.8-1.5,441.9,33.6c8.3,4.3,11.6,14.5,7.3,22.8c-4.3,8.3-14.5,11.6-22.8,7.3c-60.6-31.1-130.1-38.2-195.7-19.8c-143.1,40-227,189-187,332.1c19.4,69.3,64.6,126.9,127.3,162.3s135.5,44.1,204.7,24.7c143.1-40,227-189,187-332.1c-7.7-27.7-19.7-53.7-35.5-77.3c-5.2-7.8-3.1-18.3,4.7-23.5c7.8-5.2,18.3-3.1,23.5,4.7c17.8,26.6,31.2,55.9,39.9,87c45,161.1-49.4,328.7-210.4,373.7C357.9,603,330.3,606.8,302.9,606.8z"/></g><g><g><path style="fill:none;stroke:#1FC0DE;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;" d="M697.3,345.9"/></g></g></g><g><g><path style="fill:#1FC0DE;" d="M298.8,429.6c-5.2,0-10.4-2.4-13.7-6.9L140.3,224.1c-5.5-7.5-3.9-18.1,3.7-23.6c7.5-5.5,18.1-3.9,23.6,3.7l144.8,198.5c5.5,7.5,3.9,18.1-3.7,23.6C305.7,428.5,302.2,429.6,298.8,429.6z"/></g><g><path style="fill:none;stroke:#1FC0DE;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;" d="M366.6,168.9"/></g><g><path style="fill:#1FC0DE;" d="M298.7,429.6c-2.9,0-5.8-0.7-8.5-2.3c-8.1-4.7-10.8-15.1-6.1-23.1L478,72.1c4.7-8.1,15-10.8,23.1-6.1c8.1,4.7,10.8,15.1,6.1,23.1l-193.9,332C310.2,426.6,304.5,429.6,298.7,429.6z"/></g></g></g></svg>';
                 proceedWithTxConfirmationPopupInitialization(txIcon, '', '');
             } else if (transactionType == 'swap') {
@@ -4076,7 +4077,7 @@ function submitTransactionToBlockchain(web3_provider, layer, transactionType, fu
                 transaction_obj.value = web3_provider.utils.toHex(data);
                 token_label = 'Dentacoin (L2) tokens';
             }
-        } else if (transactionType == 'uniswap-multicall' && data.type == 'walletconnect' && data.value != null && data.value != undefined) {
+        } else if ((transactionType == 'uniswap-multicall' || transactionType == 'buy-and-stake') && data.type == 'walletconnect' && data.value != null && data.value != undefined) {
             transaction_obj.value = data.value;
         }
 
@@ -4224,7 +4225,7 @@ function submitTransactionToBlockchain(web3_provider, layer, transactionType, fu
                             projectData.general_logic.firePushNotification('Sent ' + token_val + ' ' + symbol, 'To: ' + formattedTo);
                         });
                     }
-                } else if (transactionType == 'stake' || transactionType == 'unstake' || transactionType == 'claimReward' || transactionType == 'uniswap-multicall') {
+                } else if (transactionType == 'stake' || transactionType == 'unstake' || transactionType == 'claimReward' || transactionType == 'uniswap-multicall' || transactionType == 'buy-and-stake') {
                     var popupImage = '<svg version="1.1" class="width-100 max-width-80" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 606.6 606.8" style="enable-background:new 0 0 606.6 606.8;" xml:space="preserve"><g><g><g><path style="fill:#1FC0DE;" d="M302.9,606.8c-51.4,0-102.3-13.2-148.3-39.1C83.9,527.9,33,463,11.2,385C-33.8,224,60.6,56.3,221.7,11.3C295.5-9.4,373.8-1.5,441.9,33.6c8.3,4.3,11.6,14.5,7.3,22.8c-4.3,8.3-14.5,11.6-22.8,7.3c-60.6-31.1-130.1-38.2-195.7-19.8c-143.1,40-227,189-187,332.1c19.4,69.3,64.6,126.9,127.3,162.3s135.5,44.1,204.7,24.7c143.1-40,227-189,187-332.1c-7.7-27.7-19.7-53.7-35.5-77.3c-5.2-7.8-3.1-18.3,4.7-23.5c7.8-5.2,18.3-3.1,23.5,4.7c17.8,26.6,31.2,55.9,39.9,87c45,161.1-49.4,328.7-210.4,373.7C357.9,603,330.3,606.8,302.9,606.8z"/></g><g><g><path style="fill:none;stroke:#1FC0DE;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;" d="M697.3,345.9"/></g></g></g><g><g><path style="fill:#1FC0DE;" d="M298.8,429.6c-5.2,0-10.4-2.4-13.7-6.9L140.3,224.1c-5.5-7.5-3.9-18.1,3.7-23.6c7.5-5.5,18.1-3.9,23.6,3.7l144.8,198.5c5.5,7.5,3.9,18.1-3.7,23.6C305.7,428.5,302.2,429.6,298.8,429.6z"/></g><g><path style="fill:none;stroke:#1FC0DE;stroke-width:2.8346;stroke-linecap:round;stroke-miterlimit:10;" d="M366.6,168.9"/></g><g><path style="fill:#1FC0DE;" d="M298.7,429.6c-2.9,0-5.8-0.7-8.5-2.3c-8.1-4.7-10.8-15.1-6.1-23.1L478,72.1c4.7-8.1,15-10.8,23.1-6.1c8.1,4.7,10.8,15.1,6.1,23.1l-193.9,332C310.2,426.6,304.5,429.6,298.7,429.6z"/></g></g></g></svg>';
                     if (transactionType == 'stake') {
                         projectData.general_logic.displayMessageOnTransactionSend(popupImage + '<div class="fs-26 fs-xs-24 lato-bold padding-top-20">'+$('.translates-holder').attr('successfully-staked')+'</div><div class="padding-top-10 padding-bottom-30 fs-18 fs-xs-16">'+$('.translates-holder').attr('successfully-text-staking')+'</div><div><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border close-tx-popup-btn padding-left-40 padding-right-40">OK</a></div>');
@@ -4234,6 +4235,8 @@ function submitTransactionToBlockchain(web3_provider, layer, transactionType, fu
                         projectData.general_logic.displayMessageOnTransactionSend(popupImage + '<div class="fs-26 fs-xs-24 lato-bold padding-top-20">'+$('.translates-holder').attr('successfully-claimed-rewards')+'</div><div class="padding-top-10 padding-bottom-30 fs-18 fs-xs-16">'+$('.translates-holder').attr('successfully-text-staking')+'</div><div><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border close-tx-popup-btn padding-left-40 padding-right-40">OK</a></div>');
                     } else if (transactionType == 'uniswap-multicall') {
                         projectData.general_logic.displayMessageOnTransactionSend(popupImage + '<div class="fs-26 fs-xs-24 lato-bold padding-top-20">'+$('.translates-holder').attr('success')+'</div><div class="padding-top-10 padding-bottom-30 fs-18 fs-xs-16">'+$('.translates-holder').attr('uniswap-success')+' <a href="' + etherscanDomain + '/tx/' + transactionHash + '" target="_blank" class="color-light-blue text-decoration-underline lato-bold">'+$('.translates-holder').attr('proof')+'</a></div><div><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border close-tx-popup-btn padding-left-40 padding-right-40">OK</a></div>');
+                    } else if (transactionType == 'buy-and-stake') {
+                        projectData.general_logic.displayMessageOnTransactionSend(popupImage + '<div class="fs-26 fs-xs-24 lato-bold padding-top-20">'+$('.translates-holder').attr('success')+'</div><div class="padding-top-10 padding-bottom-30 fs-18 fs-xs-16">'+$('.translates-holder').attr('buy-and-stake-success')+' <a href="' + etherscanDomain + '/tx/' + transactionHash + '" target="_blank" class="color-light-blue text-decoration-underline lato-bold">'+$('.translates-holder').attr('proof')+'</a></div><div><a href="javascript:void(0);" class="white-light-blue-btn light-blue-border close-tx-popup-btn padding-left-40 padding-right-40">OK</a></div>');
                     }
 
                     if (connector != undefined) {
@@ -5353,6 +5356,21 @@ function initWalletConnectLogic(uri, approve_session) {
                         projectData.general_logic.openTxConfirmationPopup('Uniswap transaction', projectData.utils.checksumAddress(config_variable.l2.addresses.uniswap_v3_address), null, 'DCN2.0', 250000, payload.params[0].data, 'l2', 'uniswap-multicall', null, null, {type: 'walletconnect', request_id: payload.id, value: payload.params[0].value});
                     }
                 }
+            } else if (projectData.utils.checksumAddress(payload.params[0].to) == projectData.utils.checksumAddress(config_variable.l2.addresses.staking_accelerator)) {
+                abiDecoder.addABI(config_variable.l2.abi_definitions.staking_accelerator_abi);
+                var decodedInput = abiDecoder.decodeMethod(payload.params[0].data);
+                console.log(decodedInput, 'decodedInput');
+
+                var to = projectData.utils.checksumAddress(config_variable.l2.addresses.staking_accelerator);
+                var gasLimit = await L2StakingAcceleratorContract.methods.buyAndStake().estimateGas({
+                    from: global_state.account,
+                    value: payload.params[0].value
+                });
+
+                // adding 10 percent to the gas limit just in case
+                gasLimit = Math.round(gasLimit + (gasLimit * 0.1));
+
+                projectData.general_logic.openTxConfirmationPopup('Buy & Stake confirmation', to, null, 'DCN2.0', gasLimit, payload.params[0].data, 'l2', 'buy-and-stake', null, null, {type: 'walletconnect', request_id: payload.id, value: payload.params[0].value});
             }
         }
     });
