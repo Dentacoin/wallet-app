@@ -491,16 +491,16 @@ var projectData = {
             projectData.utils.saveHybridAppCurrentScreen();
 
             var urlInstance = new URL(window.location.href);
-            var indacoinPurchaseLimits = {
+            /*var indacoinPurchaseLimits = {
                 min: 50,
                 max: 6000
-            };
+            };*/
             var transakPurchaseLimits = {
                 min: 30,
                 max: 1500
             };
             $('.transak-info-text .max-daily-limit').html(transakPurchaseLimits.max);
-            $('.indacoin-info-text .max-daily-limit').html(indacoinPurchaseLimits.max);
+            //$('.indacoin-info-text .max-daily-limit').html(indacoinPurchaseLimits.max);
             $('.indacoin-info-text .min-usd-amount').html(transakPurchaseLimits.min);
 
             projectData.general_logic.showMobileAppBannerForDesktopBrowsers();
@@ -528,7 +528,7 @@ var projectData = {
                     $('.to-box .l1-network').addClass('hide');
                     $('.to-box .l2-network').removeClass('hide');
 
-                    if (thisValue.val() == 'dcn-l2') {
+                    /*if (thisValue.val() == 'dcn-l2') {
                         $('.indacoin-info-text').show();
                         $('.transak-info-text').hide();
 
@@ -536,7 +536,7 @@ var projectData = {
                         $('.transak-info').addClass('hide');
 
                         $('section.ready-to-purchase-with-external-api .currency-description .description-content').html($('section.ready-to-purchase-with-external-api .currency-description .description-content').attr('data-dcn-l2-description'));
-                    } else if (thisValue.val() == 'eth-l2') {
+                    } else*/ if (thisValue.val() == 'eth-l2') {
                         $('.indacoin-info-text').hide();
                         $('.transak-info-text').show();
 
@@ -549,7 +549,7 @@ var projectData = {
                     $('.to-box .l1-network').removeClass('hide');
                     $('.to-box .l2-network').addClass('hide');
 
-                    if (thisValue.val() == 'dcn') {
+                    /*if (thisValue.val() == 'dcn') {
                         $('.indacoin-info-text').show();
                         $('.transak-info-text').hide();
 
@@ -557,7 +557,7 @@ var projectData = {
                         $('.transak-info').addClass('hide');
 
                         $('section.ready-to-purchase-with-external-api .currency-description .description-content').html($('section.ready-to-purchase-with-external-api .currency-description .description-content').attr('data-dcn-description'));
-                    } else if (thisValue.val() == 'eth') {
+                    } else*/ if (thisValue.val() == 'eth') {
                         $('.indacoin-info-text').hide();
                         $('.transak-info-text').show();
 
@@ -576,7 +576,7 @@ var projectData = {
 
                 projectData.general_logic.showLoader();
                 setTimeout(function() {
-                    if (thisValue.val() == 'dcn') {
+                    /*if (thisValue.val() == 'dcn') {
                         $('.min-usd-amount').html(indacoinPurchaseLimits.min);
                         if (urlInstance.searchParams.get('usd-value') == null) {
                             $('section.ready-to-purchase-with-external-api #usd-value').val(indacoinPurchaseLimits.min);
@@ -596,7 +596,7 @@ var projectData = {
 
                             projectData.general_logic.hideLoader();
                         });
-                    } else if (thisValue.val() == 'eth') {
+                    } else*/ if (thisValue.val() == 'eth') {
                         $('.min-usd-amount').html(transakPurchaseLimits.min);
                         if (urlInstance.searchParams.get('usd-value') == null) {
                             $('section.ready-to-purchase-with-external-api #usd-value').val(transakPurchaseLimits.min);
@@ -629,10 +629,10 @@ var projectData = {
                 if ($('section.ready-to-purchase-with-external-api #active-crypto').val().trim() == 'eth' || $('section.ready-to-purchase-with-external-api #active-crypto').val().trim() == 'eth-l2') {
                     minimumUsdForTransaction = transakPurchaseLimits.min;
                     maximumUsdForTransaction = transakPurchaseLimits.max;
-                } else {
+                }/* else {
                     minimumUsdForTransaction = indacoinPurchaseLimits.min;
                     maximumUsdForTransaction = indacoinPurchaseLimits.max;
-                }
+                }*/
 
                 if ($(this).val().trim() < minimumUsdForTransaction) {
                     $(this).parent().addClass('error-field');
@@ -646,7 +646,7 @@ var projectData = {
                     $(this).val(maximumUsdForTransaction);
                 }
 
-                if ($('section.ready-to-purchase-with-external-api #active-crypto').val() == 'dcn') {
+                /*if ($('section.ready-to-purchase-with-external-api #active-crypto').val() == 'dcn') {
                     projectData.requests.getCryptoDataByIndacoin('DCN%20(erc20)', $(this).val().trim(), function (onInputDcnData) {
                         $('section.ready-to-purchase-with-external-api #crypto-amount').val(Math.floor(onInputDcnData.dcn.value));
                     });
@@ -654,7 +654,7 @@ var projectData = {
                     projectData.requests.getCryptoDataByIndacoin('DCN%20(Optimism)', $(this).val().trim(), function (onInputDcnData) {
                         $('section.ready-to-purchase-with-external-api #crypto-amount').val(Math.floor(onInputDcnData.dcn.value));
                     });
-                } else if ($('section.ready-to-purchase-with-external-api #active-crypto').val() == 'eth') {
+                } else*/ if ($('section.ready-to-purchase-with-external-api #active-crypto').val() == 'eth') {
                     projectData.requests.getCryptoDataByTransak('ETH', $('section.ready-to-purchase-with-external-api #usd-value').val().trim(), 'ethereum', function (response) {
                         $('section.ready-to-purchase-with-external-api #crypto-amount').val(response);
                     });
@@ -677,10 +677,10 @@ var projectData = {
                     if (currency == 'eth' || currency == 'eth-l2') {
                         minimumUsdForTransaction = transakPurchaseLimits.min;
                         maximumUsdForTransaction = transakPurchaseLimits.max;
-                    } else {
+                    }/* else {
                         minimumUsdForTransaction = indacoinPurchaseLimits.min;
                         maximumUsdForTransaction = indacoinPurchaseLimits.max;
-                    }
+                    }*/
 
                     if (parseFloat($('section.ready-to-purchase-with-external-api #usd-value').val().trim()) < minimumUsdForTransaction) {
                         basic.showAlert($('.translates-holder').attr('min-tx-limit') + ' ' + minimumUsdForTransaction+' USD.', '', true);
@@ -693,14 +693,14 @@ var projectData = {
                     } else if (!$('section.ready-to-purchase-with-external-api #privacy-policy-agree').is(':checked')) {
                         basic.showAlert($('.translates-holder').attr('agree-policy'), '', true);
                     } else {
-                        if (currency == 'dcn-l2' || currency == 'dcn') {
+                        /*if (currency == 'dcn-l2' || currency == 'dcn') {
                             var indacoinCurToParamater = 'DCN%20(erc20)';
                             if (currency == 'dcn-l2') {
                                 indacoinCurToParamater = 'DCN%20(Optimism)';
                             }
 
                             window.open('https://indacoin.io/payment/en?partner=dentacoin&cur_from=USD&cur_to=' + indacoinCurToParamater + '&amount=' + $('section.ready-to-purchase-with-external-api #usd-value').val().trim() + '&address=' + $('section.ready-to-purchase-with-external-api input#dcn_address').val().trim() + '&user_id=' + $('section.ready-to-purchase-with-external-api input#email').val().trim(), '_system');
-                        } else {
+                        } else {*/
                             var network = 'ethereum';
                             if (currency == 'eth-l2') {
                                 network = 'optimism';
@@ -710,7 +710,7 @@ var projectData = {
                                 url += '&widgetHeight=600px&widgetWidth=350px';
                             }
                             window.open(url, '_system');
-                        }
+                        //}
                     }
                 }
             });
@@ -720,15 +720,15 @@ var projectData = {
             }
 
             if (urlInstance.searchParams.get('buy-type') != null && urlInstance.searchParams.get('usd-value') != null) {
-                if (urlInstance.searchParams.get('buy-type') == 'dcn') {
+                /*if (urlInstance.searchParams.get('buy-type') == 'dcn') {
                     $('section.ready-to-purchase-with-external-api #active-crypto').val('dcn').trigger('change');
-                } else if (urlInstance.searchParams.get('buy-type') == 'eth') {
+                } else*/ if (urlInstance.searchParams.get('buy-type') == 'eth') {
                     $('section.ready-to-purchase-with-external-api #active-crypto').val('eth').trigger('change');
                 }  else if (urlInstance.searchParams.get('buy-type') == 'eth-l2') {
                     $('section.ready-to-purchase-with-external-api #active-crypto').val('eth-l2').trigger('change');
-                } else if (urlInstance.searchParams.get('buy-type') == 'dcn-l2') {
+                }/* else if (urlInstance.searchParams.get('buy-type') == 'dcn-l2') {
                     $('section.ready-to-purchase-with-external-api #active-crypto').val('dcn-l2').trigger('change');
-                }
+                }*/
 
                 if (isInt(parseInt(urlInstance.searchParams.get('usd-value')))) {
                     $('section.ready-to-purchase-with-external-api #usd-value').val(urlInstance.searchParams.get('usd-value')).trigger('input');
@@ -738,15 +738,15 @@ var projectData = {
                     $('section.ready-to-purchase-with-external-api #usd-value').val(urlInstance.searchParams.get('usd-value')).trigger('input');
                 }
             } else if (urlInstance.searchParams.get('buy-type') != null) {
-                if (urlInstance.searchParams.get('buy-type') == 'dcn') {
+                /*if (urlInstance.searchParams.get('buy-type') == 'dcn') {
                     $('section.ready-to-purchase-with-external-api #active-crypto').val('dcn').trigger('change');
-                } else if (urlInstance.searchParams.get('buy-type') == 'eth') {
+                } else*/ if (urlInstance.searchParams.get('buy-type') == 'eth') {
                     $('section.ready-to-purchase-with-external-api #active-crypto').val('eth').trigger('change');
                 } else if (urlInstance.searchParams.get('buy-type') == 'eth-l2') {
                     $('section.ready-to-purchase-with-external-api #active-crypto').val('eth-l2').trigger('change');
-                } else if (urlInstance.searchParams.get('buy-type') == 'dcn-l2') {
+                }/* else if (urlInstance.searchParams.get('buy-type') == 'dcn-l2') {
                     $('section.ready-to-purchase-with-external-api #active-crypto').val('dcn-l2').trigger('change');
-                }
+                }*/
             }
         },
         send_page: function () {
